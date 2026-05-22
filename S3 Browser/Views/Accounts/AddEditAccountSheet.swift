@@ -163,7 +163,9 @@ struct AddEditAccountSheet: View {
                 SecureField("account.field.sessionToken", text: $sessionToken)
                 TextField("account.field.defaultBucket", text: $defaultBucket)
                     .autocorrectionDisabled()
-                Toggle("account.field.usePathStyle", isOn: $usesPathStyle)
+                if provider.supportsPathStyleToggle {
+                    Toggle("account.field.usePathStyle", isOn: $usesPathStyle)
+                }
             } label: {
                 Text("account.section.advanced")
             }

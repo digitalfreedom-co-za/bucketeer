@@ -1,6 +1,160 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "action.loadMore" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Load More" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Mehr laden" } }
+      }
+    },
+    "action.open" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Öffnen" } }
+      }
+    },
+    "action.refresh" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Refresh" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Aktualisieren" } }
+      }
+    },
+    "action.retry" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Retry" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Erneut versuchen" } }
+      }
+    },
+    "action.up" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Parent Folder" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Übergeordneter Ordner" } }
+      }
+    },
+    "browser.empty.buckets.message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "This account has no buckets yet, or none are visible with the current credentials." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Dieses Konto enthält noch keine Buckets oder die aktuellen Zugangsdaten sehen keine." } }
+      }
+    },
+    "browser.empty.buckets.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No Buckets" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Keine Buckets" } }
+      }
+    },
+    "browser.error.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Something Went Wrong" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Etwas ist schiefgelaufen" } }
+      }
+    },
+    "browser.search.placeholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Search in current folder" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Im aktuellen Ordner suchen" } }
+      }
+    },
+    "detail.empty.message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Select an object to see its details." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Wähle ein Objekt, um seine Details zu sehen." } }
+      }
+    },
+    "detail.field.contentType" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Type" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Typ" } }
+      }
+    },
+    "detail.field.etag" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "ETag" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "ETag" } }
+      }
+    },
+    "detail.field.key" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Key" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Schlüssel" } }
+      }
+    },
+    "detail.field.modified" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Last Modified" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Zuletzt geändert" } }
+      }
+    },
+    "detail.field.size" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Size" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Größe" } }
+      }
+    },
+    "detail.field.storage" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Storage Class" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Speicherklasse" } }
+      }
+    },
+    "detail.kind.folder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Folder" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Ordner" } }
+      }
+    },
+    "detail.multi.count" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%lld objects selected" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "%lld Objekte ausgewählt" } }
+      }
+    },
+    "table.column.modified" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Modified" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Geändert" } }
+      }
+    },
+    "table.column.name" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Name" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Name" } }
+      }
+    },
+    "table.column.size" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Size" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Größe" } }
+      }
+    },
+    "table.column.storage" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Class" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Klasse" } }
+      }
+    },
     "account.add" : {
       "extractionState" : "manual",
       "localizations" : {

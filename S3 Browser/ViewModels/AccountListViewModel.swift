@@ -15,10 +15,16 @@ final class AccountListViewModel {
 
     private let accountStore: AccountStoring
     private let keychainStore: KeychainStoring
+    private let clientFactory: S3ClientFactory
 
-    init(accountStore: AccountStoring, keychainStore: KeychainStoring) {
+    init(
+        accountStore: AccountStoring,
+        keychainStore: KeychainStoring,
+        clientFactory: S3ClientFactory
+    ) {
         self.accountStore = accountStore
         self.keychainStore = keychainStore
+        self.clientFactory = clientFactory
     }
 
     func refresh() async {
@@ -63,6 +69,9 @@ final class AccountListViewModel {
             return wrapped
         }
 
+        // Credentials may have changed — drop any cached AWSClient that
+        // still holds the old signing material.
+        await clientFactory.invalidate(accountID: account.id)
         await refresh()
         return nil
     }
@@ -93,6 +102,7 @@ final class AccountListViewModel {
             self.error = .unknown(message: error.localizedDescription)
         }
 
+        await clientFactory.invalidate(accountID: account.id)
         await refresh()
         return nil
     }

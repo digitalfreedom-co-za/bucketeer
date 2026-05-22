@@ -17,7 +17,10 @@ final class AppContainer {
     let modelContainer: ModelContainer
     let keychainStore: KeychainStoring
     let accountStore: AccountStoring
+    let clientFactory: S3ClientFactory
+    let s3Browser: S3Browsing
     let accountListViewModel: AccountListViewModel
+    let browserViewModel: BrowserViewModel
 
     init() throws {
         let storeURL = Self.resolveStoreURL()
@@ -36,13 +39,22 @@ final class AppContainer {
             accessGroup: nil // Shared access group is added in Phase 9 with the File Provider extension.
         )
         let accountStore = AccountStore(modelContainer: modelContainer)
+        let clientFactory = S3ClientFactory(keychainStore: keychainStore)
+        let s3Browser = S3BrowserService(factory: clientFactory)
 
         self.modelContainer = modelContainer
         self.keychainStore = keychainStore
         self.accountStore = accountStore
+        self.clientFactory = clientFactory
+        self.s3Browser = s3Browser
         self.accountListViewModel = AccountListViewModel(
             accountStore: accountStore,
-            keychainStore: keychainStore
+            keychainStore: keychainStore,
+            clientFactory: clientFactory
+        )
+        self.browserViewModel = BrowserViewModel(
+            s3Browser: s3Browser,
+            accountStore: accountStore
         )
     }
 

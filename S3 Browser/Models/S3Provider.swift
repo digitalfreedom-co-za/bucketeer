@@ -98,4 +98,11 @@ enum S3Provider: String, Codable, CaseIterable, Sendable {
     var requiresEndpointOverride: Bool {
         self == .custom
     }
+
+    /// AWS routes virtual-host vs path-style by URL pattern, so the
+    /// account-level path-style toggle has no effect for `.awsS3` and
+    /// is hidden in the UI to avoid misleading users.
+    var supportsPathStyleToggle: Bool {
+        self != .awsS3
+    }
 }
