@@ -23,7 +23,7 @@ xcuserdata/
 # Swift Package Manager
 .swiftpm/
 .build/
-Package.resolved
+# Package.resolved is committed for apps to lock dependency versions
 
 # CocoaPods
 Pods/

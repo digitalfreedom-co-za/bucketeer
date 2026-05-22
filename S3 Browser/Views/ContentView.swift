@@ -2,58 +2,73 @@
 //  ContentView.swift
 //  S3 Browser
 //
-//  Created by Marcel Berger on 22.05.26.
+//  Created by Marcel R. G. Berger on 22.05.26.
 //
 
 import SwiftUI
-import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+    @State private var sidebarSelection: SidebarItem? = nil
 
     var body: some View {
         NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
-                }
-                .onDelete(perform: deleteItems)
-            }
-            .navigationSplitViewColumnWidth(min: 180, ideal: 200)
-            .toolbar {
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
+            SidebarPlaceholderView(selection: $sidebarSelection)
+                .navigationSplitViewColumnWidth(min: 220, ideal: 260, max: 360)
+        } content: {
+            ObjectListPlaceholderView()
+                .navigationSplitViewColumnWidth(min: 360, ideal: 520)
         } detail: {
-            Text("Select an item")
+            DetailPlaceholderView()
+                .navigationSplitViewColumnWidth(min: 320, ideal: 380)
         }
     }
+}
 
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
+enum SidebarItem: Hashable {
+    case accounts
+    case mounted
+    case sync
+    case transfers
+}
 
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
+struct SidebarPlaceholderView: View {
+    @Binding var selection: SidebarItem?
+
+    var body: some View {
+        List(selection: $selection) {
+            Section("sidebar.section.accounts") {
+                Label("action.add-account", systemImage: "plus.circle")
+                    .foregroundStyle(.secondary)
             }
+            Section("sidebar.section.mounted") { EmptyView() }
+            Section("sidebar.section.sync") { EmptyView() }
+            Section("sidebar.section.transfers") { EmptyView() }
         }
+        .listStyle(.sidebar)
+    }
+}
+
+struct ObjectListPlaceholderView: View {
+    var body: some View {
+        ContentUnavailableView {
+            Label("empty.no-account.title", systemImage: "externaldrive.badge.questionmark")
+        } description: {
+            Text("empty.no-account.message")
+        }
+    }
+}
+
+struct DetailPlaceholderView: View {
+    var body: some View {
+        Color.clear
+            .overlay {
+                Image(systemName: "doc.text.magnifyingglass")
+                    .font(.system(size: 48))
+                    .foregroundStyle(.tertiary)
+            }
     }
 }
 
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
 }

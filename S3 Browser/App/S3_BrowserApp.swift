@@ -2,31 +2,25 @@
 //  S3_BrowserApp.swift
 //  S3 Browser
 //
-//  Created by Marcel Berger on 22.05.26.
+//  Created by Marcel R. G. Berger on 22.05.26.
 //
 
 import SwiftUI
-import SwiftData
 
 @main
 struct S3_BrowserApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
-
     var body: some Scene {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(sharedModelContainer)
+        .windowResizability(.contentMinSize)
+        .commands {
+            CommandGroup(replacing: .newItem) {
+                Button("action.add-account", systemImage: "plus") {
+                    // wired up in Phase 2
+                }
+                .keyboardShortcut("n", modifiers: .command)
+            }
+        }
     }
 }
