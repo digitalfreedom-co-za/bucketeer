@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- S3 Browser does not track users across apps or websites
+         owned by other companies. -->
+    <key>NSPrivacyTracking</key>
+    <false/>
+
+    <key>NSPrivacyTrackingDomains</key>
+    <array/>
+
+    <!-- S3 Browser collects no personal data on behalf of its publisher.
+         All data the app handles stays on the user's Mac. -->
+    <key>NSPrivacyCollectedDataTypes</key>
+    <array/>
+
+    <!-- Required-reason API declarations. -->
+    <key>NSPrivacyAccessedAPITypes</key>
+    <array>
+
+        <!-- UserDefaults: app's own preferences (window state,
+             column visibility, last-used account, etc.). -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>CA92.1</string>
+            </array>
+        </dict>
+
+        <!-- FileTimestamp: display object Last-Modified to user;
+             display local download file timestamps in the app's own
+             file lists. -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>C617.1</string>
+                <string>DDA9.1</string>
+            </array>
+        </dict>
+
+        <!-- DiskSpace: check available disk space before downloading
+             a large object; display free space when managing the
+             preview cache. -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryDiskSpace</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>E174.1</string>
+                <string>85F4.1</string>
+            </array>
+        </dict>
+
+        <!-- SystemBootTime: measure transfer durations for live
+             progress estimates. -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategorySystemBootTime</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>35F9.1</string>
+            </array>
+        </dict>
+
+    </array>
+</dict>
+</plist>

@@ -1,0 +1,150 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "app.name" : {
+      "comment" : "App name shown in the menubar and in window titles",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "S3 Browser"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "S3 Browser"
+          }
+        }
+      }
+    },
+    "sidebar.section.accounts" : {
+      "comment" : "Sidebar section header",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accounts"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konten"
+          }
+        }
+      }
+    },
+    "sidebar.section.mounted" : {
+      "comment" : "Sidebar section header for mounted drives",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mounted Drives"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eingehängte Laufwerke"
+          }
+        }
+      }
+    },
+    "sidebar.section.sync" : {
+      "comment" : "Sidebar section header for sync jobs",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sync"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sync"
+          }
+        }
+      }
+    },
+    "sidebar.section.transfers" : {
+      "comment" : "Sidebar section header for transfers",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transfers"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Übertragungen"
+          }
+        }
+      }
+    },
+    "empty.no-account.title" : {
+      "comment" : "Title of the empty state when no account is selected",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Account Selected"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein Konto ausgewählt"
+          }
+        }
+      }
+    },
+    "empty.no-account.message" : {
+      "comment" : "Message shown when no account is selected",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add an S3 account from the sidebar to start browsing."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Füge ein S3-Konto in der Seitenleiste hinzu, um loszulegen."
+          }
+        }
+      }
+    },
+    "action.add-account" : {
+      "comment" : "Button label to add a new S3 account",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Account"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konto hinzufügen"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

@@ -1,0 +1,59 @@
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+*.xcuserdata/
+xcuserdata/
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+
+# Build products
+*.dSYM.zip
+*.dSYM
+*.ipa
+*.xcarchive
+
+# Swift Package Manager
+.swiftpm/
+.build/
+Package.resolved
+
+# CocoaPods
+Pods/
+*.xcworkspace/contents.xcworkspacedata
+
+# Swift
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.idea/
+.vscode/
+
+# Secrets — never commit
+*.p12
+*.cer
+*.mobileprovision
+ExportOptions.plist
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+.env
+.env.*
+!.env.example
+
+# Misc
+*.log

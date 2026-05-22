@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- App Sandbox is required for App Store distribution. -->
+    <key>com.apple.security.app-sandbox</key>
+    <true/>
+
+    <!-- Outgoing network access — for S3 endpoints. -->
+    <key>com.apple.security.network.client</key>
+    <true/>
+
+    <!-- User-selected files: upload sources and download destinations
+         picked via NSOpenPanel / NSSavePanel. -->
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+
+    <!-- Default ~/Downloads access for quick saves without picker. -->
+    <key>com.apple.security.files.downloads.read-write</key>
+    <true/>
+
+    <!-- App Group shared with the File Provider extension and any
+         future helper. Lives in:
+         ~/Library/Group Containers/group.za.co.digitalfreedom.s3-browser/ -->
+    <key>com.apple.security.application-groups</key>
+    <array>
+        <string>group.za.co.digitalfreedom.s3-browser</string>
+    </array>
+
+    <!-- Keychain access group shared with the File Provider extension. -->
+    <key>keychain-access-groups</key>
+    <array>
+        <string>$(AppIdentifierPrefix)za.co.digitalfreedom.s3-browser.shared</string>
+    </array>
+</dict>
+</plist>
