@@ -19,18 +19,8 @@
     <key>com.apple.security.files.downloads.read-write</key>
     <true/>
 
-    <!-- App Group shared with the File Provider extension and any
-         future helper. Lives in:
-         ~/Library/Group Containers/group.za.co.digitalfreedom.s3-browser/ -->
-    <key>com.apple.security.application-groups</key>
-    <array>
-        <string>group.za.co.digitalfreedom.s3-browser</string>
-    </array>
-
-    <!-- Keychain access group shared with the File Provider extension. -->
-    <key>keychain-access-groups</key>
-    <array>
-        <string>$(AppIdentifierPrefix)za.co.digitalfreedom.s3-browser.shared</string>
-    </array>
+    <!-- App Group and shared Keychain access group are added in Phase 9
+         when the File Provider extension is introduced. They require
+         registration at developer.apple.com before they can be used. -->
 </dict>
 </plist>

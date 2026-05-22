@@ -1,148 +1,263 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "app.name" : {
-      "comment" : "App name shown in the menubar and in window titles",
+    "account.add" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "S3 Browser"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "S3 Browser"
-          }
-        }
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add Account" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Konto hinzufügen" } }
       }
     },
-    "sidebar.section.accounts" : {
-      "comment" : "Sidebar section header",
+    "account.delete.confirm.message" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Accounts"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Konten"
-          }
-        }
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Remove %@? This deletes the saved credentials from your Keychain." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "%@ entfernen? Die gespeicherten Zugangsdaten werden aus dem Schlüsselbund gelöscht." } }
       }
     },
-    "sidebar.section.mounted" : {
-      "comment" : "Sidebar section header for mounted drives",
+    "account.delete.confirm.title" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mounted Drives"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eingehängte Laufwerke"
-          }
-        }
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete account?" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Konto löschen?" } }
       }
     },
-    "sidebar.section.sync" : {
-      "comment" : "Sidebar section header for sync jobs",
+    "account.edit" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sync"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sync"
-          }
-        }
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit Account" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Konto bearbeiten" } }
       }
     },
-    "sidebar.section.transfers" : {
-      "comment" : "Sidebar section header for transfers",
+    "account.field.accessKey" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Transfers"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Übertragungen"
-          }
-        }
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Access Key ID" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Zugriffsschlüssel-ID" } }
       }
     },
-    "empty.no-account.title" : {
-      "comment" : "Title of the empty state when no account is selected",
+    "account.field.accountID" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No Account Selected"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kein Konto ausgewählt"
-          }
-        }
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Account ID" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Konto-ID" } }
       }
     },
-    "empty.no-account.message" : {
-      "comment" : "Message shown when no account is selected",
+    "account.field.defaultBucket" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add an S3 account from the sidebar to start browsing."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Füge ein S3-Konto in der Seitenleiste hinzu, um loszulegen."
-          }
-        }
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Default Bucket (optional)" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Standard-Bucket (optional)" } }
+      }
+    },
+    "account.field.endpoint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Endpoint URL" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Endpoint-URL" } }
+      }
+    },
+    "account.field.name" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Name" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Name" } }
+      }
+    },
+    "account.field.provider" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Provider" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Anbieter" } }
+      }
+    },
+    "account.field.region" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Region" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Region" } }
+      }
+    },
+    "account.field.secretKey" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Secret Access Key" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Geheimer Zugriffsschlüssel" } }
+      }
+    },
+    "account.field.sessionToken" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Session Token (optional)" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Session-Token (optional)" } }
+      }
+    },
+    "account.field.usePathStyle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Use Path-Style Addressing" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Path-Style-Adressierung verwenden" } }
+      }
+    },
+    "account.note.credentials-rewrite" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Re-enter access key and secret to keep the saved credentials, or to update them." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Zugangsdaten erneut eingeben, um sie zu behalten oder zu aktualisieren." } }
+      }
+    },
+    "account.section.advanced" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Advanced" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Erweitert" } }
+      }
+    },
+    "account.section.connection" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Connection" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Verbindung" } }
+      }
+    },
+    "account.section.credentials" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Credentials" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Zugangsdaten" } }
       }
     },
     "action.add-account" : {
-      "comment" : "Button label to add a new S3 account",
       "extractionState" : "manual",
       "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add Account"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Konto hinzufügen"
-          }
-        }
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add Account" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Konto hinzufügen" } }
+      }
+    },
+    "action.cancel" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Cancel" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Abbrechen" } }
+      }
+    },
+    "action.delete" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Löschen" } }
+      }
+    },
+    "action.edit" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit…" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Bearbeiten…" } }
+      }
+    },
+    "action.save" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Save" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Speichern" } }
+      }
+    },
+    "app.name" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "S3 Browser" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "S3 Browser" } }
+      }
+    },
+    "browser.account.description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Selected account %@. Bucket listing will appear here once Phase 3 lands." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Ausgewähltes Konto %@. Die Bucket-Liste erscheint mit Phase 3." } }
+      }
+    },
+    "browser.account.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Buckets" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Buckets" } }
+      }
+    },
+    "empty.no-account.message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add an S3 account from the sidebar to start browsing." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Füge in der Seitenleiste ein S3-Konto hinzu, um loszulegen." } }
+      }
+    },
+    "empty.no-account.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No Account Selected" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Kein Konto ausgewählt" } }
+      }
+    },
+    "settings.placeholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Settings will be added in later phases." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Einstellungen folgen in späteren Phasen." } }
+      }
+    },
+    "settings.section.general" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "General" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Allgemein" } }
+      }
+    },
+    "sidebar.empty.mounted" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Mount a bucket to see it here." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Häng einen Bucket ein, um ihn hier zu sehen." } }
+      }
+    },
+    "sidebar.empty.sync" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No sync jobs yet." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Noch keine Sync-Jobs." } }
+      }
+    },
+    "sidebar.empty.transfers" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No active transfers." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Keine aktiven Übertragungen." } }
+      }
+    },
+    "sidebar.section.accounts" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Accounts" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Konten" } }
+      }
+    },
+    "sidebar.section.mounted" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Mounted Drives" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Eingehängte Laufwerke" } }
+      }
+    },
+    "sidebar.section.sync" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sync" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Sync" } }
+      }
+    },
+    "sidebar.section.transfers" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Transfers" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Übertragungen" } }
       }
     }
   },

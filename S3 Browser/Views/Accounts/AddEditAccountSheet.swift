@@ -1,0 +1,260 @@
+//
+//  AddEditAccountSheet.swift
+//  S3 Browser
+//
+//  Created by Marcel R. G. Berger on 22.05.26.
+//
+
+import SwiftUI
+
+struct AddEditAccountSheet: View {
+    enum Mode: Equatable {
+        case create
+        case edit(S3Account)
+    }
+
+    let mode: Mode
+    /// Returns `nil` on success; an error to surface inline on failure.
+    let onSave: @MainActor (S3Account, AccountCredentials) async -> S3BrowserError?
+
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var name: String = ""
+    @State private var provider: S3Provider = .awsS3
+    @State private var region: String = ""
+    @State private var endpointOverride: String = ""
+    @State private var accountIdentifier: String = ""
+    @State private var defaultBucket: String = ""
+    @State private var usesPathStyle: Bool = false
+    @State private var accessKey: String = ""
+    @State private var secretKey: String = ""
+    @State private var sessionToken: String = ""
+    @State private var showAdvanced: Bool = false
+    @State private var hasHydrated: Bool = false
+    @State private var isSaving: Bool = false
+    @State private var saveError: String?
+
+    private var isEditing: Bool {
+        if case .edit = mode { return true }
+        return false
+    }
+
+    private var existingAccount: S3Account? {
+        if case .edit(let account) = mode { return account }
+        return nil
+    }
+
+    private var isSaveDisabled: Bool {
+        if isSaving { return true }
+        let nameOK = !name.trimmingCharacters(in: .whitespaces).isEmpty
+        let credsOK = !accessKey.trimmingCharacters(in: .whitespaces).isEmpty
+            && !secretKey.isEmpty
+        let regionOK = !region.trimmingCharacters(in: .whitespaces).isEmpty
+        let accountIDOK = !provider.requiresAccountID
+            || !accountIdentifier.trimmingCharacters(in: .whitespaces).isEmpty
+        let endpointOK = !provider.requiresEndpointOverride
+            || Self.parseEndpoint(endpointOverride) != nil
+        return !(nameOK && credsOK && regionOK && accountIDOK && endpointOK)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                connectionSection
+                credentialsSection
+                advancedSection
+                if let saveError {
+                    Section {
+                        Label(saveError, systemImage: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.red)
+                    }
+                }
+            }
+            .formStyle(.grouped)
+            .navigationTitle(isEditing ? "account.edit" : "account.add")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("action.cancel") { dismiss() }
+                        .disabled(isSaving)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("action.save") { commit() }
+                        .disabled(isSaveDisabled)
+                        .keyboardShortcut(.defaultAction)
+                }
+            }
+            .overlay {
+                if isSaving {
+                    ProgressView()
+                        .controlSize(.large)
+                        .padding()
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                }
+            }
+            .onAppear(perform: hydrate)
+        }
+        .frame(minWidth: 520, minHeight: 560)
+    }
+
+    // MARK: - Sections
+
+    @ViewBuilder
+    private var connectionSection: some View {
+        Section("account.section.connection") {
+            TextField("account.field.name", text: $name)
+                .textContentType(.nickname)
+
+            Picker("account.field.provider", selection: $provider) {
+                ForEach(S3Provider.allCases, id: \.self) { p in
+                    Label {
+                        Text(p.displayName)
+                    } icon: {
+                        Image(systemName: p.iconSystemName)
+                    }
+                    .tag(p)
+                }
+            }
+            .onChange(of: provider) { _, newValue in
+                guard hasHydrated else { return }
+                applyProviderDefaults(for: newValue)
+            }
+
+            if let regions = provider.fixedRegions {
+                Picker("account.field.region", selection: $region) {
+                    ForEach(regions, id: \.self) { Text($0).tag($0) }
+                }
+            } else {
+                TextField("account.field.region", text: $region)
+            }
+
+            if provider.requiresAccountID {
+                TextField("account.field.accountID", text: $accountIdentifier)
+                    .textContentType(.username)
+            }
+
+            if provider.requiresEndpointOverride {
+                TextField("account.field.endpoint", text: $endpointOverride)
+                    .textContentType(.URL)
+                    .autocorrectionDisabled()
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var credentialsSection: some View {
+        Section("account.section.credentials") {
+            TextField("account.field.accessKey", text: $accessKey)
+                .textContentType(.username)
+                .autocorrectionDisabled()
+            SecureField("account.field.secretKey", text: $secretKey)
+                .textContentType(.password)
+            if isEditing {
+                Text("account.note.credentials-rewrite")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var advancedSection: some View {
+        Section {
+            DisclosureGroup(isExpanded: $showAdvanced) {
+                SecureField("account.field.sessionToken", text: $sessionToken)
+                TextField("account.field.defaultBucket", text: $defaultBucket)
+                    .autocorrectionDisabled()
+                Toggle("account.field.usePathStyle", isOn: $usesPathStyle)
+            } label: {
+                Text("account.section.advanced")
+            }
+        }
+    }
+
+    // MARK: - Behaviour
+
+    private func applyProviderDefaults(for newProvider: S3Provider) {
+        if let fixed = newProvider.fixedRegions {
+            if !fixed.contains(region) {
+                region = newProvider.defaultRegion
+            }
+        } else {
+            region = newProvider.defaultRegion
+        }
+        usesPathStyle = newProvider.usesPathStyleByDefault
+    }
+
+    private func hydrate() {
+        defer { hasHydrated = true }
+        if case .edit(let account) = mode {
+            name = account.name
+            provider = account.provider
+            region = account.region
+            endpointOverride = account.endpointOverride?.absoluteString ?? ""
+            accountIdentifier = account.accountID ?? ""
+            defaultBucket = account.defaultBucket ?? ""
+            usesPathStyle = account.usesPathStyle
+            // Credentials are deliberately not pre-filled. Editing an
+            // account requires the user to re-enter the access key and
+            // secret so we never round-trip secret material through a
+            // SecureField identity binding.
+        } else {
+            region = provider.defaultRegion
+            usesPathStyle = provider.usesPathStyleByDefault
+        }
+    }
+
+    private func commit() {
+        let trimmedEndpoint = endpointOverride.trimmingCharacters(in: .whitespaces)
+        let endpoint: URL? = provider.requiresEndpointOverride
+            ? Self.parseEndpoint(trimmedEndpoint)
+            : nil
+        let cleanedAccountID: String? = provider.requiresAccountID
+            ? accountIdentifier.trimmingCharacters(in: .whitespaces)
+            : nil
+        let account = S3Account(
+            id: existingAccount?.id ?? UUID(),
+            name: name.trimmingCharacters(in: .whitespaces),
+            provider: provider,
+            region: region.trimmingCharacters(in: .whitespaces),
+            endpointOverride: endpoint,
+            accountID: cleanedAccountID,
+            defaultBucket: defaultBucket.trimmingCharacters(in: .whitespaces).nilIfEmpty,
+            usesPathStyle: usesPathStyle,
+            lastUsedAt: existingAccount?.lastUsedAt
+        )
+        let credentials = AccountCredentials(
+            accessKey: accessKey.trimmingCharacters(in: .whitespaces),
+            secretKey: secretKey,
+            sessionToken: sessionToken.isEmpty ? nil : sessionToken
+        )
+        isSaving = true
+        saveError = nil
+        Task {
+            if let failure = await onSave(account, credentials) {
+                saveError = failure.errorDescription
+                    ?? String(localized: "error.unknown",
+                              defaultValue: "Unexpected error.")
+                isSaving = false
+            } else {
+                dismiss()
+            }
+        }
+    }
+
+    /// Returns a valid HTTP/HTTPS URL with a non-empty host, or nil.
+    static func parseEndpoint(_ string: String) -> URL? {
+        let trimmed = string.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty,
+              let url = URL(string: trimmed),
+              let scheme = url.scheme?.lowercased(),
+              scheme == "http" || scheme == "https",
+              let host = url.host(percentEncoded: false),
+              !host.isEmpty
+        else { return nil }
+        return url
+    }
+}
+
+private extension String {
+    var nilIfEmpty: String? { isEmpty ? nil : self }
+}

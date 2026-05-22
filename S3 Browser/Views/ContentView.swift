@@ -8,14 +8,18 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var sidebarSelection: SidebarItem? = nil
+    @Environment(AppContainer.self) private var container
+    @State private var sidebarSelection: SidebarSelection? = nil
 
     var body: some View {
         NavigationSplitView {
-            SidebarPlaceholderView(selection: $sidebarSelection)
-                .navigationSplitViewColumnWidth(min: 220, ideal: 260, max: 360)
+            SidebarView(
+                viewModel: container.accountListViewModel,
+                selection: $sidebarSelection
+            )
+            .navigationSplitViewColumnWidth(min: 220, ideal: 260, max: 360)
         } content: {
-            ObjectListPlaceholderView()
+            ObjectListPlaceholderView(selection: sidebarSelection)
                 .navigationSplitViewColumnWidth(min: 360, ideal: 520)
         } detail: {
             DetailPlaceholderView()
@@ -24,41 +28,31 @@ struct ContentView: View {
     }
 }
 
-enum SidebarItem: Hashable {
-    case accounts
-    case mounted
-    case sync
-    case transfers
-}
-
-struct SidebarPlaceholderView: View {
-    @Binding var selection: SidebarItem?
+private struct ObjectListPlaceholderView: View {
+    let selection: SidebarSelection?
 
     var body: some View {
-        List(selection: $selection) {
-            Section("sidebar.section.accounts") {
-                Label("action.add-account", systemImage: "plus.circle")
-                    .foregroundStyle(.secondary)
+        Group {
+            switch selection {
+            case .account(let id):
+                ContentUnavailableView {
+                    Label("browser.account.title", systemImage: "tray.full")
+                } description: {
+                    Text("browser.account.description \(id.uuidString)")
+                }
+            default:
+                ContentUnavailableView {
+                    Label("empty.no-account.title",
+                          systemImage: "externaldrive.badge.questionmark")
+                } description: {
+                    Text("empty.no-account.message")
+                }
             }
-            Section("sidebar.section.mounted") { EmptyView() }
-            Section("sidebar.section.sync") { EmptyView() }
-            Section("sidebar.section.transfers") { EmptyView() }
-        }
-        .listStyle(.sidebar)
-    }
-}
-
-struct ObjectListPlaceholderView: View {
-    var body: some View {
-        ContentUnavailableView {
-            Label("empty.no-account.title", systemImage: "externaldrive.badge.questionmark")
-        } description: {
-            Text("empty.no-account.message")
         }
     }
 }
 
-struct DetailPlaceholderView: View {
+private struct DetailPlaceholderView: View {
     var body: some View {
         Color.clear
             .overlay {
@@ -67,8 +61,4 @@ struct DetailPlaceholderView: View {
                     .foregroundStyle(.tertiary)
             }
     }
-}
-
-#Preview {
-    ContentView()
 }
