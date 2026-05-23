@@ -16,6 +16,9 @@ struct AddEditAccountSheet: View {
     let mode: Mode
     /// Returns `nil` on success; an error to surface inline on failure.
     let onSave: @MainActor (S3Account, AccountCredentials) async -> S3BrowserError?
+    /// Returns `nil` on a successful connection, an error otherwise.
+    /// Optional: when omitted the Test Connection button is hidden.
+    var onTest: (@MainActor (S3Account, AccountCredentials) async -> S3BrowserError?)?
 
     @Environment(\.dismiss) private var dismiss
 
@@ -33,6 +36,13 @@ struct AddEditAccountSheet: View {
     @State private var hasHydrated: Bool = false
     @State private var isSaving: Bool = false
     @State private var saveError: String?
+    @State private var isTesting: Bool = false
+    @State private var testResult: TestResult?
+
+    private enum TestResult: Equatable {
+        case success
+        case failure(String)
+    }
 
     private var isEditing: Bool {
         if case .edit = mode { return true }
@@ -69,6 +79,18 @@ struct AddEditAccountSheet: View {
                             .foregroundStyle(.red)
                     }
                 }
+                if let testResult {
+                    Section {
+                        switch testResult {
+                        case .success:
+                            Label("account.test.success", systemImage: "checkmark.seal.fill")
+                                .foregroundStyle(.green)
+                        case .failure(let message):
+                            Label(message, systemImage: "xmark.octagon.fill")
+                                .foregroundStyle(.red)
+                        }
+                    }
+                }
             }
             .formStyle(.grouped)
             .navigationTitle(isEditing ? "account.edit" : "account.add")
@@ -76,6 +98,12 @@ struct AddEditAccountSheet: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("action.cancel") { dismiss() }
                         .disabled(isSaving)
+                }
+                if onTest != nil {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button("account.action.testConnection") { testConnection() }
+                            .disabled(isSaveDisabled || isTesting)
+                    }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("action.save") { commit() }
@@ -205,7 +233,27 @@ struct AddEditAccountSheet: View {
         }
     }
 
-    private func commit() {
+    private func testConnection() {
+        guard let onTest else { return }
+        let (account, credentials) = buildPayload()
+        testResult = nil
+        isTesting = true
+        Task {
+            let result = await onTest(account, credentials)
+            if let result {
+                testResult = .failure(
+                    result.errorDescription
+                    ?? String(localized: "error.unknown",
+                              defaultValue: "Unexpected error.")
+                )
+            } else {
+                testResult = .success
+            }
+            isTesting = false
+        }
+    }
+
+    private func buildPayload() -> (S3Account, AccountCredentials) {
         let trimmedEndpoint = endpointOverride.trimmingCharacters(in: .whitespaces)
         let endpoint: URL? = provider.requiresEndpointOverride
             ? Self.parseEndpoint(trimmedEndpoint)
@@ -229,6 +277,11 @@ struct AddEditAccountSheet: View {
             secretKey: secretKey,
             sessionToken: sessionToken.isEmpty ? nil : sessionToken
         )
+        return (account, credentials)
+    }
+
+    private func performSave() {
+        let (account, credentials) = buildPayload()
         isSaving = true
         saveError = nil
         Task {
@@ -242,6 +295,8 @@ struct AddEditAccountSheet: View {
             }
         }
     }
+
+    private func commit() { performSave() }
 
     /// Returns a valid HTTP/HTTPS URL with a non-empty host, or nil.
     static func parseEndpoint(_ string: String) -> URL? {

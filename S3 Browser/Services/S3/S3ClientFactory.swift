@@ -78,6 +78,41 @@ actor S3ClientFactory {
         cache.removeAll()
     }
 
+    /// One-shot credential validation. Builds a throwaway `AWSClient`
+    /// with the supplied credentials, calls `listBuckets`, then shuts
+    /// the client down. The cache is never touched so this never
+    /// pollutes the live state for an existing account.
+    static func testConnection(
+        for account: S3Account,
+        credentials: AccountCredentials
+    ) async throws {
+        let awsClient = AWSClient(
+            credentialProvider: .static(
+                accessKeyId: credentials.accessKey,
+                secretAccessKey: credentials.secretKey,
+                sessionToken: credentials.sessionToken
+            )
+        )
+        do {
+            let endpoint = Self.endpoint(for: account)
+            let region = Region(rawValue: account.region)
+            let options: AWSServiceConfig.Options = account.usesPathStyle
+                ? []
+                : .s3ForceVirtualHost
+            let s3 = S3(
+                client: awsClient,
+                region: region,
+                endpoint: endpoint.absoluteString,
+                options: options
+            )
+            _ = try await s3.listBuckets()
+            try await awsClient.shutdown()
+        } catch {
+            try? await awsClient.shutdown()
+            throw error
+        }
+    }
+
     // MARK: - Endpoint construction
 
     /// Provider-specific endpoint URL. Pure function — same input, same

@@ -34,6 +34,9 @@ final class BrowserViewModel {
     var searchText: String = ""
     var selection: Set<String> = []
 
+    var actionError: S3BrowserError?
+    var isPerformingAction: Bool = false
+
     private let s3Browser: S3Browsing
     private let accountStore: AccountStoring
 
@@ -139,6 +142,104 @@ final class BrowserViewModel {
             await loadObjects(reset: true, token: token)
         } else if account != nil {
             await loadBuckets(token: token)
+        }
+    }
+
+    // MARK: - Object actions
+
+    /// Deletes the listed keys. After completion the current listing
+    /// is refreshed and any selection that referenced removed keys is
+    /// cleared. The caller is responsible for confirming with the user
+    /// first.
+    func delete(keys: [String]) async {
+        guard let account, let bucket, !keys.isEmpty else { return }
+        isPerformingAction = true
+        defer { isPerformingAction = false }
+        do {
+            try await s3Browser.delete(account: account, bucket: bucket, keys: keys)
+            selection.subtract(keys)
+            actionError = nil
+            await loadObjectsResetting()
+        } catch let error as S3BrowserError {
+            actionError = error
+        } catch {
+            actionError = .unknown(message: error.localizedDescription)
+        }
+    }
+
+    /// Rename = server-side copy + delete. Only safe for single keys
+    /// (multi-rename has no S3 primitive). 5 GB cap on copy applies
+    /// (see S3BrowserService.copy).
+    func rename(key: String, to newName: String) async {
+        guard let account, let bucket else { return }
+        let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, !trimmed.contains("/") else {
+            actionError = .unknown(
+                message: String(
+                    localized: "browser.action.rename.invalidName",
+                    defaultValue: "Names cannot be empty or contain slashes."
+                )
+            )
+            return
+        }
+        // Compose the new key by replacing the last path segment.
+        let parent: String = {
+            guard let lastSlash = key.lastIndex(of: "/") else { return "" }
+            return String(key[..<key.index(after: lastSlash)])
+        }()
+        let newKey = parent + trimmed
+        guard newKey != key else { return }
+
+        isPerformingAction = true
+        defer { isPerformingAction = false }
+        do {
+            try await s3Browser.copy(
+                account: account,
+                fromBucket: bucket,
+                fromKey: key,
+                toBucket: bucket,
+                toKey: newKey,
+                metadata: nil
+            )
+            try await s3Browser.delete(account: account, bucket: bucket, keys: [key])
+            selection.remove(key)
+            actionError = nil
+            await loadObjectsResetting()
+        } catch let error as S3BrowserError {
+            actionError = error
+        } catch {
+            actionError = .unknown(message: error.localizedDescription)
+        }
+    }
+
+    /// Creates a zero-byte folder marker at the current prefix.
+    func createFolder(named name: String) async {
+        guard let account, let bucket else { return }
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, !trimmed.contains("/") else {
+            actionError = .unknown(
+                message: String(
+                    localized: "browser.action.newFolder.invalidName",
+                    defaultValue: "Folder names cannot be empty or contain slashes."
+                )
+            )
+            return
+        }
+        let folderPrefix = prefix + trimmed + "/"
+        isPerformingAction = true
+        defer { isPerformingAction = false }
+        do {
+            try await s3Browser.createFolder(
+                account: account,
+                bucket: bucket,
+                prefix: folderPrefix
+            )
+            actionError = nil
+            await loadObjectsResetting()
+        } catch let error as S3BrowserError {
+            actionError = error
+        } catch {
+            actionError = .unknown(message: error.localizedDescription)
         }
     }
 

@@ -378,6 +378,174 @@
         }
       }
     },
+    "account.action.testConnection" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Test Connection" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Verbindung testen" } }
+      }
+    },
+    "account.test.success" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Connection successful." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Verbindung erfolgreich." } }
+      }
+    },
+    "action.delete.multi %lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete %lld items" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "%lld Objekte löschen" } }
+      }
+    },
+    "action.ok" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "OK" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "OK" } }
+      }
+    },
+    "action.rename" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Rename…" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Umbenennen…" } }
+      }
+    },
+    "browser.action.delete.confirm.multi %lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete %lld objects from this bucket? This cannot be undone." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "%lld Objekte aus diesem Bucket löschen? Das lässt sich nicht rückgängig machen." } }
+      }
+    },
+    "browser.action.delete.confirm.single %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete \"%@\"? This cannot be undone." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "„%@\" löschen? Das lässt sich nicht rückgängig machen." } }
+      }
+    },
+    "browser.action.delete.title.multi" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete selected objects?" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Ausgewählte Objekte löschen?" } }
+      }
+    },
+    "browser.action.delete.title.single" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete object?" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Objekt löschen?" } }
+      }
+    },
+    "browser.action.errorTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Action failed" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Aktion fehlgeschlagen" } }
+      }
+    },
+    "browser.action.newFolder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "New Folder" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Neuer Ordner" } }
+      }
+    },
+    "browser.action.newFolder.create" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Create" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Anlegen" } }
+      }
+    },
+    "browser.action.newFolder.noSlash" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Folder names cannot contain slashes." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Ordnernamen dürfen keine Schrägstriche enthalten." } }
+      }
+    },
+    "browser.action.newFolder.placeholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Folder name" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Ordnername" } }
+      }
+    },
+    "browser.action.newFolder.section" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "New folder" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Neuer Ordner" } }
+      }
+    },
+    "browser.action.newFolder.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "New Folder" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Neuer Ordner" } }
+      }
+    },
+    "browser.action.rename.current" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Current name" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Aktueller Name" } }
+      }
+    },
+    "browser.action.rename.hint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Rename copies the object server-side and deletes the original. Large objects (> 5 GB) and cross-provider renames are not supported in v1." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Umbenennen kopiert serverseitig und löscht das Original. Objekte über 5 GB und providerübergreifende Umbenennungen sind in v1 nicht unterstützt." } }
+      }
+    },
+    "browser.action.rename.invalidName" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Names cannot be empty or contain slashes." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Namen dürfen nicht leer sein oder Schrägstriche enthalten." } }
+      }
+    },
+    "browser.action.rename.newName" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "New name" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Neuer Name" } }
+      }
+    },
+    "browser.action.rename.noSlash" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Names cannot contain slashes." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Namen dürfen keine Schrägstriche enthalten." } }
+      }
+    },
+    "browser.action.rename.section" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Rename" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Umbenennen" } }
+      }
+    },
+    "browser.action.rename.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Rename Object" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Objekt umbenennen" } }
+      }
+    },
+    "browser.action.newFolder.invalidName" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Folder names cannot be empty or contain slashes." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Ordnernamen dürfen nicht leer sein oder Schrägstriche enthalten." } }
+      }
+    },
     "action.download" : {
       "extractionState" : "manual",
       "localizations" : {

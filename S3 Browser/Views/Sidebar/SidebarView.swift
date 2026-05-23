@@ -115,14 +115,26 @@ struct SidebarView: View {
             }
         }
         .sheet(isPresented: $showingAddSheet) {
-            AddEditAccountSheet(mode: .create) { account, credentials in
-                await viewModel.save(account: account, credentials: credentials)
-            }
+            AddEditAccountSheet(
+                mode: .create,
+                onSave: { account, credentials in
+                    await viewModel.save(account: account, credentials: credentials)
+                },
+                onTest: { account, credentials in
+                    await viewModel.testConnection(account: account, credentials: credentials)
+                }
+            )
         }
         .sheet(item: $editingAccount) { account in
-            AddEditAccountSheet(mode: .edit(account)) { updated, credentials in
-                await viewModel.save(account: updated, credentials: credentials)
-            }
+            AddEditAccountSheet(
+                mode: .edit(account),
+                onSave: { updated, credentials in
+                    await viewModel.save(account: updated, credentials: credentials)
+                },
+                onTest: { updated, credentials in
+                    await viewModel.testConnection(account: updated, credentials: credentials)
+                }
+            )
         }
         .confirmationDialog(
             "account.delete.confirm.title",

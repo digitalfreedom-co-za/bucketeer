@@ -113,4 +113,26 @@ final class AccountListViewModel {
         await refresh()
         return nil
     }
+
+    /// Validates the supplied account configuration and credentials by
+    /// issuing a lightweight `ListBuckets` call. The throwaway client
+    /// is shut down before the call returns; nothing is persisted. Use
+    /// this from the Add/Edit Account sheet to verify a connection
+    /// before the user commits.
+    func testConnection(
+        account: S3Account,
+        credentials: AccountCredentials
+    ) async -> S3BrowserError? {
+        do {
+            try await S3ClientFactory.testConnection(
+                for: account,
+                credentials: credentials
+            )
+            return nil
+        } catch let error as S3BrowserError {
+            return error
+        } catch {
+            return .unknown(message: error.localizedDescription)
+        }
+    }
 }
