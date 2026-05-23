@@ -101,12 +101,14 @@ enum S3Provider: String, Codable, CaseIterable, Sendable {
         }
     }
 
-    /// Default addressing style. Most modern providers serve virtual-host
-    /// requests; Storj's S3 gateway and MinIO need path-style.
+    /// Default addressing style. AWS and most "AWS-style" hyperscalers
+    /// serve virtual-host requests; Civo, Storj's S3 gateway, MinIO and
+    /// generic custom endpoints typically need path-style (their TLS
+    /// certs do not cover bucket-as-subdomain hostnames).
     var usesPathStyleByDefault: Bool {
         switch self {
-        case .storj, .custom: return true
-        default:              return false
+        case .civo, .storj, .custom: return true
+        default:                     return false
         }
     }
 

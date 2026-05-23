@@ -40,14 +40,29 @@ final class AccountListViewModel {
         }
     }
 
+    /// Loads the stored credentials for an account from the Keychain.
+    /// Returns nil on failure. Used by the edit sheet to populate the
+    /// secret fields after the user authenticates via Touch ID.
+    func loadCredentials(for accountID: UUID) async -> AccountCredentials? {
+        try? await keychainStore.load(for: accountID)
+    }
+
     /// Saves the account in Keychain first, then in the SwiftData store.
     /// If the SwiftData write fails the Keychain entry is rolled back so
     /// neither store retains an orphaned record. Returns the error so
     /// the calling sheet can keep itself open and surface a message.
+    ///
+    /// When the supplied `credentials` has an empty `secretKey`, the
+    /// existing Keychain entry is left untouched and any non-empty
+    /// fields from `credentials` are merged on top. This is the edit
+    /// path where the user changes only metadata without re-entering
+    /// the secret.
     @discardableResult
     func save(account: S3Account, credentials: AccountCredentials) async -> S3BrowserError? {
+        let effective = await resolveCredentials(for: account.id, form: credentials)
+
         do {
-            try await keychainStore.save(credentials, for: account.id)
+            try await keychainStore.save(effective, for: account.id)
         } catch let error as S3BrowserError {
             self.error = error
             return error
@@ -118,15 +133,18 @@ final class AccountListViewModel {
     /// issuing a lightweight `ListBuckets` call. The throwaway client
     /// is shut down before the call returns; nothing is persisted. Use
     /// this from the Add/Edit Account sheet to verify a connection
-    /// before the user commits.
+    /// before the user commits. Empty fields fall back to the stored
+    /// credentials, so a Test from the edit sheet works without
+    /// re-entering the secret.
     func testConnection(
         account: S3Account,
         credentials: AccountCredentials
     ) async -> S3BrowserError? {
+        let effective = await resolveCredentials(for: account.id, form: credentials)
         do {
             try await S3ClientFactory.testConnection(
                 for: account,
-                credentials: credentials
+                credentials: effective
             )
             return nil
         } catch let error as S3BrowserError {
@@ -134,5 +152,23 @@ final class AccountListViewModel {
         } catch {
             return .unknown(message: error.localizedDescription)
         }
+    }
+
+    /// Merge the form-supplied credentials over the Keychain copy. Any
+    /// blank field falls back to the stored value, so users can edit
+    /// metadata without re-typing the secret. If there is no stored
+    /// entry (create mode), the form value is used verbatim.
+    private func resolveCredentials(
+        for accountID: UUID,
+        form: AccountCredentials
+    ) async -> AccountCredentials {
+        if let existing = try? await keychainStore.load(for: accountID) {
+            return AccountCredentials(
+                accessKey: form.accessKey.isEmpty ? existing.accessKey : form.accessKey,
+                secretKey: form.secretKey.isEmpty ? existing.secretKey : form.secretKey,
+                sessionToken: form.sessionToken ?? existing.sessionToken
+            )
+        }
+        return form
     }
 }

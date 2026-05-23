@@ -378,6 +378,48 @@
         }
       }
     },
+    "account.action.revealStoredCredentials" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Reveal stored credentials" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Gespeicherte Zugangsdaten anzeigen" } }
+      }
+    },
+    "account.action.revealSecret.fallback" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Use Password" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Passwort verwenden" } }
+      }
+    },
+    "account.action.revealSecret.notFound" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No stored credentials were found for this account." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Für dieses Konto wurden keine gespeicherten Zugangsdaten gefunden." } }
+      }
+    },
+    "account.action.revealSecret.reason" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Reveal the stored secret access key" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Den gespeicherten geheimen Zugriffsschlüssel anzeigen" } }
+      }
+    },
+    "account.note.credentialsKept" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Leave blank to keep the stored credentials. Reveal them with Touch ID or your password to view or change them." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Leer lassen, um die gespeicherten Zugangsdaten zu behalten. Mit Touch ID oder Passwort anzeigen, um sie zu sehen oder zu ändern." } }
+      }
+    },
+    "account.note.credentialsRevealed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Stored credentials loaded. Edits will overwrite the Keychain entry on Save." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Gespeicherte Zugangsdaten geladen. Änderungen überschreiben beim Speichern den Schlüsselbund-Eintrag." } }
+      }
+    },
     "account.action.testConnection" : {
       "extractionState" : "manual",
       "localizations" : {

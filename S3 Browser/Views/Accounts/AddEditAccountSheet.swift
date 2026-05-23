@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import LocalAuthentication
 
 struct AddEditAccountSheet: View {
     enum Mode: Equatable {
@@ -19,6 +20,10 @@ struct AddEditAccountSheet: View {
     /// Returns `nil` on a successful connection, an error otherwise.
     /// Optional: when omitted the Test Connection button is hidden.
     var onTest: (@MainActor (S3Account, AccountCredentials) async -> S3BrowserError?)?
+    /// Returns the stored credentials for an account, or nil if the
+    /// Keychain lookup fails. Required for the "Reveal stored secret"
+    /// flow in edit mode.
+    var onLoadCredentials: (@MainActor (UUID) async -> AccountCredentials?)?
 
     @Environment(\.dismiss) private var dismiss
 
@@ -38,6 +43,9 @@ struct AddEditAccountSheet: View {
     @State private var saveError: String?
     @State private var isTesting: Bool = false
     @State private var testResult: TestResult?
+    @State private var isRevealing: Bool = false
+    @State private var revealError: String?
+    @State private var secretsRevealed: Bool = false
 
     private enum TestResult: Equatable {
         case success
@@ -57,8 +65,16 @@ struct AddEditAccountSheet: View {
     private var isSaveDisabled: Bool {
         if isSaving { return true }
         let nameOK = !name.trimmingCharacters(in: .whitespaces).isEmpty
-        let credsOK = !accessKey.trimmingCharacters(in: .whitespaces).isEmpty
-            && !secretKey.isEmpty
+        // In edit mode, blank credentials are allowed and mean
+        // "keep what's already in the Keychain". In create mode both
+        // fields are still required.
+        let credsOK: Bool
+        if isEditing {
+            credsOK = true
+        } else {
+            credsOK = !accessKey.trimmingCharacters(in: .whitespaces).isEmpty
+                && !secretKey.isEmpty
+        }
         let regionOK = !region.trimmingCharacters(in: .whitespaces).isEmpty
         let accountIDOK = !provider.requiresAccountID
             || !accountIdentifier.trimmingCharacters(in: .whitespaces).isEmpty
@@ -112,7 +128,7 @@ struct AddEditAccountSheet: View {
                 }
             }
             .overlay {
-                if isSaving {
+                if isSaving || isRevealing {
                     ProgressView()
                         .controlSize(.large)
                         .padding()
@@ -121,7 +137,7 @@ struct AddEditAccountSheet: View {
             }
             .onAppear(perform: hydrate)
         }
-        .frame(minWidth: 520, minHeight: 560)
+        .frame(minWidth: 520, minHeight: 600)
     }
 
     // MARK: - Sections
@@ -176,10 +192,31 @@ struct AddEditAccountSheet: View {
                 .autocorrectionDisabled()
             SecureField("account.field.secretKey", text: $secretKey)
                 .textContentType(.password)
-            if isEditing {
-                Text("account.note.credentials-rewrite")
+
+            if isEditing && !secretsRevealed && onLoadCredentials != nil {
+                Button {
+                    Task { await revealStoredCredentials() }
+                } label: {
+                    Label("account.action.revealStoredCredentials",
+                          systemImage: "touchid")
+                }
+                .disabled(isRevealing)
+            }
+
+            if isEditing && !secretsRevealed {
+                Text("account.note.credentialsKept")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
+            } else if isEditing && secretsRevealed {
+                Text("account.note.credentialsRevealed")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+
+            if let revealError {
+                Label(revealError, systemImage: "lock.trianglebadge.exclamationmark")
+                    .font(.footnote)
+                    .foregroundStyle(.red)
             }
         }
     }
@@ -223,14 +260,64 @@ struct AddEditAccountSheet: View {
             accountIdentifier = account.accountID ?? ""
             defaultBucket = account.defaultBucket ?? ""
             usesPathStyle = account.usesPathStyle
-            // Credentials are deliberately not pre-filled. Editing an
-            // account requires the user to re-enter the access key and
-            // secret so we never round-trip secret material through a
-            // SecureField identity binding.
+            // Non-secret fields above are restored as expected. Secret
+            // material (access key, secret key, session token) is left
+            // blank — the user authenticates via Touch ID / password
+            // (see `revealStoredCredentials`) to fill them, or leaves
+            // them blank and the Keychain values are preserved on save.
         } else {
             region = provider.defaultRegion
             usesPathStyle = provider.usesPathStyleByDefault
         }
+    }
+
+    /// Authenticates the user via LocalAuthentication and, on success,
+    /// loads the existing credentials into the form fields. If the
+    /// device has no biometrics and no password set, the lookup runs
+    /// straight away.
+    private func revealStoredCredentials() async {
+        guard let existing = existingAccount,
+              let onLoadCredentials else { return }
+        isRevealing = true
+        revealError = nil
+        defer { isRevealing = false }
+
+        let context = LAContext()
+        context.localizedFallbackTitle = String(
+            localized: "account.action.revealSecret.fallback",
+            defaultValue: "Use Password"
+        )
+        var laError: NSError?
+        if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &laError) {
+            do {
+                try await context.evaluatePolicy(
+                    .deviceOwnerAuthentication,
+                    localizedReason: String(
+                        localized: "account.action.revealSecret.reason",
+                        defaultValue: "Reveal the stored secret access key"
+                    )
+                )
+            } catch let error as LAError where error.code == .userCancel
+                                              || error.code == .systemCancel
+                                              || error.code == .appCancel {
+                return
+            } catch {
+                revealError = error.localizedDescription
+                return
+            }
+        }
+
+        guard let credentials = await onLoadCredentials(existing.id) else {
+            revealError = String(
+                localized: "account.action.revealSecret.notFound",
+                defaultValue: "No stored credentials were found for this account."
+            )
+            return
+        }
+        accessKey = credentials.accessKey
+        secretKey = credentials.secretKey
+        sessionToken = credentials.sessionToken ?? ""
+        secretsRevealed = true
     }
 
     private func testConnection() {

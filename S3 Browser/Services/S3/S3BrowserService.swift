@@ -213,6 +213,24 @@ struct S3BrowserService: S3Browsing {
             }
         }
 
+        if let rawError = error as? AWSRawError {
+            let status = Int(rawError.context.responseCode.code)
+            let body = (rawError.rawBody ?? "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            let snippet = String(body.prefix(240))
+            let message = snippet.isEmpty
+                ? "Server returned HTTP \(status) with an unrecognised response body."
+                : "HTTP \(status): \(snippet)"
+            if status == 401 || status == 403 {
+                return .authenticationFailed
+            }
+            if status == 404 {
+                if let bucket { return .bucketNotFound(bucket) }
+                if let key { return .objectNotFound(key: key) }
+            }
+            return .providerError(statusCode: status, message: message)
+        }
+
         if let awsError = error as? AWSErrorType {
             let status = Int(awsError.context?.responseCode.code ?? 0)
             let message = awsError.context?.message ?? awsError.errorCode
