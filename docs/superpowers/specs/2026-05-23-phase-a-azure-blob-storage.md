@@ -3,7 +3,7 @@
 **Date:** 2026-05-23
 **Author:** Marcel R. G. Berger
 **Status:** Planned (slots between Phase 5 and Phase 6)
-**Driver:** Azure Blob Storage is a first-tier object-storage market. Supporting it alongside every S3-compatible provider is a deliberate USP for S3 Browser — *"all the S3 providers and Azure, one app."*
+**Driver:** Azure Blob Storage is a first-tier object-storage market. Supporting it alongside every S3-compatible provider is a deliberate USP for Bucketeer — *"all the S3 providers and Azure, one app."*
 
 ---
 
@@ -79,7 +79,7 @@ The host app still uses `container.s3Browser` and `container.transferManager` �
 Services/
   ProviderRouter.swift           — implements S3Browsing + acts as TransferManager router
   S3/
-    S3ObjectStore.swift          — renamed from S3BrowserService.swift
+    S3ObjectStore.swift          — renamed from S3Service.swift
     S3ClientFactory.swift        — unchanged
   Azure/
     AzureBlobObjectStore.swift   — implements S3Browsing for Azure
@@ -156,7 +156,7 @@ The signer is a `struct` with no shared mutable state (pure function over reques
 
 ### 4.8 Error mapping
 
-Azure error codes (returned in the response body or `x-ms-error-code` header) map to the existing `S3BrowserError` cases:
+Azure error codes (returned in the response body or `x-ms-error-code` header) map to the existing `BucketeerError` cases:
 
 | Azure | Mapped to |
 |---|---|

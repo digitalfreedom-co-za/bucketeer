@@ -1,4 +1,4 @@
-# S3 Browser — Design Spec
+# Bucketeer — Design Spec
 
 **Date:** 2026-05-22
 **Author:** Marcel R. G. Berger
@@ -86,16 +86,16 @@ Strict isolation: services don't know about views; view models don't import Swif
 
 | Target | Type | Bundle ID | Purpose |
 |---|---|---|---|
-| **S3 Browser** | `.app` | `za.co.digitalfreedom.s3-browser` | Host app — Browser UI, account mgmt, menubar, sync engine |
-| **S3 Browser File Provider** | `.appex` | `za.co.digitalfreedom.s3-browser.fileprovider` | File Provider extension exposing mounted buckets to Finder |
-| **S3 Browser Core** | `.framework` (embedded) | `za.co.digitalfreedom.s3-browser.core` | Shared Models + Services consumed by both targets |
+| **Bucketeer** | `.app` | `za.co.digitalfreedom.bucketeer` | Host app — Browser UI, account mgmt, menubar, sync engine |
+| **Bucketeer File Provider** | `.appex` | `za.co.digitalfreedom.bucketeer.fileprovider` | File Provider extension exposing mounted buckets to Finder |
+| **Bucketeer Core** | `.framework` (embedded) | `za.co.digitalfreedom.bucketeer.core` | Shared Models + Services consumed by both targets |
 
 The Core framework is the contract between host and extension; it cannot import SwiftUI.
 
 ### 3.3 Source Layout
 
 ```
-S3 Browser/                          # Host target source dir
+Bucketeer/                          # Host target source dir
   App/                               # @main, window scenes, app-level config
   Models/                            # Sendable value types (S3Account, S3Object, ...)
   Services/                          # KeychainStore, AccountStore, S3ClientFactory,
@@ -116,14 +116,14 @@ S3 Browser/                          # Host target source dir
     *.lproj/InfoPlist.strings
     PrivacyInfo.xcprivacy
   Info.plist (or INFOPLIST_KEY_*)
-  S3 Browser.entitlements
+  Bucketeer.entitlements
 
-S3 BrowserTests/                     # Unit tests (Swift Testing)
-S3 Browser File Provider/            # Extension target source dir
-S3 Browser Core/                     # Framework target source dir (shared services + models)
+BucketeerTests/                     # Unit tests (Swift Testing)
+Bucketeer File Provider/            # Extension target source dir
+Bucketeer Core/                     # Framework target source dir (shared services + models)
 ```
 
-Phase 1 begins with the host target only and the Models/Services living in `S3 Browser/`. The Core framework is extracted in Phase 9 (when the File Provider extension is added) — until then, premature extraction would create churn.
+Phase 1 begins with the host target only and the Models/Services living in `Bucketeer/`. The Core framework is extracted in Phase 9 (when the File Provider extension is added) — until then, premature extraction would create churn.
 
 ---
 
@@ -234,7 +234,7 @@ final class SyncJobRecord {
 }
 ```
 
-The SwiftData store lives in the **App Group container** (`group.za.co.digitalfreedom.s3-browser`) so the File Provider extension can read account metadata.
+The SwiftData store lives in the **App Group container** (`group.za.co.digitalfreedom.bucketeer`) so the File Provider extension can read account metadata.
 
 **Keychain** for secrets only. Per-account JSON value:
 
@@ -248,9 +248,9 @@ struct AccountCredentials: Codable, Sendable {
 
 Keychain item:
 - `kSecClass = kSecClassGenericPassword`
-- `kSecAttrService = "za.co.digitalfreedom.s3-browser"`
+- `kSecAttrService = "za.co.digitalfreedom.bucketeer"`
 - `kSecAttrAccount = "<S3Account.id.uuidString>"`
-- `kSecAttrAccessGroup = "$(AppIdentifierPrefix)za.co.digitalfreedom.s3-browser.shared"`
+- `kSecAttrAccessGroup = "$(AppIdentifierPrefix)za.co.digitalfreedom.bucketeer.shared"`
 - `kSecAttrAccessible = kSecAttrAccessibleWhenUnlocked`
 - `kSecAttrSynchronizable = false`
 - Value: JSON-encoded `AccountCredentials`
@@ -417,7 +417,7 @@ Window-close behaviour: closing the main window calls `NSApp.hide(nil)` rather t
 
 ### 8.1 Drag Sources
 
-- **App object row** → produces both `NSFilePromiseProvider` (for cross-app drops to Finder; triggers on-demand download) and custom UTI `com.digitalfreedom.s3-browser.object-ref` JSON `{accountID, bucket, key}` (for intra-app drops)
+- **App object row** → produces both `NSFilePromiseProvider` (for cross-app drops to Finder; triggers on-demand download) and custom UTI `com.digitalfreedom.bucketeer.object-ref` JSON `{accountID, bucket, key}` (for intra-app drops)
 - **App sidebar bucket** → not draggable in v1 (no use case yet)
 - **Finder file** → standard `URL`-based drop accepted by app
 - **Finder drop into mounted drive** → handled transparently by File Provider extension
@@ -497,9 +497,9 @@ File Provider extensions are App Store-approved (used by iCloud Drive, Dropbox, 
 <key>com.apple.security.files.user-selected.read-write</key>    <true/>
 <key>com.apple.security.files.downloads.read-write</key>        <true/>
 <key>com.apple.security.application-groups</key>
-<array><string>group.za.co.digitalfreedom.s3-browser</string></array>
+<array><string>group.za.co.digitalfreedom.bucketeer</string></array>
 <key>keychain-access-groups</key>
-<array><string>$(AppIdentifierPrefix)za.co.digitalfreedom.s3-browser.shared</string></array>
+<array><string>$(AppIdentifierPrefix)za.co.digitalfreedom.bucketeer.shared</string></array>
 ```
 
 ### 10.2 Entitlements (File Provider Extension)
@@ -508,9 +508,9 @@ File Provider extensions are App Store-approved (used by iCloud Drive, Dropbox, 
 <key>com.apple.security.app-sandbox</key>                       <true/>
 <key>com.apple.security.network.client</key>                    <true/>
 <key>com.apple.security.application-groups</key>
-<array><string>group.za.co.digitalfreedom.s3-browser</string></array>
+<array><string>group.za.co.digitalfreedom.bucketeer</string></array>
 <key>keychain-access-groups</key>
-<array><string>$(AppIdentifierPrefix)za.co.digitalfreedom.s3-browser.shared</string></array>
+<array><string>$(AppIdentifierPrefix)za.co.digitalfreedom.bucketeer.shared</string></array>
 ```
 
 ### 10.3 Credentials Handling
@@ -599,7 +599,7 @@ Setup happens after Phase 0 lands and a clean Debug build runs locally.
 - **UI smoke tests** (XCUITest): add account → list buckets → open object → preview shows; menubar mode toggle; mount domain appears in Finder
 - **Manual QA matrix** per release: each of the 8 provider presets exercised once against a real bucket
 
-Test data sets live in `S3 BrowserTests/Fixtures/`. Integration tests provision a temporary bucket and delete it in a `defer` block.
+Test data sets live in `BucketeerTests/Fixtures/`. Integration tests provision a temporary bucket and delete it in a `defer` block.
 
 ---
 

@@ -3,8 +3,8 @@
 **Date:** 2026-05-23
 **Branch:** `development`
 **Last commit before rename:** see `git log --oneline | head -1` at the time this file was committed
-**Repo:** still `digitalfreedom-co-za/s3-browser` at this snapshot — about to be renamed to `digitalfreedom-co-za/bucketeer`
-**Local path:** still `/Users/marcelrgberger/Developer/projects/S3 Browser/` at this snapshot — about to be renamed to `/Users/marcelrgberger/Developer/projects/bucketeer/`
+**Repo:** still `digitalfreedom-co-za/bucketeer` at this snapshot — about to be renamed to `digitalfreedom-co-za/bucketeer`
+**Local path:** still `/Users/marcelrgberger/Developer/projects/Bucketeer/` at this snapshot — about to be renamed to `/Users/marcelrgberger/Developer/projects/bucketeer/`
 
 ---
 
@@ -17,12 +17,12 @@ The next session begins **after** a wholesale rename of the project to **Buckete
 ## What works today (Phases 0 – 5, plus polish)
 
 - **Project scaffold** — license, EULA, Privacy Policy, Impressum, Open Source Notices bundled. Privacy manifest with required-reason API codes. Localizable.xcstrings seeded en/de. Soto-S3 7.14 wired via SPM. App icon generated at all 10 macOS sizes. Display name set via `INFOPLIST_KEY_CFBundleDisplayName`. macOS 26.4 deployment target. Swift 6 strict concurrency. App Sandbox + user-selected RW.
-- **Domain models** — `S3Provider` (now nine cases, the ninth `.azureBlob` is planned), `S3Account`, `S3Bucket`, `S3Object`, `S3Page`, `TransferTask`, `TransferState`, `TransferDirection`, `AccountCredentials`, `S3BrowserError`. All Sendable, all `nonisolated` by default (the project no longer forces MainActor isolation globally).
+- **Domain models** — `S3Provider` (now nine cases, the ninth `.azureBlob` is planned), `S3Account`, `S3Bucket`, `S3Object`, `S3Page`, `TransferTask`, `TransferState`, `TransferDirection`, `AccountCredentials`, `BucketeerError`. All Sendable, all `nonisolated` by default (the project no longer forces MainActor isolation globally).
 - **Account CRUD** — SwiftData `S3AccountRecord` in Application Support, Keychain for credentials (no shared access group until Phase 9), `AccountStore` as `@ModelActor`, `KeychainStore` as plain actor. Add/Edit sheet with provider-aware region pickers, hide-path-style toggle on AWS, strict http/https endpoint parsing, async commit with inline error and progress overlay, lastUsedAt preserved on edit, `hasHydrated` guard so provider `onChange` does not race the initial hydration.
 - **Touch-ID / password reveal** — `AddEditAccountSheet` opens with non-secret fields prefilled; secret fields blank by default; a "Reveal stored credentials" button gates on `LAContext.deviceOwnerAuthentication`; on success access key, secret and session token populate. Eye buttons (`RevealableSecureField`) toggle between obfuscated and plaintext for secret and session token.
 - **Connection test** — Test Connection button on the Add/Edit sheet; builds a throwaway `AWSClient`, calls `listBuckets`, shuts it down. Inline ✓ / ✗ result in the sheet.
 - **S3 connectivity** — `S3ClientFactory` actor caches one `S3` client per account, re-checks the cache after the Keychain await to avoid leaking duplicates. Civo defaults to path-style. `s3ForceVirtualHost` opt-in for the other AWS-style hyperscalers. Endpoint construction per provider in one pure function.
-- **Browsing** — `S3BrowserService` does `listBuckets`, `listObjectsV2` with delimiter, `head`, `copy`, `deleteObject` + `deleteObjects` (inspects `response.errors` for per-key failures), `putObject` zero-byte for create-folder. Typed Soto error mapping (`S3ErrorType`, `AWSErrorType`, `AWSRawError` with status + body excerpt, `NoSuchRecord` / `CannotFindHost` → friendly DNS message with the Path-Style hint).
+- **Browsing** — `S3Service` does `listBuckets`, `listObjectsV2` with delimiter, `head`, `copy`, `deleteObject` + `deleteObjects` (inspects `response.errors` for per-key failures), `putObject` zero-byte for create-folder. Typed Soto error mapping (`S3ErrorType`, `AWSErrorType`, `AWSRawError` with status + body excerpt, `NoSuchRecord` / `CannotFindHost` → friendly DNS message with the Path-Style hint).
 - **Browser UI** — `BrowserViewModel` with monotonic `requestGeneration` guard against navigation races, `BucketListView` (card grid), `ObjectListView` (`Table` with selection, search, breadcrumb bar, pagination button), `BreadcrumbBar`, `ObjectDetailView` (metadata for single, count + cumulative size for multi).
 - **Transfers** — `TransferManager` actor with `AsyncStream.makeStream(bufferingPolicy: .bufferingNewest(1))` for the public `tasks` snapshot. Multipart threshold 5 MB, part size 8 MB, max 4 concurrent. Upload via `multipartUpload(filename:)` or `putObject(buffer:)`. Download routes on size: zero-byte → write empty file; <5 MB → single-shot `getObject` + `body.collect`; ≥5 MB → `multipartDownload`. Pre-removes target file. Security-scoped resource wrapping for the picked URLs. `terminated: Set<UUID>` so late progress / completion cannot overwrite `.cancelled`. `cancelAll(for: accountID)` called from `AccountListViewModel.delete` before the client is invalidated. Transfers sidebar section becomes a `NavigationLink` with active-count badge; `TransferListView` shows progress, byte counters, cancel, and clear-finished.
 - **Object actions** — Delete (single + multi with confirmation dialogs that adapt copy to selection count), Rename (server-side `CopyObject` + `DeleteObject`, name-validation, hint about the 5 GB single-request limit), New Folder (zero-byte prefix with `⇧⌘N` shortcut), all routed through `BrowserViewModel.delete / rename / createFolder` with an `actionError` alert.
@@ -88,21 +88,21 @@ Phase 12 Hardening (accessibility, performance, App Store metadata,
 
 | Concern | File |
 |---|---|
-| App entry, menus, About / Help windows | `S3 Browser/App/S3_BrowserApp.swift` (will become `Bucketeer/App/BucketeerApp.swift`) |
-| Composition root + migrations | `S3 Browser/Services/AppContainer.swift` |
-| Provider matrix + endpoints | `S3 Browser/Models/S3Provider.swift` + `S3 Browser/Services/S3/S3ClientFactory.swift` |
-| Soto-backed S3 ops + error mapping | `S3 Browser/Services/S3/S3BrowserService.swift` |
-| Transfer queue | `S3 Browser/Services/Transfers/TransferManager.swift` |
-| Sidebar | `S3 Browser/Views/Sidebar/SidebarView.swift` |
-| Add/Edit account + biometric reveal + eye toggle | `S3 Browser/Views/Accounts/AddEditAccountSheet.swift` |
-| Bucket / Object list / Breadcrumb / Detail | `S3 Browser/Views/Browser/*` |
-| Transfer queue UI | `S3 Browser/Views/Transfers/TransferListView.swift` |
-| About / Help windows | `S3 Browser/Views/About/AboutWindow.swift`, `S3 Browser/Views/Help/HelpWindow.swift`, `S3 Browser/Views/MarkdownView.swift` |
-| Strings | `S3 Browser/Resources/Localizable.xcstrings` |
-| Bundled docs | `S3 Browser/Resources/Legal/*.md`, `S3 Browser/Resources/Help/QuickStart.md` |
+| App entry, menus, About / Help windows | `Bucketeer/App/BucketeerApp.swift` (will become `Bucketeer/App/BucketeerApp.swift`) |
+| Composition root + migrations | `Bucketeer/Services/AppContainer.swift` |
+| Provider matrix + endpoints | `Bucketeer/Models/S3Provider.swift` + `Bucketeer/Services/S3/S3ClientFactory.swift` |
+| Soto-backed S3 ops + error mapping | `Bucketeer/Services/S3/S3Service.swift` |
+| Transfer queue | `Bucketeer/Services/Transfers/TransferManager.swift` |
+| Sidebar | `Bucketeer/Views/Sidebar/SidebarView.swift` |
+| Add/Edit account + biometric reveal + eye toggle | `Bucketeer/Views/Accounts/AddEditAccountSheet.swift` |
+| Bucket / Object list / Breadcrumb / Detail | `Bucketeer/Views/Browser/*` |
+| Transfer queue UI | `Bucketeer/Views/Transfers/TransferListView.swift` |
+| About / Help windows | `Bucketeer/Views/About/AboutWindow.swift`, `Bucketeer/Views/Help/HelpWindow.swift`, `Bucketeer/Views/MarkdownView.swift` |
+| Strings | `Bucketeer/Resources/Localizable.xcstrings` |
+| Bundled docs | `Bucketeer/Resources/Legal/*.md`, `Bucketeer/Resources/Help/QuickStart.md` |
 | Phase plans | `docs/superpowers/specs/*` |
 
-After the rename all `S3 Browser/...` paths become `Bucketeer/...`. The contract above does not otherwise change.
+After the rename all `Bucketeer/...` paths become `Bucketeer/...`. The contract above does not otherwise change.
 
 ---
 
@@ -110,20 +110,20 @@ After the rename all `S3 Browser/...` paths become `Bucketeer/...`. The contract
 
 | Before | After |
 |---|---|
-| App display name `S3 Browser` | `Bucketeer` |
-| Bundle ID `za.co.digitalfreedom.S3-Browser` | `za.co.digitalfreedom.bucketeer` |
-| Swift `@main struct S3_BrowserApp` | `BucketeerApp` |
-| `S3BrowserError` | `BucketeerError` |
-| `S3BrowserService` | `S3Service` (drops the app-specific Browser suffix; keeps the S3 protocol prefix) |
-| App Group `group.za.co.digitalfreedom.s3-browser` | `group.za.co.digitalfreedom.bucketeer` (in code constants; not yet provisioned at Apple) |
-| Keychain service `za.co.digitalfreedom.s3-browser` | `za.co.digitalfreedom.bucketeer` |
-| Keychain access group suffix `.s3-browser.shared` | `.bucketeer.shared` |
-| SwiftData store filename `S3Browser.store` | `Bucketeer.store` |
-| Xcode project `S3 Browser.xcodeproj` | `Bucketeer.xcodeproj` |
-| Source dir `S3 Browser/` | `Bucketeer/` |
-| Entitlements file `S3 Browser.entitlements` | `Bucketeer.entitlements` |
-| GitHub repo `digitalfreedom-co-za/s3-browser` | `digitalfreedom-co-za/bucketeer` |
-| Local path `~/Developer/projects/S3 Browser/` | `~/Developer/projects/bucketeer/` |
+| App display name `Bucketeer` | `Bucketeer` |
+| Bundle ID `za.co.digitalfreedom.Bucketeer` | `za.co.digitalfreedom.bucketeer` |
+| Swift `@main struct BucketeerApp` | `BucketeerApp` |
+| `BucketeerError` | `BucketeerError` |
+| `S3Service` | `S3Service` (drops the app-specific Browser suffix; keeps the S3 protocol prefix) |
+| App Group `group.za.co.digitalfreedom.bucketeer` | `group.za.co.digitalfreedom.bucketeer` (in code constants; not yet provisioned at Apple) |
+| Keychain service `za.co.digitalfreedom.bucketeer` | `za.co.digitalfreedom.bucketeer` |
+| Keychain access group suffix `.bucketeer.shared` | `.bucketeer.shared` |
+| SwiftData store filename `Bucketeer.store` | `Bucketeer.store` |
+| Xcode project `Bucketeer.xcodeproj` | `Bucketeer.xcodeproj` |
+| Source dir `Bucketeer/` | `Bucketeer/` |
+| Entitlements file `Bucketeer.entitlements` | `Bucketeer.entitlements` |
+| GitHub repo `digitalfreedom-co-za/bucketeer` | `digitalfreedom-co-za/bucketeer` |
+| Local path `~/Developer/projects/Bucketeer/` | `~/Developer/projects/bucketeer/` |
 
 S3-protocol domain types (`S3Account`, `S3Provider`, `S3Bucket`, `S3Object`, `S3Page`, `S3Browsing`, `S3ClientFactory`, `S3AccountRecord`) keep the `S3` prefix — that prefix refers to Amazon S3, not to the app name.
 
@@ -136,7 +136,7 @@ The user has indicated the next chunk after the rename is open between:
 - **Phase A** (Azure) — needs the three §8 confirms before starting
 - **Phase 6** (Preview / Quick Look) — can start immediately
 
-Recommend: do Phase A first so subsequent phases speak both protocols natively. Either way, this handoff document, the design spec at `docs/superpowers/specs/2026-05-22-s3-browser-design.md` (will be renamed in-place) and the Phase A plan are the entry points.
+Recommend: do Phase A first so subsequent phases speak both protocols natively. Either way, this handoff document, the design spec at `docs/superpowers/specs/2026-05-22-bucketeer-design.md` (will be renamed in-place) and the Phase A plan are the entry points.
 
 ---
 
@@ -146,6 +146,6 @@ Recommend: do Phase A first so subsequent phases speak both protocols natively. 
 - **Build**: `xcodebuild build -project Bucketeer.xcodeproj -scheme Bucketeer -configuration Debug -destination 'generic/platform=macOS' CODE_SIGNING_ALLOWED=NO` from the project root.
 - **Multi-agent review**: per `~/.claude/CLAUDE.md`, Codex review is mandatory for substantive phases. Run `codex exec --skip-git-repo-check "..."` against the new Phase work.
 - **Commit cadence**: per user directive, commit and push regularly — not in one big lump.
-- **Local data**: SwiftData store moves with the App Sandbox container (bundle-ID-keyed). The bundle-ID change means existing accounts created under the old `za.co.digitalfreedom.S3-Browser` container will not be visible to the new `Bucketeer` build. On first launch the user will need to re-add accounts. The Keychain entries from the old bundle are similarly orphaned. This is unavoidable for a bundle-ID rename.
+- **Local data**: SwiftData store moves with the App Sandbox container (bundle-ID-keyed). The bundle-ID change means existing accounts created under the old `za.co.digitalfreedom.Bucketeer` container will not be visible to the new `Bucketeer` build. On first launch the user will need to re-add accounts. The Keychain entries from the old bundle are similarly orphaned. This is unavoidable for a bundle-ID rename.
 
 *End of handoff.*

@@ -1,4 +1,4 @@
-# S3 Browser
+# Bucketeer
 
 A native macOS app for browsing, transferring, mounting, and synchronising
 S3-compatible object storage across multiple providers and credentials.
@@ -23,7 +23,7 @@ Mac App Store.
 - Privacy by design — credentials live in Keychain, nothing leaves your Mac
   apart from S3 traffic
 
-See [`docs/superpowers/specs/2026-05-22-s3-browser-design.md`](docs/superpowers/specs/2026-05-22-s3-browser-design.md)
+See [`docs/superpowers/specs/2026-05-22-bucketeer-design.md`](docs/superpowers/specs/2026-05-22-bucketeer-design.md)
 for the full design spec.
 
 ---
@@ -43,12 +43,12 @@ Requirements:
 - Xcode 26 or later
 
 ```bash
-git clone https://github.com/marcelrgberger/S3-Browser.git
-cd "S3 Browser"
-open "S3 Browser.xcodeproj"
+git clone https://github.com/marcelrgberger/Bucketeer.git
+cd "Bucketeer"
+open "Bucketeer.xcodeproj"
 ```
 
-Select the **S3 Browser** scheme and ⌘R to run.
+Select the **Bucketeer** scheme and ⌘R to run.
 
 Local builds are permitted for personal, non-commercial use under the
 [Source-Available License](LICENSE).
@@ -63,9 +63,9 @@ container). Keychain for credentials (in a shared access group). File
 Provider replicated extension for Finder mounts.
 
 ```
-S3 Browser/          host app target
-S3 Browser File Provider/   .appex (added in Phase 9)
-S3 Browser Core/     embedded framework (added in Phase 9)
+Bucketeer/          host app target
+Bucketeer File Provider/   .appex (added in Phase 9)
+Bucketeer Core/     embedded framework (added in Phase 9)
 ```
 
 ---
@@ -77,10 +77,10 @@ This project is governed by three separate documents:
 | File | Scope |
 |---|---|
 | [`LICENSE`](LICENSE) | Source-Available License governing this **source code** |
-| [`S3 Browser/Resources/Legal/EULA.md`](S3%20Browser/Resources/Legal/EULA.md) | End User License Agreement governing the **App binary** |
-| [`S3 Browser/Resources/Legal/PRIVACY_POLICY.md`](S3%20Browser/Resources/Legal/PRIVACY_POLICY.md) | Privacy Policy |
-| [`S3 Browser/Resources/Legal/IMPRESSUM.md`](S3%20Browser/Resources/Legal/IMPRESSUM.md) | Impressum (German legal notice) |
-| [`S3 Browser/Resources/Legal/OPEN_SOURCE_NOTICES.md`](S3%20Browser/Resources/Legal/OPEN_SOURCE_NOTICES.md) | Third-party open-source attributions |
+| [`Bucketeer/Resources/Legal/EULA.md`](S3%20Browser/Resources/Legal/EULA.md) | End User License Agreement governing the **App binary** |
+| [`Bucketeer/Resources/Legal/PRIVACY_POLICY.md`](S3%20Browser/Resources/Legal/PRIVACY_POLICY.md) | Privacy Policy |
+| [`Bucketeer/Resources/Legal/IMPRESSUM.md`](S3%20Browser/Resources/Legal/IMPRESSUM.md) | Impressum (German legal notice) |
+| [`Bucketeer/Resources/Legal/OPEN_SOURCE_NOTICES.md`](S3%20Browser/Resources/Legal/OPEN_SOURCE_NOTICES.md) | Third-party open-source attributions |
 
 **Build in Public, not open source.** You may read, fork for study, and
 contribute back. You may not redistribute, ship binaries, or publish
