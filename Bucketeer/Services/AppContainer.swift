@@ -24,6 +24,7 @@ final class AppContainer {
     let s3Browser: S3Browsing
     let transferManager: TransferManager
     let previewCache: PreviewCache
+    let dragDropCoordinator: DragDropCoordinator
     let accountListViewModel: AccountListViewModel
     let browserViewModel: BrowserViewModel
     let transferQueueViewModel: TransferQueueViewModel
@@ -87,6 +88,12 @@ final class AppContainer {
             transferManager: transferManager
         )
         self.transferQueueViewModel.startObserving()
+        self.dragDropCoordinator = DragDropCoordinator(
+            s3Browser: router,
+            transferManager: transferManager,
+            transferQueue: self.transferQueueViewModel,
+            accountStore: accountStore
+        )
     }
 
     /// One-shot data migrations that run at every launch. Each step is

@@ -181,6 +181,7 @@ struct ObjectListView: View {
                     Text(object.displayName)
                 }
                 .onTapGesture(count: 2) { handleOpen(object) }
+                .draggable(objectRef(for: object))
             }
             TableColumn("table.column.size") { object in
                 if !object.isFolder {
@@ -209,6 +210,12 @@ struct ObjectListView: View {
                 Task { await viewModel.loadObjectsResetting() }
             }
         }
+        .dropDestination(for: URL.self) { urls, _ in
+            handleURLDrop(urls)
+        }
+        .dropDestination(for: S3ObjectRef.self) { refs, _ in
+            handleObjectRefDrop(refs)
+        }
         .overlay(alignment: .bottom) {
             if viewModel.hasMore {
                 Button("action.loadMore") {
@@ -218,6 +225,60 @@ struct ObjectListView: View {
                 .padding(.bottom, 8)
             }
         }
+    }
+
+    /// Build the drag payload for a row. Folders carry their key as well
+    /// so the destination can build a folder-marker rename if needed.
+    private func objectRef(for object: S3Object) -> S3ObjectRef {
+        S3ObjectRef(
+            accountID: viewModel.account?.id ?? UUID(),
+            bucket: viewModel.bucket ?? "",
+            key: object.key,
+            displayName: object.displayName,
+            size: object.size,
+            etag: object.etag,
+            isFolder: object.isFolder
+        )
+    }
+
+    /// File-URL drop handler — uploads every dropped URL into the
+    /// current prefix. Returns true so the system shows the drop
+    /// accepted animation; the actual upload runs async.
+    private func handleURLDrop(_ urls: [URL]) -> Bool {
+        guard let account = viewModel.account,
+              let bucket = viewModel.bucket
+        else { return false }
+        let prefix = viewModel.prefix
+        Task {
+            await container.dragDropCoordinator.uploadDroppedURLs(
+                urls,
+                account: account,
+                bucket: bucket,
+                prefix: prefix
+            )
+        }
+        return true
+    }
+
+    /// Intra-app object drop — server-side copy (same account) or
+    /// cross-account round-trip via the coordinator. Self-drops (drag a
+    /// row back onto its own list) are filtered out in the coordinator.
+    private func handleObjectRefDrop(_ refs: [S3ObjectRef]) -> Bool {
+        guard let account = viewModel.account,
+              let bucket = viewModel.bucket
+        else { return false }
+        let prefix = viewModel.prefix
+        Task {
+            for ref in refs {
+                await container.dragDropCoordinator.dropObjectRef(
+                    ref,
+                    destinationAccount: account,
+                    destinationBucket: bucket,
+                    destinationPrefix: prefix
+                )
+            }
+        }
+        return true
     }
 
     @ViewBuilder

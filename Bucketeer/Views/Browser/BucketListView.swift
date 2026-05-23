@@ -9,6 +9,7 @@ import SwiftUI
 
 struct BucketListView: View {
     @Bindable var viewModel: BrowserViewModel
+    @Environment(AppContainer.self) private var container
 
     var body: some View {
         Group {
@@ -60,6 +61,12 @@ struct BucketListView: View {
                         .onTapGesture(count: 2) {
                             Task { await viewModel.openBucket(bucket.name) }
                         }
+                        .dropDestination(for: URL.self) { urls, _ in
+                            handleURLDrop(urls, into: bucket.name)
+                        }
+                        .dropDestination(for: S3ObjectRef.self) { refs, _ in
+                            handleObjectRefDrop(refs, into: bucket.name)
+                        }
                 }
             }
             .padding()
@@ -96,5 +103,37 @@ struct BucketListView: View {
                 Task { await viewModel.openBucket(bucket.name) }
             }
         }
+    }
+
+    /// Finder → bucket card. Uploads dropped files to the bucket root.
+    private func handleURLDrop(_ urls: [URL], into bucket: String) -> Bool {
+        guard let account = viewModel.account else { return false }
+        Task {
+            await container.dragDropCoordinator.uploadDroppedURLs(
+                urls,
+                account: account,
+                bucket: bucket,
+                prefix: ""
+            )
+        }
+        return true
+    }
+
+    /// Object-row → bucket card. Server-side copy when same account /
+    /// same provider, cross-account round-trip otherwise. Source-account
+    /// resolution lives inside the coordinator.
+    private func handleObjectRefDrop(_ refs: [S3ObjectRef], into bucket: String) -> Bool {
+        guard let destinationAccount = viewModel.account else { return false }
+        Task {
+            for ref in refs {
+                await container.dragDropCoordinator.dropObjectRef(
+                    ref,
+                    destinationAccount: destinationAccount,
+                    destinationBucket: bucket,
+                    destinationPrefix: ""
+                )
+            }
+        }
+        return true
     }
 }
