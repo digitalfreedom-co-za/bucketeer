@@ -62,9 +62,32 @@ enum S3Provider: String, Codable, CaseIterable, Sendable {
     }
 
     /// Concrete region picker offered in the UI for providers with a fixed
-    /// region list. `nil` means free text input (`.custom`, `.awsS3`).
+    /// region list. `nil` means free text input (only `.custom`).
     var fixedRegions: [String]? {
         switch self {
+        case .awsS3: return [
+            // North America
+            "us-east-1", "us-east-2", "us-west-1", "us-west-2",
+            "ca-central-1", "ca-west-1",
+            // South America
+            "sa-east-1",
+            // Europe
+            "eu-central-1", "eu-central-2",
+            "eu-west-1", "eu-west-2", "eu-west-3",
+            "eu-north-1", "eu-south-1", "eu-south-2",
+            // Middle East / Africa
+            "af-south-1", "il-central-1", "me-central-1", "me-south-1",
+            // Asia Pacific
+            "ap-east-1",
+            "ap-south-1", "ap-south-2",
+            "ap-northeast-1", "ap-northeast-2", "ap-northeast-3",
+            "ap-southeast-1", "ap-southeast-2", "ap-southeast-3",
+            "ap-southeast-4", "ap-southeast-5", "ap-southeast-7",
+            // Independent regions (different partitions still reach via
+            // standard S3 — listed here for completeness)
+            "cn-north-1", "cn-northwest-1",
+            "us-gov-east-1", "us-gov-west-1"
+        ]
         case .civo:               return ["fra1", "lon1", "nyc1", "phx1"]
         case .cloudflareR2:       return ["auto", "wnam", "enam", "weur", "eeur", "apac", "oc"]
         case .backblazeB2:        return ["us-west-001", "us-west-002", "us-west-004", "eu-central-003"]
@@ -74,7 +97,7 @@ enum S3Provider: String, Codable, CaseIterable, Sendable {
                                           "ap-southeast-2", "ca-central-1"]
         case .digitalOceanSpaces: return ["nyc3", "sfo2", "sfo3", "ams3", "sgp1", "fra1", "syd1", "blr1", "tor1"]
         case .storj:              return ["global"]
-        case .awsS3, .custom:     return nil
+        case .custom:             return nil
         }
     }
 
