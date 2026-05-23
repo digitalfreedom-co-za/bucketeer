@@ -8,16 +8,22 @@
 import Foundation
 
 /// Identifies a source or destination scope within one account.
-struct SyncEndpoint: Codable, Hashable, Sendable {
-    let accountID: UUID
-    var bucket: String
+public struct SyncEndpoint: Codable, Hashable, Sendable {
+    public let accountID: UUID
+    public var bucket: String
     /// Always normalised to either empty or trailing-slash, mirroring
     /// the `prefix` semantics used everywhere else in the app.
-    var prefix: String
+    public var prefix: String
+
+    public init(accountID: UUID, bucket: String, prefix: String = "") {
+        self.accountID = accountID
+        self.bucket = bucket
+        self.prefix = prefix
+    }
 }
 
 /// Operational mode for a sync job.
-enum SyncMode: String, Codable, CaseIterable, Sendable {
+public enum SyncMode: String, Codable, CaseIterable, Sendable {
     /// One-shot duplication. Source remains untouched; destination
     /// receives a copy of every matching object.
     case copy
@@ -34,7 +40,7 @@ enum SyncMode: String, Codable, CaseIterable, Sendable {
 /// When a job is allowed to run automatically. Manual jobs only run
 /// when the user clicks "Run Now". On-launch jobs run once each app
 /// start. Interval jobs run every N seconds while the app is awake.
-enum SyncSchedule: Codable, Hashable, Sendable {
+public enum SyncSchedule: Codable, Hashable, Sendable {
     case manual
     case onLaunch
     case interval(seconds: Int)
@@ -43,7 +49,7 @@ enum SyncSchedule: Codable, Hashable, Sendable {
     /// - `manual`
     /// - `onLaunch`
     /// - `interval=3600`
-    var rawValue: String {
+    public var rawValue: String {
         switch self {
         case .manual:                 return "manual"
         case .onLaunch:               return "onLaunch"
@@ -51,7 +57,7 @@ enum SyncSchedule: Codable, Hashable, Sendable {
         }
     }
 
-    init?(rawValue: String) {
+    public init?(rawValue: String) {
         if rawValue == "manual" { self = .manual; return }
         if rawValue == "onLaunch" { self = .onLaunch; return }
         if rawValue.hasPrefix("interval="),
@@ -66,30 +72,30 @@ enum SyncSchedule: Codable, Hashable, Sendable {
 /// for most workloads; `nameAndEtag` catches in-place edits that keep
 /// the size constant. Cross-provider mirrors can only use `nameAndSize`
 /// because ETag formats differ between S3 and Azure.
-enum SyncDiffStrategy: String, Codable, CaseIterable, Sendable {
+public enum SyncDiffStrategy: String, Codable, CaseIterable, Sendable {
     case nameAndSize
     case nameAndEtag
 }
 
 /// Sendable value snapshot of a sync job. Stored in SwiftData via
 /// `SyncJobRecord`.
-struct SyncJob: Identifiable, Hashable, Sendable {
-    let id: UUID
-    var name: String
-    var mode: SyncMode
-    var source: SyncEndpoint
-    var destination: SyncEndpoint
-    var diffStrategy: SyncDiffStrategy
-    var includeGlobs: [String]
-    var excludeGlobs: [String]
-    var deletePropagation: Bool
-    var schedule: SyncSchedule
-    var concurrency: Int
-    var lastRunAt: Date?
-    var lastRunSummary: String?
-    var enabled: Bool
+public struct SyncJob: Identifiable, Hashable, Sendable {
+    public let id: UUID
+    public var name: String
+    public var mode: SyncMode
+    public var source: SyncEndpoint
+    public var destination: SyncEndpoint
+    public var diffStrategy: SyncDiffStrategy
+    public var includeGlobs: [String]
+    public var excludeGlobs: [String]
+    public var deletePropagation: Bool
+    public var schedule: SyncSchedule
+    public var concurrency: Int
+    public var lastRunAt: Date?
+    public var lastRunSummary: String?
+    public var enabled: Bool
 
-    init(
+    public init(
         id: UUID = UUID(),
         name: String,
         mode: SyncMode = .copy,
@@ -124,17 +130,17 @@ struct SyncJob: Identifiable, Hashable, Sendable {
 
 /// Live status of a job — surfaced through `SyncEngine.statuses` so the
 /// list view can render running / queued state without polling.
-struct SyncJobStatus: Identifiable, Hashable, Sendable {
-    var id: UUID { jobID }
-    let jobID: UUID
-    var phase: Phase
-    var planned: Int
-    var completed: Int
-    var failed: Int
-    var startedAt: Date?
-    var message: String?
+public struct SyncJobStatus: Identifiable, Hashable, Sendable {
+    public var id: UUID { jobID }
+    public let jobID: UUID
+    public var phase: Phase
+    public var planned: Int
+    public var completed: Int
+    public var failed: Int
+    public var startedAt: Date?
+    public var message: String?
 
-    enum Phase: String, Hashable, Sendable {
+    public enum Phase: String, Hashable, Sendable {
         case idle
         case planning
         case awaitingConfirmation
@@ -142,5 +148,23 @@ struct SyncJobStatus: Identifiable, Hashable, Sendable {
         case finished
         case failed
         case cancelled
+    }
+
+    public init(
+        jobID: UUID,
+        phase: Phase,
+        planned: Int = 0,
+        completed: Int = 0,
+        failed: Int = 0,
+        startedAt: Date? = nil,
+        message: String? = nil
+    ) {
+        self.jobID = jobID
+        self.phase = phase
+        self.planned = planned
+        self.completed = completed
+        self.failed = failed
+        self.startedAt = startedAt
+        self.message = message
     }
 }

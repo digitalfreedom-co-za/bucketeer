@@ -31,6 +31,11 @@ let package = Package(
                 .product(name: "SotoS3", package: "soto")
             ],
             path: "Sources/BucketeerCore"
+        ),
+        .testTarget(
+            name: "BucketeerCoreTests",
+            dependencies: ["BucketeerCore"],
+            path: "Tests/BucketeerCoreTests"
         )
     ]
 )

@@ -151,7 +151,7 @@ actor SyncEngine {
             return
         }
 
-        let plan = makePlan(
+        let plan = SyncPlanner.makePlan(
             job: job,
             source: sourceList,
             destination: destList
@@ -168,7 +168,7 @@ actor SyncEngine {
         var failed = 0
         /// Tracks which entries actually succeeded so move-mode does
         /// not delete the source for failed upserts (Codex blocker #1).
-        var successfulEntries: [PlanEntry] = []
+        var successfulEntries: [SyncPlanner.PlanEntry] = []
 
         // Upserts: copy or transfer per entry.
         for entry in plan.upserts {
@@ -252,123 +252,10 @@ actor SyncEngine {
         }
     }
 
-    // MARK: - Plan
-
-    struct PlanEntry: Hashable, Sendable {
-        let sourceKey: String
-        let sourceSize: Int64
-        let destinationKey: String
-    }
-
-    struct Plan: Sendable {
-        let upserts: [PlanEntry]
-        /// Destination-side keys that exist in the destination but not in
-        /// the source. Only populated for mirror jobs with
-        /// `deletePropagation == true`.
-        let deletes: [String]
-    }
-
-    nonisolated func makePlan(
-        job: SyncJob,
-        source: [S3Object],
-        destination: [S3Object]
-    ) -> Plan {
-        let destIndex: [String: S3Object] = Dictionary(
-            uniqueKeysWithValues: destination.map { ($0.key, $0) }
-        )
-
-        var upserts: [PlanEntry] = []
-        for s in source {
-            if s.isFolder { continue }
-            let relative = relativeKey(s.key, under: job.source.prefix)
-            guard !relative.isEmpty else { continue }
-            if !matches(relative, includes: job.includeGlobs, excludes: job.excludeGlobs) {
-                continue
-            }
-            let destKey = job.destination.prefix + relative
-            if let existing = destIndex[destKey], isUnchanged(
-                source: s, dest: existing, strategy: job.diffStrategy
-            ) {
-                continue
-            }
-            upserts.append(PlanEntry(
-                sourceKey: s.key,
-                sourceSize: s.size,
-                destinationKey: destKey
-            ))
-        }
-
-        var deletes: [String] = []
-        if job.mode == .mirror && job.deletePropagation {
-            // Destination-side keys whose corresponding relative path is
-            // absent from the source. The destination set is filtered by
-            // the same include/exclude globs as the upsert side so a
-            // mirror job for `*.jpg` never deletes unrelated files in
-            // the destination (Codex review #6).
-            let sourceRelatives = Set(
-                source
-                    .filter { !$0.isFolder }
-                    .map { relativeKey($0.key, under: job.source.prefix) }
-            )
-            for d in destination where !d.isFolder {
-                let relative = relativeKey(d.key, under: job.destination.prefix)
-                guard matches(relative, includes: job.includeGlobs, excludes: job.excludeGlobs) else {
-                    continue
-                }
-                if !sourceRelatives.contains(relative) {
-                    deletes.append(d.key)
-                }
-            }
-        }
-
-        return Plan(upserts: upserts, deletes: deletes)
-    }
-
-    private nonisolated func relativeKey(_ key: String, under prefix: String) -> String {
-        guard !prefix.isEmpty, key.hasPrefix(prefix) else { return key }
-        return String(key.dropFirst(prefix.count))
-    }
-
-    private nonisolated func isUnchanged(
-        source: S3Object,
-        dest: S3Object,
-        strategy: SyncDiffStrategy
-    ) -> Bool {
-        switch strategy {
-        case .nameAndSize:
-            return source.size == dest.size
-        case .nameAndEtag:
-            return !source.etag.isEmpty && source.etag == dest.etag
-        }
-    }
-
-    private nonisolated func matches(
-        _ relative: String,
-        includes: [String],
-        excludes: [String]
-    ) -> Bool {
-        if !excludes.isEmpty {
-            for pattern in excludes where glob(relative, matches: pattern) {
-                return false
-            }
-        }
-        if !includes.isEmpty {
-            return includes.contains { glob(relative, matches: $0) }
-        }
-        return true
-    }
-
-    /// Minimal POSIX-glob matching (?, *) for include/exclude patterns.
-    private nonisolated func glob(_ value: String, matches pattern: String) -> Bool {
-        // Fallback to fnmatch via NSPredicate's LIKE — supports * and ?.
-        let predicate = NSPredicate(format: "SELF LIKE %@", pattern)
-        return predicate.evaluate(with: value)
-    }
-
     // MARK: - Execute single entry
 
     private func execute(
-        upsert entry: PlanEntry,
+        upsert entry: SyncPlanner.PlanEntry,
         job: SyncJob,
         source: S3Account,
         destination: S3Account
