@@ -10,7 +10,7 @@ import Foundation
 /// Domain errors surfaced from services up to view models. Service code
 /// must translate Soto / network / Keychain errors into one of these
 /// cases before the value crosses the actor boundary into the UI.
-enum BucketeerError: Error, Sendable, Equatable {
+public enum BucketeerError: Error, Sendable, Equatable {
     case authenticationFailed
     case bucketNotFound(String)
     case objectNotFound(key: String)
@@ -24,7 +24,7 @@ enum BucketeerError: Error, Sendable, Equatable {
 }
 
 extension BucketeerError: LocalizedError {
-    var errorDescription: String? {
+    public var errorDescription: String? {
         switch self {
         case .authenticationFailed:
             return String(localized: "error.authenticationFailed",

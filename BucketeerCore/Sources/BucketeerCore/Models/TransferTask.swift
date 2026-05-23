@@ -7,26 +7,26 @@
 
 import Foundation
 
-enum TransferDirection: String, Codable, Hashable, Sendable {
+public enum TransferDirection: String, Codable, Hashable, Sendable {
     case upload
     case download
 }
 
-enum TransferState: Hashable, Sendable {
+public enum TransferState: Hashable, Sendable {
     case queued
     case running(bytesTransferred: Int64, totalBytes: Int64)
     case completed
     case failed(message: String)
     case cancelled
 
-    var isTerminal: Bool {
+    public var isTerminal: Bool {
         switch self {
         case .completed, .failed, .cancelled: return true
         case .queued, .running:               return false
         }
     }
 
-    var progressFraction: Double? {
+    public var progressFraction: Double? {
         if case let .running(transferred, total) = self, total > 0 {
             return Double(transferred) / Double(total)
         }
@@ -34,17 +34,17 @@ enum TransferState: Hashable, Sendable {
     }
 }
 
-struct TransferTask: Identifiable, Hashable, Sendable {
-    let id: UUID
-    let direction: TransferDirection
-    let accountID: UUID
-    let bucket: String
-    let key: String
-    let localURL: URL
-    var state: TransferState
-    let startedAt: Date
+public struct TransferTask: Identifiable, Hashable, Sendable {
+    public let id: UUID
+    public let direction: TransferDirection
+    public let accountID: UUID
+    public let bucket: String
+    public let key: String
+    public let localURL: URL
+    public var state: TransferState
+    public let startedAt: Date
 
-    init(
+    public init(
         id: UUID = UUID(),
         direction: TransferDirection,
         accountID: UUID,

@@ -10,7 +10,7 @@ import Foundation
 /// One of the recognised S3-compatible providers. Defines the endpoint
 /// template, default region behaviour, and addressing-style default. Per-
 /// account overrides live on `S3Account`.
-enum S3Provider: String, Codable, CaseIterable, Sendable {
+public enum S3Provider: String, Codable, CaseIterable, Sendable {
     case awsS3
     case civo
     case cloudflareR2
@@ -24,19 +24,19 @@ enum S3Provider: String, Codable, CaseIterable, Sendable {
     /// Native protocol family. Drives router dispatch in `ProviderRouter`
     /// and `TransferManager` so the S3 and Azure code paths stay isolated
     /// from each other.
-    enum Family: Sendable {
+    public enum Family: Sendable {
         case s3
         case azureBlob
     }
 
-    var family: Family {
+    public var family: Family {
         switch self {
         case .azureBlob: return .azureBlob
         default:         return .s3
         }
     }
 
-    var displayName: String {
+    public var displayName: String {
         switch self {
         case .awsS3:             return "AWS S3"
         case .civo:              return "Civo Object Storage"
@@ -50,7 +50,7 @@ enum S3Provider: String, Codable, CaseIterable, Sendable {
         }
     }
 
-    var iconSystemName: String {
+    public var iconSystemName: String {
         switch self {
         case .awsS3:             return "shippingbox.fill"
         case .civo:              return "cube.fill"
@@ -66,7 +66,7 @@ enum S3Provider: String, Codable, CaseIterable, Sendable {
 
     /// The default region offered when a user picks this provider in the
     /// new-account flow. Free-form for `.custom`; opinionated otherwise.
-    var defaultRegion: String {
+    public var defaultRegion: String {
         switch self {
         case .awsS3:             return "us-east-1"
         case .civo:              return "fra1"
@@ -82,7 +82,7 @@ enum S3Provider: String, Codable, CaseIterable, Sendable {
 
     /// Concrete region picker offered in the UI for providers with a fixed
     /// region list. `nil` means free text input (only `.custom`).
-    var fixedRegions: [String]? {
+    public var fixedRegions: [String]? {
         switch self {
         case .awsS3: return [
             // North America
@@ -126,7 +126,7 @@ enum S3Provider: String, Codable, CaseIterable, Sendable {
     /// generic custom endpoints typically need path-style (their TLS
     /// certs do not cover bucket-as-subdomain hostnames). Azure has no
     /// path/virtual concept — the toggle is hidden for it entirely.
-    var usesPathStyleByDefault: Bool {
+    public var usesPathStyleByDefault: Bool {
         switch self {
         case .civo, .storj, .custom: return true
         default:                     return false
@@ -136,13 +136,13 @@ enum S3Provider: String, Codable, CaseIterable, Sendable {
     /// True when the provider needs an extra account-identifier field
     /// (Cloudflare R2 hostname includes the account ID; Azure uses the
     /// storage-account name as the URL prefix).
-    var requiresAccountID: Bool {
+    public var requiresAccountID: Bool {
         self == .cloudflareR2 || self == .azureBlob
     }
 
     /// True when the provider needs the user to enter the full endpoint
     /// URL themselves (no preset hostname).
-    var requiresEndpointOverride: Bool {
+    public var requiresEndpointOverride: Bool {
         self == .custom
     }
 
@@ -151,7 +151,7 @@ enum S3Provider: String, Codable, CaseIterable, Sendable {
     /// `*.blob.core.chinacloudapi.cn`). Combined with `requiresAccountID`
     /// so the field defaults to `https://{accountID}.blob.core.windows.net`
     /// when blank.
-    var supportsOptionalEndpointOverride: Bool {
+    public var supportsOptionalEndpointOverride: Bool {
         self == .azureBlob
     }
 
@@ -159,13 +159,13 @@ enum S3Provider: String, Codable, CaseIterable, Sendable {
     /// account-level path-style toggle has no effect for `.awsS3` and
     /// is hidden in the UI to avoid misleading users. Azure has no
     /// path-style concept — also hidden.
-    var supportsPathStyleToggle: Bool {
+    public var supportsPathStyleToggle: Bool {
         self != .awsS3 && self != .azureBlob
     }
 
     /// Hidden region picker — Azure derives region from the storage
     /// account itself, so a separate region field would mislead users.
-    var hidesRegionPicker: Bool {
+    public var hidesRegionPicker: Bool {
         self == .azureBlob
     }
 
@@ -175,7 +175,7 @@ enum S3Provider: String, Codable, CaseIterable, Sendable {
     /// secret. On save the persistence layer mirrors `accountID` into
     /// `AccountCredentials.accessKey` so the signer has both pieces
     /// available from the Keychain alone.
-    var hidesAccessKeyField: Bool {
+    public var hidesAccessKeyField: Bool {
         self == .azureBlob
     }
 
@@ -184,7 +184,7 @@ enum S3Provider: String, Codable, CaseIterable, Sendable {
     /// String-catalog key for the sidebar / list section header. Azure
     /// terminology is "container", every S3-compatible provider uses
     /// "bucket".
-    var bucketTerminologyKey: String {
+    public var bucketTerminologyKey: String {
         switch family {
         case .azureBlob: return "term.container"
         case .s3:        return "term.bucket"
@@ -193,7 +193,7 @@ enum S3Provider: String, Codable, CaseIterable, Sendable {
 
     /// String-catalog key for the accountID field label. Cloudflare R2
     /// uses "Cloudflare account ID"; Azure uses "Storage account name".
-    var accountIDFieldLabelKey: String {
+    public var accountIDFieldLabelKey: String {
         switch self {
         case .azureBlob:    return "account.field.azure.accountName"
         case .cloudflareR2: return "account.field.r2.accountID"
@@ -202,7 +202,7 @@ enum S3Provider: String, Codable, CaseIterable, Sendable {
     }
 
     /// String-catalog key for the secret-key field label.
-    var secretKeyFieldLabelKey: String {
+    public var secretKeyFieldLabelKey: String {
         switch family {
         case .azureBlob: return "account.field.azure.accountKey"
         case .s3:        return "account.field.secretKey"
@@ -211,7 +211,7 @@ enum S3Provider: String, Codable, CaseIterable, Sendable {
 
     /// String-catalog key for the placeholder shown in the optional
     /// endpoint-override field (Azure sovereign clouds).
-    var endpointPlaceholderKey: String {
+    public var endpointPlaceholderKey: String {
         switch self {
         case .azureBlob: return "account.field.azure.endpoint.placeholder"
         default:         return "account.field.endpoint"

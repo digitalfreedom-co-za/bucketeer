@@ -7,7 +7,7 @@
 
 import Foundation
 import FileProvider
-import UniformTypeIdentifiers
+import BucketeerCore
 
 /// `NSFileProviderReplicatedExtension` is the modern (macOS 11+) hook
 /// that exposes a remote filesystem to Finder under Locations. macOS
@@ -15,34 +15,34 @@ import UniformTypeIdentifiers
 /// provides enumeration, fetch, create, modify, delete primitives.
 ///
 /// **Bucketeer model:** one `NSFileProviderDomain` per mounted bucket.
-/// The identifier looks like `"<accountID>::<bucket>"`, encoded by
-/// `MountController.domainIdentifier(accountID:bucket:)`. On `init` we
-/// parse the identifier, resolve the corresponding `S3Account` from the
-/// shared SwiftData store, and load credentials from the shared
-/// Keychain access group.
-///
-/// This file is part of a separate Xcode target — see
-/// `PHASE_9_SETUP.md` at the repo root for the manual steps to wire
-/// the target into Bucketeer.xcodeproj.
+/// The identifier `"<accountID>::<bucket>"` is parsed by
+/// `ExtensionContainer.resolve(_:)` on every call so the right S3 /
+/// Azure account is targeted.
 final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
 
     let domain: NSFileProviderDomain
-    /// Best-effort cached resolution of the (account, bucket) tuple.
-    /// The extension is re-created by the system on each unmount /
-    /// re-mount, so the cache is per-mount-session.
-    let mountInfo: (accountID: UUID, bucket: String)?
+    let container: ExtensionContainer?
+    let containerError: Error?
 
     required init(domain: NSFileProviderDomain) {
         self.domain = domain
-        self.mountInfo = Self.parseDomainIdentifier(domain.identifier)
+        do {
+            self.container = try ExtensionContainer()
+            self.containerError = nil
+        } catch {
+            self.container = nil
+            self.containerError = error
+        }
         super.init()
     }
 
     func invalidate() {
-        // No connections to drain in v1 — `S3` and `URLSession` are stateless.
+        // No connections to drain — S3 clients are pooled per-account
+        // inside the shared S3ClientFactory and the URL session is
+        // singleton.
     }
 
-    // MARK: - Item resolution
+    // MARK: - Item
 
     func item(
         for identifier: NSFileProviderItemIdentifier,
@@ -51,10 +51,15 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
     ) -> Progress {
         let progress = Progress(totalUnitCount: 1)
         Task {
+            guard let container = container else {
+                completionHandler(nil, self.containerError ?? Self.notProvisionedError())
+                return
+            }
             do {
                 let item = try await FileProviderItemResolver.resolve(
                     identifier: identifier,
-                    in: domain
+                    in: domain,
+                    container: container
                 )
                 completionHandler(item, nil)
                 progress.completedUnitCount = 1
@@ -75,10 +80,15 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
     ) -> Progress {
         let progress = Progress(totalUnitCount: 100)
         Task {
+            guard let container = container else {
+                completionHandler(nil, nil, self.containerError ?? Self.notProvisionedError())
+                return
+            }
             do {
                 let result = try await FileProviderItemResolver.fetchContents(
                     identifier: itemIdentifier,
                     in: domain,
+                    container: container,
                     progress: progress
                 )
                 completionHandler(result.url, result.item, nil)
@@ -101,11 +111,16 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
     ) -> Progress {
         let progress = Progress(totalUnitCount: 100)
         Task {
+            guard let container = container else {
+                completionHandler(nil, [], false, self.containerError ?? Self.notProvisionedError())
+                return
+            }
             do {
                 let created = try await FileProviderItemResolver.createItem(
                     template: itemTemplate,
                     contents: url,
                     in: domain,
+                    container: container,
                     progress: progress
                 )
                 completionHandler(created, [], false, nil)
@@ -129,12 +144,17 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
     ) -> Progress {
         let progress = Progress(totalUnitCount: 100)
         Task {
+            guard let container = container else {
+                completionHandler(nil, [], false, self.containerError ?? Self.notProvisionedError())
+                return
+            }
             do {
                 let modified = try await FileProviderItemResolver.modifyItem(
                     item: item,
                     changedFields: changedFields,
                     contents: newContents,
                     in: domain,
+                    container: container,
                     progress: progress
                 )
                 completionHandler(modified, [], false, nil)
@@ -156,10 +176,15 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
     ) -> Progress {
         let progress = Progress(totalUnitCount: 1)
         Task {
+            guard let container = container else {
+                completionHandler(self.containerError ?? Self.notProvisionedError())
+                return
+            }
             do {
                 try await FileProviderItemResolver.deleteItem(
                     identifier: identifier,
-                    in: domain
+                    in: domain,
+                    container: container
                 )
                 completionHandler(nil)
                 progress.completedUnitCount = 1
@@ -176,17 +201,23 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
         for containerItemIdentifier: NSFileProviderItemIdentifier,
         request: NSFileProviderRequest
     ) throws -> NSFileProviderEnumerator {
-        FileProviderEnumerator(domain: domain, container: containerItemIdentifier)
+        guard let container = container else {
+            throw containerError ?? Self.notProvisionedError()
+        }
+        return FileProviderEnumerator(
+            domain: domain,
+            containerIdentifier: containerItemIdentifier,
+            extensionContainer: container
+        )
     }
 
     // MARK: - Helpers
 
-    static func parseDomainIdentifier(_ identifier: NSFileProviderDomainIdentifier) -> (UUID, String)? {
-        let raw = identifier.rawValue
-        guard let separatorRange = raw.range(of: "::") else { return nil }
-        let idPart = String(raw[..<separatorRange.lowerBound])
-        let bucket = String(raw[separatorRange.upperBound...])
-        guard let uuid = UUID(uuidString: idPart) else { return nil }
-        return (uuid, bucket)
+    private static func notProvisionedError() -> Error {
+        NSError(
+            domain: NSFileProviderErrorDomain,
+            code: NSFileProviderError.providerNotFound.rawValue,
+            userInfo: [NSLocalizedDescriptionKey: "Bucketeer File Provider container not initialised. Verify the App Group entitlement and that the host app has been launched at least once."]
+        )
     }
 }

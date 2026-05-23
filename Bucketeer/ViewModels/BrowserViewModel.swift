@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import BucketeerCore
 
 struct BreadcrumbCrumb: Hashable, Identifiable {
     var id: String { "\(bucket)/\(prefix)" }
@@ -37,8 +38,8 @@ final class BrowserViewModel {
     var actionError: BucketeerError?
     var isPerformingAction: Bool = false
 
-    private let s3Browser: S3Browsing
-    private let accountStore: AccountStoring
+    private let s3Browser: any S3Browsing
+    private let accountStore: any AccountStoring
 
     /// Monotonically increasing token incremented on every navigation
     /// or refresh. Each async load captures the value at issue time and
@@ -47,7 +48,7 @@ final class BrowserViewModel {
     /// for the wrong location.
     private var requestGeneration: UInt64 = 0
 
-    init(s3Browser: S3Browsing, accountStore: AccountStoring) {
+    init(s3Browser: any S3Browsing, accountStore: any AccountStoring) {
         self.s3Browser = s3Browser
         self.accountStore = accountStore
     }

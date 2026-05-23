@@ -7,6 +7,7 @@
 
 import SwiftUI
 import LocalAuthentication
+import BucketeerCore
 
 struct AddEditAccountSheet: View {
     enum Mode: Equatable {

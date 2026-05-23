@@ -8,6 +8,7 @@
 import Foundation
 @preconcurrency import SotoS3
 @preconcurrency import NIOCore
+import BucketeerCore
 
 /// Background download bridge for `PreviewCache`. Owns the per-family
 /// dispatch logic that the cache itself is too generic to know about.

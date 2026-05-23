@@ -12,16 +12,16 @@ import Foundation
 /// transfer manager talk to this router instead of either concrete
 /// implementation so adding a third backend (e.g. GCS native, Backblaze
 /// B2 native) in the future is local to this file.
-struct ProviderRouter: S3Browsing {
-    let s3: S3Browsing
-    let azure: S3Browsing
+public struct ProviderRouter: S3Browsing {
+    public let s3: any S3Browsing
+    public let azure: any S3Browsing
 
-    init(s3: S3Browsing, azure: S3Browsing) {
+    public init(s3: any S3Browsing, azure: any S3Browsing) {
         self.s3 = s3
         self.azure = azure
     }
 
-    private func backend(for account: S3Account) -> S3Browsing {
+    private func backend(for account: S3Account) -> any S3Browsing {
         switch account.provider.family {
         case .s3:        return s3
         case .azureBlob: return azure
@@ -30,11 +30,11 @@ struct ProviderRouter: S3Browsing {
 
     // MARK: - S3Browsing
 
-    func listBuckets(account: S3Account) async throws -> [S3Bucket] {
+    public func listBuckets(account: S3Account) async throws -> [S3Bucket] {
         try await backend(for: account).listBuckets(account: account)
     }
 
-    func listObjects(
+    public func listObjects(
         account: S3Account,
         bucket: String,
         prefix: String,
@@ -48,7 +48,7 @@ struct ProviderRouter: S3Browsing {
         )
     }
 
-    func head(account: S3Account, bucket: String, key: String) async throws -> S3Object {
+    public func head(account: S3Account, bucket: String, key: String) async throws -> S3Object {
         try await backend(for: account).head(
             account: account,
             bucket: bucket,
@@ -56,7 +56,7 @@ struct ProviderRouter: S3Browsing {
         )
     }
 
-    func delete(account: S3Account, bucket: String, keys: [String]) async throws {
+    public func delete(account: S3Account, bucket: String, keys: [String]) async throws {
         try await backend(for: account).delete(
             account: account,
             bucket: bucket,
@@ -64,7 +64,7 @@ struct ProviderRouter: S3Browsing {
         )
     }
 
-    func copy(
+    public func copy(
         account: S3Account,
         fromBucket: String,
         fromKey: String,
@@ -82,7 +82,7 @@ struct ProviderRouter: S3Browsing {
         )
     }
 
-    func createFolder(account: S3Account, bucket: String, prefix: String) async throws {
+    public func createFolder(account: S3Account, bucket: String, prefix: String) async throws {
         try await backend(for: account).createFolder(
             account: account,
             bucket: bucket,
@@ -90,12 +90,3 @@ struct ProviderRouter: S3Browsing {
         )
     }
 }
-
-/// Erased credential-cache invalidator. Lets `AccountListViewModel` ask
-/// every backend to flush a deleted / edited account in one call.
-protocol CredentialCacheInvalidating: Sendable {
-    func invalidate(accountID: UUID) async
-}
-
-extension S3ClientFactory: CredentialCacheInvalidating {}
-extension AzureCredentialsCache: CredentialCacheInvalidating {}

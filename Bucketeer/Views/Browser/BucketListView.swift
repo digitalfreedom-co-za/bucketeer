@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import BucketeerCore
 
 struct BucketListView: View {
     @Bindable var viewModel: BrowserViewModel

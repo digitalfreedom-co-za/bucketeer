@@ -7,6 +7,7 @@
 
 import Foundation
 import CryptoKit
+import BucketeerCore
 
 /// Disk-backed LRU cache for object previews. Sits between
 /// `ObjectDetailView` / the system Quick Look panel and the underlying

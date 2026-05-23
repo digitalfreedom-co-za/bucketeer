@@ -7,6 +7,7 @@
 
 import SwiftUI
 import AppKit
+import BucketeerCore
 
 /// SwiftUI content for the system menubar item. Shows live transfer
 /// state plus shortcuts that mirror the app menu. Mount and Sync rows

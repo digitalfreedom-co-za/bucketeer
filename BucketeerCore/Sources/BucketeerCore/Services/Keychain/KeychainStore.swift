@@ -12,18 +12,18 @@ import Security
 /// password item per account, keyed by `kSecAttrAccount = accountID`.
 /// Items live in the shared access group so the File Provider extension
 /// can read the same credentials.
-actor KeychainStore: KeychainStoring {
+public actor KeychainStore: KeychainStoring {
     private let service: String
     private let accessGroup: String?
 
-    init(service: String, accessGroup: String?) {
+    public init(service: String, accessGroup: String?) {
         self.service = service
         self.accessGroup = accessGroup
     }
 
     // MARK: - KeychainStoring
 
-    func save(_ credentials: AccountCredentials, for accountID: UUID) async throws {
+    public func save(_ credentials: AccountCredentials, for accountID: UUID) async throws {
         let data: Data
         do {
             data = try JSONEncoder().encode(credentials)
@@ -55,7 +55,7 @@ actor KeychainStore: KeychainStoring {
         }
     }
 
-    func load(for accountID: UUID) async throws -> AccountCredentials {
+    public func load(for accountID: UUID) async throws -> AccountCredentials {
         var query = baseQuery(for: accountID)
         query[kSecReturnData as String] = true
         query[kSecMatchLimit as String] = kSecMatchLimitOne
@@ -78,7 +78,7 @@ actor KeychainStore: KeychainStoring {
         }
     }
 
-    func delete(for accountID: UUID) async throws {
+    public func delete(for accountID: UUID) async throws {
         let status = SecItemDelete(baseQuery(for: accountID) as CFDictionary)
         guard status == errSecSuccess || status == errSecItemNotFound else {
             throw BucketeerError.keychainFailure(status: status)

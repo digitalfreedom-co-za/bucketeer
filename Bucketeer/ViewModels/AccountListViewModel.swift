@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import BucketeerCore
 
 @MainActor
 @Observable
@@ -13,15 +14,15 @@ final class AccountListViewModel {
     var accounts: [S3Account] = []
     var error: BucketeerError?
 
-    private let accountStore: AccountStoring
-    private let keychainStore: KeychainStoring
+    private let accountStore: any AccountStoring
+    private let keychainStore: any KeychainStoring
     private let clientFactory: S3ClientFactory
     private let azureCredentialsCache: AzureCredentialsCache
     private let transferManager: TransferManager
 
     init(
-        accountStore: AccountStoring,
-        keychainStore: KeychainStoring,
+        accountStore: any AccountStoring,
+        keychainStore: any KeychainStoring,
         clientFactory: S3ClientFactory,
         azureCredentialsCache: AzureCredentialsCache,
         transferManager: TransferManager

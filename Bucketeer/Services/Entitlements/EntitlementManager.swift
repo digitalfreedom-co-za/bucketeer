@@ -7,6 +7,7 @@
 
 import Foundation
 import StoreKit
+import BucketeerCore
 
 /// Single source of truth for what the user can do. Combines the
 /// persisted trial timer with StoreKit's entitlement snapshot to
@@ -91,14 +92,6 @@ final class EntitlementManager {
 
     init() {
         ensureTrialStarted()
-    }
-
-    /// Stop observing StoreKit updates. Call this when shutting the app
-    /// down cleanly. Not invoked from `deinit` because the observer is
-    /// MainActor-isolated and `deinit` is non-isolated under Swift 6.
-    func shutdown() {
-        transactionObserver?.cancel()
-        transactionObserver = nil
     }
 
     // MARK: - Public API

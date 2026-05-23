@@ -8,6 +8,7 @@
 import Foundation
 @preconcurrency import SotoS3
 @preconcurrency import NIOCore
+import BucketeerCore
 
 /// Concurrent upload / download queue. Wraps Soto's multipart helpers
 /// for large files; uses single-shot `putObject` / `getObject` for

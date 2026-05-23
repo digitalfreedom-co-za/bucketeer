@@ -13,18 +13,18 @@ import Foundation
 /// → list blobs with delimiter, etc. By implementing the same protocol
 /// the rest of the app (browser view model, sync engine, file provider)
 /// stays agnostic of the underlying transport.
-struct AzureBlobObjectStore: S3Browsing {
-    let credentialsCache: AzureCredentialsCache
-    let session: URLSession
+public struct AzureBlobObjectStore: S3Browsing {
+    public let credentialsCache: AzureCredentialsCache
+    public let session: URLSession
 
-    init(credentialsCache: AzureCredentialsCache, session: URLSession = .shared) {
+    public init(credentialsCache: AzureCredentialsCache, session: URLSession = .shared) {
         self.credentialsCache = credentialsCache
         self.session = session
     }
 
     // MARK: - S3Browsing
 
-    func listBuckets(account: S3Account) async throws -> [S3Bucket] {
+    public func listBuckets(account: S3Account) async throws -> [S3Bucket] {
         let signer = try await credentialsCache.signer(for: account)
         let builder = AzureRequestBuilder(account: account)
         var request = URLRequest(url: builder.listContainersURL())
@@ -38,7 +38,7 @@ struct AzureBlobObjectStore: S3Browsing {
         }
     }
 
-    func listObjects(
+    public func listObjects(
         account: S3Account,
         bucket: String,
         prefix: String,
@@ -88,7 +88,7 @@ struct AzureBlobObjectStore: S3Browsing {
         )
     }
 
-    func head(account: S3Account, bucket: String, key: String) async throws -> S3Object {
+    public func head(account: S3Account, bucket: String, key: String) async throws -> S3Object {
         let signer = try await credentialsCache.signer(for: account)
         let builder = AzureRequestBuilder(account: account)
         var request = URLRequest(url: builder.blobPropertiesURL(container: bucket, blob: key))
@@ -123,7 +123,7 @@ struct AzureBlobObjectStore: S3Browsing {
         )
     }
 
-    func delete(account: S3Account, bucket: String, keys: [String]) async throws {
+    public func delete(account: S3Account, bucket: String, keys: [String]) async throws {
         guard !keys.isEmpty else { return }
         let signer = try await credentialsCache.signer(for: account)
         let builder = AzureRequestBuilder(account: account)
@@ -189,7 +189,7 @@ struct AzureBlobObjectStore: S3Browsing {
         }
     }
 
-    func copy(
+    public func copy(
         account: S3Account,
         fromBucket: String,
         fromKey: String,
@@ -222,7 +222,7 @@ struct AzureBlobObjectStore: S3Browsing {
         // when the status is `pending` for blobs > 256 MiB.
     }
 
-    func createFolder(account: S3Account, bucket: String, prefix: String) async throws {
+    public func createFolder(account: S3Account, bucket: String, prefix: String) async throws {
         let signer = try await credentialsCache.signer(for: account)
         let builder = AzureRequestBuilder(account: account)
         let key = prefix.hasSuffix("/") ? prefix : prefix + "/"
@@ -241,7 +241,7 @@ struct AzureBlobObjectStore: S3Browsing {
     /// Fires the request, validates the HTTP status, returns the body
     /// for callers that need it.
     @discardableResult
-    func fetch(
+    public func fetch(
         request: URLRequest,
         on session: URLSession,
         bucket: String? = nil,
@@ -369,7 +369,7 @@ struct AzureBlobObjectStore: S3Browsing {
     /// the list-containers endpoint with throwaway credentials so the
     /// outcome reflects what a real listing would do without touching
     /// the credentials cache.
-    static func testConnection(
+    public static func testConnection(
         account: S3Account,
         credentials: AccountCredentials,
         session: URLSession = .shared

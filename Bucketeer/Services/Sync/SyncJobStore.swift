@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import BucketeerCore
 
 /// CRUD facade for `SyncJobRecord`. Mirrors the pattern used by
 /// `AccountStore`: only `SyncJob` value snapshots cross the actor

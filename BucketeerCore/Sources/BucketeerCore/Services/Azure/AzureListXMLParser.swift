@@ -15,7 +15,7 @@ enum AzureListXMLParser {
 
     // MARK: - Containers
 
-    struct Container: Sendable {
+    public struct Container: Sendable {
         let name: String
         let lastModified: Date?
     }
@@ -36,14 +36,14 @@ enum AzureListXMLParser {
 
     // MARK: - Blobs
 
-    struct BlobListing: Sendable {
+    public struct BlobListing: Sendable {
         let blobs: [Blob]
         let prefixes: [String]
         /// `NextMarker` is non-empty when the response was truncated.
         let nextMarker: String?
     }
 
-    struct Blob: Sendable {
+    public struct Blob: Sendable {
         let name: String
         let size: Int64
         let lastModified: Date?

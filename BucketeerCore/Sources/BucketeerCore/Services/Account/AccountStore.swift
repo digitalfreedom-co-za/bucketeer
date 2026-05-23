@@ -13,9 +13,9 @@ import SwiftData
 /// same store. Always returns Sendable `S3Account` snapshots; never
 /// hands `S3AccountRecord` references to callers.
 @ModelActor
-actor AccountStore: AccountStoring {
+public actor AccountStore: AccountStoring {
 
-    func all() async throws -> [S3Account] {
+    public func all() async throws -> [S3Account] {
         do {
             let descriptor = FetchDescriptor<S3AccountRecord>(
                 sortBy: [
@@ -29,7 +29,7 @@ actor AccountStore: AccountStoring {
         }
     }
 
-    func upsert(_ account: S3Account) async throws {
+    public func upsert(_ account: S3Account) async throws {
         do {
             let id = account.id
             let descriptor = FetchDescriptor<S3AccountRecord>(
@@ -55,7 +55,7 @@ actor AccountStore: AccountStoring {
         }
     }
 
-    func delete(id: UUID) async throws {
+    public func delete(id: UUID) async throws {
         do {
             let descriptor = FetchDescriptor<S3AccountRecord>(
                 predicate: #Predicate { $0.id == id }
@@ -69,7 +69,7 @@ actor AccountStore: AccountStoring {
         }
     }
 
-    func touchLastUsed(id: UUID) async throws {
+    public func touchLastUsed(id: UUID) async throws {
         do {
             let descriptor = FetchDescriptor<S3AccountRecord>(
                 predicate: #Predicate { $0.id == id }

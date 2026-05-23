@@ -11,12 +11,14 @@ import Foundation
 /// Concrete `S3Browsing` implementation backed by Soto. All methods
 /// translate Soto-level errors into `BucketeerError` before re-throwing
 /// so callers never see provider-specific types.
-struct S3Service: S3Browsing {
-    let factory: S3ClientFactory
+public struct S3Service: S3Browsing {
+    public let factory: S3ClientFactory
+
+    public init(factory: S3ClientFactory) { self.factory = factory }
 
     // MARK: - Buckets
 
-    func listBuckets(account: S3Account) async throws -> [S3Bucket] {
+    public func listBuckets(account: S3Account) async throws -> [S3Bucket] {
         let s3 = try await factory.client(for: account)
         do {
             let response = try await s3.listBuckets()
@@ -35,7 +37,7 @@ struct S3Service: S3Browsing {
 
     // MARK: - Objects
 
-    func listObjects(
+    public func listObjects(
         account: S3Account,
         bucket: String,
         prefix: String,
@@ -81,7 +83,7 @@ struct S3Service: S3Browsing {
         }
     }
 
-    func head(account: S3Account, bucket: String, key: String) async throws -> S3Object {
+    public func head(account: S3Account, bucket: String, key: String) async throws -> S3Object {
         let s3 = try await factory.client(for: account)
         do {
             let response = try await s3.headObject(.init(bucket: bucket, key: key))
@@ -99,7 +101,7 @@ struct S3Service: S3Browsing {
         }
     }
 
-    func delete(account: S3Account, bucket: String, keys: [String]) async throws {
+    public func delete(account: S3Account, bucket: String, keys: [String]) async throws {
         guard !keys.isEmpty else { return }
         let s3 = try await factory.client(for: account)
         do {
@@ -140,7 +142,7 @@ struct S3Service: S3Browsing {
     /// Server-side single-request copy. Limited to source objects up to
     /// 5 GB; objects larger than that require `UploadPartCopy` and are
     /// out of v1 scope (tracked for v1.1 in the design spec).
-    func copy(
+    public func copy(
         account: S3Account,
         fromBucket: String,
         fromKey: String,
@@ -166,7 +168,7 @@ struct S3Service: S3Browsing {
         }
     }
 
-    func createFolder(account: S3Account, bucket: String, prefix: String) async throws {
+    public func createFolder(account: S3Account, bucket: String, prefix: String) async throws {
         let s3 = try await factory.client(for: account)
         let key = prefix.hasSuffix("/") ? prefix : prefix + "/"
         do {

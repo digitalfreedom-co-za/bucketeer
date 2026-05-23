@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import BucketeerCore
 
 enum SidebarSelection: Hashable {
     case accountsRoot

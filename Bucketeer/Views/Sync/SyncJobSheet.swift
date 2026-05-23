@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import BucketeerCore
 
 /// Single-page sync job editor. Spec §7.3 calls for a multi-step
 /// wizard; v1 ships a compact one-page form so power users can

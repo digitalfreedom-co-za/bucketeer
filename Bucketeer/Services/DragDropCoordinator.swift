@@ -7,6 +7,7 @@
 
 import Foundation
 import UniformTypeIdentifiers
+import BucketeerCore
 
 /// Funnels every drop landing inside Bucketeer (sidebar account row,
 /// bucket card, folder row, empty list area) through the same logic so
@@ -17,17 +18,22 @@ import UniformTypeIdentifiers
 /// accidental ⌘-drag between buckets could trigger thousand-object
 /// deletes. Move is exposed only via the explicit "Move to…" menu (v1.1).
 @MainActor
+@Observable
 final class DragDropCoordinator {
-    private let s3Browser: S3Browsing
+    /// Most recent drop failure, surfaced via an alert in `ContentView`.
+    /// Cleared by the alert's dismiss button.
+    var lastError: BucketeerError?
+
+    private let s3Browser: any S3Browsing
     private let transferManager: TransferManager
     private let transferQueue: TransferQueueViewModel
-    private let accountStore: AccountStoring
+    private let accountStore: any AccountStoring
 
     init(
-        s3Browser: S3Browsing,
+        s3Browser: any S3Browsing,
         transferManager: TransferManager,
         transferQueue: TransferQueueViewModel,
-        accountStore: AccountStoring
+        accountStore: any AccountStoring
     ) {
         self.s3Browser = s3Browser
         self.transferManager = transferManager
@@ -123,12 +129,7 @@ final class DragDropCoordinator {
                     metadata: nil
                 )
             } catch {
-                await surfaceCopyFailure(
-                    account: sourceAccount,
-                    bucket: destinationBucket,
-                    key: destinationKey,
-                    error: error
-                )
+                lastError = bucketeerError(error)
             }
         } else {
             await roundTripCopy(
@@ -148,9 +149,10 @@ final class DragDropCoordinator {
         destinationBucket: String,
         destinationKey: String
     ) async {
-        // Staging file inside the temp dir — picked up by the OS when
-        // the sandbox container is purged. Manual cleanup happens after
-        // the upload completes regardless of outcome.
+        // Staging file inside the temp dir. We clean up after both
+        // halves finish regardless of outcome — sandbox temp dir is
+        // also purged by the OS but explicit removal keeps disk usage
+        // predictable for power users.
         let tempDir = FileManager.default.temporaryDirectory
             .appending(path: "BucketeerDrops", directoryHint: .isDirectory)
         try? FileManager.default.createDirectory(
@@ -158,58 +160,50 @@ final class DragDropCoordinator {
             withIntermediateDirectories: true
         )
         let staging = tempDir.appending(path: UUID().uuidString + "-" + ref.displayName)
+        defer { try? FileManager.default.removeItem(at: staging) }
 
-        // Enqueue download first; once it completes, we manually enqueue
-        // the upload. The two tasks are visible in the queue separately
-        // — intentional: lets the user cancel either half.
         let downloadID = await transferManager.enqueueDownload(
             account: sourceAccount,
             bucket: ref.bucket,
             key: ref.key,
             localURL: staging
         )
-
-        // Wait for the download to terminate by polling the snapshot
-        // stream. AsyncSequence avoids hard-coupling to the actor.
-        let stream = transferManager.tasks
-        for await snapshot in stream {
-            guard let task = snapshot.first(where: { $0.id == downloadID }) else { continue }
-            switch task.state {
-            case .completed:
-                let contentType = UTType(filenameExtension: staging.pathExtension)?
-                    .preferredMIMEType
-                _ = await transferManager.enqueueUpload(
-                    account: destinationAccount,
-                    bucket: destinationBucket,
-                    key: destinationKey,
-                    localURL: staging,
-                    contentType: contentType
-                )
-                // Best-effort cleanup once the upload completes — we
-                // don't await it explicitly; the file is gone next time
-                // the temp dir is purged either way.
-                return
-            case .failed, .cancelled:
-                try? FileManager.default.removeItem(at: staging)
-                return
-            case .queued, .running:
-                continue
+        // Use the actor's per-ID waiter (added in the Codex review
+        // response) instead of polling the public snapshot stream —
+        // the stream version has a known race where a fast transfer
+        // completes before we ever see it.
+        let downloadResult = await transferManager.awaitCompletion(id: downloadID)
+        guard case .completed = downloadResult else {
+            switch downloadResult {
+            case .failed(let message):
+                lastError = .providerError(statusCode: 0, message: message)
+            case .cancelled:
+                lastError = .cancelled
+            default:
+                break
             }
+            return
+        }
+
+        let contentType = UTType(filenameExtension: staging.pathExtension)?
+            .preferredMIMEType
+        let uploadID = await transferManager.enqueueUpload(
+            account: destinationAccount,
+            bucket: destinationBucket,
+            key: destinationKey,
+            localURL: staging,
+            contentType: contentType
+        )
+        let uploadResult = await transferManager.awaitCompletion(id: uploadID)
+        if case .failed(let message) = uploadResult {
+            lastError = .providerError(statusCode: 0, message: message)
+        } else if case .cancelled = uploadResult {
+            lastError = .cancelled
         }
     }
 
-    private func surfaceCopyFailure(
-        account: S3Account,
-        bucket: String,
-        key: String,
-        error: Error
-    ) async {
-        // Best-effort propagation. The browser view model already shows
-        // an actionError alert when its own copy/delete fails; the drop
-        // path right now doesn't share that error sink — TODO Phase 7.1.
-        _ = error
-        _ = account
-        _ = bucket
-        _ = key
+    private func bucketeerError(_ error: Error) -> BucketeerError {
+        if let e = error as? BucketeerError { return e }
+        return .unknown(message: error.localizedDescription)
     }
 }

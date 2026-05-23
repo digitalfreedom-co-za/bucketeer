@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		CF50705B01000000A0000001 /* SotoS3 in Frameworks */ = {isa = PBXBuildFile; productRef = CF50705B01000000A0000002 /* SotoS3 */; };
+		CFCORE001000000000000001 /* BucketeerCore in Frameworks */ = {isa = PBXBuildFile; productRef = CFCORE001000000000000002 /* BucketeerCore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CF50705B01000000A0000001 /* SotoS3 in Frameworks */,
+				CFCORE001000000000000001 /* BucketeerCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -71,6 +73,7 @@
 			name = "Bucketeer";
 			packageProductDependencies = (
 				CF50705B01000000A0000002 /* SotoS3 */,
+				CFCORE001000000000000002 /* BucketeerCore */,
 			);
 			productName = "Bucketeer";
 			productReference = CF398B722FC08D2B00363696 /* Bucketeer.app */;
@@ -111,6 +114,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				CF50705B01000000A0000003 /* XCRemoteSwiftPackageReference "soto" */,
+				CFCORE001000000000000003 /* XCLocalSwiftPackageReference "BucketeerCore" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = CF398B732FC08D2B00363696 /* Products */;
@@ -356,6 +360,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		CFCORE001000000000000003 /* XCLocalSwiftPackageReference "BucketeerCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = BucketeerCore;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		CF50705B01000000A0000003 /* XCRemoteSwiftPackageReference "soto" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -372,6 +383,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = CF50705B01000000A0000003 /* XCRemoteSwiftPackageReference "soto" */;
 			productName = SotoS3;
+		};
+		CFCORE001000000000000002 /* BucketeerCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CFCORE001000000000000003 /* XCLocalSwiftPackageReference "BucketeerCore" */;
+			productName = BucketeerCore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

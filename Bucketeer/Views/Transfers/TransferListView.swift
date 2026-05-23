@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import BucketeerCore
 
 struct TransferListView: View {
     @Bindable var viewModel: TransferQueueViewModel

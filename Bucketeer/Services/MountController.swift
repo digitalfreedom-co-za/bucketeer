@@ -7,6 +7,7 @@
 
 import Foundation
 import FileProvider
+import BucketeerCore
 
 /// Manages the File Provider domains that expose mounted buckets in
 /// Finder under Locations. One `NSFileProviderDomain` per mounted

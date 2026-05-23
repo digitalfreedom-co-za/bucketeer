@@ -12,8 +12,8 @@ import Foundation
 /// owns its own `AWSClient` so that connection pools stay scoped to
 /// the credentials currently in use. `invalidate(accountID:)` is called
 /// whenever credentials change or the account is deleted.
-actor S3ClientFactory {
-    private let keychainStore: KeychainStoring
+public actor S3ClientFactory {
+    private let keychainStore: any KeychainStoring
 
     private struct Cached {
         let awsClient: AWSClient
@@ -22,13 +22,13 @@ actor S3ClientFactory {
 
     private var cache: [UUID: Cached] = [:]
 
-    init(keychainStore: KeychainStoring) {
+    public init(keychainStore: any KeychainStoring) {
         self.keychainStore = keychainStore
     }
 
     // MARK: - Public
 
-    func client(for account: S3Account) async throws -> S3 {
+    public func client(for account: S3Account) async throws -> S3 {
         if let cached = cache[account.id] {
             return cached.s3
         }
@@ -66,12 +66,12 @@ actor S3ClientFactory {
         return s3
     }
 
-    func invalidate(accountID: UUID) async {
+    public func invalidate(accountID: UUID) async {
         guard let cached = cache.removeValue(forKey: accountID) else { return }
         try? await cached.awsClient.shutdown()
     }
 
-    func shutdownAll() async {
+    public func shutdownAll() async {
         for cached in cache.values {
             try? await cached.awsClient.shutdown()
         }
@@ -82,7 +82,7 @@ actor S3ClientFactory {
     /// with the supplied credentials, calls `listBuckets`, then shuts
     /// the client down. The cache is never touched so this never
     /// pollutes the live state for an existing account.
-    static func testConnection(
+    public static func testConnection(
         for account: S3Account,
         credentials: AccountCredentials
     ) async throws {
@@ -117,7 +117,7 @@ actor S3ClientFactory {
 
     /// Provider-specific endpoint URL. Pure function — same input, same
     /// output. Mirrored in tests and in the design spec.
-    static func endpoint(for account: S3Account) -> URL {
+    public static func endpoint(for account: S3Account) -> URL {
         switch account.provider {
         case .awsS3:
             return URL(string: "https://s3.\(account.region).amazonaws.com")!

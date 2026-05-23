@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import BucketeerCore
 
 /// Composition root. Holds the long-lived services and root view models
 /// for the host app. Created once at launch and injected into the
@@ -15,20 +16,20 @@ import SwiftData
 @Observable
 final class AppContainer {
     let modelContainer: ModelContainer
-    let keychainStore: KeychainStoring
-    let accountStore: AccountStoring
+    let keychainStore: any KeychainStoring
+    let accountStore: any AccountStoring
     let clientFactory: S3ClientFactory
     let azureCredentialsCache: AzureCredentialsCache
     let azureTransporter: AzureBlobTransporter
     /// Routed `S3Browsing` facade — picks S3 or Azure per-account.
-    let s3Browser: S3Browsing
+    let s3Browser: any S3Browsing
     let transferManager: TransferManager
     let previewCache: PreviewCache
     let dragDropCoordinator: DragDropCoordinator
     let activationController: AppActivationController
     let mountController: MountController
     let entitlementManager: EntitlementManager
-    let syncJobStore: SyncJobStoring
+    let syncJobStore: any SyncJobStoring
     let syncEngine: SyncEngine
     let accountListViewModel: AccountListViewModel
     let browserViewModel: BrowserViewModel

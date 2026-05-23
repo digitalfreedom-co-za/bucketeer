@@ -11,18 +11,18 @@ import Foundation
 /// items derived from the `CommonPrefixes` portion of `ListObjectsV2` —
 /// they have `isFolder = true`, no `etag` (an empty string), size 0, and
 /// a `key` that ends with `/`.
-struct S3Object: Identifiable, Hashable, Sendable {
-    var id: String { key }
-    let key: String
-    let displayName: String
-    let size: Int64
-    let lastModified: Date
-    let etag: String
-    let contentType: String?
-    let storageClass: String?
-    let isFolder: Bool
+public struct S3Object: Identifiable, Hashable, Sendable {
+    public var id: String { key }
+    public let key: String
+    public let displayName: String
+    public let size: Int64
+    public let lastModified: Date
+    public let etag: String
+    public let contentType: String?
+    public let storageClass: String?
+    public let isFolder: Bool
 
-    init(
+    public init(
         key: String,
         displayName: String? = nil,
         size: Int64,
@@ -49,9 +49,16 @@ struct S3Object: Identifiable, Hashable, Sendable {
 }
 
 /// One page of an object listing. Pagination uses S3's continuation token.
-struct S3Page: Hashable, Sendable {
-    let objects: [S3Object]
-    let prefix: String
-    let continuationToken: String?
-    let hasMore: Bool
+public struct S3Page: Hashable, Sendable {
+    public let objects: [S3Object]
+    public let prefix: String
+    public let continuationToken: String?
+    public let hasMore: Bool
+
+    public init(objects: [S3Object], prefix: String, continuationToken: String?, hasMore: Bool) {
+        self.objects = objects
+        self.prefix = prefix
+        self.continuationToken = continuationToken
+        self.hasMore = hasMore
+    }
 }

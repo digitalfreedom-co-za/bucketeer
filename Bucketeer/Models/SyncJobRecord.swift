@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import BucketeerCore
 
 /// Persistent backing for `SyncJob`. Stored alongside `S3AccountRecord`
 /// in the same SwiftData container (Application Support today, App

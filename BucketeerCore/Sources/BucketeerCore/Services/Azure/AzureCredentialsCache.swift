@@ -12,11 +12,11 @@ import Foundation
 /// once per process for a given account. Invalidated whenever an
 /// account is edited or deleted so credential rotation propagates
 /// immediately.
-actor AzureCredentialsCache {
-    private let keychainStore: KeychainStoring
+public actor AzureCredentialsCache {
+    private let keychainStore: any KeychainStoring
     private var cache: [UUID: AzureSharedKeySigner] = [:]
 
-    init(keychainStore: KeychainStoring) {
+    public init(keychainStore: any KeychainStoring) {
         self.keychainStore = keychainStore
     }
 
@@ -64,11 +64,11 @@ actor AzureCredentialsCache {
         )
     }
 
-    func invalidate(accountID: UUID) async {
+    public func invalidate(accountID: UUID) async {
         cache.removeValue(forKey: accountID)
     }
 
-    func invalidateAll() async {
+    public func invalidateAll() async {
         cache.removeAll()
     }
 }

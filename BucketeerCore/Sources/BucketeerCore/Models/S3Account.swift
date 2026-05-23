@@ -10,18 +10,18 @@ import Foundation
 /// Non-secret connection metadata for one configured S3 endpoint. Lives
 /// in the SwiftData store in the shared App Group container. The matching
 /// secret (`AccountCredentials`) lives in the Keychain, keyed by `id`.
-struct S3Account: Identifiable, Hashable, Sendable {
-    let id: UUID
-    var name: String
-    var provider: S3Provider
-    var region: String
-    var endpointOverride: URL?
-    var accountID: String?
-    var defaultBucket: String?
-    var usesPathStyle: Bool
-    var lastUsedAt: Date?
+public struct S3Account: Identifiable, Hashable, Sendable {
+    public let id: UUID
+    public var name: String
+    public var provider: S3Provider
+    public var region: String
+    public var endpointOverride: URL?
+    public var accountID: String?
+    public var defaultBucket: String?
+    public var usesPathStyle: Bool
+    public var lastUsedAt: Date?
 
-    init(
+    public init(
         id: UUID = UUID(),
         name: String,
         provider: S3Provider,
@@ -46,12 +46,12 @@ struct S3Account: Identifiable, Hashable, Sendable {
 
 /// Credentials for one account. Persisted in the macOS Keychain; never
 /// written to disk in plaintext, never logged.
-struct AccountCredentials: Codable, Hashable, Sendable {
-    let accessKey: String
-    let secretKey: String
-    let sessionToken: String?
+public struct AccountCredentials: Codable, Hashable, Sendable {
+    public let accessKey: String
+    public let secretKey: String
+    public let sessionToken: String?
 
-    init(accessKey: String, secretKey: String, sessionToken: String? = nil) {
+    public init(accessKey: String, secretKey: String, sessionToken: String? = nil) {
         self.accessKey = accessKey
         self.secretKey = secretKey
         self.sessionToken = sessionToken

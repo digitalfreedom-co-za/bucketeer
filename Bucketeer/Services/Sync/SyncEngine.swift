@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import BucketeerCore
 
 /// Runs sync jobs — recursively diffs source vs destination, executes
 /// the planned transfers, then records the outcome. Single actor so
@@ -23,9 +24,9 @@ import Foundation
 ///   applied after additions/updates so we do not lose data on a
 ///   transient comparison error.
 actor SyncEngine {
-    private let accountStore: AccountStoring
-    private let jobStore: SyncJobStoring
-    private let browser: S3Browsing
+    private let accountStore: any AccountStoring
+    private let jobStore: any SyncJobStoring
+    private let browser: any S3Browsing
     private let transferManager: TransferManager
 
     /// Public status stream. Snapshots are pushed on every phase change
@@ -44,9 +45,9 @@ actor SyncEngine {
     private var activeTransferIDs: [UUID: Set<UUID>] = [:]
 
     init(
-        accountStore: AccountStoring,
-        jobStore: SyncJobStoring,
-        browser: S3Browsing,
+        accountStore: any AccountStoring,
+        jobStore: any SyncJobStoring,
+        browser: any S3Browsing,
         transferManager: TransferManager
     ) {
         self.accountStore = accountStore

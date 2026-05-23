@@ -14,27 +14,27 @@ import Foundation
 /// Progress reporting calls back through the supplied `progress`
 /// closure; the `TransferManager` wires it to the actor-isolated state
 /// machine.
-struct AzureBlobTransporter: Sendable {
-    let credentialsCache: AzureCredentialsCache
-    let session: URLSession
+public struct AzureBlobTransporter: Sendable {
+    public let credentialsCache: AzureCredentialsCache
+    public let session: URLSession
 
     /// Switch threshold between single-shot Put Block Blob and the
     /// staged Put Block + Put Block List path. Mirrors the S3 multipart
     /// threshold so users see consistent behaviour across providers.
-    static let multipartThreshold: Int64 = 5 * 1024 * 1024
+    public static let multipartThreshold: Int64 = 5 * 1024 * 1024
 
     /// Size of each staged block. Azure allows up to 4000 MiB per block
     /// in the most recent API; 8 MiB matches the S3 part size for
     /// symmetry and is well within the 50 000 block-per-blob limit
     /// (50 000 × 8 MiB ≈ 400 GiB, comfortable for v1).
-    static let blockSize: Int = 8 * 1024 * 1024
+    public static let blockSize: Int = 8 * 1024 * 1024
 
     /// Max parallel block uploads inside a single Put Block List
     /// multipart. Bumps throughput on fast connections without
     /// monopolising the user's bandwidth.
-    static let maxBlockParallelism: Int = 4
+    public static let maxBlockParallelism: Int = 4
 
-    init(credentialsCache: AzureCredentialsCache, session: URLSession = .shared) {
+    public init(credentialsCache: AzureCredentialsCache, session: URLSession = .shared) {
         self.credentialsCache = credentialsCache
         self.session = session
     }
@@ -44,7 +44,7 @@ struct AzureBlobTransporter: Sendable {
     /// Upload `localURL` to the supplied blob coordinates. Routes between
     /// single-shot and multipart based on file size. `progress` receives
     /// `(bytesTransferred, totalBytes)` snapshots.
-    func upload(
+    public func upload(
         account: S3Account,
         container: String,
         blob: String,
@@ -261,7 +261,7 @@ struct AzureBlobTransporter: Sendable {
     /// Download the blob to `localURL`. Routes between single-GET and
     /// ranged parallel-GET based on the head-reported size. Zero-byte
     /// blobs short-circuit to an empty local file.
-    func download(
+    public func download(
         account: S3Account,
         container: String,
         blob: String,
@@ -470,12 +470,12 @@ private actor UploadProgressCounter {
     private var bytesSoFar: Int64 = 0
     private let callback: @Sendable (Int64, Int64) async -> Void
 
-    init(total: Int64, callback: @escaping @Sendable (Int64, Int64) async -> Void) {
+    public init(total: Int64, callback: @escaping @Sendable (Int64, Int64) async -> Void) {
         self.total = total
         self.callback = callback
     }
 
-    func add(_ bytes: Int64) async {
+    public func add(_ bytes: Int64) async {
         bytesSoFar += bytes
         await callback(bytesSoFar, total)
     }
@@ -490,7 +490,7 @@ private actor DownloadWriter {
     private var bytesSoFar: Int64 = 0
     private let callback: @Sendable (Int64, Int64) async -> Void
 
-    init(handle: FileHandle, total: Int64, callback: @escaping @Sendable (Int64, Int64) async -> Void) {
+    public init(handle: FileHandle, total: Int64, callback: @escaping @Sendable (Int64, Int64) async -> Void) {
         self.handle = handle
         self.total = total
         self.callback = callback
@@ -500,7 +500,7 @@ private actor DownloadWriter {
     /// disk-full, permission, or invalid-handle error fails the outer
     /// throwing task group immediately instead of leaving a corrupt
     /// partial file marked complete.
-    func write(_ data: Data, at offset: Int64) async throws {
+    public func write(_ data: Data, at offset: Int64) async throws {
         guard let handle else {
             throw BucketeerError.unknown(message: "Download writer was closed before all chunks landed.")
         }
@@ -514,7 +514,7 @@ private actor DownloadWriter {
         await callback(bytesSoFar, total)
     }
 
-    func close() async {
+    public func close() async {
         try? handle?.close()
         handle = nil
     }

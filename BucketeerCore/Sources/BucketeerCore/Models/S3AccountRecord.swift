@@ -12,15 +12,15 @@ import SwiftData
 /// callers receive `S3Account` value snapshots that are safe to cross
 /// actor boundaries.
 @Model
-final class S3AccountRecord {
-    @Attribute(.unique) var id: UUID
+public final class S3AccountRecord {
+    @Attribute(.unique) public var id: UUID
     var name: String
-    var providerRaw: String
+    public var providerRaw: String
     var region: String
     var endpointOverrideRaw: String?
     var accountID: String?
     var defaultBucket: String?
-    var usesPathStyle: Bool
+    public var usesPathStyle: Bool
     var lastUsedAt: Date?
     var sortIndex: Int
 

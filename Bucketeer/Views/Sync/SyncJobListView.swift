@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import BucketeerCore
 
 struct SyncJobListView: View {
     @Bindable var viewModel: SyncJobListViewModel

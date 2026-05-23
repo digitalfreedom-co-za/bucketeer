@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import BucketeerCore
 
 @MainActor
 @Observable
@@ -15,15 +16,15 @@ final class SyncJobListViewModel {
     var accounts: [S3Account] = []
     var error: BucketeerError?
 
-    private let jobStore: SyncJobStoring
+    private let jobStore: any SyncJobStoring
     private let engine: SyncEngine
-    private let accountStore: AccountStoring
+    private let accountStore: any AccountStoring
     private var statusObserver: Task<Void, Never>?
 
     init(
-        jobStore: SyncJobStoring,
+        jobStore: any SyncJobStoring,
         engine: SyncEngine,
-        accountStore: AccountStoring
+        accountStore: any AccountStoring
     ) {
         self.jobStore = jobStore
         self.engine = engine

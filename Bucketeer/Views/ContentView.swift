@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import BucketeerCore
 
 struct ContentView: View {
     @Environment(AppContainer.self) private var container
@@ -37,6 +38,20 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: .showBucketeerPaywall)) { note in
             paywallFeature = note.object as? EntitlementManager.ProFeature
             showingPaywall = true
+        }
+        .alert(
+            "browser.action.errorTitle",
+            isPresented: Binding(
+                get: { container.dragDropCoordinator.lastError != nil },
+                set: { if !$0 { container.dragDropCoordinator.lastError = nil } }
+            ),
+            presenting: container.dragDropCoordinator.lastError
+        ) { _ in
+            Button("action.ok", role: .cancel) {
+                container.dragDropCoordinator.lastError = nil
+            }
+        } message: { error in
+            Text(error.errorDescription ?? "")
         }
     }
 
