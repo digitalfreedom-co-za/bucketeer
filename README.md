@@ -1,30 +1,47 @@
 # Bucketeer
 
-A native macOS app for browsing, transferring, mounting, and synchronising
-S3-compatible object storage across multiple providers and credentials.
+A native macOS app for browsing, transferring, mounting and synchronising
+object storage across every major provider — including Amazon S3, every
+S3-compatible service, **and Azure Blob Storage**.
 
 Built in public. Source available. Distributed exclusively through the
 Mac App Store.
 
 ---
 
-## Features (v1)
+## Features
 
-- Nine provider presets — AWS S3, Azure Blob Storage, Civo,
+- **Nine provider presets** — AWS S3, **Azure Blob Storage**, Civo,
   Cloudflare R2, Backblaze B2, Wasabi, DigitalOcean Spaces, Storj,
-  MinIO / Custom (Azure lands as Phase A between Phase 5 and Phase 6)
-- Finder-style three-pane browser with inline Quick Look preview
-- Drag-and-drop in every direction — Finder ↔ App, App ↔ App
-- Mount buckets as drives in Finder via File Provider extension
-- Background menubar mode that keeps mounts and sync alive
-- S3-to-S3 copy / move / one-way mirror with optional scheduling
-- Multipart upload, parallel transfers, progress tracking
-- Localised in ten languages
-- Privacy by design — credentials live in Keychain, nothing leaves your Mac
-  apart from S3 traffic
+  MinIO / Custom Endpoint
+- **Finder-style three-pane browser** with inline metadata pane
+- **Quick Look preview** for any macOS-supported file type *(roadmap Phase 6)*
+- **Drag-and-drop in every direction** — Finder ↔ App, App ↔ App,
+  cross-account, cross-provider *(roadmap Phase 7)*
+- **Mount buckets and containers as Finder drives** via the File
+  Provider extension *(roadmap Phase 9)*
+- **Menubar background mode** that keeps mounts and sync alive when
+  the main window is closed *(roadmap Phase 8)*
+- **S3-to-S3, S3-to-Azure and Azure-to-S3** copy / move / one-way
+  mirror with optional scheduling *(roadmap Phase 10)*
+- **Multipart upload and download**, parallel transfers, live progress
+- **Touch ID / password gate** for revealing stored secrets
+- **Localised in 10 languages** — English, German, Spanish, French,
+  Italian, Japanese, Korean, Dutch, Polish, Brazilian Portuguese
+- **Privacy by design** — credentials live in your macOS Keychain,
+  nothing leaves your Mac apart from the object-storage traffic you
+  configure
 
-See [`docs/superpowers/specs/2026-05-22-bucketeer-design.md`](docs/superpowers/specs/2026-05-22-bucketeer-design.md)
-for the full design spec.
+---
+
+## Pricing
+
+Bucketeer is **free to evaluate for 14 days** with every feature
+unlocked, then converts to a **Free tier** that keeps the core
+browser usable, with **Bucketeer Pro** unlocked by a single
+**€14.99 lifetime in-app purchase** (no subscription). See
+`docs/superpowers/specs/2026-05-23-phase-b-paywall.md` for the
+detailed tier matrix.
 
 ---
 
@@ -33,19 +50,29 @@ for the full design spec.
 🚧 In active development. v1 implementation in progress on the
 `development` branch. Not yet available on the App Store.
 
+Phases 0 – 5 are done; the Help and About menus, Touch-ID secret
+reveal, eye-button plaintext toggle, Civo path-style auto-migration
+and DNS error mapping are merged. Phase A (Azure), Phase 6 (Preview),
+Phase 7 (Drag-and-drop), Phase 8 (Menubar), Phase 9 (File Provider),
+Phase 10 (Sync engine), Phase B (Paywall), Phase 11 (Localisation
+finalisation) and Phase 12 (Hardening) follow.
+
+See the design specs in [`docs/superpowers/specs/`](docs/superpowers/specs/)
+for the full roadmap.
+
 ---
 
 ## Building locally
 
 Requirements:
 
-- macOS 26.0 or later
-- Xcode 26 or later
+- macOS 14.0 or later
+- Xcode 16 or later (Swift 6 strict concurrency)
 
 ```bash
-git clone https://github.com/marcelrgberger/Bucketeer.git
-cd "Bucketeer"
-open "Bucketeer.xcodeproj"
+git clone https://github.com/digitalfreedom-co-za/bucketeer.git
+cd bucketeer
+open Bucketeer.xcodeproj
 ```
 
 Select the **Bucketeer** scheme and ⌘R to run.
@@ -57,47 +84,71 @@ Local builds are permitted for personal, non-commercial use under the
 
 ## Architecture
 
-Swift 6 strict concurrency. SwiftUI for the host app. Soto-S3 for the
-provider abstraction. SwiftData for account metadata (in the App Group
-container). Keychain for credentials (in a shared access group). File
-Provider replicated extension for Finder mounts.
+Swift 6 strict concurrency end-to-end. SwiftUI for the host app.
+Soto-S3 for the AWS family and every S3-compatible provider. A
+purpose-built Azure backend (`AzureBlobObjectStore`, Phase A) for
+Azure Blob Storage, dispatched through a `ProviderRouter` so the
+upper layers stay protocol-agnostic. SwiftData for account metadata
+(SwiftData store in the sandbox Application Support directory,
+moving to an App Group container in Phase 9). Keychain for
+credentials. File Provider replicated extension for Finder mounts.
+LocalAuthentication for Touch-ID-gated secret reveal.
 
 ```
-Bucketeer/          host app target
-Bucketeer File Provider/   .appex (added in Phase 9)
-Bucketeer Core/     embedded framework (added in Phase 9)
+Bucketeer.xcodeproj/
+Bucketeer/                          ← host app target
+  App/                              @main BucketeerApp + menus
+  Models/                           Sendable domain types
+  Services/                         actors + protocols
+    S3/                             Soto-backed S3Service
+    Azure/                          (Phase A) URLSession + Shared Key
+    Keychain/                       KeychainStore
+    Account/                        AccountStore @ModelActor
+    Transfers/                      TransferManager
+  ViewModels/
+  Views/
+    Accounts/  Browser/  Sidebar/  Transfers/  About/  Help/
+  Resources/
+    Legal/                          EULA, Privacy, Impressum, License, OSS notices
+    Help/                           QuickStart.md
+    Localizable.xcstrings           10-language string catalog
+    PrivacyInfo.xcprivacy
+  <lang>.lproj/InfoPlist.strings    per-language CFBundleDisplayName
+Bucketeer File Provider/            .appex (Phase 9)
+Bucketeer Core/                     embedded framework (Phase 9)
 ```
 
 ---
 
 ## Legal
 
-This project is governed by three separate documents:
+This project is governed by these documents:
 
 | File | Scope |
 |---|---|
 | [`LICENSE`](LICENSE) | Source-Available License governing this **source code** |
-| [`Bucketeer/Resources/Legal/EULA.md`](S3%20Browser/Resources/Legal/EULA.md) | End User License Agreement governing the **App binary** |
-| [`Bucketeer/Resources/Legal/PRIVACY_POLICY.md`](S3%20Browser/Resources/Legal/PRIVACY_POLICY.md) | Privacy Policy |
-| [`Bucketeer/Resources/Legal/IMPRESSUM.md`](S3%20Browser/Resources/Legal/IMPRESSUM.md) | Impressum (German legal notice) |
-| [`Bucketeer/Resources/Legal/OPEN_SOURCE_NOTICES.md`](S3%20Browser/Resources/Legal/OPEN_SOURCE_NOTICES.md) | Third-party open-source attributions |
+| [`Bucketeer/Resources/Legal/EULA.md`](Bucketeer/Resources/Legal/EULA.md) | End User License Agreement governing the **App binary** |
+| [`Bucketeer/Resources/Legal/PRIVACY_POLICY.md`](Bucketeer/Resources/Legal/PRIVACY_POLICY.md) | Privacy Policy |
+| [`Bucketeer/Resources/Legal/IMPRESSUM.md`](Bucketeer/Resources/Legal/IMPRESSUM.md) | Impressum (German legal notice) |
+| [`Bucketeer/Resources/Legal/OPEN_SOURCE_NOTICES.md`](Bucketeer/Resources/Legal/OPEN_SOURCE_NOTICES.md) | Third-party open-source attributions |
 
-**Build in Public, not open source.** You may read, fork for study, and
-contribute back. You may not redistribute, ship binaries, or publish
-derivatives to any app store. The single canonical binary distribution is
-the App Store version published by the author.
+**Source-available, not OSI-open-source.** You may read, fork for
+study, and contribute back. You may not redistribute, ship binaries,
+or publish derivatives to any app store. The single canonical binary
+distribution is the App Store version published by the author.
+
+The same documents are reachable in-app via **Bucketeer → About**.
 
 ---
 
 ## Contributing
 
-Issues and pull requests are welcome. Contributions are accepted under the
-[Source-Available License](LICENSE) — by submitting a PR you assign your
-contribution to the Publisher and license it back to yourself under the
-same terms as the rest of the source.
+Issues and pull requests are welcome. Contributions are accepted
+under the [Source-Available License](LICENSE) — by submitting a PR
+you license your contribution to the Publisher under the same terms.
 
-For bug reports please include macOS version, app version, and reproduction
-steps.
+For bug reports please include macOS version, app version, and
+reproduction steps.
 
 ---
 
