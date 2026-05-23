@@ -10,8 +10,9 @@ Mac App Store.
 
 ## Features (v1)
 
-- Eight provider presets — AWS S3, Civo, Cloudflare R2, Backblaze B2,
-  Wasabi, DigitalOcean Spaces, Storj, MinIO / Custom
+- Nine provider presets — AWS S3, Azure Blob Storage, Civo,
+  Cloudflare R2, Backblaze B2, Wasabi, DigitalOcean Spaces, Storj,
+  MinIO / Custom (Azure lands as Phase A between Phase 5 and Phase 6)
 - Finder-style three-pane browser with inline Quick Look preview
 - Drag-and-drop in every direction — Finder ↔ App, App ↔ App
 - Mount buckets as drives in Finder via File Provider extension
