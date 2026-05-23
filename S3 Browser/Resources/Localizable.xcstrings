@@ -378,6 +378,202 @@
         }
       }
     },
+    "about.contact.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Contact" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Kontakt" } }
+      }
+    },
+    "about.legal.summary" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "S3 Browser is source-available, not open source. The single canonical binary is distributed via the Mac App Store. See License, EULA and Open Source Notices for details." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "S3 Browser ist Source-Available, keine OSI-Open-Source. Die einzige autorisierte Binärdistribution läuft über den Mac App Store. Details unter Lizenz, EULA und Open-Source-Hinweise." } }
+      }
+    },
+    "about.link.github" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "GitHub" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "GitHub" } }
+      }
+    },
+    "about.link.issues" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Report Issue" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Fehler melden" } }
+      }
+    },
+    "about.link.website" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Website" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Webseite" } }
+      }
+    },
+    "about.markdown.missing" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "This document is not bundled with the current build." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Dieses Dokument ist im aktuellen Build nicht enthalten." } }
+      }
+    },
+    "about.publisher.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Publisher" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Herausgeber" } }
+      }
+    },
+    "about.section.about" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "About" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Über" } }
+      }
+    },
+    "about.section.eula" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "EULA" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "EULA" } }
+      }
+    },
+    "about.section.impressum" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Impressum" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Impressum" } }
+      }
+    },
+    "about.section.license" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "License" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Lizenz" } }
+      }
+    },
+    "about.section.openSource" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open Source" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Open Source" } }
+      }
+    },
+    "about.section.privacy" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Privacy" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Datenschutz" } }
+      }
+    },
+    "about.tagline" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Native macOS app for browsing, transferring, mounting and synchronising S3-compatible object storage across multiple providers." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Native macOS-App zum Durchstöbern, Übertragen, Einbinden und Synchronisieren von S3-kompatiblem Object Storage über verschiedene Anbieter hinweg." } }
+      }
+    },
+    "about.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "About S3 Browser" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Über S3 Browser" } }
+      }
+    },
+    "about.version.%@.build.%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Version %1$@ (Build %2$@)" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Version %1$@ (Build %2$@)" } }
+      }
+    },
+    "help.missing" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Quick start guide is not bundled in this build." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Schnellstart-Anleitung ist im aktuellen Build nicht enthalten." } }
+      }
+    },
+    "help.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "S3 Browser Help" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "S3 Browser Hilfe" } }
+      }
+    },
+    "menu.app.about" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "About S3 Browser" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Über S3 Browser" } }
+      }
+    },
+    "menu.help.eula" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "End User License Agreement…" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Endbenutzer-Lizenzvereinbarung…" } }
+      }
+    },
+    "menu.help.github" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "GitHub Repository" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "GitHub-Repository" } }
+      }
+    },
+    "menu.help.issue" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Report an Issue…" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Fehler melden…" } }
+      }
+    },
+    "menu.help.privacyPolicy" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Privacy Policy…" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Datenschutzerklärung…" } }
+      }
+    },
+    "menu.help.quickStart" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "S3 Browser Help" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "S3-Browser-Hilfe" } }
+      }
+    },
+    "menu.help.website" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "DigitalFreedom Website" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "DigitalFreedom-Webseite" } }
+      }
+    },
+    "account.action.hideSecret" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Hide" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Verbergen" } }
+      }
+    },
+    "account.action.showSecret" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Show" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Anzeigen" } }
+      }
+    },
+    "error.dnsLookup" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "DNS lookup failed for the endpoint hostname. For non-AWS providers this usually means the bucket-as-subdomain URL is not served — enable Path-Style addressing in the account's Advanced settings." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "DNS-Auflösung fehlgeschlagen. Bei Nicht-AWS-Anbietern liegt das meist daran, dass die Bucket-als-Subdomain-URL nicht existiert — schalte in den Account-Einstellungen unter „Erweitert“ die Path-Style-Adressierung ein." } }
+      }
+    },
     "account.action.revealStoredCredentials" : {
       "extractionState" : "manual",
       "localizations" : {

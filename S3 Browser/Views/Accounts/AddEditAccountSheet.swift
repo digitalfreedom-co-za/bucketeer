@@ -190,8 +190,10 @@ struct AddEditAccountSheet: View {
             TextField("account.field.accessKey", text: $accessKey)
                 .textContentType(.username)
                 .autocorrectionDisabled()
-            SecureField("account.field.secretKey", text: $secretKey)
-                .textContentType(.password)
+            RevealableSecureField(
+                label: "account.field.secretKey",
+                text: $secretKey
+            )
 
             if isEditing && !secretsRevealed && onLoadCredentials != nil {
                 Button {
@@ -225,7 +227,10 @@ struct AddEditAccountSheet: View {
     private var advancedSection: some View {
         Section {
             DisclosureGroup(isExpanded: $showAdvanced) {
-                SecureField("account.field.sessionToken", text: $sessionToken)
+                RevealableSecureField(
+                    label: "account.field.sessionToken",
+                    text: $sessionToken
+                )
                 TextField("account.field.defaultBucket", text: $defaultBucket)
                     .autocorrectionDisabled()
                 if provider.supportsPathStyleToggle {
@@ -401,4 +406,40 @@ struct AddEditAccountSheet: View {
 
 private extension String {
     var nilIfEmpty: String? { isEmpty ? nil : self }
+}
+
+/// Secret-style text field that toggles between obfuscated and plain
+/// text via a trailing eye button. The plaintext mode lets the user
+/// verify what they typed (create flow) or read the credential just
+/// revealed via Touch ID (edit flow).
+private struct RevealableSecureField: View {
+    let label: LocalizedStringKey
+    @Binding var text: String
+    @State private var isPlain: Bool = false
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Group {
+                if isPlain {
+                    TextField(label, text: $text)
+                        .textContentType(.password)
+                        .autocorrectionDisabled()
+                } else {
+                    SecureField(label, text: $text)
+                        .textContentType(.password)
+                }
+            }
+            Button {
+                isPlain.toggle()
+            } label: {
+                Image(systemName: isPlain ? "eye.slash.fill" : "eye")
+                    .foregroundStyle(.secondary)
+                    .frame(width: 18, height: 18)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.borderless)
+            .help(isPlain ? "account.action.hideSecret" : "account.action.showSecret")
+            .disabled(text.isEmpty)
+        }
+    }
 }

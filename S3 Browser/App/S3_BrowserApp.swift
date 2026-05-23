@@ -28,18 +28,78 @@ struct S3_BrowserApp: App {
         }
         .windowResizability(.contentMinSize)
         .commands {
-            CommandGroup(replacing: .newItem) {
-                Button("action.add-account") {
-                    // Wired up in Phase 3 when account-creation menu action
-                    // becomes coupled to the visible window.
-                }
-                .keyboardShortcut("n", modifiers: .command)
-            }
+            AppCommands()
         }
+
+        Window("about.title", id: "about") {
+            AboutWindow()
+        }
+        .windowResizability(.contentSize)
+        .defaultPosition(.center)
+
+        Window("help.title", id: "help") {
+            HelpWindow()
+        }
+        .defaultSize(width: 800, height: 700)
+        .defaultPosition(.center)
 
         Settings {
             SettingsView()
                 .environment(container)
+        }
+    }
+}
+
+private struct AppCommands: Commands {
+    @Environment(\.openWindow) private var openWindow
+
+    var body: some Commands {
+        // Replace the default "About S3 Browser" item with one that
+        // opens the custom multi-section About window.
+        CommandGroup(replacing: .appInfo) {
+            Button("menu.app.about") {
+                openWindow(id: "about")
+            }
+        }
+
+        // Keep ⌘N reserved for the (future) account-add menu action.
+        CommandGroup(replacing: .newItem) {
+            Button("action.add-account") {
+                // Wired up to the main-window sidebar in a later phase.
+            }
+            .keyboardShortcut("n", modifiers: .command)
+        }
+
+        // Replace the default Help menu with our own entries.
+        CommandGroup(replacing: .help) {
+            Button("menu.help.quickStart") {
+                openWindow(id: "help")
+            }
+            .keyboardShortcut("?", modifiers: .command)
+
+            Divider()
+
+            Link(
+                "menu.help.github",
+                destination: URL(string: "https://github.com/digitalfreedom-co-za/s3-browser")!
+            )
+            Link(
+                "menu.help.issue",
+                destination: URL(string: "https://github.com/digitalfreedom-co-za/s3-browser/issues/new")!
+            )
+            Link(
+                "menu.help.website",
+                destination: URL(string: "https://digitalfreedom.co.za")!
+            )
+
+            Divider()
+
+            Button("menu.help.privacyPolicy") {
+                openWindow(id: "about")
+            }
+            Button("menu.help.eula") {
+                openWindow(id: "about")
+            }
         }
     }
 }

@@ -36,6 +36,7 @@ final class AppContainer {
             for: schema,
             configurations: configuration
         )
+        Self.runMigrations(modelContainer)
         let keychainStore = KeychainStore(
             service: AppEnvironment.keychainService,
             accessGroup: nil // Shared access group is added in Phase 9 with the File Provider extension.
@@ -65,6 +66,35 @@ final class AppContainer {
             transferManager: transferManager
         )
         self.transferQueueViewModel.startObserving()
+    }
+
+    /// One-shot data migrations that run at every launch. Each step is
+    /// idempotent and cheap so re-running on every launch is safe.
+    ///
+    /// Current migrations:
+    /// - **Civo path-style**: the original v1 default for Civo accounts
+    ///   was virtual-host addressing, which fails DNS resolution
+    ///   (`NoSuchRecord`) because Civo serves no `*.objectstore.<region>.civo.com`
+    ///   wildcard. Flip any pre-existing Civo records that still carry
+    ///   the old default so users do not have to edit each account by
+    ///   hand.
+    private static func runMigrations(_ container: ModelContainer) {
+        let context = ModelContext(container)
+        do {
+            let civoRaw = S3Provider.civo.rawValue
+            let predicate = #Predicate<S3AccountRecord> {
+                $0.providerRaw == civoRaw && $0.usesPathStyle == false
+            }
+            let records = try context.fetch(FetchDescriptor(predicate: predicate))
+            for record in records {
+                record.usesPathStyle = true
+            }
+            if !records.isEmpty {
+                try context.save()
+            }
+        } catch {
+            // Best-effort — a migration failure should never block app launch.
+        }
     }
 
     /// Resolve the SwiftData store URL. Phase 2 always uses the sandbox

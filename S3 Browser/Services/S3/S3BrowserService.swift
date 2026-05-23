@@ -248,7 +248,23 @@ struct S3BrowserService: S3Browsing {
         }
 
         let nsError = error as NSError
-        if nsError.domain == NSURLErrorDomain {
+        let combinedDescription = "\(nsError.domain) \(nsError.code) \(error.localizedDescription)"
+        let isDNSFailure = combinedDescription.contains("NoSuchRecord")
+            || combinedDescription.contains("CannotFindHost")
+            || combinedDescription.contains("could not find host")
+            || nsError.code == -65554
+            || (nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorCannotFindHost)
+        if isDNSFailure {
+            return .providerError(
+                statusCode: 0,
+                message: String(
+                    localized: "error.dnsLookup",
+                    defaultValue: "DNS lookup failed for the endpoint hostname. For non-AWS providers this usually means the bucket-as-subdomain URL is not served — enable Path-Style addressing in the account's Advanced settings."
+                )
+            )
+        }
+
+        if nsError.domain == NSURLErrorDomain || nsError.domain.hasPrefix("Network.") {
             return .networkUnavailable
         }
 
