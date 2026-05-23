@@ -16,18 +16,31 @@ final class AccountListViewModel {
     private let accountStore: AccountStoring
     private let keychainStore: KeychainStoring
     private let clientFactory: S3ClientFactory
+    private let azureCredentialsCache: AzureCredentialsCache
     private let transferManager: TransferManager
 
     init(
         accountStore: AccountStoring,
         keychainStore: KeychainStoring,
         clientFactory: S3ClientFactory,
+        azureCredentialsCache: AzureCredentialsCache,
         transferManager: TransferManager
     ) {
         self.accountStore = accountStore
         self.keychainStore = keychainStore
         self.clientFactory = clientFactory
+        self.azureCredentialsCache = azureCredentialsCache
         self.transferManager = transferManager
+    }
+
+    /// Flush both credential caches so a deleted or edited account does
+    /// not leak signing material into subsequent requests. The Azure cache
+    /// is per-process-only — no AWSClient shutdown is required, but the
+    /// signer must be re-derived from the (possibly rotated) Keychain
+    /// value on the next request.
+    private func invalidateAllCaches(for accountID: UUID) async {
+        await clientFactory.invalidate(accountID: accountID)
+        await azureCredentialsCache.invalidate(accountID: accountID)
     }
 
     func refresh() async {
@@ -89,7 +102,7 @@ final class AccountListViewModel {
 
         // Credentials may have changed — drop any cached AWSClient that
         // still holds the old signing material.
-        await clientFactory.invalidate(accountID: account.id)
+        await invalidateAllCaches(for: account.id)
         await refresh()
         return nil
     }
@@ -124,7 +137,7 @@ final class AccountListViewModel {
             self.error = .unknown(message: error.localizedDescription)
         }
 
-        await clientFactory.invalidate(accountID: account.id)
+        await invalidateAllCaches(for: account.id)
         await refresh()
         return nil
     }
@@ -142,10 +155,18 @@ final class AccountListViewModel {
     ) async -> BucketeerError? {
         let effective = await resolveCredentials(for: account.id, form: credentials)
         do {
-            try await S3ClientFactory.testConnection(
-                for: account,
-                credentials: effective
-            )
+            switch account.provider.family {
+            case .s3:
+                try await S3ClientFactory.testConnection(
+                    for: account,
+                    credentials: effective
+                )
+            case .azureBlob:
+                try await AzureBlobObjectStore.testConnection(
+                    account: account,
+                    credentials: effective
+                )
+            }
             return nil
         } catch let error as BucketeerError {
             return error

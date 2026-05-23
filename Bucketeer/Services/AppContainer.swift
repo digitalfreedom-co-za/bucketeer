@@ -18,6 +18,9 @@ final class AppContainer {
     let keychainStore: KeychainStoring
     let accountStore: AccountStoring
     let clientFactory: S3ClientFactory
+    let azureCredentialsCache: AzureCredentialsCache
+    let azureTransporter: AzureBlobTransporter
+    /// Routed `S3Browsing` facade — picks S3 or Azure per-account.
     let s3Browser: S3Browsing
     let transferManager: TransferManager
     let accountListViewModel: AccountListViewModel
@@ -43,23 +46,33 @@ final class AppContainer {
         )
         let accountStore = AccountStore(modelContainer: modelContainer)
         let clientFactory = S3ClientFactory(keychainStore: keychainStore)
-        let s3Browser = S3Service(factory: clientFactory)
-        let transferManager = TransferManager(factory: clientFactory)
+        let azureCredentialsCache = AzureCredentialsCache(keychainStore: keychainStore)
+        let azureObjectStore = AzureBlobObjectStore(credentialsCache: azureCredentialsCache)
+        let azureTransporter = AzureBlobTransporter(credentialsCache: azureCredentialsCache)
+        let s3ObjectStore = S3Service(factory: clientFactory)
+        let router = ProviderRouter(s3: s3ObjectStore, azure: azureObjectStore)
+        let transferManager = TransferManager(
+            factory: clientFactory,
+            azure: azureTransporter
+        )
 
         self.modelContainer = modelContainer
         self.keychainStore = keychainStore
         self.accountStore = accountStore
         self.clientFactory = clientFactory
-        self.s3Browser = s3Browser
+        self.azureCredentialsCache = azureCredentialsCache
+        self.azureTransporter = azureTransporter
+        self.s3Browser = router
         self.transferManager = transferManager
         self.accountListViewModel = AccountListViewModel(
             accountStore: accountStore,
             keychainStore: keychainStore,
             clientFactory: clientFactory,
+            azureCredentialsCache: azureCredentialsCache,
             transferManager: transferManager
         )
         self.browserViewModel = BrowserViewModel(
-            s3Browser: s3Browser,
+            s3Browser: router,
             accountStore: accountStore
         )
         self.transferQueueViewModel = TransferQueueViewModel(

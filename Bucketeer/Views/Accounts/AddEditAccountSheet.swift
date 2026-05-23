@@ -66,20 +66,34 @@ struct AddEditAccountSheet: View {
         if isSaving { return true }
         let nameOK = !name.trimmingCharacters(in: .whitespaces).isEmpty
         // In edit mode, blank credentials are allowed and mean
-        // "keep what's already in the Keychain". In create mode both
-        // fields are still required.
+        // "keep what's already in the Keychain". In create mode the
+        // required fields depend on the provider — Azure derives its
+        // accessKey from the accountID field, so only the secret is
+        // mandatory there.
         let credsOK: Bool
         if isEditing {
             credsOK = true
+        } else if provider.hidesAccessKeyField {
+            credsOK = !secretKey.isEmpty
         } else {
             credsOK = !accessKey.trimmingCharacters(in: .whitespaces).isEmpty
                 && !secretKey.isEmpty
         }
-        let regionOK = !region.trimmingCharacters(in: .whitespaces).isEmpty
+        let regionOK = provider.hidesRegionPicker
+            || !region.trimmingCharacters(in: .whitespaces).isEmpty
         let accountIDOK = !provider.requiresAccountID
             || !accountIdentifier.trimmingCharacters(in: .whitespaces).isEmpty
-        let endpointOK = !provider.requiresEndpointOverride
-            || Self.parseEndpoint(endpointOverride) != nil
+        // requiresEndpointOverride is strict (Custom); supportsOptionalEndpointOverride
+        // accepts a blank value and falls back to the provider default at save time.
+        let endpointOK: Bool
+        if provider.requiresEndpointOverride {
+            endpointOK = Self.parseEndpoint(endpointOverride) != nil
+        } else if provider.supportsOptionalEndpointOverride {
+            let trimmed = endpointOverride.trimmingCharacters(in: .whitespaces)
+            endpointOK = trimmed.isEmpty || Self.parseEndpoint(trimmed) != nil
+        } else {
+            endpointOK = true
+        }
         return !(nameOK && credsOK && regionOK && accountIDOK && endpointOK)
     }
 
@@ -163,23 +177,36 @@ struct AddEditAccountSheet: View {
                 applyProviderDefaults(for: newValue)
             }
 
-            if let regions = provider.fixedRegions {
-                Picker("account.field.region", selection: $region) {
-                    ForEach(regions, id: \.self) { Text($0).tag($0) }
+            if !provider.hidesRegionPicker {
+                if let regions = provider.fixedRegions {
+                    Picker("account.field.region", selection: $region) {
+                        ForEach(regions, id: \.self) { Text($0).tag($0) }
+                    }
+                } else {
+                    TextField("account.field.region", text: $region)
                 }
-            } else {
-                TextField("account.field.region", text: $region)
             }
 
             if provider.requiresAccountID {
-                TextField("account.field.accountID", text: $accountIdentifier)
-                    .textContentType(.username)
+                TextField(
+                    LocalizedStringKey(provider.accountIDFieldLabelKey),
+                    text: $accountIdentifier
+                )
+                .textContentType(.username)
+                .autocorrectionDisabled()
             }
 
             if provider.requiresEndpointOverride {
                 TextField("account.field.endpoint", text: $endpointOverride)
                     .textContentType(.URL)
                     .autocorrectionDisabled()
+            } else if provider.supportsOptionalEndpointOverride {
+                TextField(
+                    LocalizedStringKey(provider.endpointPlaceholderKey),
+                    text: $endpointOverride
+                )
+                .textContentType(.URL)
+                .autocorrectionDisabled()
             }
         }
     }
@@ -187,11 +214,13 @@ struct AddEditAccountSheet: View {
     @ViewBuilder
     private var credentialsSection: some View {
         Section("account.section.credentials") {
-            TextField("account.field.accessKey", text: $accessKey)
-                .textContentType(.username)
-                .autocorrectionDisabled()
+            if !provider.hidesAccessKeyField {
+                TextField("account.field.accessKey", text: $accessKey)
+                    .textContentType(.username)
+                    .autocorrectionDisabled()
+            }
             RevealableSecureField(
-                label: "account.field.secretKey",
+                label: LocalizedStringKey(provider.secretKeyFieldLabelKey),
                 text: $secretKey
             )
 
@@ -347,25 +376,42 @@ struct AddEditAccountSheet: View {
 
     private func buildPayload() -> (S3Account, AccountCredentials) {
         let trimmedEndpoint = endpointOverride.trimmingCharacters(in: .whitespaces)
-        let endpoint: URL? = provider.requiresEndpointOverride
-            ? Self.parseEndpoint(trimmedEndpoint)
-            : nil
+        let endpoint: URL? = {
+            if provider.requiresEndpointOverride {
+                return Self.parseEndpoint(trimmedEndpoint)
+            }
+            if provider.supportsOptionalEndpointOverride {
+                return trimmedEndpoint.isEmpty
+                    ? nil
+                    : Self.parseEndpoint(trimmedEndpoint)
+            }
+            return nil
+        }()
         let cleanedAccountID: String? = provider.requiresAccountID
             ? accountIdentifier.trimmingCharacters(in: .whitespaces)
             : nil
+        let resolvedRegion = provider.hidesRegionPicker
+            ? provider.defaultRegion
+            : region.trimmingCharacters(in: .whitespaces)
         let account = S3Account(
             id: existingAccount?.id ?? UUID(),
             name: name.trimmingCharacters(in: .whitespaces),
             provider: provider,
-            region: region.trimmingCharacters(in: .whitespaces),
+            region: resolvedRegion,
             endpointOverride: endpoint,
             accountID: cleanedAccountID,
             defaultBucket: defaultBucket.trimmingCharacters(in: .whitespaces).nilIfEmpty,
             usesPathStyle: usesPathStyle,
             lastUsedAt: existingAccount?.lastUsedAt
         )
+        // Azure mirrors the storage-account name into the Keychain's
+        // accessKey slot so the signer can derive both fields from the
+        // Keychain alone. Other providers use the user-entered accessKey.
+        let resolvedAccessKey: String = provider.hidesAccessKeyField
+            ? (cleanedAccountID ?? "")
+            : accessKey.trimmingCharacters(in: .whitespaces)
         let credentials = AccountCredentials(
-            accessKey: accessKey.trimmingCharacters(in: .whitespaces),
+            accessKey: resolvedAccessKey,
             secretKey: secretKey,
             sessionToken: sessionToken.isEmpty ? nil : sessionToken
         )

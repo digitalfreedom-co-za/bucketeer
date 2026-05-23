@@ -38,6 +38,7 @@ actor TransferManager: Transferring {
     }
 
     private let factory: S3ClientFactory
+    private let azure: AzureBlobTransporter?
     private var items: [UUID: QueuedItem] = [:]
     private var order: [UUID] = []
     private var workers: [UUID: Task<Void, Never>] = [:]
@@ -47,8 +48,9 @@ actor TransferManager: Transferring {
     /// back to life.
     private var terminated: Set<UUID> = []
 
-    init(factory: S3ClientFactory) {
+    init(factory: S3ClientFactory, azure: AzureBlobTransporter? = nil) {
         self.factory = factory
+        self.azure = azure
         let (stream, continuation) = AsyncStream<[TransferTask]>.makeStream(
             bufferingPolicy: .bufferingNewest(1)
         )
@@ -207,6 +209,11 @@ actor TransferManager: Transferring {
             }
         }
 
+        if item.account.provider.family == .azureBlob {
+            await performAzureUpload(item: item)
+            return
+        }
+
         let s3: S3
         do {
             s3 = try await factory.client(for: item.account)
@@ -270,6 +277,11 @@ actor TransferManager: Transferring {
             if scopedAccessAcquired {
                 url.stopAccessingSecurityScopedResource()
             }
+        }
+
+        if item.account.provider.family == .azureBlob {
+            await performAzureDownload(item: item)
+            return
         }
 
         let s3: S3
@@ -338,6 +350,81 @@ actor TransferManager: Transferring {
                 filename: item.task.localURL.path,
                 progress: { @Sendable [weak self] fraction in
                     let bytes = Int64(Double(total) * fraction)
+                    await self?.setState(
+                        id: id,
+                        state: .running(bytesTransferred: bytes, totalBytes: total)
+                    )
+                }
+            )
+            setState(id: id, state: .completed)
+        } catch is CancellationError {
+            setState(id: id, state: .cancelled)
+        } catch {
+            if Task.isCancelled {
+                setState(id: id, state: .cancelled)
+            } else {
+                setState(id: id, state: .failed(message: errorMessage(error)))
+            }
+        }
+    }
+
+    // MARK: - Azure transports
+
+    private func performAzureUpload(item: QueuedItem) async {
+        let id = item.task.id
+        guard let azure else {
+            setState(
+                id: id,
+                state: .failed(message: "Azure transport not configured.")
+            )
+            return
+        }
+        let total = item.fileSize
+        do {
+            try await azure.upload(
+                account: item.account,
+                container: item.task.bucket,
+                blob: item.task.key,
+                localURL: item.task.localURL,
+                contentType: item.contentType,
+                progress: { @Sendable [weak self] bytes, totalBytes in
+                    await self?.setState(
+                        id: id,
+                        state: .running(
+                            bytesTransferred: bytes,
+                            totalBytes: max(total, totalBytes)
+                        )
+                    )
+                }
+            )
+            setState(id: id, state: .completed)
+        } catch is CancellationError {
+            setState(id: id, state: .cancelled)
+        } catch {
+            if Task.isCancelled {
+                setState(id: id, state: .cancelled)
+            } else {
+                setState(id: id, state: .failed(message: errorMessage(error)))
+            }
+        }
+    }
+
+    private func performAzureDownload(item: QueuedItem) async {
+        let id = item.task.id
+        guard let azure else {
+            setState(
+                id: id,
+                state: .failed(message: "Azure transport not configured.")
+            )
+            return
+        }
+        do {
+            try await azure.download(
+                account: item.account,
+                container: item.task.bucket,
+                blob: item.task.key,
+                localURL: item.task.localURL,
+                progress: { @Sendable [weak self] bytes, total in
                     await self?.setState(
                         id: id,
                         state: .running(bytesTransferred: bytes, totalBytes: total)

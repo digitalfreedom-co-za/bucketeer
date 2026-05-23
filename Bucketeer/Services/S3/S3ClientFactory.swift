@@ -134,6 +134,12 @@ actor S3ClientFactory {
             return URL(string: "https://\(account.region).digitaloceanspaces.com")!
         case .storj:
             return URL(string: "https://gateway.storjshare.io")!
+        case .azureBlob:
+            // Azure traffic never routes through S3ClientFactory; this case
+            // satisfies Swift's exhaustiveness requirement only.
+            let accountName = account.accountID ?? "unknown"
+            return account.endpointOverride
+                ?? URL(string: "https://\(accountName).blob.core.windows.net")!
         case .custom:
             return account.endpointOverride
                 ?? URL(string: "https://localhost")!
