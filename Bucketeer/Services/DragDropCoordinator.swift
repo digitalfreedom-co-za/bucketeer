@@ -82,6 +82,12 @@ final class DragDropCoordinator {
         destinationBucket: String,
         destinationPrefix: String
     ) async {
+        // Folder drops require recursive enumeration of the source
+        // prefix — out of scope for v1 (Codex review #9). Drop on the
+        // floor so the user does not get half-folder copies or a
+        // misleading single-key copy of `foo/`.
+        if ref.isFolder { return }
+
         // Resolve the source account from its UUID — refs carry only
         // the ID so the drag payload stays small. A missing account
         // means it was deleted while the drag was in flight; nothing to
@@ -94,14 +100,16 @@ final class DragDropCoordinator {
                 .first(where: { $0.id == ref.accountID })
         }
         guard let sourceAccount else { return }
-        // Drop on self → ignore. Cheaper than firing a copy that does
-        // nothing useful and surfaces a confusing entry in the queue.
+        // Compute the destination key first so the self-drop comparison
+        // is exact (Codex review #9 — comparing parent prefixes only
+        // missed the case where dragging a row back onto its own row
+        // produced a no-op copy that still surfaced as a queue entry).
+        let destinationKey = destinationPrefix + ref.displayName
         if sourceAccount.id == destinationAccount.id,
            ref.bucket == destinationBucket,
-           keyMatchesSelf(refKey: ref.key, destinationPrefix: destinationPrefix) {
+           destinationKey == ref.key {
             return
         }
-        let destinationKey = destinationPrefix + ref.displayName
 
         if sourceAccount.id == destinationAccount.id {
             // Server-side copy within one account.
@@ -131,16 +139,6 @@ final class DragDropCoordinator {
                 destinationKey: destinationKey
             )
         }
-    }
-
-    private func keyMatchesSelf(refKey: String, destinationPrefix: String) -> Bool {
-        // The drop is onto "this prefix" — if the source key already
-        // lives at this prefix with the same display name, it's a no-op.
-        guard let lastSlash = refKey.lastIndex(of: "/") else {
-            return destinationPrefix.isEmpty
-        }
-        let parentPrefix = String(refKey[..<refKey.index(after: lastSlash)])
-        return parentPrefix == destinationPrefix
     }
 
     private func roundTripCopy(

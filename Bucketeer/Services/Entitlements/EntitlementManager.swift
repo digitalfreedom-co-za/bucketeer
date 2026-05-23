@@ -74,6 +74,10 @@ final class EntitlementManager {
     static let proProductID = "za.co.digitalfreedom.bucketeer.pro.lifetime"
     static let trialLengthSeconds: TimeInterval = 14 * 24 * 60 * 60
     private static let trialStartKey = "bucketeer.trial.start"
+    /// Sticky flag set once a trial reaches its end. Persisted alongside
+    /// the trial start so deleting the start key cannot resurrect the
+    /// trial (Codex review #8 — paywall bypass mitigation).
+    private static let trialConsumedKey = "bucketeer.trial.consumed"
 
     private(set) var state: State = .free
     /// Resolved StoreKit product once `.products(for:)` returns. Nil
@@ -186,6 +190,13 @@ final class EntitlementManager {
 
     private func ensureTrialStarted() {
         let defaults = UserDefaults.standard
+        // If the trial was already consumed once, never start a new
+        // one — even when the user deletes the trial-start key
+        // manually. Combined with the future-date clamp below this
+        // closes the obvious local-tampering bypass Codex flagged.
+        if defaults.bool(forKey: Self.trialConsumedKey) {
+            return
+        }
         if defaults.object(forKey: Self.trialStartKey) == nil {
             defaults.set(Date(), forKey: Self.trialStartKey)
         }
@@ -193,10 +204,27 @@ final class EntitlementManager {
 
     private func trialDaysRemaining() -> Int? {
         let defaults = UserDefaults.standard
-        let start = (defaults.object(forKey: Self.trialStartKey) as? Date) ?? Date()
-        let elapsed = Date().timeIntervalSince(start)
-        let remaining = max(0, Self.trialLengthSeconds - elapsed)
-        guard remaining > 0 else { return nil }
+        if defaults.bool(forKey: Self.trialConsumedKey) {
+            return nil
+        }
+        // Clamp future start dates — flipping the system clock or
+        // editing the plist to a date in the future used to extend the
+        // trial. Treat anything in the future as "now".
+        let rawStart = defaults.object(forKey: Self.trialStartKey) as? Date
+        let now = Date()
+        let start: Date
+        if let rawStart, rawStart <= now {
+            start = rawStart
+        } else {
+            start = now
+            defaults.set(now, forKey: Self.trialStartKey)
+        }
+        let elapsed = now.timeIntervalSince(start)
+        let remaining = Self.trialLengthSeconds - elapsed
+        guard remaining > 0 else {
+            defaults.set(true, forKey: Self.trialConsumedKey)
+            return nil
+        }
         return Int(ceil(remaining / 86_400))
     }
 

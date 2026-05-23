@@ -47,6 +47,14 @@ actor TransferManager: Transferring {
     /// callback or a delayed completion cannot bring a cancelled task
     /// back to life.
     private var terminated: Set<UUID> = []
+    /// Per-ID waiters created by `awaitCompletion(id:)`. Each entry is
+    /// a list of continuations resumed once the task reaches a terminal
+    /// state. Codex review #2 — fixes the race where a fast transfer
+    /// completed before a sync engine's stream-based waiter observed it.
+    private var waiters: [UUID: [CheckedContinuation<TransferState, Never>]] = [:]
+    /// Terminal-state cache for waiters that arrive after a transfer
+    /// completed. Cleared when the task is removed via `clearTerminal`.
+    private var terminalCache: [UUID: TransferState] = [:]
 
     init(factory: S3ClientFactory, azure: AzureBlobTransporter? = nil) {
         self.factory = factory
@@ -156,8 +164,26 @@ actor TransferManager: Transferring {
             items.removeValue(forKey: id)
             order.removeAll { $0 == id }
             terminated.remove(id)
+            terminalCache.removeValue(forKey: id)
         }
         publish()
+    }
+
+    /// Suspend until the supplied task reaches a terminal state and
+    /// return that state. Safe for **late** subscribers: if the task
+    /// already terminated before this call, the cached terminal state
+    /// is returned immediately. Used by `SyncEngine` to wait on
+    /// cross-account round-trip halves without racing the public
+    /// `tasks` stream (Codex review #2).
+    func awaitCompletion(id: UUID) async -> TransferState {
+        if let cached = terminalCache[id] { return cached }
+        if let item = items[id], item.task.state.isTerminal {
+            terminalCache[id] = item.task.state
+            return item.task.state
+        }
+        return await withCheckedContinuation { (continuation: CheckedContinuation<TransferState, Never>) in
+            waiters[id, default: []].append(continuation)
+        }
     }
 
     // MARK: - Scheduling
@@ -455,6 +481,14 @@ actor TransferManager: Transferring {
         items[id] = item
         if state.isTerminal {
             terminated.insert(id)
+            terminalCache[id] = state
+            // Resume every waiter for this ID with the terminal state.
+            // The waiter list is removed before resuming so a continuation
+            // that immediately re-subscribes (unusual) does not loop.
+            let pending = waiters.removeValue(forKey: id) ?? []
+            for continuation in pending {
+                continuation.resume(returning: state)
+            }
         }
         publish()
     }

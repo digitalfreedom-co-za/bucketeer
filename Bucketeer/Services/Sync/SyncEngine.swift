@@ -36,6 +36,12 @@ actor SyncEngine {
     private var current: [UUID: SyncJobStatus] = [:]
     private var runners: [UUID: Task<Void, Never>] = [:]
     private var jobs: [UUID: SyncJob] = [:]
+    /// Per-sync-job: the transfer-manager IDs the engine has handed off
+    /// to the queue. Used to actively cancel in-flight uploads /
+    /// downloads when the sync job is cancelled, instead of just
+    /// cancelling the orchestrating task and letting the transfers keep
+    /// running.
+    private var activeTransferIDs: [UUID: Set<UUID>] = [:]
 
     init(
         accountStore: AccountStoring,
@@ -85,13 +91,29 @@ actor SyncEngine {
         runners[id] = task
     }
 
-    /// Cancel a running job. Idempotent.
+    /// Cancel a running job. Idempotent. Cancels the orchestrating
+    /// task **and** every transfer-manager task the engine has handed
+    /// to the queue for this job — Codex review #3.
     func cancel(id: UUID) async {
         runners[id]?.cancel()
         runners[id] = nil
+        if let ids = activeTransferIDs[id] {
+            for transferID in ids {
+                await transferManager.cancel(id: transferID)
+            }
+        }
+        activeTransferIDs.removeValue(forKey: id)
         if current[id] != nil {
             updateStatus(id: id, phase: .cancelled, message: nil)
         }
+    }
+
+    private func registerActiveTransfer(jobID: UUID, transferID: UUID) {
+        activeTransferIDs[jobID, default: []].insert(transferID)
+    }
+
+    private func unregisterActiveTransfer(jobID: UUID, transferID: UUID) {
+        activeTransferIDs[jobID]?.remove(transferID)
     }
 
     // MARK: - Execution
@@ -143,6 +165,9 @@ actor SyncEngine {
 
         var completed = 0
         var failed = 0
+        /// Tracks which entries actually succeeded so move-mode does
+        /// not delete the source for failed upserts (Codex blocker #1).
+        var successfulEntries: [PlanEntry] = []
 
         // Upserts: copy or transfer per entry.
         for entry in plan.upserts {
@@ -158,6 +183,7 @@ actor SyncEngine {
                     destination: accounts.destination
                 )
                 completed += 1
+                successfulEntries.append(entry)
             } catch {
                 failed += 1
             }
@@ -194,9 +220,12 @@ actor SyncEngine {
             }
         }
 
-        // Move mode: after every successful upsert, remove the source.
-        if job.mode == .move {
-            for entry in plan.upserts where !Task.isCancelled {
+        // Move mode: delete the source **only** for entries whose
+        // upsert succeeded (Codex blocker #1 — failed copies must not
+        // trigger source deletes), and only if the job was not
+        // cancelled mid-flight.
+        if job.mode == .move && !Task.isCancelled {
+            for entry in successfulEntries where !Task.isCancelled {
                 try? await browser.delete(
                     account: accounts.source,
                     bucket: job.source.bucket,
@@ -270,8 +299,11 @@ actor SyncEngine {
 
         var deletes: [String] = []
         if job.mode == .mirror && job.deletePropagation {
-            // Compute the inverse of upserts: destination keys whose
-            // corresponding relative path is absent from the source.
+            // Destination-side keys whose corresponding relative path is
+            // absent from the source. The destination set is filtered by
+            // the same include/exclude globs as the upsert side so a
+            // mirror job for `*.jpg` never deletes unrelated files in
+            // the destination (Codex review #6).
             let sourceRelatives = Set(
                 source
                     .filter { !$0.isFolder }
@@ -279,6 +311,9 @@ actor SyncEngine {
             )
             for d in destination where !d.isFolder {
                 let relative = relativeKey(d.key, under: job.destination.prefix)
+                guard matches(relative, includes: job.includeGlobs, excludes: job.excludeGlobs) else {
+                    continue
+                }
                 if !sourceRelatives.contains(relative) {
                     deletes.append(d.key)
                 }
@@ -349,7 +384,11 @@ actor SyncEngine {
             )
             return
         }
-        // Cross-account → temp staging, then upload.
+        // Cross-account → temp staging, then upload. Track both halves
+        // as "active transfers" for the job so a user-initiated cancel
+        // can tear them down (Codex review #3) and use the new
+        // `awaitCompletion(id:)` actor API instead of polling the
+        // public `tasks` stream (Codex review #2).
         let staging = stagingURL(for: entry.sourceKey)
         let downloadID = await transferManager.enqueueDownload(
             account: source,
@@ -357,7 +396,13 @@ actor SyncEngine {
             key: entry.sourceKey,
             localURL: staging
         )
-        try await waitForTransfer(downloadID)
+        registerActiveTransfer(jobID: job.id, transferID: downloadID)
+        defer {
+            unregisterActiveTransfer(jobID: job.id, transferID: downloadID)
+            try? FileManager.default.removeItem(at: staging)
+        }
+        try terminalToError(await transferManager.awaitCompletion(id: downloadID))
+
         let uploadID = await transferManager.enqueueUpload(
             account: destination,
             bucket: job.destination.bucket,
@@ -365,23 +410,23 @@ actor SyncEngine {
             localURL: staging,
             contentType: nil
         )
-        try await waitForTransfer(uploadID)
-        try? FileManager.default.removeItem(at: staging)
+        registerActiveTransfer(jobID: job.id, transferID: uploadID)
+        defer { unregisterActiveTransfer(jobID: job.id, transferID: uploadID) }
+        try terminalToError(await transferManager.awaitCompletion(id: uploadID))
     }
 
-    private func waitForTransfer(_ id: UUID) async throws {
-        for await snapshot in transferManager.tasks {
-            guard let task = snapshot.first(where: { $0.id == id }) else { continue }
-            switch task.state {
-            case .completed:
-                return
-            case .failed(let message):
-                throw BucketeerError.providerError(statusCode: 0, message: message)
-            case .cancelled:
-                throw BucketeerError.cancelled
-            case .queued, .running:
-                continue
-            }
+    private nonisolated func terminalToError(_ state: TransferState) throws {
+        switch state {
+        case .completed:
+            return
+        case .failed(let message):
+            throw BucketeerError.providerError(statusCode: 0, message: message)
+        case .cancelled:
+            throw BucketeerError.cancelled
+        case .queued, .running:
+            // awaitCompletion only returns terminal states by contract;
+            // a non-terminal value here is a logic bug in TransferManager.
+            throw BucketeerError.unknown(message: "Transfer returned a non-terminal state from awaitCompletion.")
         }
     }
 

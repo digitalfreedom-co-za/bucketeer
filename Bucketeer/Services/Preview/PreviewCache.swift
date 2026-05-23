@@ -152,12 +152,18 @@ actor PreviewCache {
         }
     }
 
-    /// Empty the cache. Called from the Hardening phase when the user
-    /// asks to free disk space.
+    /// Empty the cache. Codex review #7 — the previous implementation
+    /// only walked the in-memory index, missing files written by a
+    /// previous app run before the user requested any preview this
+    /// session. Removing the whole cache root and recreating it is the
+    /// only way to guarantee the user-visible "Clear Cache" actually
+    /// frees disk.
     func clearAll() {
-        for entry in entries.values {
-            try? FileManager.default.removeItem(at: entry.url)
-        }
+        try? FileManager.default.removeItem(at: root)
+        try? FileManager.default.createDirectory(
+            at: root,
+            withIntermediateDirectories: true
+        )
         entries.removeAll()
     }
 

@@ -431,15 +431,33 @@ struct AzureBlobTransporter: Sendable {
         guard let http = response as? HTTPURLResponse else {
             throw BucketeerError.unknown(message: "Azure ranged GET returned a non-HTTP response.")
         }
-        // 200 (full body) and 206 (partial) both indicate success.
-        if !(200..<300).contains(http.statusCode) {
-            if let mapped = AzureBlobObjectStore.mapHTTP(
-                http, body: data, bucket: container, key: blob
-            ) {
-                throw mapped
-            }
+        if let mapped = AzureBlobObjectStore.mapHTTP(
+            http, body: data, bucket: container, key: blob
+        ) {
+            throw mapped
         }
-        await writer.write(data, at: offset)
+        // Codex review #5: a proxy or misbehaving server that ignores
+        // the Range header returns 200 with the full body — writing
+        // that into our chunk slot would scramble the file. Demand
+        // 206 (Partial Content) and verify the response is exactly
+        // the bytes we asked for. The single-shot path is the right
+        // place for whole-body downloads.
+        guard http.statusCode == 206 else {
+            throw BucketeerError.providerError(
+                statusCode: http.statusCode,
+                message: "Azure ignored the Range header and returned the full blob; ranged download aborted."
+            )
+        }
+        guard Int64(data.count) == length else {
+            throw BucketeerError.providerError(
+                statusCode: http.statusCode,
+                message: "Azure ranged GET returned \(data.count) bytes; expected \(length)."
+            )
+        }
+        // Codex review #4: write failures now propagate so a disk-full
+        // or permission error fails the task group instead of leaving
+        // a corrupt partial file marked complete.
+        try await writer.write(data, at: offset)
     }
 }
 
@@ -478,20 +496,22 @@ private actor DownloadWriter {
         self.callback = callback
     }
 
-    func write(_ data: Data, at offset: Int64) async {
-        guard let handle else { return }
+    /// Codex review #4: write failures now propagate to the caller so a
+    /// disk-full, permission, or invalid-handle error fails the outer
+    /// throwing task group immediately instead of leaving a corrupt
+    /// partial file marked complete.
+    func write(_ data: Data, at offset: Int64) async throws {
+        guard let handle else {
+            throw BucketeerError.unknown(message: "Download writer was closed before all chunks landed.")
+        }
         do {
             try handle.seek(toOffset: UInt64(offset))
             try handle.write(contentsOf: data)
-            bytesSoFar += Int64(data.count)
-            await callback(bytesSoFar, total)
         } catch {
-            // Swallowing here is intentional — the outer task group will
-            // surface the failure of the *next* fetch (or the file gets
-            // closed and a subsequent operation fails). Failing the write
-            // silently is preferable to crashing the entire transfer on
-            // a transient disk hiccup.
+            throw BucketeerError.sandboxAccessDenied(URL(fileURLWithPath: "(download writer)"))
         }
+        bytesSoFar += Int64(data.count)
+        await callback(bytesSoFar, total)
     }
 
     func close() async {
