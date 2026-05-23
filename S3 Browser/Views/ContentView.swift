@@ -32,6 +32,15 @@ struct ContentView: View {
 
     @ViewBuilder
     private var contentPane: some View {
+        if case .transfersRoot = sidebarSelection {
+            TransferListView(viewModel: container.transferQueueViewModel)
+        } else {
+            browserPane
+        }
+    }
+
+    @ViewBuilder
+    private var browserPane: some View {
         let vm = container.browserViewModel
         if vm.account == nil {
             ContentUnavailableView {

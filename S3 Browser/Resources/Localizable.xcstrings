@@ -1,6 +1,62 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "action.download" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Download…" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Herunterladen…" } }
+      }
+    },
+    "action.upload" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Upload…" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Hochladen…" } }
+      }
+    },
+    "transfer.state.cancelled" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Cancelled" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Abgebrochen" } }
+      }
+    },
+    "transfer.state.completed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Completed" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Fertig" } }
+      }
+    },
+    "transfers.action.clearFinished" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Clear Finished" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Fertige entfernen" } }
+      }
+    },
+    "transfers.empty.message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Uploaded and downloaded files will appear here while they are in flight." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Laufende Up- und Downloads erscheinen hier." } }
+      }
+    },
+    "transfers.empty.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No Transfers" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Keine Übertragungen" } }
+      }
+    },
+    "upload.picker.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose files to upload" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Dateien zum Hochladen wählen" } }
+      }
+    },
     "action.loadMore" : {
       "extractionState" : "manual",
       "localizations" : {

@@ -18,9 +18,14 @@ enum SidebarSelection: Hashable {
 struct SidebarView: View {
     @Bindable var viewModel: AccountListViewModel
     @Binding var selection: SidebarSelection?
+    @Environment(AppContainer.self) private var container
     @State private var showingAddSheet: Bool = false
     @State private var editingAccount: S3Account?
     @State private var pendingDeletion: S3Account?
+
+    private var transferActiveCount: Int {
+        container.transferQueueViewModel.activeCount
+    }
 
     var body: some View {
         List(selection: $selection) {
@@ -76,9 +81,25 @@ struct SidebarView: View {
             }
 
             Section {
-                Text("sidebar.empty.transfers")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+                NavigationLink(value: SidebarSelection.transfersRoot) {
+                    Label {
+                        HStack {
+                            Text("sidebar.section.transfers")
+                            Spacer()
+                            if transferActiveCount > 0 {
+                                Text("\(transferActiveCount)")
+                                    .font(.caption2)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 1)
+                                    .background(.tint, in: Capsule())
+                                    .foregroundStyle(.white)
+                            }
+                        }
+                    } icon: {
+                        Image(systemName: "arrow.up.arrow.down.circle")
+                    }
+                }
+                .tag(SidebarSelection.transfersRoot)
             } header: {
                 Text("sidebar.section.transfers")
             }

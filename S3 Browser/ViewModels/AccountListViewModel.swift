@@ -16,15 +16,18 @@ final class AccountListViewModel {
     private let accountStore: AccountStoring
     private let keychainStore: KeychainStoring
     private let clientFactory: S3ClientFactory
+    private let transferManager: TransferManager
 
     init(
         accountStore: AccountStoring,
         keychainStore: KeychainStoring,
-        clientFactory: S3ClientFactory
+        clientFactory: S3ClientFactory,
+        transferManager: TransferManager
     ) {
         self.accountStore = accountStore
         self.keychainStore = keychainStore
         self.clientFactory = clientFactory
+        self.transferManager = transferManager
     }
 
     func refresh() async {
@@ -83,6 +86,10 @@ final class AccountListViewModel {
     /// account record referencing them and are cleaned up on next save.
     @discardableResult
     func delete(account: S3Account) async -> S3BrowserError? {
+        // Cancel any in-flight transfers for this account so workers
+        // don't try to use the AWSClient we're about to shut down.
+        await transferManager.cancelAll(for: account.id)
+
         do {
             try await accountStore.delete(id: account.id)
         } catch let error as S3BrowserError {

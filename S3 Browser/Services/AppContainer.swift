@@ -19,8 +19,10 @@ final class AppContainer {
     let accountStore: AccountStoring
     let clientFactory: S3ClientFactory
     let s3Browser: S3Browsing
+    let transferManager: TransferManager
     let accountListViewModel: AccountListViewModel
     let browserViewModel: BrowserViewModel
+    let transferQueueViewModel: TransferQueueViewModel
 
     init() throws {
         let storeURL = Self.resolveStoreURL()
@@ -41,21 +43,28 @@ final class AppContainer {
         let accountStore = AccountStore(modelContainer: modelContainer)
         let clientFactory = S3ClientFactory(keychainStore: keychainStore)
         let s3Browser = S3BrowserService(factory: clientFactory)
+        let transferManager = TransferManager(factory: clientFactory)
 
         self.modelContainer = modelContainer
         self.keychainStore = keychainStore
         self.accountStore = accountStore
         self.clientFactory = clientFactory
         self.s3Browser = s3Browser
+        self.transferManager = transferManager
         self.accountListViewModel = AccountListViewModel(
             accountStore: accountStore,
             keychainStore: keychainStore,
-            clientFactory: clientFactory
+            clientFactory: clientFactory,
+            transferManager: transferManager
         )
         self.browserViewModel = BrowserViewModel(
             s3Browser: s3Browser,
             accountStore: accountStore
         )
+        self.transferQueueViewModel = TransferQueueViewModel(
+            transferManager: transferManager
+        )
+        self.transferQueueViewModel.startObserving()
     }
 
     /// Resolve the SwiftData store URL. Phase 2 always uses the sandbox

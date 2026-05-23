@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ObjectListView: View {
     @Bindable var viewModel: BrowserViewModel
+    @Environment(AppContainer.self) private var container
 
     var body: some View {
         Group {
@@ -41,6 +42,14 @@ struct ObjectListView: View {
             }
             ToolbarItem(placement: .primaryAction) {
                 Button {
+                    Task { await uploadFiles() }
+                } label: {
+                    Label("action.upload", systemImage: "arrow.up.circle")
+                }
+                .disabled(viewModel.account == nil || viewModel.bucket == nil)
+            }
+            ToolbarItem(placement: .primaryAction) {
+                Button {
                     Task { await viewModel.refresh() }
                 } label: {
                     Label("action.refresh", systemImage: "arrow.clockwise")
@@ -48,6 +57,45 @@ struct ObjectListView: View {
                 .disabled(viewModel.isLoading)
             }
         }
+        .contextMenu(forSelectionType: String.self) { selection in
+            if selection.count == 1,
+               let key = selection.first,
+               let object = viewModel.objects.first(where: { $0.key == key }),
+               !object.isFolder {
+                Button("action.download", systemImage: "arrow.down.circle") {
+                    Task { await downloadObject(object) }
+                }
+            }
+        }
+    }
+
+    private func uploadFiles() async {
+        guard let account = viewModel.account, let bucket = viewModel.bucket else { return }
+        let urls = await FilePickers.pickFiles(
+            title: String(localized: "upload.picker.title",
+                          defaultValue: "Choose files to upload"),
+            allowsMultipleSelection: true
+        )
+        guard !urls.isEmpty else { return }
+        await container.transferQueueViewModel.enqueueUploads(
+            account: account,
+            bucket: bucket,
+            prefix: viewModel.prefix,
+            fileURLs: urls
+        )
+    }
+
+    private func downloadObject(_ object: S3Object) async {
+        guard let account = viewModel.account, let bucket = viewModel.bucket else { return }
+        guard let target = await FilePickers.pickSaveLocation(
+            suggestedName: object.displayName
+        ) else { return }
+        await container.transferQueueViewModel.enqueueDownload(
+            account: account,
+            bucket: bucket,
+            key: object.key,
+            to: target
+        )
     }
 
     private var table: some View {
