@@ -6,10 +6,12 @@
 //
 
 import SwiftUI
+import AppKit
 
 @main
 struct BucketeerApp: App {
     @State private var container: AppContainer
+    @NSApplicationDelegateAdaptor(BucketeerAppDelegate.self) private var appDelegate
 
     init() {
         let container: AppContainer
@@ -19,10 +21,13 @@ struct BucketeerApp: App {
             fatalError("Failed to initialise AppContainer: \(error)")
         }
         _container = State(initialValue: container)
+        // Hand the controller to the delegate so it can answer
+        // `applicationShouldTerminateAfterLastWindowClosed` correctly.
+        BucketeerAppDelegate.shared.activationController = container.activationController
     }
 
     var body: some Scene {
-        WindowGroup {
+        Window("app.name", id: "main") {
             ContentView()
                 .environment(container)
         }
@@ -30,6 +35,14 @@ struct BucketeerApp: App {
         .commands {
             AppCommands()
         }
+
+        MenuBarExtra {
+            MenuBarContent()
+                .environment(container)
+        } label: {
+            Image(systemName: "externaldrive.connected.to.line.below")
+        }
+        .menuBarExtraStyle(.window)
 
         Window("about.title", id: "about") {
             AboutWindow()
@@ -104,15 +117,80 @@ private struct AppCommands: Commands {
     }
 }
 
+/// AppKit delegate that customises window-close semantics for menubar
+/// mode and applies the saved activation policy on launch. SwiftUI
+/// alone has no clean hook for either piece, so a tiny delegate fills
+/// the gap. MainActor-bound because `NSApplicationDelegate` callbacks
+/// only ever fire on the main thread and the singleton must be safe to
+/// touch from the SwiftUI app init.
+@MainActor
+final class BucketeerAppDelegate: NSObject, NSApplicationDelegate {
+    /// Static reference so the `@main` struct can pass the controller
+    /// in from its init. The alternative — environment lookup inside
+    /// the delegate — does not work because the delegate runs *before*
+    /// any SwiftUI environment exists.
+    static let shared = BucketeerAppDelegate()
+
+    var activationController: AppActivationController?
+
+    override init() {
+        super.init()
+    }
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        activationController?.applyOnLaunch()
+    }
+
+    /// In menubar mode the app should keep running with the main window
+    /// closed. Out of menubar mode the conventional macOS behaviour
+    /// applies — closing the last window quits.
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        !(activationController?.menubarMode ?? false)
+    }
+
+    /// Re-open the main window when the user clicks the (now-absent)
+    /// Dock icon in regular mode or selects the app from the App
+    /// Switcher with no windows open.
+    func applicationShouldHandleReopen(
+        _ sender: NSApplication,
+        hasVisibleWindows flag: Bool
+    ) -> Bool {
+        if !flag {
+            NSApp.activate(ignoringOtherApps: true)
+        }
+        return true
+    }
+}
+
+/// Settings shell — currently exposes the menubar-mode toggle. Phase B
+/// adds the "Pro" tab and Phase 9 adds the "Mounted Drives" tab.
 private struct SettingsView: View {
+    @Environment(AppContainer.self) private var container
+
     var body: some View {
+        TabView {
+            generalTab
+                .tabItem {
+                    Label("settings.tab.general", systemImage: "gearshape")
+                }
+        }
+        .frame(minWidth: 520, minHeight: 360)
+    }
+
+    private var generalTab: some View {
         Form {
             Section("settings.section.general") {
-                Text("settings.placeholder")
+                let menubar = Binding<Bool>(
+                    get: { container.activationController.menubarMode },
+                    set: { container.activationController.setMenubarMode($0) }
+                )
+                Toggle("settings.menubar.toggle", isOn: menubar)
+                Text("settings.menubar.description")
+                    .font(.footnote)
                     .foregroundStyle(.secondary)
             }
         }
         .formStyle(.grouped)
-        .frame(minWidth: 480, minHeight: 320)
+        .padding()
     }
 }

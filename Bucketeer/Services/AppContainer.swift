@@ -25,6 +25,7 @@ final class AppContainer {
     let transferManager: TransferManager
     let previewCache: PreviewCache
     let dragDropCoordinator: DragDropCoordinator
+    let activationController: AppActivationController
     let accountListViewModel: AccountListViewModel
     let browserViewModel: BrowserViewModel
     let transferQueueViewModel: TransferQueueViewModel
@@ -94,6 +95,7 @@ final class AppContainer {
             transferQueue: self.transferQueueViewModel,
             accountStore: accountStore
         )
+        self.activationController = AppActivationController()
     }
 
     /// One-shot data migrations that run at every launch. Each step is
