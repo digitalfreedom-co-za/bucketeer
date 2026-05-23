@@ -23,6 +23,7 @@ final class AppContainer {
     /// Routed `S3Browsing` facade — picks S3 or Azure per-account.
     let s3Browser: S3Browsing
     let transferManager: TransferManager
+    let previewCache: PreviewCache
     let accountListViewModel: AccountListViewModel
     let browserViewModel: BrowserViewModel
     let transferQueueViewModel: TransferQueueViewModel
@@ -55,6 +56,12 @@ final class AppContainer {
             factory: clientFactory,
             azure: azureTransporter
         )
+        let previewCache = PreviewCache(
+            downloader: PreviewDownloader(
+                s3Factory: clientFactory,
+                azureTransporter: azureTransporter
+            )
+        )
 
         self.modelContainer = modelContainer
         self.keychainStore = keychainStore
@@ -64,6 +71,7 @@ final class AppContainer {
         self.azureTransporter = azureTransporter
         self.s3Browser = router
         self.transferManager = transferManager
+        self.previewCache = previewCache
         self.accountListViewModel = AccountListViewModel(
             accountStore: accountStore,
             keychainStore: keychainStore,

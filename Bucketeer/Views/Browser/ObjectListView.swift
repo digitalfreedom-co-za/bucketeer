@@ -129,6 +129,45 @@ struct ObjectListView: View {
         } message: { error in
             Text(error.errorDescription ?? "")
         }
+        .focusable()
+        .onKeyPress(.space) {
+            guard let object = resolvedSingleSelection(), !object.isFolder else {
+                return .ignored
+            }
+            Task { await openQuickLook(for: object) }
+            return .handled
+        }
+    }
+
+    /// Resolve the table selection (Set<String>) into a single S3Object,
+    /// or nil if zero or many are selected.
+    private func resolvedSingleSelection() -> S3Object? {
+        guard viewModel.selection.count == 1,
+              let key = viewModel.selection.first
+        else { return nil }
+        return viewModel.objects.first(where: { $0.key == key })
+    }
+
+    /// Spacebar handler — surface the system Quick Look panel for the
+    /// currently selected file. Triggers a cache fetch if needed; in the
+    /// "requires explicit click" size band, the cache will still
+    /// materialise on direct request.
+    private func openQuickLook(for object: S3Object) async {
+        guard let account = viewModel.account,
+              let bucket = viewModel.bucket
+        else { return }
+        do {
+            let url = try await container.previewCache.materialise(
+                account: account,
+                bucket: bucket,
+                object: object
+            )
+            QuickLookPanelController.shared.show(url: url)
+        } catch let error as BucketeerError {
+            viewModel.actionError = error
+        } catch {
+            viewModel.actionError = .unknown(message: error.localizedDescription)
+        }
     }
 
     // MARK: - Subviews
