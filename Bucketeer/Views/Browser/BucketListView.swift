@@ -114,14 +114,28 @@ struct BucketListView: View {
                 Button("mount.action.unmount", systemImage: "eject") {
                     Task { await container.mountController.unmount(account: account, bucket: bucket.name) }
                 }
-            } else {
+            } else if container.entitlementManager.isUnlocked(.mountDrive) {
                 Button("mount.action.mount", systemImage: "externaldrive.badge.plus") {
                     Task { await container.mountController.mount(account: account, bucket: bucket.name) }
+                }
+            } else {
+                Button("mount.action.mount.locked", systemImage: "lock.fill") {
+                    NotificationCenter.default.post(name: .showBucketeerPaywall, object: EntitlementManager.ProFeature.mountDrive)
                 }
             }
         }
     }
+}
 
+extension Notification.Name {
+    /// Posted to surface the paywall sheet from anywhere in the view
+    /// tree. Sent with an optional `EntitlementManager.ProFeature` in
+    /// `object` so the sheet can lead with the feature the user was
+    /// trying to use.
+    static let showBucketeerPaywall = Notification.Name("bucketeer.showPaywall")
+}
+
+extension BucketListView {
     /// Finder → bucket card. Uploads dropped files to the bucket root.
     private func handleURLDrop(_ urls: [URL], into bucket: String) -> Bool {
         guard let account = viewModel.account else { return false }

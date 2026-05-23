@@ -162,10 +162,12 @@ final class BucketeerAppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
-/// Settings shell — currently exposes the menubar-mode toggle. Phase B
-/// adds the "Pro" tab and Phase 9 adds the "Mounted Drives" tab.
+/// Settings shell — General (incl. menubar toggle, gated by Pro) plus
+/// the Pro tab that surfaces the entitlement state and the buy / restore
+/// affordances.
 private struct SettingsView: View {
     @Environment(AppContainer.self) private var container
+    @State private var showingPaywall: Bool = false
 
     var body: some View {
         TabView {
@@ -173,8 +175,16 @@ private struct SettingsView: View {
                 .tabItem {
                     Label("settings.tab.general", systemImage: "gearshape")
                 }
+            proTab
+                .tabItem {
+                    Label("settings.tab.pro", systemImage: "shippingbox.and.arrow.backward.fill")
+                }
         }
         .frame(minWidth: 520, minHeight: 360)
+        .sheet(isPresented: $showingPaywall) {
+            PaywallSheet(feature: nil)
+                .environment(container)
+        }
     }
 
     private var generalTab: some View {
@@ -182,12 +192,58 @@ private struct SettingsView: View {
             Section("settings.section.general") {
                 let menubar = Binding<Bool>(
                     get: { container.activationController.menubarMode },
-                    set: { container.activationController.setMenubarMode($0) }
+                    set: { newValue in
+                        if newValue && !container.entitlementManager.isUnlocked(.menubarBackground) {
+                            showingPaywall = true
+                            return
+                        }
+                        container.activationController.setMenubarMode(newValue)
+                    }
                 )
                 Toggle("settings.menubar.toggle", isOn: menubar)
+                if !container.entitlementManager.isUnlocked(.menubarBackground) {
+                    Label("settings.menubar.proBadge", systemImage: "lock.fill")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
                 Text("settings.menubar.description")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
+            }
+        }
+        .formStyle(.grouped)
+        .padding()
+    }
+
+    @ViewBuilder
+    private var proTab: some View {
+        let entitlement = container.entitlementManager
+        Form {
+            Section("settings.pro.section.status") {
+                LabeledContent("settings.pro.status") {
+                    switch entitlement.state {
+                    case .pro:
+                        Label("settings.pro.status.pro", systemImage: "checkmark.seal.fill")
+                            .foregroundStyle(.tint)
+                    case .trial(let days):
+                        Text("settings.pro.status.trial \(days)")
+                    case .free:
+                        Text("settings.pro.status.free")
+                    }
+                }
+                if case .pro = entitlement.state {
+                    Text("settings.pro.thanks")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Button("settings.pro.buy") {
+                        showingPaywall = true
+                    }
+                    .buttonStyle(.borderedProminent)
+                    Button("settings.pro.restore") {
+                        Task { try? await entitlement.restorePurchases() }
+                    }
+                }
             }
         }
         .formStyle(.grouped)

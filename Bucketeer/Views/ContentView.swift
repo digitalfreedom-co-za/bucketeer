@@ -10,6 +10,8 @@ import SwiftUI
 struct ContentView: View {
     @Environment(AppContainer.self) private var container
     @State private var sidebarSelection: SidebarSelection? = nil
+    @State private var paywallFeature: EntitlementManager.ProFeature?
+    @State private var showingPaywall: Bool = false
 
     var body: some View {
         NavigationSplitView {
@@ -27,6 +29,14 @@ struct ContentView: View {
         }
         .onChange(of: sidebarSelection) { _, new in
             handleSelectionChange(new)
+        }
+        .sheet(isPresented: $showingPaywall) {
+            PaywallSheet(feature: paywallFeature)
+                .environment(container)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .showBucketeerPaywall)) { note in
+            paywallFeature = note.object as? EntitlementManager.ProFeature
+            showingPaywall = true
         }
     }
 

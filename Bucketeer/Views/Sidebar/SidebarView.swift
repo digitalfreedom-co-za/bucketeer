@@ -22,6 +22,7 @@ struct SidebarView: View {
     @State private var showingAddSheet: Bool = false
     @State private var editingAccount: S3Account?
     @State private var pendingDeletion: S3Account?
+    @State private var showingPaywall: Bool = false
 
     private var transferActiveCount: Int {
         container.transferQueueViewModel.activeCount
@@ -106,6 +107,11 @@ struct SidebarView: View {
             }
         }
         .listStyle(.sidebar)
+        .safeAreaInset(edge: .bottom) {
+            entitlementFooter
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+        }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
@@ -114,6 +120,10 @@ struct SidebarView: View {
                     Label("action.add-account", systemImage: "plus")
                 }
             }
+        }
+        .sheet(isPresented: $showingPaywall) {
+            PaywallSheet(feature: nil)
+                .environment(container)
         }
         .sheet(isPresented: $showingAddSheet) {
             AddEditAccountSheet(
@@ -163,5 +173,52 @@ struct SidebarView: View {
             Text("account.delete.confirm.message \(account.name)")
         }
         .task { await viewModel.refresh() }
+    }
+
+    @ViewBuilder
+    private var entitlementFooter: some View {
+        switch container.entitlementManager.state {
+        case .pro:
+            HStack(spacing: 8) {
+                Image(systemName: "checkmark.seal.fill")
+                    .foregroundStyle(.tint)
+                Text("paywall.badge.pro")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Spacer()
+            }
+        case .trial(let days):
+            Button {
+                showingPaywall = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "clock.badge.checkmark")
+                        .foregroundStyle(.tint)
+                    Text("paywall.badge.trial \(days)")
+                        .font(.caption)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+            }
+            .buttonStyle(.borderless)
+        case .free:
+            Button {
+                showingPaywall = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "lock.open")
+                        .foregroundStyle(.tint)
+                    Text("paywall.badge.upgrade")
+                        .font(.caption)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+            }
+            .buttonStyle(.borderless)
+        }
     }
 }

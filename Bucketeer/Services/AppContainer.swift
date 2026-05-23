@@ -27,6 +27,7 @@ final class AppContainer {
     let dragDropCoordinator: DragDropCoordinator
     let activationController: AppActivationController
     let mountController: MountController
+    let entitlementManager: EntitlementManager
     let syncJobStore: SyncJobStoring
     let syncEngine: SyncEngine
     let accountListViewModel: AccountListViewModel
@@ -104,6 +105,11 @@ final class AppContainer {
         self.mountController = mountController
         Task { @MainActor [mountController] in
             await mountController.refresh()
+        }
+        let entitlementManager = EntitlementManager()
+        self.entitlementManager = entitlementManager
+        Task { @MainActor [entitlementManager] in
+            await entitlementManager.bootstrap()
         }
         let syncJobStore = SyncJobStore(modelContainer: modelContainer)
         let syncEngine = SyncEngine(

@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SyncJobListView: View {
     @Bindable var viewModel: SyncJobListViewModel
+    @Environment(AppContainer.self) private var container
     @State private var showingNewJobSheet: Bool = false
     @State private var editingJob: SyncJob?
     @State private var pendingDeletion: SyncJob?
@@ -25,7 +26,14 @@ struct SyncJobListView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
-                    showingNewJobSheet = true
+                    if container.entitlementManager.isUnlocked(.syncEngine) {
+                        showingNewJobSheet = true
+                    } else {
+                        NotificationCenter.default.post(
+                            name: .showBucketeerPaywall,
+                            object: EntitlementManager.ProFeature.syncEngine
+                        )
+                    }
                 } label: {
                     Label("sync.action.new", systemImage: "plus")
                 }
