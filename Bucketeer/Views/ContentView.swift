@@ -34,6 +34,8 @@ struct ContentView: View {
     private var contentPane: some View {
         if case .transfersRoot = sidebarSelection {
             TransferListView(viewModel: container.transferQueueViewModel)
+        } else if case .syncRoot = sidebarSelection {
+            SyncJobListView(viewModel: container.syncJobListViewModel)
         } else {
             browserPane
         }

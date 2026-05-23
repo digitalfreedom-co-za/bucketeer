@@ -26,13 +26,16 @@ final class AppContainer {
     let previewCache: PreviewCache
     let dragDropCoordinator: DragDropCoordinator
     let activationController: AppActivationController
+    let syncJobStore: SyncJobStoring
+    let syncEngine: SyncEngine
     let accountListViewModel: AccountListViewModel
     let browserViewModel: BrowserViewModel
     let transferQueueViewModel: TransferQueueViewModel
+    let syncJobListViewModel: SyncJobListViewModel
 
     init() throws {
         let storeURL = Self.resolveStoreURL()
-        let schema = Schema([S3AccountRecord.self])
+        let schema = Schema([S3AccountRecord.self, SyncJobRecord.self])
         let configuration = ModelConfiguration(
             "Bucketeer",
             schema: schema,
@@ -96,6 +99,23 @@ final class AppContainer {
             accountStore: accountStore
         )
         self.activationController = AppActivationController()
+        let syncJobStore = SyncJobStore(modelContainer: modelContainer)
+        let syncEngine = SyncEngine(
+            accountStore: accountStore,
+            jobStore: syncJobStore,
+            browser: router,
+            transferManager: transferManager
+        )
+        self.syncJobStore = syncJobStore
+        self.syncEngine = syncEngine
+        self.syncJobListViewModel = SyncJobListViewModel(
+            jobStore: syncJobStore,
+            engine: syncEngine,
+            accountStore: accountStore
+        )
+        Task { @MainActor [syncJobListViewModel = self.syncJobListViewModel] in
+            await syncJobListViewModel.bootstrap()
+        }
     }
 
     /// One-shot data migrations that run at every launch. Each step is

@@ -73,9 +73,10 @@ struct SidebarView: View {
             }
 
             Section {
-                Text("sidebar.empty.sync")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+                NavigationLink(value: SidebarSelection.syncRoot) {
+                    Label("sidebar.section.sync", systemImage: "arrow.triangle.2.circlepath")
+                }
+                .tag(SidebarSelection.syncRoot)
             } header: {
                 Text("sidebar.section.sync")
             }
