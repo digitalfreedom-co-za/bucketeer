@@ -102,6 +102,23 @@ struct BucketListView: View {
             Button("action.open", systemImage: "arrow.up.right.square") {
                 Task { await viewModel.openBucket(bucket.name) }
             }
+            Divider()
+            mountMenu(for: bucket)
+        }
+    }
+
+    @ViewBuilder
+    private func mountMenu(for bucket: S3Bucket) -> some View {
+        if let account = viewModel.account {
+            if container.mountController.isMounted(account: account, bucket: bucket.name) {
+                Button("mount.action.unmount", systemImage: "eject") {
+                    Task { await container.mountController.unmount(account: account, bucket: bucket.name) }
+                }
+            } else {
+                Button("mount.action.mount", systemImage: "externaldrive.badge.plus") {
+                    Task { await container.mountController.mount(account: account, bucket: bucket.name) }
+                }
+            }
         }
     }
 

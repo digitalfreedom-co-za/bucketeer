@@ -26,6 +26,7 @@ final class AppContainer {
     let previewCache: PreviewCache
     let dragDropCoordinator: DragDropCoordinator
     let activationController: AppActivationController
+    let mountController: MountController
     let syncJobStore: SyncJobStoring
     let syncEngine: SyncEngine
     let accountListViewModel: AccountListViewModel
@@ -99,6 +100,11 @@ final class AppContainer {
             accountStore: accountStore
         )
         self.activationController = AppActivationController()
+        let mountController = MountController()
+        self.mountController = mountController
+        Task { @MainActor [mountController] in
+            await mountController.refresh()
+        }
         let syncJobStore = SyncJobStore(modelContainer: modelContainer)
         let syncEngine = SyncEngine(
             accountStore: accountStore,
@@ -147,13 +153,45 @@ final class AppContainer {
         }
     }
 
-    /// Resolve the SwiftData store URL. Phase 2 always uses the sandbox
-    /// Application Support directory so the location is stable across
-    /// builds. Phase 9 introduces the App Group container alongside a
-    /// one-shot migration that copies this store into the group
-    /// container — that migration runs in the host app the first time
-    /// the new entitlement is present.
+    /// Resolve the SwiftData store URL. When the App Group entitlement
+    /// is provisioned the store moves into the shared container so the
+    /// File Provider extension (Phase 9) can read account metadata.
+    /// Falls back to the sandbox Application Support path otherwise.
+    ///
+    /// A one-shot migration copies the legacy sandbox store into the
+    /// group container the first time both paths are available. Idempotent
+    /// — if the group store already exists we just use it and leave the
+    /// sandbox copy in place as a fallback.
     private static func resolveStoreURL() -> URL {
+        let sandboxURL = sandboxStoreURL()
+        guard let groupContainer = FileManager.default.containerURL(
+            forSecurityApplicationGroupIdentifier: AppEnvironment.appGroupIdentifier
+        ) else {
+            return sandboxURL
+        }
+        let groupURL = groupContainer.appending(path: AppEnvironment.swiftDataStoreFileName)
+        if !FileManager.default.fileExists(atPath: groupURL.path),
+           FileManager.default.fileExists(atPath: sandboxURL.path) {
+            // Copy the legacy store into the group container so the
+            // extension sees the user's existing accounts.
+            try? FileManager.default.copyItem(at: sandboxURL, to: groupURL)
+            // The store has two sidecar files (`-shm`, `-wal`) when SQLite
+            // is in WAL mode — copy them if present so the migration is
+            // atomic from SwiftData's perspective.
+            for suffix in ["-shm", "-wal"] {
+                let src = sandboxURL.deletingLastPathComponent()
+                    .appending(path: AppEnvironment.swiftDataStoreFileName + suffix)
+                let dst = groupContainer
+                    .appending(path: AppEnvironment.swiftDataStoreFileName + suffix)
+                if FileManager.default.fileExists(atPath: src.path) {
+                    try? FileManager.default.copyItem(at: src, to: dst)
+                }
+            }
+        }
+        return groupURL
+    }
+
+    private static func sandboxStoreURL() -> URL {
         let support = (try? FileManager.default.url(
             for: .applicationSupportDirectory,
             in: .userDomainMask,
