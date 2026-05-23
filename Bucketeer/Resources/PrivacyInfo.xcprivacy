@@ -11,9 +11,25 @@
     <array/>
 
     <!-- Bucketeer collects no personal data on behalf of its publisher.
-         All data the app handles stays on the user's Mac. -->
+         All data the app handles stays on the user's Mac. Apple
+         processes purchase transactions for the Bucketeer Pro IAP under
+         their own privacy policy; the publisher receives only the
+         aggregated payout reports App Store Connect provides. -->
     <key>NSPrivacyCollectedDataTypes</key>
-    <array/>
+    <array>
+        <dict>
+            <key>NSPrivacyCollectedDataType</key>
+            <string>NSPrivacyCollectedDataTypePurchaseHistory</string>
+            <key>NSPrivacyCollectedDataTypeLinked</key>
+            <true/>
+            <key>NSPrivacyCollectedDataTypeTracking</key>
+            <false/>
+            <key>NSPrivacyCollectedDataTypePurposes</key>
+            <array>
+                <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+            </array>
+        </dict>
+    </array>
 
     <!-- Required-reason API declarations. -->
     <key>NSPrivacyAccessedAPITypes</key>

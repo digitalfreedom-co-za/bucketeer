@@ -41,6 +41,7 @@ struct BucketeerApp: App {
                 .environment(container)
         } label: {
             Image(systemName: "externaldrive.connected.to.line.below")
+                .accessibilityLabel(Text("app.name"))
         }
         .menuBarExtraStyle(.window)
 
