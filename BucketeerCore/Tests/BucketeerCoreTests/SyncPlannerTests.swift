@@ -18,11 +18,17 @@ struct SyncPlannerTests {
     private let destAccountID = UUID()
 
     private func endpoint(prefix: String, accountID: UUID? = nil) -> SyncEndpoint {
-        SyncEndpoint(
+        .s3(
             accountID: accountID ?? sourceAccountID,
             bucket: "bucket",
             prefix: prefix
         )
+    }
+
+    private func localEndpoint(at displayPath: String = "/tmp/sync-local") -> SyncEndpoint {
+        // Bookmark data is opaque to the planner — it just routes off
+        // the case discriminator, so an empty Data is fine here.
+        .localFolder(bookmark: Data(), displayPath: displayPath)
     }
 
     private func job(
@@ -32,13 +38,15 @@ struct SyncPlannerTests {
         diffStrategy: SyncDiffStrategy = .nameAndSize,
         includeGlobs: [String] = [],
         excludeGlobs: [String] = [],
-        deletePropagation: Bool = false
+        deletePropagation: Bool = false,
+        source: SyncEndpoint? = nil,
+        destination: SyncEndpoint? = nil
     ) -> SyncJob {
         SyncJob(
             name: "test",
             mode: mode,
-            source: endpoint(prefix: sourcePrefix, accountID: sourceAccountID),
-            destination: endpoint(prefix: destPrefix, accountID: destAccountID),
+            source: source ?? endpoint(prefix: sourcePrefix, accountID: sourceAccountID),
+            destination: destination ?? endpoint(prefix: destPrefix, accountID: destAccountID),
             diffStrategy: diffStrategy,
             includeGlobs: includeGlobs,
             excludeGlobs: excludeGlobs,
@@ -226,5 +234,78 @@ struct SyncPlannerTests {
         #expect(SyncPlanner.relativeKey("src/a/b.txt", under: "src/") == "a/b.txt")
         #expect(SyncPlanner.relativeKey("src/a/b.txt", under: "") == "src/a/b.txt")
         #expect(SyncPlanner.relativeKey("other/x", under: "src/") == "other/x")
+    }
+
+    // MARK: - Phase 9.8 — local-folder endpoint coverage
+
+    @Test("prefix(for:) returns empty for local folders, S3 prefix for s3")
+    func prefixForEndpoint() {
+        let local = SyncEndpoint.localFolder(bookmark: Data(), displayPath: "/x")
+        #expect(SyncPlanner.prefix(for: local) == "")
+        let s3 = SyncEndpoint.s3(accountID: UUID(), bucket: "b", prefix: "p/")
+        #expect(SyncPlanner.prefix(for: s3) == "p/")
+    }
+
+    @Test("Local → S3: keys land under destination prefix")
+    func localToS3UsesDestPrefix() {
+        let job = self.job(
+            destPrefix: "dst/",
+            source: localEndpoint(),
+            destination: endpoint(prefix: "dst/", accountID: destAccountID)
+        )
+        let plan = SyncPlanner.makePlan(
+            job: job,
+            source: [object("a.txt"), object("subdir/b.txt")],
+            destination: []
+        )
+        #expect(plan.upserts.map(\.destinationKey) == ["dst/a.txt", "dst/subdir/b.txt"])
+    }
+
+    @Test("S3 → Local: source prefix is stripped, destination has no prefix")
+    func s3ToLocalStripsPrefix() {
+        let job = self.job(
+            sourcePrefix: "src/",
+            source: endpoint(prefix: "src/", accountID: sourceAccountID),
+            destination: localEndpoint()
+        )
+        let plan = SyncPlanner.makePlan(
+            job: job,
+            source: [object("src/a.txt"), object("src/sub/b.txt")],
+            destination: []
+        )
+        // Destination is local — relative key only, no prefix applied
+        #expect(plan.upserts.map(\.destinationKey) == ["a.txt", "sub/b.txt"])
+    }
+
+    @Test("Local → Local: pure relative-key copy without prefixes")
+    func localToLocal() {
+        let job = self.job(
+            source: localEndpoint(at: "/src"),
+            destination: localEndpoint(at: "/dst")
+        )
+        let plan = SyncPlanner.makePlan(
+            job: job,
+            source: [object("photo.jpg")],
+            destination: []
+        )
+        #expect(plan.upserts.count == 1)
+        #expect(plan.upserts[0].sourceKey == "photo.jpg")
+        #expect(plan.upserts[0].destinationKey == "photo.jpg")
+    }
+
+    @Test("Local mirror with deletePropagation orphans destination-only files")
+    func localMirrorDeletes() {
+        let job = self.job(
+            mode: .mirror,
+            deletePropagation: true,
+            source: localEndpoint(),
+            destination: localEndpoint(at: "/other")
+        )
+        let plan = SyncPlanner.makePlan(
+            job: job,
+            source: [object("keep.txt")],
+            destination: [object("keep.txt"), object("orphan.txt")]
+        )
+        #expect(plan.deletes == ["orphan.txt"])
     }
 }

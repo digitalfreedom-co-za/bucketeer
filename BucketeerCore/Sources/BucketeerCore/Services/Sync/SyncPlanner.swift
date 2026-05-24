@@ -45,23 +45,30 @@ public enum SyncPlanner {
 
     /// Compute the set of upserts and (for mirror jobs with delete
     /// propagation) deletes. Pure function — same inputs, same plan.
+    /// Works for any combination of S3 / local endpoints: caller
+    /// enumerates each side into a `[S3Object]` (local folders use
+    /// `LocalFolderEnumerator` with empty `etag` and relative-path
+    /// keys; S3 / Azure use the existing recursive listing).
     public static func makePlan(
         job: SyncJob,
         source: [S3Object],
         destination: [S3Object]
     ) -> Plan {
+        let sourcePrefix = prefix(for: job.source)
+        let destinationPrefix = prefix(for: job.destination)
+
         let destIndex: [String: S3Object] = Dictionary(
             uniqueKeysWithValues: destination.map { ($0.key, $0) }
         )
 
         var upserts: [PlanEntry] = []
         for s in source where !s.isFolder {
-            let relative = relativeKey(s.key, under: job.source.prefix)
+            let relative = relativeKey(s.key, under: sourcePrefix)
             guard !relative.isEmpty else { continue }
             guard matches(relative, includes: job.includeGlobs, excludes: job.excludeGlobs) else {
                 continue
             }
-            let destKey = job.destination.prefix + relative
+            let destKey = destinationPrefix + relative
             if let existing = destIndex[destKey], isUnchanged(
                 source: s, dest: existing, strategy: job.diffStrategy
             ) {
@@ -83,10 +90,10 @@ public enum SyncPlanner {
             let sourceRelatives = Set(
                 source
                     .filter { !$0.isFolder }
-                    .map { relativeKey($0.key, under: job.source.prefix) }
+                    .map { relativeKey($0.key, under: sourcePrefix) }
             )
             for d in destination where !d.isFolder {
-                let relative = relativeKey(d.key, under: job.destination.prefix)
+                let relative = relativeKey(d.key, under: destinationPrefix)
                 guard matches(relative, includes: job.includeGlobs, excludes: job.excludeGlobs) else {
                     continue
                 }
@@ -97,6 +104,16 @@ public enum SyncPlanner {
         }
 
         return Plan(upserts: upserts, deletes: deletes)
+    }
+
+    /// Effective prefix for a sync endpoint. S3 endpoints carry an
+    /// in-bucket prefix; local folders have no concept of one (the
+    /// `LocalFolderEnumerator` already yields keys relative to the
+    /// folder root). Returning `""` for local is the right neutral
+    /// element for `relativeKey`.
+    public static func prefix(for endpoint: SyncEndpoint) -> String {
+        if case .s3(_, _, let prefix) = endpoint { return prefix }
+        return ""
     }
 
     // MARK: - Internal helpers (public so tests in BucketeerCoreTests can poke them)

@@ -123,9 +123,9 @@ actor SyncEngine {
         let start = Date()
         defer { runners[job.id] = nil }
 
-        let accounts: (source: S3Account, destination: S3Account)
+        let context: SyncRunContext
         do {
-            accounts = try await resolveAccounts(for: job)
+            context = try await resolveContext(for: job)
         } catch {
             updateStatus(
                 id: job.id,
@@ -134,12 +134,20 @@ actor SyncEngine {
             )
             return
         }
+        // Pair the bookmark start with a guaranteed release at the end
+        // of the run. Crucial for sandboxed local-folder endpoints —
+        // forgetting to stop would leak the open access count and
+        // could keep the volume mounted longer than necessary.
+        defer {
+            releaseSecurityScope(context.source)
+            releaseSecurityScope(context.destination)
+        }
 
         let sourceList: [S3Object]
         let destList: [S3Object]
         do {
-            async let s = listAllObjects(account: accounts.source, endpoint: job.source)
-            async let d = listAllObjects(account: accounts.destination, endpoint: job.destination)
+            async let s = enumerate(endpoint: job.source, context: context.source)
+            async let d = enumerate(endpoint: job.destination, context: context.destination)
             sourceList = try await s
             destList = try await d
         } catch {
@@ -185,13 +193,12 @@ actor SyncEngine {
 
                 func enqueueNext() -> Bool {
                     guard let entry = iterator.next() else { return false }
-                    group.addTask { [accounts, job] in
+                    group.addTask { [context, job] in
                         do {
                             try await self.execute(
                                 upsert: entry,
                                 job: job,
-                                source: accounts.source,
-                                destination: accounts.destination
+                                context: context
                             )
                             return (entry, .success(()))
                         } catch {
@@ -245,11 +252,7 @@ actor SyncEngine {
             for key in plan.deletes {
                 if Task.isCancelled { break }
                 do {
-                    try await browser.delete(
-                        account: accounts.destination,
-                        bucket: job.destination.bucket,
-                        keys: [key]
-                    )
+                    try await deleteKey(key, from: job.destination, context: context.destination)
                     completed += 1
                 } catch {
                     failed += 1
@@ -274,11 +277,7 @@ actor SyncEngine {
         if job.mode == .move && !Task.isCancelled {
             for entry in successfulEntries where !Task.isCancelled {
                 do {
-                    try await browser.delete(
-                        account: accounts.source,
-                        bucket: job.source.bucket,
-                        keys: [entry.sourceKey]
-                    )
+                    try await deleteKey(entry.sourceKey, from: job.source, context: context.source)
                 } catch {
                     moveDeleteFailures += 1
                 }
@@ -307,35 +306,204 @@ actor SyncEngine {
         }
     }
 
+    // MARK: - Endpoint context
+
+    /// Per-side runtime state for one run. S3 sides carry the resolved
+    /// account; local sides carry the resolved root URL plus a flag
+    /// indicating whether `startAccessingSecurityScopedResource` returned
+    /// true, so `releaseSecurityScope()` knows whether to stop the scope
+    /// at the end of the run.
+    struct EndpointContext: Sendable {
+        var account: S3Account?
+        var localRoot: URL?
+        var didStartSecurityScope: Bool
+    }
+
+    struct SyncRunContext: Sendable {
+        let source: EndpointContext
+        let destination: EndpointContext
+    }
+
+    /// Resolve both sides of the job into the runtime context the rest
+    /// of the engine needs: S3 sides get an `S3Account`, local sides
+    /// get a security-scoped URL with the scope already started.
+    private func resolveContext(for job: SyncJob) async throws -> SyncRunContext {
+        let accounts = try await accountStore.all()
+        return SyncRunContext(
+            source: try resolveEndpointContext(for: job.source, accounts: accounts),
+            destination: try resolveEndpointContext(for: job.destination, accounts: accounts)
+        )
+    }
+
+    private func resolveEndpointContext(
+        for endpoint: SyncEndpoint,
+        accounts: [S3Account]
+    ) throws -> EndpointContext {
+        switch endpoint {
+        case .s3(let accountID, _, _):
+            guard let account = accounts.first(where: { $0.id == accountID }) else {
+                throw BucketeerError.unknown(message: "Sync account no longer exists.")
+            }
+            return EndpointContext(
+                account: account,
+                localRoot: nil,
+                didStartSecurityScope: false
+            )
+        case .localFolder(let bookmark, _):
+            let (url, _) = try LocalFolderEnumerator.resolveBookmark(bookmark)
+            let didStart = url.startAccessingSecurityScopedResource()
+            return EndpointContext(
+                account: nil,
+                localRoot: url,
+                didStartSecurityScope: didStart
+            )
+        }
+    }
+
+    private nonisolated func releaseSecurityScope(_ context: EndpointContext) {
+        if context.didStartSecurityScope, let url = context.localRoot {
+            url.stopAccessingSecurityScopedResource()
+        }
+    }
+
+    // MARK: - Enumeration
+
+    /// Endpoint-aware listing. S3 / Azure sides recurse via the
+    /// existing delimiter listing; local sides walk the filesystem.
+    private func enumerate(
+        endpoint: SyncEndpoint,
+        context: EndpointContext
+    ) async throws -> [S3Object] {
+        switch endpoint {
+        case .s3(_, let bucket, let prefix):
+            guard let account = context.account else {
+                throw BucketeerError.unknown(message: "Missing S3 account for endpoint.")
+            }
+            return try await listS3Recursively(account: account, bucket: bucket, prefix: prefix)
+        case .localFolder:
+            guard let root = context.localRoot else {
+                throw BucketeerError.unknown(message: "Local folder root could not be resolved.")
+            }
+            return try LocalFolderEnumerator.enumerate(at: root)
+        }
+    }
+
+    private func listS3Recursively(
+        account: S3Account,
+        bucket: String,
+        prefix: String
+    ) async throws -> [S3Object] {
+        var output: [S3Object] = []
+        var queue: [String] = [prefix]
+        while !queue.isEmpty {
+            let scope = queue.removeFirst()
+            var token: String? = nil
+            repeat {
+                let page = try await browser.listObjects(
+                    account: account,
+                    bucket: bucket,
+                    prefix: scope,
+                    continuationToken: token
+                )
+                for object in page.objects {
+                    if object.isFolder {
+                        queue.append(object.key)
+                    } else {
+                        output.append(object)
+                    }
+                }
+                token = page.continuationToken
+                if !page.hasMore { token = nil }
+            } while token != nil
+        }
+        return output
+    }
+
     // MARK: - Execute single entry
 
+    /// Dispatch a single plan entry to the right transport. Four
+    /// possible combinations: S3↔S3 (server-side copy or download
+    /// + upload), S3→local (download to folder), local→S3 (upload
+    /// from folder), local→local (filesystem copy).
     private func execute(
         upsert entry: SyncPlanner.PlanEntry,
         job: SyncJob,
-        source: S3Account,
-        destination: S3Account
+        context: SyncRunContext
     ) async throws {
-        if source.id == destination.id {
-            // Same account → server-side copy is cheap and atomic-ish.
+        switch (job.source, job.destination) {
+        case (.s3(_, let srcBucket, _), .s3(_, let dstBucket, _)):
+            try await executeS3ToS3(
+                entry: entry,
+                job: job,
+                sourceBucket: srcBucket,
+                destinationBucket: dstBucket,
+                sourceAccount: context.source.account,
+                destinationAccount: context.destination.account
+            )
+
+        case (.s3(_, let srcBucket, _), .localFolder):
+            guard let sourceAccount = context.source.account,
+                  let destinationRoot = context.destination.localRoot
+            else { throw BucketeerError.unknown(message: "Sync context incomplete.") }
+            try await executeS3ToLocal(
+                entry: entry,
+                job: job,
+                sourceAccount: sourceAccount,
+                sourceBucket: srcBucket,
+                destinationRoot: destinationRoot
+            )
+
+        case (.localFolder, .s3(_, let dstBucket, _)):
+            guard let sourceRoot = context.source.localRoot,
+                  let destinationAccount = context.destination.account
+            else { throw BucketeerError.unknown(message: "Sync context incomplete.") }
+            try await executeLocalToS3(
+                entry: entry,
+                job: job,
+                sourceRoot: sourceRoot,
+                destinationAccount: destinationAccount,
+                destinationBucket: dstBucket
+            )
+
+        case (.localFolder, .localFolder):
+            guard let sourceRoot = context.source.localRoot,
+                  let destinationRoot = context.destination.localRoot
+            else { throw BucketeerError.unknown(message: "Sync context incomplete.") }
+            try await executeLocalToLocal(
+                entry: entry,
+                sourceRoot: sourceRoot,
+                destinationRoot: destinationRoot
+            )
+        }
+    }
+
+    private func executeS3ToS3(
+        entry: SyncPlanner.PlanEntry,
+        job: SyncJob,
+        sourceBucket: String,
+        destinationBucket: String,
+        sourceAccount: S3Account?,
+        destinationAccount: S3Account?
+    ) async throws {
+        guard let sourceAccount, let destinationAccount else {
+            throw BucketeerError.unknown(message: "Sync context incomplete.")
+        }
+        if sourceAccount.id == destinationAccount.id {
             try await browser.copy(
-                account: source,
-                fromBucket: job.source.bucket,
+                account: sourceAccount,
+                fromBucket: sourceBucket,
                 fromKey: entry.sourceKey,
-                toBucket: job.destination.bucket,
+                toBucket: destinationBucket,
                 toKey: entry.destinationKey,
                 metadata: nil
             )
             return
         }
-        // Cross-account → temp staging, then upload. Track both halves
-        // as "active transfers" for the job so a user-initiated cancel
-        // can tear them down (Codex review #3) and use the new
-        // `awaitCompletion(id:)` actor API instead of polling the
-        // public `tasks` stream (Codex review #2).
+        // Cross-account → temp staging, then upload.
         let staging = stagingURL(for: entry.sourceKey)
         let downloadID = await transferManager.enqueueDownload(
-            account: source,
-            bucket: job.source.bucket,
+            account: sourceAccount,
+            bucket: sourceBucket,
             key: entry.sourceKey,
             localURL: staging
         )
@@ -347,8 +515,8 @@ actor SyncEngine {
         try terminalToError(await transferManager.awaitCompletion(id: downloadID))
 
         let uploadID = await transferManager.enqueueUpload(
-            account: destination,
-            bucket: job.destination.bucket,
+            account: destinationAccount,
+            bucket: destinationBucket,
             key: entry.destinationKey,
             localURL: staging,
             contentType: nil
@@ -356,6 +524,104 @@ actor SyncEngine {
         registerActiveTransfer(jobID: job.id, transferID: uploadID)
         defer { unregisterActiveTransfer(jobID: job.id, transferID: uploadID) }
         try terminalToError(await transferManager.awaitCompletion(id: uploadID))
+    }
+
+    private func executeS3ToLocal(
+        entry: SyncPlanner.PlanEntry,
+        job: SyncJob,
+        sourceAccount: S3Account,
+        sourceBucket: String,
+        destinationRoot: URL
+    ) async throws {
+        // Download into a staging file, then move into place under the
+        // destination folder root. The staging path is in the App's
+        // sandbox temp dir (always writable, no security scope needed)
+        // — the destination root is the user's chosen folder and is
+        // covered by the run-level security-scoped resource start.
+        let staging = stagingURL(for: entry.sourceKey)
+        let downloadID = await transferManager.enqueueDownload(
+            account: sourceAccount,
+            bucket: sourceBucket,
+            key: entry.sourceKey,
+            localURL: staging
+        )
+        registerActiveTransfer(jobID: job.id, transferID: downloadID)
+        defer { unregisterActiveTransfer(jobID: job.id, transferID: downloadID) }
+        do {
+            try terminalToError(await transferManager.awaitCompletion(id: downloadID))
+            try LocalFolderWriter.install(
+                from: staging,
+                relativeKey: entry.destinationKey,
+                under: destinationRoot
+            )
+        } catch {
+            try? FileManager.default.removeItem(at: staging)
+            throw error
+        }
+    }
+
+    private func executeLocalToS3(
+        entry: SyncPlanner.PlanEntry,
+        job: SyncJob,
+        sourceRoot: URL,
+        destinationAccount: S3Account,
+        destinationBucket: String
+    ) async throws {
+        let sourceFile = sourceRoot.appending(path: entry.sourceKey)
+        guard FileManager.default.fileExists(atPath: sourceFile.path) else {
+            throw BucketeerError.sandboxAccessDenied(sourceFile)
+        }
+        let uploadID = await transferManager.enqueueUpload(
+            account: destinationAccount,
+            bucket: destinationBucket,
+            key: entry.destinationKey,
+            localURL: sourceFile,
+            contentType: nil
+        )
+        registerActiveTransfer(jobID: job.id, transferID: uploadID)
+        defer { unregisterActiveTransfer(jobID: job.id, transferID: uploadID) }
+        try terminalToError(await transferManager.awaitCompletion(id: uploadID))
+    }
+
+    private func executeLocalToLocal(
+        entry: SyncPlanner.PlanEntry,
+        sourceRoot: URL,
+        destinationRoot: URL
+    ) async throws {
+        let sourceFile = sourceRoot.appending(path: entry.sourceKey)
+        let destination = destinationRoot.appending(path: entry.destinationKey)
+        let parent = destination.deletingLastPathComponent()
+        try FileManager.default.createDirectory(
+            at: parent,
+            withIntermediateDirectories: true
+        )
+        if FileManager.default.fileExists(atPath: destination.path) {
+            try FileManager.default.removeItem(at: destination)
+        }
+        try FileManager.default.copyItem(at: sourceFile, to: destination)
+    }
+
+    /// Endpoint-aware delete used by mirror-delete and move-mode
+    /// source removal. Routes to the right transport based on the
+    /// endpoint kind. Local-folder deletes are idempotent (missing
+    /// files succeed).
+    private func deleteKey(
+        _ key: String,
+        from endpoint: SyncEndpoint,
+        context: EndpointContext
+    ) async throws {
+        switch endpoint {
+        case .s3(_, let bucket, _):
+            guard let account = context.account else {
+                throw BucketeerError.unknown(message: "Sync context incomplete.")
+            }
+            try await browser.delete(account: account, bucket: bucket, keys: [key])
+        case .localFolder:
+            guard let root = context.localRoot else {
+                throw BucketeerError.unknown(message: "Local folder root unavailable.")
+            }
+            try LocalFolderWriter.delete(relativeKey: key, under: root)
+        }
     }
 
     private nonisolated func terminalToError(_ state: TransferState) throws {
@@ -379,51 +645,6 @@ actor SyncEngine {
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         let filename = UUID().uuidString + "-" + (sourceKey.split(separator: "/").last.map(String.init) ?? "object")
         return dir.appending(path: filename)
-    }
-
-    // MARK: - Recursive listing
-
-    /// Recursive list of every non-folder object under `endpoint` — walks
-    /// the existing delimiter listing one prefix at a time so the
-    /// existing protocol surface keeps working. v1.1 will replace this
-    /// with a flat-listing primitive on `S3Browsing` to avoid the
-    /// per-prefix request fan-out.
-    private func listAllObjects(account: S3Account, endpoint: SyncEndpoint) async throws -> [S3Object] {
-        var output: [S3Object] = []
-        var queue: [String] = [endpoint.prefix]
-        while !queue.isEmpty {
-            let prefix = queue.removeFirst()
-            var token: String? = nil
-            repeat {
-                let page = try await browser.listObjects(
-                    account: account,
-                    bucket: endpoint.bucket,
-                    prefix: prefix,
-                    continuationToken: token
-                )
-                for object in page.objects {
-                    if object.isFolder {
-                        queue.append(object.key)
-                    } else {
-                        output.append(object)
-                    }
-                }
-                token = page.continuationToken
-                if !page.hasMore { token = nil }
-            } while token != nil
-        }
-        return output
-    }
-
-    private func resolveAccounts(for job: SyncJob) async throws -> (source: S3Account, destination: S3Account) {
-        let all = try await accountStore.all()
-        guard let source = all.first(where: { $0.id == job.source.accountID }) else {
-            throw BucketeerError.unknown(message: "Source account no longer exists.")
-        }
-        guard let destination = all.first(where: { $0.id == job.destination.accountID }) else {
-            throw BucketeerError.unknown(message: "Destination account no longer exists.")
-        }
-        return (source, destination)
     }
 
     // MARK: - Status

@@ -10,21 +10,24 @@ import SwiftData
 import BucketeerCore
 
 /// Persistent backing for `SyncJob`. Stored alongside `S3AccountRecord`
-/// in the same SwiftData container (Application Support today, App
-/// Group container in Phase 9).
+/// in the same SwiftData container.
+///
+/// Phase 9.8 changed the endpoint representation from three flat S3
+/// columns to a single JSON-encoded `SyncEndpoint` enum, so a sync
+/// job's source or destination can be either an S3 scope or a local
+/// folder bookmark. Storing as JSON keeps the SwiftData schema simple
+/// (one `Data` field per side) without adding a flock of optional
+/// type-specific columns.
 @Model
 final class SyncJobRecord {
     @Attribute(.unique) var id: UUID
     var name: String
     var modeRaw: String
 
-    var sourceAccountID: UUID
-    var sourceBucket: String
-    var sourcePrefix: String
-
-    var destAccountID: UUID
-    var destBucket: String
-    var destPrefix: String
+    /// JSON-encoded `SyncEndpoint` for the source.
+    var sourceEndpointData: Data
+    /// JSON-encoded `SyncEndpoint` for the destination.
+    var destinationEndpointData: Data
 
     var diffStrategyRaw: String
     var includeGlobs: [String]
@@ -40,12 +43,8 @@ final class SyncJobRecord {
         id: UUID,
         name: String,
         modeRaw: String,
-        sourceAccountID: UUID,
-        sourceBucket: String,
-        sourcePrefix: String,
-        destAccountID: UUID,
-        destBucket: String,
-        destPrefix: String,
+        sourceEndpointData: Data,
+        destinationEndpointData: Data,
         diffStrategyRaw: String,
         includeGlobs: [String],
         excludeGlobs: [String],
@@ -59,12 +58,8 @@ final class SyncJobRecord {
         self.id = id
         self.name = name
         self.modeRaw = modeRaw
-        self.sourceAccountID = sourceAccountID
-        self.sourceBucket = sourceBucket
-        self.sourcePrefix = sourcePrefix
-        self.destAccountID = destAccountID
-        self.destBucket = destBucket
-        self.destPrefix = destPrefix
+        self.sourceEndpointData = sourceEndpointData
+        self.destinationEndpointData = destinationEndpointData
         self.diffStrategyRaw = diffStrategyRaw
         self.includeGlobs = includeGlobs
         self.excludeGlobs = excludeGlobs
@@ -77,16 +72,20 @@ final class SyncJobRecord {
     }
 
     convenience init(job: SyncJob) {
+        // SyncEndpoint is Codable; JSON-encoding is deterministic
+        // enough for storage (no version drift expected for an enum
+        // with two cases). Falls back to empty Data on encode failure
+        // — the snapshot getter then surfaces nil and the host treats
+        // the record as broken and refuses to run it.
+        let encoder = JSONEncoder()
+        let sourceData = (try? encoder.encode(job.source)) ?? Data()
+        let destData = (try? encoder.encode(job.destination)) ?? Data()
         self.init(
             id: job.id,
             name: job.name,
             modeRaw: job.mode.rawValue,
-            sourceAccountID: job.source.accountID,
-            sourceBucket: job.source.bucket,
-            sourcePrefix: job.source.prefix,
-            destAccountID: job.destination.accountID,
-            destBucket: job.destination.bucket,
-            destPrefix: job.destination.prefix,
+            sourceEndpointData: sourceData,
+            destinationEndpointData: destData,
             diffStrategyRaw: job.diffStrategy.rawValue,
             includeGlobs: job.includeGlobs,
             excludeGlobs: job.excludeGlobs,
@@ -100,14 +99,15 @@ final class SyncJobRecord {
     }
 
     func update(from job: SyncJob) {
+        let encoder = JSONEncoder()
         name = job.name
         modeRaw = job.mode.rawValue
-        sourceAccountID = job.source.accountID
-        sourceBucket = job.source.bucket
-        sourcePrefix = job.source.prefix
-        destAccountID = job.destination.accountID
-        destBucket = job.destination.bucket
-        destPrefix = job.destination.prefix
+        if let data = try? encoder.encode(job.source) {
+            sourceEndpointData = data
+        }
+        if let data = try? encoder.encode(job.destination) {
+            destinationEndpointData = data
+        }
         diffStrategyRaw = job.diffStrategy.rawValue
         includeGlobs = job.includeGlobs
         excludeGlobs = job.excludeGlobs
@@ -119,21 +119,21 @@ final class SyncJobRecord {
         enabled = job.enabled
     }
 
-    var snapshot: SyncJob {
-        SyncJob(
+    /// Sendable snapshot. Returns `nil` when one of the endpoint blobs
+    /// fails to decode — that record is then treated as broken and
+    /// hidden from the UI rather than crashing the list.
+    var snapshot: SyncJob? {
+        let decoder = JSONDecoder()
+        guard
+            let source = try? decoder.decode(SyncEndpoint.self, from: sourceEndpointData),
+            let destination = try? decoder.decode(SyncEndpoint.self, from: destinationEndpointData)
+        else { return nil }
+        return SyncJob(
             id: id,
             name: name,
             mode: SyncMode(rawValue: modeRaw) ?? .copy,
-            source: SyncEndpoint(
-                accountID: sourceAccountID,
-                bucket: sourceBucket,
-                prefix: sourcePrefix
-            ),
-            destination: SyncEndpoint(
-                accountID: destAccountID,
-                bucket: destBucket,
-                prefix: destPrefix
-            ),
+            source: source,
+            destination: destination,
             diffStrategy: SyncDiffStrategy(rawValue: diffStrategyRaw) ?? .nameAndSize,
             includeGlobs: includeGlobs,
             excludeGlobs: excludeGlobs,

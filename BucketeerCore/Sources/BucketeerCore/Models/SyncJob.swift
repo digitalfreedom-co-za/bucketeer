@@ -7,18 +7,51 @@
 
 import Foundation
 
-/// Identifies a source or destination scope within one account.
-public struct SyncEndpoint: Codable, Hashable, Sendable {
-    public let accountID: UUID
-    public var bucket: String
-    /// Always normalised to either empty or trailing-slash, mirroring
-    /// the `prefix` semantics used everywhere else in the app.
-    public var prefix: String
+/// Identifies one side of a sync job. Either a scope inside an
+/// S3-compatible / Azure account, or a folder on the user's local Mac.
+///
+/// The local-folder case carries a security-scoped bookmark (App Sandbox
+/// requirement) so the folder access survives across launches; the
+/// `displayPath` is the human-readable path shown in the sync list and
+/// job sheet so the UI doesn't have to resolve the bookmark just to
+/// render a row.
+public enum SyncEndpoint: Codable, Hashable, Sendable {
+    case s3(accountID: UUID, bucket: String, prefix: String)
+    case localFolder(bookmark: Data, displayPath: String)
 
-    public init(accountID: UUID, bucket: String, prefix: String = "") {
-        self.accountID = accountID
-        self.bucket = bucket
-        self.prefix = prefix
+    /// Convenience: the bucket name for S3 endpoints, the display path
+    /// for local folders. Used for list-row rendering.
+    public var displayLocation: String {
+        switch self {
+        case .s3(_, let bucket, let prefix):
+            return prefix.isEmpty ? bucket : "\(bucket)/\(prefix)"
+        case .localFolder(_, let displayPath):
+            return displayPath
+        }
+    }
+
+    /// The S3 account ID, if any. `nil` for local folders.
+    public var accountID: UUID? {
+        if case let .s3(accountID, _, _) = self { return accountID }
+        return nil
+    }
+
+    /// String tag for log lines / status messages.
+    public var kindLabel: String {
+        switch self {
+        case .s3: return "s3"
+        case .localFolder: return "local"
+        }
+    }
+
+    public var isLocal: Bool {
+        if case .localFolder = self { return true }
+        return false
+    }
+
+    public var isS3: Bool {
+        if case .s3 = self { return true }
+        return false
     }
 }
 

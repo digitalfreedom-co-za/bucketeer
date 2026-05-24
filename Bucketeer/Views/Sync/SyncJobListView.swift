@@ -226,8 +226,15 @@ struct SyncJobListView: View {
     }
 
     private func endpointLabel(_ endpoint: SyncEndpoint) -> String {
-        let accountName = viewModel.accounts.first(where: { $0.id == endpoint.accountID })?.name
-            ?? "?"
-        return "\(accountName) · \(endpoint.bucket)/\(endpoint.prefix)"
+        switch endpoint {
+        case .s3(let accountID, let bucket, let prefix):
+            let accountName = viewModel.accounts
+                .first(where: { $0.id == accountID })?.name ?? "?"
+            return prefix.isEmpty
+                ? "\(accountName) · \(bucket)"
+                : "\(accountName) · \(bucket)/\(prefix)"
+        case .localFolder(_, let path):
+            return "📁 \(path)"
+        }
     }
 }

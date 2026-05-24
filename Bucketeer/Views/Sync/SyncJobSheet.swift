@@ -6,12 +6,13 @@
 //
 
 import SwiftUI
+import AppKit
 import BucketeerCore
 
-/// Single-page sync job editor. Spec §7.3 calls for a multi-step
-/// wizard; v1 ships a compact one-page form so power users can
-/// configure jobs in seconds. The wizard layout is parked for v1.1
-/// when we have a/b data on how users actually pick endpoints.
+/// Single-page sync job editor. Each side (source / destination) can be
+/// either an S3 / Azure account scope or a local folder. Phase 9.8 —
+/// local folder support uses security-scoped bookmarks so the access
+/// survives across launches.
 struct SyncJobSheet: View {
     enum Mode: Equatable {
         case create
@@ -26,12 +27,24 @@ struct SyncJobSheet: View {
 
     @State private var name: String = ""
     @State private var mode_: SyncMode = .copy
+
+    // Per-side endpoint editor state. Kind drives which subset of
+    // fields the form shows; the unused fields keep their values so
+    // switching back doesn't lose user input mid-edit.
+    @State private var sourceKind: EndpointKind = .s3
     @State private var sourceAccountID: UUID?
     @State private var sourceBucket: String = ""
     @State private var sourcePrefix: String = ""
+    @State private var sourceLocalBookmark: Data?
+    @State private var sourceLocalDisplayPath: String = ""
+
+    @State private var destKind: EndpointKind = .s3
     @State private var destAccountID: UUID?
     @State private var destBucket: String = ""
     @State private var destPrefix: String = ""
+    @State private var destLocalBookmark: Data?
+    @State private var destLocalDisplayPath: String = ""
+
     @State private var diffStrategy: SyncDiffStrategy = .nameAndSize
     @State private var includeGlobs: String = ""
     @State private var excludeGlobs: String = ""
@@ -47,23 +60,67 @@ struct SyncJobSheet: View {
         case manual, onLaunch, interval
     }
 
+    private enum EndpointKind: String, CaseIterable {
+        case s3
+        case localFolder
+    }
+
     private var isEditing: Bool { if case .edit = mode { return true }; return false }
 
     private var canSave: Bool {
-        !saving
-            && !name.trimmingCharacters(in: .whitespaces).isEmpty
-            && sourceAccountID != nil
-            && destAccountID != nil
-            && !sourceBucket.trimmingCharacters(in: .whitespaces).isEmpty
-            && !destBucket.trimmingCharacters(in: .whitespaces).isEmpty
+        guard !saving,
+              !name.trimmingCharacters(in: .whitespaces).isEmpty
+        else { return false }
+        return endpointValid(
+            kind: sourceKind,
+            accountID: sourceAccountID,
+            bucket: sourceBucket,
+            bookmark: sourceLocalBookmark
+        ) && endpointValid(
+            kind: destKind,
+            accountID: destAccountID,
+            bucket: destBucket,
+            bookmark: destLocalBookmark
+        )
+    }
+
+    private func endpointValid(
+        kind: EndpointKind,
+        accountID: UUID?,
+        bucket: String,
+        bookmark: Data?
+    ) -> Bool {
+        switch kind {
+        case .s3:
+            return accountID != nil
+                && !bucket.trimmingCharacters(in: .whitespaces).isEmpty
+        case .localFolder:
+            return bookmark != nil
+        }
     }
 
     var body: some View {
         NavigationStack {
             Form {
                 generalSection
-                sourceSection
-                destinationSection
+                endpointSection(
+                    titleKey: "sync.section.source",
+                    kind: $sourceKind,
+                    accountID: $sourceAccountID,
+                    bucket: $sourceBucket,
+                    prefix: $sourcePrefix,
+                    bookmark: $sourceLocalBookmark,
+                    displayPath: $sourceLocalDisplayPath
+                )
+                endpointSection(
+                    titleKey: "sync.section.destination",
+                    kind: $destKind,
+                    accountID: $destAccountID,
+                    bucket: $destBucket,
+                    prefix: $destPrefix,
+                    bookmark: $destLocalBookmark,
+                    displayPath: $destLocalDisplayPath
+                )
                 rulesSection
                 scheduleSection
             }
@@ -81,7 +138,7 @@ struct SyncJobSheet: View {
             }
             .onAppear(perform: hydrate)
         }
-        .frame(minWidth: 600, minHeight: 600)
+        .frame(minWidth: 620, minHeight: 660)
     }
 
     // MARK: - Sections
@@ -98,23 +155,52 @@ struct SyncJobSheet: View {
         }
     }
 
-    private var sourceSection: some View {
-        Section("sync.section.source") {
-            accountPicker(selection: $sourceAccountID)
-            TextField("sync.field.bucket", text: $sourceBucket)
-                .autocorrectionDisabled()
-            TextField("sync.field.prefix", text: $sourcePrefix)
-                .autocorrectionDisabled()
-        }
-    }
-
-    private var destinationSection: some View {
-        Section("sync.section.destination") {
-            accountPicker(selection: $destAccountID)
-            TextField("sync.field.bucket", text: $destBucket)
-                .autocorrectionDisabled()
-            TextField("sync.field.prefix", text: $destPrefix)
-                .autocorrectionDisabled()
+    @ViewBuilder
+    private func endpointSection(
+        titleKey: LocalizedStringKey,
+        kind: Binding<EndpointKind>,
+        accountID: Binding<UUID?>,
+        bucket: Binding<String>,
+        prefix: Binding<String>,
+        bookmark: Binding<Data?>,
+        displayPath: Binding<String>
+    ) -> some View {
+        Section(titleKey) {
+            Picker("sync.field.endpointKind", selection: kind) {
+                Text("sync.endpoint.s3").tag(EndpointKind.s3)
+                Text("sync.endpoint.localFolder").tag(EndpointKind.localFolder)
+            }
+            switch kind.wrappedValue {
+            case .s3:
+                accountPicker(selection: accountID)
+                TextField("sync.field.bucket", text: bucket)
+                    .autocorrectionDisabled()
+                TextField("sync.field.prefix", text: prefix)
+                    .autocorrectionDisabled()
+            case .localFolder:
+                HStack(spacing: 12) {
+                    Image(systemName: bookmark.wrappedValue == nil
+                          ? "folder.badge.questionmark"
+                          : "folder.fill")
+                        .foregroundStyle(bookmark.wrappedValue == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(.tint))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("sync.field.localFolder")
+                            .font(.callout)
+                        Text(displayPath.wrappedValue.isEmpty
+                             ? String(localized: "sync.localFolder.notChosen",
+                                      defaultValue: "No folder selected")
+                             : displayPath.wrappedValue)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
+                    Spacer()
+                    Button("sync.action.chooseFolder") {
+                        chooseFolder(into: bookmark, displayPath: displayPath)
+                    }
+                }
+            }
         }
     }
 
@@ -123,6 +209,11 @@ struct SyncJobSheet: View {
             Picker("sync.field.diffStrategy", selection: $diffStrategy) {
                 Text("sync.diff.nameAndSize").tag(SyncDiffStrategy.nameAndSize)
                 Text("sync.diff.nameAndEtag").tag(SyncDiffStrategy.nameAndEtag)
+            }
+            if isAnyLocal {
+                Text("sync.diff.localHint")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
             TextField("sync.field.includeGlobs", text: $includeGlobs, prompt: Text("*.jpg, *.pdf"))
                 .autocorrectionDisabled()
@@ -155,6 +246,12 @@ struct SyncJobSheet: View {
         }
     }
 
+    /// Either side picked as local — used to surface the ETag-not-
+    /// available hint in the rules section.
+    private var isAnyLocal: Bool {
+        sourceKind == .localFolder || destKind == .localFolder
+    }
+
     @ViewBuilder
     private func accountPicker(selection: Binding<UUID?>) -> some View {
         Picker("sync.field.account", selection: selection) {
@@ -170,6 +267,39 @@ struct SyncJobSheet: View {
         }
     }
 
+    // MARK: - Folder picker
+
+    /// Open an NSOpenPanel for directory selection. On OK we capture a
+    /// security-scoped bookmark so the access persists across launches
+    /// (App Sandbox requirement) and store the display path for the
+    /// list rows. Errors surface in-place via the UI's empty-state line.
+    private func chooseFolder(
+        into bookmark: Binding<Data?>,
+        displayPath: Binding<String>
+    ) {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = false
+        panel.message = String(
+            localized: "sync.localFolder.pickerMessage",
+            defaultValue: "Choose a folder for Bucketeer to sync."
+        )
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            let data = try url.bookmarkData(
+                options: .withSecurityScope,
+                includingResourceValuesForKeys: nil,
+                relativeTo: nil
+            )
+            bookmark.wrappedValue = data
+            displayPath.wrappedValue = url.path(percentEncoded: false)
+        } catch {
+            bookmark.wrappedValue = nil
+            displayPath.wrappedValue = ""
+        }
+    }
+
     // MARK: - Hydrate / commit
 
     private func hydrate() {
@@ -178,24 +308,33 @@ struct SyncJobSheet: View {
         if case .edit(let job) = mode {
             name = job.name
             mode_ = job.mode
-            sourceAccountID = job.source.accountID
-            sourceBucket = job.source.bucket
-            sourcePrefix = job.source.prefix
-            destAccountID = job.destination.accountID
-            destBucket = job.destination.bucket
-            destPrefix = job.destination.prefix
+            hydrateEndpoint(
+                job.source,
+                kind: $sourceKind,
+                accountID: $sourceAccountID,
+                bucket: $sourceBucket,
+                prefix: $sourcePrefix,
+                bookmark: $sourceLocalBookmark,
+                displayPath: $sourceLocalDisplayPath
+            )
+            hydrateEndpoint(
+                job.destination,
+                kind: $destKind,
+                accountID: $destAccountID,
+                bucket: $destBucket,
+                prefix: $destPrefix,
+                bookmark: $destLocalBookmark,
+                displayPath: $destLocalDisplayPath
+            )
             diffStrategy = job.diffStrategy
             includeGlobs = job.includeGlobs.joined(separator: ", ")
             excludeGlobs = job.excludeGlobs.joined(separator: ", ")
             deletePropagation = job.deletePropagation
             switch job.schedule {
-            case .manual:
-                scheduleKind = .manual
-            case .onLaunch:
-                scheduleKind = .onLaunch
-            case .interval(let seconds):
-                scheduleKind = .interval
-                intervalMinutes = max(5, seconds / 60)
+            case .manual:                scheduleKind = .manual
+            case .onLaunch:              scheduleKind = .onLaunch
+            case .interval(let seconds): scheduleKind = .interval
+                                         intervalMinutes = max(5, seconds / 60)
             }
             concurrency = job.concurrency
             enabled = job.enabled
@@ -205,25 +344,53 @@ struct SyncJobSheet: View {
         }
     }
 
+    private func hydrateEndpoint(
+        _ endpoint: SyncEndpoint,
+        kind: Binding<EndpointKind>,
+        accountID: Binding<UUID?>,
+        bucket: Binding<String>,
+        prefix: Binding<String>,
+        bookmark: Binding<Data?>,
+        displayPath: Binding<String>
+    ) {
+        switch endpoint {
+        case .s3(let aid, let b, let p):
+            kind.wrappedValue = .s3
+            accountID.wrappedValue = aid
+            bucket.wrappedValue = b
+            prefix.wrappedValue = p
+        case .localFolder(let bm, let path):
+            kind.wrappedValue = .localFolder
+            bookmark.wrappedValue = bm
+            displayPath.wrappedValue = path
+        }
+    }
+
     private func commit() {
-        guard let sourceAccountID, let destAccountID else { return }
+        let source = buildEndpoint(
+            kind: sourceKind,
+            accountID: sourceAccountID,
+            bucket: sourceBucket,
+            prefix: sourcePrefix,
+            bookmark: sourceLocalBookmark,
+            displayPath: sourceLocalDisplayPath
+        )
+        let destination = buildEndpoint(
+            kind: destKind,
+            accountID: destAccountID,
+            bucket: destBucket,
+            prefix: destPrefix,
+            bookmark: destLocalBookmark,
+            displayPath: destLocalDisplayPath
+        )
+        guard let source, let destination else { return }
         saving = true
-        let normalisedSourcePrefix = normalise(prefix: sourcePrefix)
-        let normalisedDestPrefix = normalise(prefix: destPrefix)
         let job = SyncJob(
             id: { if case .edit(let j) = mode { return j.id }; return UUID() }(),
             name: name.trimmingCharacters(in: .whitespaces),
             mode: mode_,
-            source: SyncEndpoint(
-                accountID: sourceAccountID,
-                bucket: sourceBucket.trimmingCharacters(in: .whitespaces),
-                prefix: normalisedSourcePrefix
-            ),
-            destination: SyncEndpoint(
-                accountID: destAccountID,
-                bucket: destBucket.trimmingCharacters(in: .whitespaces),
-                prefix: normalisedDestPrefix
-            ),
+            source: source,
+            destination: destination,
             diffStrategy: diffStrategy,
             includeGlobs: splitGlobs(includeGlobs),
             excludeGlobs: splitGlobs(excludeGlobs),
@@ -241,6 +408,28 @@ struct SyncJobSheet: View {
         Task {
             await onSave(job)
             dismiss()
+        }
+    }
+
+    private func buildEndpoint(
+        kind: EndpointKind,
+        accountID: UUID?,
+        bucket: String,
+        prefix: String,
+        bookmark: Data?,
+        displayPath: String
+    ) -> SyncEndpoint? {
+        switch kind {
+        case .s3:
+            guard let accountID else { return nil }
+            return .s3(
+                accountID: accountID,
+                bucket: bucket.trimmingCharacters(in: .whitespaces),
+                prefix: normalise(prefix: prefix)
+            )
+        case .localFolder:
+            guard let bookmark else { return nil }
+            return .localFolder(bookmark: bookmark, displayPath: displayPath)
         }
     }
 

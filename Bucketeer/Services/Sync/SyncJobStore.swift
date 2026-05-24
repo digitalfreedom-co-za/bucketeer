@@ -27,7 +27,13 @@ actor SyncJobStore: SyncJobStoring {
             let descriptor = FetchDescriptor<SyncJobRecord>(
                 sortBy: [SortDescriptor(\.name)]
             )
-            return try modelContext.fetch(descriptor).map(\.snapshot)
+            // `snapshot` is Optional<SyncJob> now that endpoints are
+            // stored as JSON: records whose endpoint blob fails to
+            // decode (corrupted store, schema-incompatible old data)
+            // are silently filtered out so the UI never crashes on
+            // them. Codex deep-audit dead-code rule: this is the
+            // only place the corrupted record matters.
+            return try modelContext.fetch(descriptor).compactMap(\.snapshot)
         } catch {
             throw BucketeerError.persistenceFailure(message: error.localizedDescription)
         }
