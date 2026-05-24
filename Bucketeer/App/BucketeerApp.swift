@@ -21,9 +21,14 @@ struct BucketeerApp: App {
             fatalError("Failed to initialise AppContainer: \(error)")
         }
         _container = State(initialValue: container)
-        // Hand the controller to the delegate so it can answer
-        // `applicationShouldTerminateAfterLastWindowClosed` correctly.
-        BucketeerAppDelegate.shared.activationController = container.activationController
+        // Inject the activation controller into the **adaptor-managed**
+        // delegate instance, not a separate singleton. Codex high #5:
+        // the adaptor creates a fresh BucketeerAppDelegate at launch;
+        // assigning to a `static let shared` left the live delegate
+        // with `activationController == nil`, so menubar mode never
+        // applied at launch and the "quit after last window closed"
+        // logic always saw `false`.
+        BucketeerAppDelegate.installedActivationController = container.activationController
     }
 
     var body: some Scene {
@@ -76,13 +81,12 @@ private struct AppCommands: Commands {
             }
         }
 
-        // Keep ⌘N reserved for the (future) account-add menu action.
-        CommandGroup(replacing: .newItem) {
-            Button("action.add-account") {
-                // Wired up to the main-window sidebar in a later phase.
-            }
-            .keyboardShortcut("n", modifiers: .command)
-        }
+        // The default New File / New Window items are noise for an
+        // object-storage browser. Drop them entirely; the "+ Add account"
+        // affordance lives in the sidebar where it has the context to
+        // do something useful. Codex low #15: a stubbed no-op menu item
+        // is shipped dead code.
+        CommandGroup(replacing: .newItem) {}
 
         // Replace the default Help menu with our own entries.
         CommandGroup(replacing: .help) {
@@ -126,16 +130,19 @@ private struct AppCommands: Commands {
 /// touch from the SwiftUI app init.
 @MainActor
 final class BucketeerAppDelegate: NSObject, NSApplicationDelegate {
-    /// Static reference so the `@main` struct can pass the controller
-    /// in from its init. The alternative — environment lookup inside
-    /// the delegate — does not work because the delegate runs *before*
-    /// any SwiftUI environment exists.
-    static let shared = BucketeerAppDelegate()
+    /// Hand-off slot for the activation controller. `BucketeerApp.init`
+    /// writes here *before* SwiftUI instantiates the adaptor's delegate,
+    /// so by the time `applicationDidFinishLaunching` fires the static
+    /// has the live controller. The delegate copies it onto an instance
+    /// property on init so subsequent App switches between menubar /
+    /// regular mode keep working without going through the static.
+    nonisolated(unsafe) static var installedActivationController: AppActivationController?
 
     var activationController: AppActivationController?
 
     override init() {
         super.init()
+        self.activationController = Self.installedActivationController
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {

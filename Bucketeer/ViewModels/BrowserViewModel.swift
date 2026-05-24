@@ -276,6 +276,10 @@ final class BrowserViewModel {
     private func loadBuckets(token: UInt64) async {
         guard let account else { return }
         isLoading = true
+        // Codex medium #12: clear isLoading on every exit path,
+        // including the stale-token short-circuits. Without this the
+        // spinner stuck in the UI after rapid account switches.
+        defer { if !isStale(token) { isLoading = false } }
         do {
             let result = try await s3Browser.listBuckets(account: account)
             guard !isStale(token), self.account?.id == account.id else { return }
@@ -290,7 +294,6 @@ final class BrowserViewModel {
             self.error = .unknown(message: error.localizedDescription)
             buckets = []
         }
-        if !isStale(token) { isLoading = false }
     }
 
     private func loadObjects(reset: Bool, token: UInt64) async {
@@ -302,6 +305,11 @@ final class BrowserViewModel {
             hasMore = false
         }
         isLoading = true
+        // Codex medium #12: defer-based isLoading clearing so the
+        // spinner stops on every exit path, including the stale-token
+        // returns that previously short-circuited before the final
+        // `isLoading = false`.
+        defer { if !isStale(token) { isLoading = false } }
         do {
             let page = try await s3Browser.listObjects(
                 account: account,
@@ -339,6 +347,5 @@ final class BrowserViewModel {
             self.error = .unknown(message: error.localizedDescription)
             if reset { objects = [] }
         }
-        if !isStale(token) { isLoading = false }
     }
 }

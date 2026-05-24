@@ -62,9 +62,10 @@ final class AccountListViewModel {
     }
 
     /// Saves the account in Keychain first, then in the SwiftData store.
-    /// If the SwiftData write fails the Keychain entry is rolled back so
-    /// neither store retains an orphaned record. Returns the error so
-    /// the calling sheet can keep itself open and surface a message.
+    /// If the SwiftData write fails the rollback strategy depends on
+    /// whether this is an edit or a create — Codex high #7: on edit
+    /// we used to delete the original credentials too, which destroyed
+    /// the user's existing access when only the metadata write failed.
     ///
     /// When the supplied `credentials` has an empty `secretKey`, the
     /// existing Keychain entry is left untouched and any non-empty
@@ -73,6 +74,10 @@ final class AccountListViewModel {
     /// the secret.
     @discardableResult
     func save(account: S3Account, credentials: AccountCredentials) async -> BucketeerError? {
+        // Snapshot any existing credentials *before* the new save so
+        // we can restore them if the SwiftData write fails on an edit.
+        let previousCredentials = try? await keychainStore.load(for: account.id)
+        let isEdit = previousCredentials != nil
         let effective = await resolveCredentials(for: account.id, form: credentials)
 
         do {
@@ -89,13 +94,19 @@ final class AccountListViewModel {
         do {
             try await accountStore.upsert(account)
         } catch let error as BucketeerError {
-            // SwiftData failed after Keychain succeeded — roll back the
-            // credential so we never have orphans in the Keychain.
-            try? await keychainStore.delete(for: account.id)
+            await rollbackCredentials(
+                for: account.id,
+                previous: previousCredentials,
+                isEdit: isEdit
+            )
             self.error = error
             return error
         } catch {
-            try? await keychainStore.delete(for: account.id)
+            await rollbackCredentials(
+                for: account.id,
+                previous: previousCredentials,
+                isEdit: isEdit
+            )
             let wrapped = BucketeerError.unknown(message: error.localizedDescription)
             self.error = wrapped
             return wrapped
@@ -106,6 +117,24 @@ final class AccountListViewModel {
         await invalidateAllCaches(for: account.id)
         await refresh()
         return nil
+    }
+
+    /// Restore the pre-save credentials on a partial-failure rollback.
+    /// - For an **edit**: rewrite the previous credentials so the
+    ///   account stays usable.
+    /// - For a **create**: delete the orphaned entry so we don't leave
+    ///   junk in the Keychain for an account that never made it into
+    ///   the SwiftData store.
+    private func rollbackCredentials(
+        for accountID: UUID,
+        previous: AccountCredentials?,
+        isEdit: Bool
+    ) async {
+        if isEdit, let previous {
+            try? await keychainStore.save(previous, for: accountID)
+        } else {
+            try? await keychainStore.delete(for: accountID)
+        }
     }
 
     /// Removes the account record first so the UI never shows an entry

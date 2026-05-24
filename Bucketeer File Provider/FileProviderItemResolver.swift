@@ -282,14 +282,69 @@ enum FileProviderItemResolver {
             throw mappedError(.noSuchItem)
         }
         do {
-            try await container.browser.delete(
-                account: mountInfo.account,
-                bucket: mountInfo.bucket,
-                keys: [key]
-            )
+            if key.hasSuffix("/") {
+                // Codex high #4: folder identifiers represent a virtual
+                // prefix in the bucket. Deleting only the `prefix/`
+                // marker would leave every descendant orphaned in the
+                // bucket while Finder reports success. Recursively
+                // enumerate and batch-delete every key under the prefix
+                // before completing.
+                try await deleteRecursively(
+                    prefix: key,
+                    account: mountInfo.account,
+                    bucket: mountInfo.bucket,
+                    container: container
+                )
+            } else {
+                try await container.browser.delete(
+                    account: mountInfo.account,
+                    bucket: mountInfo.bucket,
+                    keys: [key]
+                )
+            }
         } catch {
             throw fileProviderError(error, fallback: .cannotSynchronize)
         }
+    }
+
+    /// Walk every common prefix and file under `prefix` and delete them
+    /// in S3-safe batches. Uses the existing `S3Browsing.listObjects`
+    /// continuation token; the S3 backend chunks 1000 keys per
+    /// DeleteObjects request internally.
+    private static func deleteRecursively(
+        prefix: String,
+        account: S3Account,
+        bucket: String,
+        container: ExtensionContainer
+    ) async throws {
+        var allKeys: [String] = [prefix]
+        var queue: [String] = [prefix]
+        while let next = queue.first {
+            queue.removeFirst()
+            var token: String? = nil
+            repeat {
+                try Task.checkCancellation()
+                let page = try await container.browser.listObjects(
+                    account: account,
+                    bucket: bucket,
+                    prefix: next,
+                    continuationToken: token
+                )
+                for object in page.objects {
+                    if object.isFolder {
+                        queue.append(object.key)
+                    }
+                    allKeys.append(object.key)
+                }
+                token = page.continuationToken
+                if !page.hasMore { token = nil }
+            } while token != nil
+        }
+        try await container.browser.delete(
+            account: account,
+            bucket: bucket,
+            keys: allKeys
+        )
     }
 
     // MARK: - Transports
@@ -469,6 +524,14 @@ final class ResolvedItem: NSObject, NSFileProviderItem {
     }
 
     var capabilities: NSFileProviderItemCapabilities {
+        // The root container (the bucket itself) cannot be renamed or
+        // deleted via Finder — that would require a `DeleteBucket`
+        // call we do not expose. Codex medium #10: returning the
+        // folder capabilities here let Finder offer a Delete that
+        // would silently fail.
+        if itemIdentifier == .rootContainer {
+            return [.allowsContentEnumerating, .allowsAddingSubItems]
+        }
         if isFolder {
             return [.allowsContentEnumerating, .allowsAddingSubItems, .allowsDeleting, .allowsRenaming]
         }

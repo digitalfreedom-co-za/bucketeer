@@ -149,9 +149,19 @@ final class EntitlementManager {
             let result = try await product.purchase()
             switch result {
             case .success(let verification):
-                if case .verified(let transaction) = verification {
+                switch verification {
+                case .verified(let transaction):
                     await transaction.finish()
                     await refresh()
+                case .unverified(_, let verificationError):
+                    // Codex medium #13: an unverified purchase result
+                    // used to be silently swallowed, leaving the user
+                    // with no feedback and the entitlement state
+                    // unchanged. Surface it as an actionable error so
+                    // the paywall can show what happened.
+                    throw EntitlementError.unknown(
+                        verificationError.localizedDescription
+                    )
                 }
             case .userCancelled:
                 return

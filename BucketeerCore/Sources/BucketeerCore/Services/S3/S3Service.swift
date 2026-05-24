@@ -101,6 +101,12 @@ public struct S3Service: S3Browsing {
         }
     }
 
+    /// S3 caps `DeleteObjects` at 1000 keys per request (per API spec).
+    /// Chunk recursive deletes / large multi-selects accordingly —
+    /// Codex high #6: without batching the operation would fail
+    /// outright instead of completing in slices.
+    private static let deleteObjectsBatchSize = 1000
+
     public func delete(account: S3Account, bucket: String, keys: [String]) async throws {
         guard !keys.isEmpty else { return }
         let s3 = try await factory.client(for: account)
@@ -109,24 +115,30 @@ public struct S3Service: S3Browsing {
                 _ = try await s3.deleteObject(.init(bucket: bucket, key: keys[0]))
                 return
             }
-            let response = try await s3.deleteObjects(.init(
-                bucket: bucket,
-                delete: .init(objects: keys.map { .init(key: $0) })
-            ))
-            // `DeleteObjects` returns HTTP 200 even when individual keys fail.
-            // The per-key failures arrive in `response.errors` — surface them
-            // so the UI does not falsely report success.
-            if let errors = response.errors, !errors.isEmpty {
-                let summary = errors
+            // Aggregate per-key failures across all batches so the UI
+            // shows a single comprehensive error if anything failed.
+            var aggregatedErrors: [(key: String, code: String, message: String)] = []
+            for batch in keys.chunked(by: Self.deleteObjectsBatchSize) {
+                let response = try await s3.deleteObjects(.init(
+                    bucket: bucket,
+                    delete: .init(objects: batch.map { .init(key: $0) })
+                ))
+                if let errors = response.errors {
+                    aggregatedErrors.append(contentsOf: errors.map { e in
+                        (key: e.key ?? "?",
+                         code: e.code ?? "Error",
+                         message: e.message ?? e.code ?? "Error")
+                    })
+                }
+            }
+            if !aggregatedErrors.isEmpty {
+                let summary = aggregatedErrors
                     .prefix(5)
-                    .map { e in
-                        let key = e.key ?? "?"
-                        let code = e.code ?? "Error"
-                        let msg = e.message ?? code
-                        return "\(key): \(code) — \(msg)"
-                    }
+                    .map { "\($0.key): \($0.code) — \($0.message)" }
                     .joined(separator: "; ")
-                let suffix = errors.count > 5 ? " (+\(errors.count - 5) more)" : ""
+                let suffix = aggregatedErrors.count > 5
+                    ? " (+\(aggregatedErrors.count - 5) more)"
+                    : ""
                 throw BucketeerError.providerError(
                     statusCode: 200,
                     message: summary + suffix

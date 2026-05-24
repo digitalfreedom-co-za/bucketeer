@@ -156,10 +156,17 @@ actor PreviewCache {
     /// Empty the cache. Codex review #7 — the previous implementation
     /// only walked the in-memory index, missing files written by a
     /// previous app run before the user requested any preview this
-    /// session. Removing the whole cache root and recreating it is the
-    /// only way to guarantee the user-visible "Clear Cache" actually
-    /// frees disk.
-    func clearAll() {
+    /// session. Codex review #14 — cancel + drain in-flight downloads
+    /// first so a fetch that lands after the dir wipe cannot repopulate
+    /// the cache and defeat the "Clear Cache" intent.
+    func clearAll() async {
+        for (_, task) in inflight {
+            task.cancel()
+        }
+        for (_, task) in inflight {
+            _ = try? await task.value
+        }
+        inflight.removeAll()
         try? FileManager.default.removeItem(at: root)
         try? FileManager.default.createDirectory(
             at: root,

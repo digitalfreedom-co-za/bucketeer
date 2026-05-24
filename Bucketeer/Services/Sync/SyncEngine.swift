@@ -170,31 +170,74 @@ actor SyncEngine {
         /// not delete the source for failed upserts (Codex blocker #1).
         var successfulEntries: [SyncPlanner.PlanEntry] = []
 
-        // Upserts: copy or transfer per entry.
-        for entry in plan.upserts {
-            if Task.isCancelled {
-                updateStatus(id: job.id, phase: .cancelled)
-                return
+        // Upserts: copy or transfer per entry. Codex medium #11 —
+        // honour `job.concurrency` instead of running serially. We
+        // use a bounded task group with an inflight cap so the
+        // configured parallelism is respected without exhausting
+        // network resources.
+        let parallelism = max(1, job.concurrency)
+        do {
+            try await withThrowingTaskGroup(
+                of: (SyncPlanner.PlanEntry, Result<Void, Error>).self
+            ) { group in
+                var iterator = plan.upserts.makeIterator()
+                var inflight = 0
+
+                func enqueueNext() -> Bool {
+                    guard let entry = iterator.next() else { return false }
+                    group.addTask { [accounts, job] in
+                        do {
+                            try await self.execute(
+                                upsert: entry,
+                                job: job,
+                                source: accounts.source,
+                                destination: accounts.destination
+                            )
+                            return (entry, .success(()))
+                        } catch {
+                            return (entry, .failure(error))
+                        }
+                    }
+                    inflight += 1
+                    return true
+                }
+
+                for _ in 0..<parallelism {
+                    if !enqueueNext() { break }
+                }
+
+                while inflight > 0 {
+                    if Task.isCancelled {
+                        group.cancelAll()
+                        updateStatus(id: job.id, phase: .cancelled)
+                        return
+                    }
+                    guard let result = try await group.next() else { break }
+                    inflight -= 1
+                    let (entry, outcome) = result
+                    switch outcome {
+                    case .success:
+                        completed += 1
+                        successfulEntries.append(entry)
+                    case .failure:
+                        failed += 1
+                    }
+                    updateStatus(
+                        id: job.id,
+                        phase: .running,
+                        planned: planned,
+                        completed: completed,
+                        failed: failed
+                    )
+                    _ = enqueueNext()
+                }
             }
-            do {
-                try await execute(
-                    upsert: entry,
-                    job: job,
-                    source: accounts.source,
-                    destination: accounts.destination
-                )
-                completed += 1
-                successfulEntries.append(entry)
-            } catch {
-                failed += 1
-            }
-            updateStatus(
-                id: job.id,
-                phase: .running,
-                planned: planned,
-                completed: completed,
-                failed: failed
-            )
+        } catch is CancellationError {
+            updateStatus(id: job.id, phase: .cancelled)
+            return
+        } catch {
+            // Per-entry failures are already counted via the Result
+            // surface; this catch handles only group-level surprises.
         }
 
         // Mirror deletes (only when explicitly enabled).
@@ -224,18 +267,30 @@ actor SyncEngine {
         // Move mode: delete the source **only** for entries whose
         // upsert succeeded (Codex blocker #1 — failed copies must not
         // trigger source deletes), and only if the job was not
-        // cancelled mid-flight.
+        // cancelled mid-flight. Codex medium #9 — count delete
+        // failures so the final summary reflects them instead of
+        // silently swallowing leftover-source duplicates.
+        var moveDeleteFailures = 0
         if job.mode == .move && !Task.isCancelled {
             for entry in successfulEntries where !Task.isCancelled {
-                try? await browser.delete(
-                    account: accounts.source,
-                    bucket: job.source.bucket,
-                    keys: [entry.sourceKey]
-                )
+                do {
+                    try await browser.delete(
+                        account: accounts.source,
+                        bucket: job.source.bucket,
+                        keys: [entry.sourceKey]
+                    )
+                } catch {
+                    moveDeleteFailures += 1
+                }
+            }
+            if moveDeleteFailures > 0 {
+                failed += moveDeleteFailures
             }
         }
 
-        let summary = "\(completed) ok / \(failed) failed / \(planned) planned"
+        let summary = moveDeleteFailures > 0
+            ? "\(completed) ok / \(failed) failed (\(moveDeleteFailures) move-delete) / \(planned) planned"
+            : "\(completed) ok / \(failed) failed / \(planned) planned"
         updateStatus(
             id: job.id,
             phase: failed > 0 ? .failed : .finished,

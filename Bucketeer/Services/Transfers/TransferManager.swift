@@ -138,11 +138,12 @@ actor TransferManager: Transferring {
 
     func cancel(id: UUID) async {
         workers[id]?.cancel()
-        if var item = items[id], !item.task.state.isTerminal {
-            item.task.state = .cancelled
-            items[id] = item
-            terminated.insert(id)
-            publish()
+        // Route through setState so `awaitCompletion(id:)` waiters get
+        // resumed and `terminalCache` is populated — Codex blocker #2:
+        // bypassing setState left sync engine + drag-drop round-trips
+        // hung forever after a user-initiated cancel.
+        if let item = items[id], !item.task.state.isTerminal {
+            setState(id: id, state: .cancelled)
         }
     }
 

@@ -49,10 +49,23 @@ final class AppContainer {
             configurations: configuration
         )
         Self.runMigrations(modelContainer)
+        // Codex blocker #3: write to the shared keychain access group
+        // so the File Provider extension (which reads from the same
+        // group) can load credentials. Production-signed builds need
+        // the entitlement provisioned at developer.apple.com — local
+        // unsigned debug builds silently fall back to the private
+        // namespace, which is harmless for development.
+        //
+        // On first launch with the shared-group code path, copy any
+        // legacy private-namespace entries forward so the user's
+        // existing accounts keep working — see `KeychainStore.migrateToSharedAccessGroupIfNeeded`.
         let keychainStore = KeychainStore(
             service: AppEnvironment.keychainService,
-            accessGroup: nil // Shared access group is added in Phase 9 with the File Provider extension.
+            accessGroup: AppEnvironment.keychainAccessGroup
         )
+        Task { @MainActor [keychainStore] in
+            await keychainStore.migrateFromLegacyPrivateNamespace()
+        }
         let accountStore = AccountStore(modelContainer: modelContainer)
         let clientFactory = S3ClientFactory(keychainStore: keychainStore)
         let azureCredentialsCache = AzureCredentialsCache(keychainStore: keychainStore)

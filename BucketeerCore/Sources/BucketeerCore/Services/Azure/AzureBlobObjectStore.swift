@@ -189,6 +189,18 @@ public struct AzureBlobObjectStore: S3Browsing {
         }
     }
 
+    /// Maximum total wait for an asynchronous Azure copy before we
+    /// give up and throw `.providerError(statusCode: 504)`. Tuned
+    /// generously enough that the cross-storage-account copy of a
+    /// few-GB blob fits comfortably; small-blob copies finish
+    /// synchronously and never enter the poll loop at all.
+    private static let copyPollTimeoutSeconds: TimeInterval = 30 * 60
+
+    /// Initial backoff between Get-Blob-Properties polls. Doubles on
+    /// every iteration up to `copyPollMaxIntervalSeconds`.
+    private static let copyPollInitialIntervalSeconds: TimeInterval = 1.0
+    private static let copyPollMaxIntervalSeconds: TimeInterval = 30.0
+
     public func copy(
         account: S3Account,
         fromBucket: String,
@@ -214,12 +226,91 @@ public struct AzureBlobObjectStore: S3Browsing {
         }
         signer.sign(&request)
 
-        _ = try await fetch(request: request, on: session, bucket: toBucket, key: toKey)
-        // Server-side copy in Azure is asynchronous for large blobs —
-        // status arrives via `x-ms-copy-status` on the response. v1 only
-        // exposes Copy in the rename / move flows (small blobs), so we
-        // accept the success response without polling. v1.1 will poll
-        // when the status is `pending` for blobs > 256 MiB.
+        // Azure responds 202 Accepted with `x-ms-copy-status: pending`
+        // for asynchronous copies (large blobs, cross-storage-account,
+        // some sovereign cloud setups). Inspect the response and poll
+        // Get Blob Properties on the destination until the copy
+        // finishes — Codex blocker #1: the previous "fire and assume
+        // success" path caused the rename / move flow to delete the
+        // source while the copy was still pending, losing data.
+        let (_, response) = try await session.data(for: request)
+        guard let http = response as? HTTPURLResponse else {
+            throw BucketeerError.unknown(message: "Azure Copy Blob returned a non-HTTP response.")
+        }
+        if let mapped = AzureBlobObjectStore.mapHTTP(http, body: nil, bucket: toBucket, key: toKey) {
+            throw mapped
+        }
+        let initialStatus = http.value(forHTTPHeaderField: "x-ms-copy-status") ?? "success"
+        switch initialStatus.lowercased() {
+        case "success":
+            return
+        case "pending":
+            try await waitForCopyToFinish(
+                account: account,
+                builder: builder,
+                signer: signer,
+                container: toBucket,
+                key: toKey
+            )
+        case let other:
+            throw BucketeerError.providerError(
+                statusCode: http.statusCode,
+                message: "Azure copy returned status \(other)."
+            )
+        }
+    }
+
+    /// Poll the destination blob's Get Blob Properties until
+    /// `x-ms-copy-status` resolves to a terminal state. Exponential
+    /// backoff (1s → 2s → 4s → … capped at 30s) bounded by
+    /// `copyPollTimeoutSeconds`.
+    private func waitForCopyToFinish(
+        account: S3Account,
+        builder: AzureRequestBuilder,
+        signer: AzureSharedKeySigner,
+        container: String,
+        key: String
+    ) async throws {
+        let deadline = Date().addingTimeInterval(Self.copyPollTimeoutSeconds)
+        var interval = Self.copyPollInitialIntervalSeconds
+        while Date() < deadline {
+            try? await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
+            try Task.checkCancellation()
+
+            var head = URLRequest(url: builder.blobPropertiesURL(container: container, blob: key))
+            head.httpMethod = "HEAD"
+            signer.sign(&head)
+            let (_, response) = try await session.data(for: head)
+            guard let http = response as? HTTPURLResponse else {
+                throw BucketeerError.unknown(message: "Azure copy poll returned a non-HTTP response.")
+            }
+            if let mapped = AzureBlobObjectStore.mapHTTP(http, body: nil, bucket: container, key: key) {
+                throw mapped
+            }
+            let status = http.value(forHTTPHeaderField: "x-ms-copy-status")?.lowercased() ?? "pending"
+            switch status {
+            case "success":
+                return
+            case "pending":
+                interval = min(interval * 2, Self.copyPollMaxIntervalSeconds)
+                continue
+            case "failed", "aborted":
+                let description = http.value(forHTTPHeaderField: "x-ms-copy-status-description") ?? status
+                throw BucketeerError.providerError(
+                    statusCode: http.statusCode,
+                    message: "Azure copy \(status): \(description)"
+                )
+            default:
+                throw BucketeerError.providerError(
+                    statusCode: http.statusCode,
+                    message: "Azure copy reported unexpected status \(status)."
+                )
+            }
+        }
+        throw BucketeerError.providerError(
+            statusCode: 504,
+            message: "Azure copy did not finish within \(Int(Self.copyPollTimeoutSeconds))s."
+        )
     }
 
     public func createFolder(account: S3Account, bucket: String, prefix: String) async throws {
