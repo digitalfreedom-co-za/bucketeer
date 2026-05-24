@@ -48,6 +48,17 @@ actor SyncEngine {
     /// torn down. Without this guard the registration-race window
     /// could leak an in-flight transfer past the cancel.
     private var cancelledJobIDs: Set<UUID> = []
+    /// Phase 9.10: per-job FSEvents watcher + the Task that pumps the
+    /// watcher's debounced AsyncStream into runNow calls. Started on
+    /// reload() for jobs with a local source and `.onLocalChange`
+    /// schedule; torn down when the job is removed or its schedule
+    /// changes to something non-watcher.
+    private struct WatcherEntry {
+        let watcher: LocalFolderWatcher
+        let pumpTask: Task<Void, Never>
+        let bookmarkSignature: Int  // hashValue of the bookmark data
+    }
+    private var watchers: [UUID: WatcherEntry] = [:]
 
     init(
         accountStore: any AccountStoring,
@@ -81,6 +92,63 @@ actor SyncEngine {
         // manual jobs are not started here.
         for job in all where job.enabled && job.schedule == .onLaunch {
             await runNow(id: job.id)
+        }
+        // Reconcile FSEvents watchers for `.onLocalChange` jobs whose
+        // source is a local folder. Phase 9.10.
+        reconcileLocalChangeWatchers(against: all)
+    }
+
+    /// Bring the set of running FSEvents watchers in sync with the
+    /// current job table. Idempotent — stops watchers whose job was
+    /// deleted / disabled / changed schedule, starts new ones for
+    /// freshly-eligible jobs, and re-creates a watcher when the
+    /// bookmark behind a job changed (i.e. the user re-picked the
+    /// folder).
+    private func reconcileLocalChangeWatchers(against jobs: [SyncJob]) {
+        var keepIDs: Set<UUID> = []
+        for job in jobs where job.enabled && job.schedule == .onLocalChange {
+            guard case .localFolder(let bookmark, _) = job.source else { continue }
+            keepIDs.insert(job.id)
+            let signature = bookmark.hashValue
+            // Existing watcher with the same bookmark → leave running.
+            if let existing = watchers[job.id], existing.bookmarkSignature == signature {
+                continue
+            }
+            // Tear down stale watcher (bookmark moved or job edited)
+            // before starting a fresh one.
+            if let existing = watchers[job.id] {
+                existing.pumpTask.cancel()
+                existing.watcher.stop()
+                watchers.removeValue(forKey: job.id)
+            }
+            guard let (url, _) = try? LocalFolderEnumerator.resolveBookmark(bookmark) else {
+                continue
+            }
+            let didStart = url.startAccessingSecurityScopedResource()
+            defer { if didStart { url.stopAccessingSecurityScopedResource() } }
+            let watcher = LocalFolderWatcher(rootURL: url, latencySeconds: 3.0)
+            guard watcher.start() else { continue }
+            // Pump the watcher's debounced events into runNow calls.
+            // Each event triggers one sync — `runNow` is itself
+            // idempotent (guards on `runners[id] == nil`) so an event
+            // that lands mid-run is dropped harmlessly.
+            let jobID = job.id
+            let pump = Task { [weak self] in
+                for await _ in watcher.events {
+                    await self?.runNow(id: jobID)
+                }
+            }
+            watchers[job.id] = WatcherEntry(
+                watcher: watcher,
+                pumpTask: pump,
+                bookmarkSignature: signature
+            )
+        }
+        // Stop every watcher whose job is gone or no longer eligible.
+        for (id, entry) in watchers where !keepIDs.contains(id) {
+            entry.pumpTask.cancel()
+            entry.watcher.stop()
+            watchers.removeValue(forKey: id)
         }
     }
 

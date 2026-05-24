@@ -57,7 +57,7 @@ struct SyncJobSheet: View {
     @State private var saving: Bool = false
 
     private enum ScheduleKind: String, CaseIterable {
-        case manual, onLaunch, interval
+        case manual, onLaunch, interval, onLocalChange
     }
 
     private enum EndpointKind: String, CaseIterable {
@@ -237,11 +237,19 @@ struct SyncJobSheet: View {
                 Text("sync.schedule.manual").tag(ScheduleKind.manual)
                 Text("sync.schedule.onLaunch").tag(ScheduleKind.onLaunch)
                 Text("sync.schedule.interval").tag(ScheduleKind.interval)
+                if sourceKind == .localFolder {
+                    Text("sync.schedule.onLocalChange").tag(ScheduleKind.onLocalChange)
+                }
             }
             if scheduleKind == .interval {
                 Stepper(value: $intervalMinutes, in: 5...1440, step: 5) {
                     Text("sync.field.intervalMinutes \(intervalMinutes)")
                 }
+            }
+            if scheduleKind == .onLocalChange {
+                Text("sync.schedule.onLocalChange.hint")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
         }
     }
@@ -335,6 +343,7 @@ struct SyncJobSheet: View {
             case .onLaunch:              scheduleKind = .onLaunch
             case .interval(let seconds): scheduleKind = .interval
                                          intervalMinutes = max(5, seconds / 60)
+            case .onLocalChange:         scheduleKind = .onLocalChange
             }
             concurrency = job.concurrency
             enabled = job.enabled
@@ -397,9 +406,10 @@ struct SyncJobSheet: View {
             deletePropagation: deletePropagation,
             schedule: {
                 switch scheduleKind {
-                case .manual:   return .manual
-                case .onLaunch: return .onLaunch
-                case .interval: return .interval(seconds: intervalMinutes * 60)
+                case .manual:        return .manual
+                case .onLaunch:      return .onLaunch
+                case .interval:      return .interval(seconds: intervalMinutes * 60)
+                case .onLocalChange: return .onLocalChange
                 }
             }(),
             concurrency: concurrency,

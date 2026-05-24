@@ -38,26 +38,33 @@ public enum SyncMode: String, Codable, CaseIterable, Sendable {
 /// When a job is allowed to run automatically. Manual jobs only run
 /// when the user clicks "Run Now". On-launch jobs run once each app
 /// start. Interval jobs run every N seconds while the app is awake.
+/// On-local-change jobs run whenever the local-folder source emits
+/// a debounced FSEvents notification (Phase 9.10) — only meaningful
+/// when the source endpoint is a local folder.
 public enum SyncSchedule: Codable, Hashable, Sendable {
     case manual
     case onLaunch
     case interval(seconds: Int)
+    case onLocalChange
 
     /// Stored as a single string in SwiftData. Format:
     /// - `manual`
     /// - `onLaunch`
     /// - `interval=3600`
+    /// - `onLocalChange`
     public var rawValue: String {
         switch self {
         case .manual:                 return "manual"
         case .onLaunch:               return "onLaunch"
         case .interval(let seconds):  return "interval=\(seconds)"
+        case .onLocalChange:          return "onLocalChange"
         }
     }
 
     public init?(rawValue: String) {
         if rawValue == "manual" { self = .manual; return }
         if rawValue == "onLaunch" { self = .onLaunch; return }
+        if rawValue == "onLocalChange" { self = .onLocalChange; return }
         if rawValue.hasPrefix("interval="),
            let seconds = Int(rawValue.dropFirst("interval=".count)) {
             self = .interval(seconds: seconds); return

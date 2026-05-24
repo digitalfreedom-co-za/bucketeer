@@ -18080,6 +18080,136 @@
           }
         }
       }
+    },
+    "sync.schedule.onLocalChange": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On folder change"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bei Ordneränderung"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Au changement de dossier"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Al cambiar la carpeta"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Su modifica cartella"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "フォルダ変更時"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "폴더 변경 시"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bij mapwijziging"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Przy zmianie folderu"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ao alterar a pasta"
+          }
+        }
+      }
+    },
+    "sync.schedule.onLocalChange.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Re-runs this job whenever the local source folder changes. Debounced to avoid storms."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Führt den Auftrag erneut aus, sobald sich der lokale Quellordner ändert. Entprellt, um Schübe zu vermeiden."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réexécute cette tâche dès que le dossier source local change. Débouncé pour éviter les rafales."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vuelve a ejecutar este trabajo cuando cambie la carpeta de origen local. Antirrebote para evitar ráfagas."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Riesegue questo job ogni volta che la cartella sorgente locale cambia. Debounced per evitare raffiche."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ローカルのソースフォルダが変更されるたびにこのジョブを再実行します。連続発火を抑えるためデバウンスされます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "로컬 소스 폴더가 변경될 때마다 이 작업을 다시 실행합니다. 폭주 방지를 위해 디바운스됩니다."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voert deze taak opnieuw uit zodra de lokale bronmap verandert. Gedebouncet om stormen te voorkomen."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uruchamia to zadanie ponownie po każdej zmianie lokalnego folderu źródłowego. Z debouncingiem, by uniknąć lawiny zdarzeń."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Executa esta tarefa novamente sempre que a pasta de origem local mudar. Com debounce para evitar enxurradas."
+          }
+        }
+      }
     }
   },
   "version": "1.1"
