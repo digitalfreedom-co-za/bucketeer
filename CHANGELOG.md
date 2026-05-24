@@ -22,6 +22,53 @@ before that is internal phase work on the `development` branch.
 - `docs/DEVELOPER_SETUP.md` clone-to-run guide.
 - `CONTRIBUTING.md` per the design spec §13.2.
 
+### Phase 13.1 — Activity log
+- Host-only SwiftData container `BucketeerActivity.store` in sandbox
+  Application Support; kept out of the App Group so the File Provider
+  extension does not load the audit schema.
+- `ActivityRecord` (`@Model`) + `ActivityEntry` (Sendable snapshot) +
+  `ActivityKind`/`ActivityStatus` enums in `BucketeerCore`.
+- `ActivityLogging` protocol (record / recent / search / deleteAll /
+  purgeExpired / count). Impl is a `@ModelActor` (`ActivityLogStore`)
+  that silently swallows write errors — recording is observation and
+  must never break the operation it observes.
+- Recording hooks added to `TransferManager` (upload/download terminal
+  transitions), `SyncEngine` (start / finish / fail / cancel per job),
+  `AccountListViewModel` (add / update / delete), `BrowserViewModel`
+  (delete / createFolder / rename) and `PresignedURLSheet` (signed-URL
+  generation).
+- `ActivityLogView` window — table with time, kind, status, account,
+  target, details columns; free-text search, account filter,
+  multi-select kind filter, CSV export via `.fileExporter`, Clear All
+  with confirmation, 180-day auto-purge at launch.
+- Window menu entry **Window → Activity Log** (⌘⌥0) plus a
+  quick-access row in the menu-bar extra.
+- 44 localised strings × 10 languages.
+
+### Phase 9.10 — Sync-on-change FSEvents (commit `0d9746c`)
+- `LocalFolderWatcher` (Core): FSEventStream wrapper with debounced
+  `AsyncStream<Date>`, idempotent start/stop, deinit-safe cleanup.
+- `SyncSchedule.onLocalChange` round-trips through SwiftData via
+  `"onLocalChange"` rawValue.
+- `SyncEngine.reconcileLocalChangeWatchers` runs on every `reload()`:
+  start watchers for eligible jobs, replace stale ones when the
+  bookmark changes, tear down deleted/disabled jobs. Events pump into
+  the existing idempotent `runNow(id:)`.
+- `SyncJobSheet` exposes the schedule option only when source kind is
+  `.localFolder`; footnote explains debouncing. Localised across 10
+  languages.
+
+### Phase 9.9 — Presigned download URLs (commit `324977c`)
+- `AzureSASBuilder` for the Azure Blob Service SAS (HMAC-SHA256,
+  v2020-12-06+ 16-line StringToSign, HTTPS only).
+- `S3Browsing.presignedDownloadURL` extended through the protocol and
+  routed by `ProviderRouter` to Soto's `signURL` for the S3 family or
+  the SAS builder for Azure.
+- `PresignedURLSheet` (TTL picker + custom minutes, copy-to-clipboard,
+  `NSSharingServicePicker` share sheet).
+- 8 `AzureSASBuilderTests` covering query params, percent-encoding,
+  signature determinism, TTL sensitivity.
+
 ### Phase 9.8 — Local folder ↔ S3 sync (commit `a861c46`)
 - `SyncEndpoint` becomes an enum: `.s3(accountID, bucket, prefix)` or
   `.localFolder(bookmark, displayPath)`.

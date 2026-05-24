@@ -18,6 +18,9 @@ struct PresignedURLSheet: View {
     let bucket: String
     let object: S3Object
     let generator: any S3Browsing
+    /// Optional audit-log sink. When supplied, every URL generation
+    /// (success or failure) is recorded. Phase 13.1.
+    let activityLog: (any ActivityLogging)?
 
     @Environment(\.dismiss) private var dismiss
     @State private var selectedTTL: TTLOption = .oneHour
@@ -208,11 +211,34 @@ struct PresignedURLSheet: View {
             )
             generatedURL = url
             expiryDate = Date().addingTimeInterval(ttl)
+            await record(status: .success, ttl: ttl, errorMessage: nil)
         } catch let error as BucketeerError {
             errorMessage = error.errorDescription
+            await record(status: .failure, ttl: ttl, errorMessage: error.errorDescription)
         } catch {
             errorMessage = error.localizedDescription
+            await record(status: .failure, ttl: ttl, errorMessage: error.localizedDescription)
         }
+    }
+
+    private func record(
+        status: ActivityStatus,
+        ttl: TimeInterval,
+        errorMessage: String?
+    ) async {
+        guard let activityLog else { return }
+        await activityLog.record(
+            ActivityEntry(
+                kind: .presignedURL,
+                status: status,
+                accountID: account.id,
+                accountName: account.name,
+                bucket: bucket,
+                key: object.key,
+                durationMS: Int(ttl * 1000),
+                errorMessage: errorMessage
+            )
+        )
     }
 
     private func copyToClipboard(_ value: String) {

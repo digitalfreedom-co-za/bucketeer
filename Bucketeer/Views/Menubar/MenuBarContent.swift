@@ -131,6 +131,14 @@ struct MenuBarContent: View {
             }
             .buttonStyle(.borderless)
             Button {
+                NSApp.activate(ignoringOtherApps: true)
+                openWindow(id: "activity")
+            } label: {
+                Label("menubar.action.openActivity", systemImage: "list.bullet.rectangle.portrait")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .buttonStyle(.borderless)
+            Button {
                 NSApp.terminate(nil)
             } label: {
                 Label("menubar.action.quit", systemImage: "power")

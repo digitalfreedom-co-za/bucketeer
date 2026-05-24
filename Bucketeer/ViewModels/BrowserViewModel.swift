@@ -40,6 +40,7 @@ final class BrowserViewModel {
 
     private let s3Browser: any S3Browsing
     private let accountStore: any AccountStoring
+    private let activityLog: (any ActivityLogging)?
 
     /// Monotonically increasing token incremented on every navigation
     /// or refresh. Each async load captures the value at issue time and
@@ -48,10 +49,20 @@ final class BrowserViewModel {
     /// for the wrong location.
     private var requestGeneration: UInt64 = 0
 
-    init(s3Browser: any S3Browsing, accountStore: any AccountStoring) {
+    init(
+        s3Browser: any S3Browsing,
+        accountStore: any AccountStoring,
+        activityLog: (any ActivityLogging)? = nil
+    ) {
         self.s3Browser = s3Browser
         self.accountStore = accountStore
+        self.activityLog = activityLog
     }
+
+    /// Public accessor so the share sheet (and other future direct
+    /// callers) can append to the audit log without us threading
+    /// `activityLog` through three layers of constructors.
+    var auditLog: (any ActivityLogging)? { activityLog }
 
     // MARK: - Derived
 
@@ -160,11 +171,20 @@ final class BrowserViewModel {
             try await s3Browser.delete(account: account, bucket: bucket, keys: keys)
             selection.subtract(keys)
             actionError = nil
+            for key in keys {
+                await record(.delete, status: .success, key: key)
+            }
             await loadObjectsResetting()
         } catch let error as BucketeerError {
             actionError = error
+            for key in keys {
+                await record(.delete, status: .failure, key: key, errorMessage: error.errorDescription)
+            }
         } catch {
             actionError = .unknown(message: error.localizedDescription)
+            for key in keys {
+                await record(.delete, status: .failure, key: key, errorMessage: error.localizedDescription)
+            }
         }
     }
 
@@ -205,11 +225,19 @@ final class BrowserViewModel {
             try await s3Browser.delete(account: account, bucket: bucket, keys: [key])
             selection.remove(key)
             actionError = nil
+            await record(
+                .copy,
+                status: .success,
+                key: newKey,
+                message: "Renamed from \(key)"
+            )
             await loadObjectsResetting()
         } catch let error as BucketeerError {
             actionError = error
+            await record(.copy, status: .failure, key: key, errorMessage: error.errorDescription)
         } catch {
             actionError = .unknown(message: error.localizedDescription)
+            await record(.copy, status: .failure, key: key, errorMessage: error.localizedDescription)
         }
     }
 
@@ -236,12 +264,38 @@ final class BrowserViewModel {
                 prefix: folderPrefix
             )
             actionError = nil
+            await record(.createFolder, status: .success, key: folderPrefix)
             await loadObjectsResetting()
         } catch let error as BucketeerError {
             actionError = error
+            await record(.createFolder, status: .failure, key: folderPrefix, errorMessage: error.errorDescription)
         } catch {
             actionError = .unknown(message: error.localizedDescription)
+            await record(.createFolder, status: .failure, key: folderPrefix, errorMessage: error.localizedDescription)
         }
+    }
+
+    // MARK: - Audit log
+
+    private func record(
+        _ kind: ActivityKind,
+        status: ActivityStatus,
+        key: String? = nil,
+        message: String? = nil,
+        errorMessage: String? = nil
+    ) async {
+        guard let activityLog, let account, let bucket else { return }
+        let entry = ActivityEntry(
+            kind: kind,
+            status: status,
+            accountID: account.id,
+            accountName: account.name,
+            bucket: bucket,
+            key: key,
+            message: message,
+            errorMessage: errorMessage
+        )
+        await activityLog.record(entry)
     }
 
     func loadBuckets() async {

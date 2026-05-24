@@ -28,4 +28,11 @@ public enum AppEnvironment {
 
     /// Filename of the SwiftData store inside the App Group container.
     public static let swiftDataStoreFileName = "Bucketeer.store"
+
+    /// Filename of the *host-only* activity log store. Kept out of the
+    /// App Group container on purpose — the File Provider extension
+    /// has no use for audit history and would needlessly load the
+    /// schema otherwise. Lives in the sandbox Application Support
+    /// directory.
+    public static let activityStoreFileName = "BucketeerActivity.store"
 }

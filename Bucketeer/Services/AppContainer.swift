@@ -16,6 +16,10 @@ import BucketeerCore
 @Observable
 final class AppContainer {
     let modelContainer: ModelContainer
+    /// Host-only audit-log container — kept separate from the App
+    /// Group container because the File Provider extension has no
+    /// reason to load this schema. Phase 13.1.
+    let activityContainer: ModelContainer
     let keychainStore: any KeychainStoring
     let accountStore: any AccountStoring
     let clientFactory: S3ClientFactory
@@ -31,10 +35,12 @@ final class AppContainer {
     let entitlementManager: EntitlementManager
     let syncJobStore: any SyncJobStoring
     let syncEngine: SyncEngine
+    let activityLog: any ActivityLogging
     let accountListViewModel: AccountListViewModel
     let browserViewModel: BrowserViewModel
     let transferQueueViewModel: TransferQueueViewModel
     let syncJobListViewModel: SyncJobListViewModel
+    let activityLogViewModel: ActivityLogViewModel
 
     init() throws {
         let storeURL = Self.resolveStoreURL()
@@ -49,6 +55,7 @@ final class AppContainer {
             configurations: configuration
         )
         Self.runMigrations(modelContainer)
+        let activityContainer = try Self.makeActivityContainer()
         // Codex blocker #3: write to the shared keychain access group
         // so the File Provider extension (which reads from the same
         // group) can load credentials. Production-signed builds need
@@ -73,9 +80,14 @@ final class AppContainer {
         let azureTransporter = AzureBlobTransporter(credentialsCache: azureCredentialsCache)
         let s3ObjectStore = S3Service(factory: clientFactory)
         let router = ProviderRouter(s3: s3ObjectStore, azure: azureObjectStore)
+        let activityLog = ActivityLogStore(modelContainer: activityContainer)
+        Task { [activityLog] in
+            await activityLog.purgeExpired(retentionDays: 180)
+        }
         let transferManager = TransferManager(
             factory: clientFactory,
-            azure: azureTransporter
+            azure: azureTransporter,
+            activityLog: activityLog
         )
         let previewCache = PreviewCache(
             downloader: PreviewDownloader(
@@ -85,6 +97,7 @@ final class AppContainer {
         )
 
         self.modelContainer = modelContainer
+        self.activityContainer = activityContainer
         self.keychainStore = keychainStore
         self.accountStore = accountStore
         self.clientFactory = clientFactory
@@ -93,16 +106,19 @@ final class AppContainer {
         self.s3Browser = router
         self.transferManager = transferManager
         self.previewCache = previewCache
+        self.activityLog = activityLog
         self.accountListViewModel = AccountListViewModel(
             accountStore: accountStore,
             keychainStore: keychainStore,
             clientFactory: clientFactory,
             azureCredentialsCache: azureCredentialsCache,
-            transferManager: transferManager
+            transferManager: transferManager,
+            activityLog: activityLog
         )
         self.browserViewModel = BrowserViewModel(
             s3Browser: router,
-            accountStore: accountStore
+            accountStore: accountStore,
+            activityLog: activityLog
         )
         self.transferQueueViewModel = TransferQueueViewModel(
             transferManager: transferManager
@@ -130,7 +146,8 @@ final class AppContainer {
             accountStore: accountStore,
             jobStore: syncJobStore,
             browser: router,
-            transferManager: transferManager
+            transferManager: transferManager,
+            activityLog: activityLog
         )
         self.syncJobStore = syncJobStore
         self.syncEngine = syncEngine
@@ -139,8 +156,15 @@ final class AppContainer {
             engine: syncEngine,
             accountStore: accountStore
         )
+        self.activityLogViewModel = ActivityLogViewModel(
+            activityLog: activityLog,
+            accountStore: accountStore
+        )
         Task { @MainActor [syncJobListViewModel = self.syncJobListViewModel] in
             await syncJobListViewModel.bootstrap()
+        }
+        Task { @MainActor [activityLogViewModel = self.activityLogViewModel] in
+            await activityLogViewModel.reload()
         }
     }
 
@@ -219,5 +243,25 @@ final class AppContainer {
             create: true
         )) ?? URL.documentsDirectory
         return support.appending(path: AppEnvironment.swiftDataStoreFileName)
+    }
+
+    /// Build the (host-only) activity log container. Phase 13.1. The
+    /// activity store always lives in the sandbox Application Support
+    /// folder — there's no reason to push it into the App Group.
+    private static func makeActivityContainer() throws -> ModelContainer {
+        let support = (try? FileManager.default.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: true
+        )) ?? URL.documentsDirectory
+        let storeURL = support.appending(path: AppEnvironment.activityStoreFileName)
+        let schema = Schema([ActivityRecord.self])
+        let configuration = ModelConfiguration(
+            "BucketeerActivity",
+            schema: schema,
+            url: storeURL
+        )
+        return try ModelContainer(for: schema, configurations: configuration)
     }
 }

@@ -19,19 +19,22 @@ final class AccountListViewModel {
     private let clientFactory: S3ClientFactory
     private let azureCredentialsCache: AzureCredentialsCache
     private let transferManager: TransferManager
+    private let activityLog: (any ActivityLogging)?
 
     init(
         accountStore: any AccountStoring,
         keychainStore: any KeychainStoring,
         clientFactory: S3ClientFactory,
         azureCredentialsCache: AzureCredentialsCache,
-        transferManager: TransferManager
+        transferManager: TransferManager,
+        activityLog: (any ActivityLogging)? = nil
     ) {
         self.accountStore = accountStore
         self.keychainStore = keychainStore
         self.clientFactory = clientFactory
         self.azureCredentialsCache = azureCredentialsCache
         self.transferManager = transferManager
+        self.activityLog = activityLog
     }
 
     /// Flush both credential caches so a deleted or edited account does
@@ -116,6 +119,11 @@ final class AccountListViewModel {
         // still holds the old signing material.
         await invalidateAllCaches(for: account.id)
         await refresh()
+        await record(
+            isEdit ? .accountUpdated : .accountAdded,
+            status: .info,
+            account: account
+        )
         return nil
     }
 
@@ -169,7 +177,26 @@ final class AccountListViewModel {
 
         await invalidateAllCaches(for: account.id)
         await refresh()
+        await record(.accountDeleted, status: .info, account: account)
         return nil
+    }
+
+    // MARK: - Audit log
+
+    private func record(
+        _ kind: ActivityKind,
+        status: ActivityStatus,
+        account: S3Account
+    ) async {
+        guard let activityLog else { return }
+        await activityLog.record(
+            ActivityEntry(
+                kind: kind,
+                status: status,
+                accountID: account.id,
+                accountName: account.name
+            )
+        )
     }
 
     /// Validates the supplied account configuration and credentials by

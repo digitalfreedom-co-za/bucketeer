@@ -40,6 +40,7 @@ actor TransferManager: Transferring {
 
     private let factory: S3ClientFactory
     private let azure: AzureBlobTransporter?
+    private let activityLog: (any ActivityLogging)?
     private var items: [UUID: QueuedItem] = [:]
     private var order: [UUID] = []
     private var workers: [UUID: Task<Void, Never>] = [:]
@@ -57,9 +58,14 @@ actor TransferManager: Transferring {
     /// completed. Cleared when the task is removed via `clearTerminal`.
     private var terminalCache: [UUID: TransferState] = [:]
 
-    init(factory: S3ClientFactory, azure: AzureBlobTransporter? = nil) {
+    init(
+        factory: S3ClientFactory,
+        azure: AzureBlobTransporter? = nil,
+        activityLog: (any ActivityLogging)? = nil
+    ) {
         self.factory = factory
         self.azure = azure
+        self.activityLog = activityLog
         let (stream, continuation) = AsyncStream<[TransferTask]>.makeStream(
             bufferingPolicy: .bufferingNewest(1)
         )
@@ -491,8 +497,46 @@ actor TransferManager: Transferring {
             for continuation in pending {
                 continuation.resume(returning: state)
             }
+            // Phase 13.1 — audit-log every terminal transition. Done
+            // here (not at the call sites) so every code path that
+            // reaches a terminal state is recorded exactly once.
+            recordTerminal(item: item, state: state)
         }
         publish()
+    }
+
+    /// Push one row into the activity log on terminal transition.
+    /// Best-effort — ActivityLogging.record never throws and we don't
+    /// await it.
+    private func recordTerminal(item: QueuedItem, state: TransferState) {
+        guard let activityLog else { return }
+        let kind: ActivityKind = item.task.direction == .upload ? .upload : .download
+        let status: ActivityStatus
+        var errorMessage: String? = nil
+        switch state {
+        case .completed:           status = .success
+        case .cancelled:           status = .cancelled
+        case .failed(let message):
+            status = .failure
+            errorMessage = message
+        default:                   status = .info
+        }
+        let started = item.task.startedAt
+        let duration = Int(Date().timeIntervalSince(started) * 1000)
+        let entry = ActivityEntry(
+            kind: kind,
+            status: status,
+            accountID: item.account.id,
+            accountName: item.account.name,
+            bucket: item.task.bucket,
+            key: item.task.key,
+            byteCount: item.fileSize > 0 ? item.fileSize : nil,
+            durationMS: duration,
+            errorMessage: errorMessage
+        )
+        Task { [activityLog, entry] in
+            await activityLog.record(entry)
+        }
     }
 
     private func publish() {

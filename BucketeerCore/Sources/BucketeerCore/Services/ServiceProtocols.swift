@@ -66,6 +66,45 @@ public protocol S3Browsing: Sendable {
     ) async throws -> URL
 }
 
+// MARK: - ActivityLogging
+
+/// Records audit-log entries for user-visible operations (uploads,
+/// deletes, sync runs, signed URLs, …). Phase 13.1.
+///
+/// Recording is observation, not the operation itself — implementations
+/// MUST NOT throw out of `record(_:)` and SHOULD swallow persistence
+/// errors silently. Callers should never `try` the recording call. The
+/// store self-purges entries older than `retentionDays` on every
+/// `purgeExpired()` invocation, which the host triggers at launch.
+public protocol ActivityLogging: Sendable {
+    /// Persist one row. Best-effort: never throws, swallows storage
+    /// errors so a write failure on the audit path cannot break the
+    /// underlying operation the user actually asked for.
+    func record(_ entry: ActivityEntry) async
+
+    /// Most-recent first, hard-capped at `limit`.
+    func recent(limit: Int) async throws -> [ActivityEntry]
+
+    /// Free-text search + structural filters. All filters are AND-ed.
+    /// `text` matches `bucket`, `key`, `accountName`, `syncJobName`,
+    /// `message`, and `errorMessage` (case-insensitive substring).
+    func search(
+        text: String?,
+        kinds: Set<ActivityKind>?,
+        accountID: UUID?,
+        limit: Int
+    ) async throws -> [ActivityEntry]
+
+    /// Delete every entry. UI calls this from a confirmation dialog.
+    func deleteAll() async throws
+
+    /// Drop entries older than `retentionDays`. Called once at launch.
+    func purgeExpired(retentionDays: Int) async
+
+    /// Total row count. Cheap — used in the UI footer.
+    func count() async throws -> Int
+}
+
 // MARK: - Transferring
 
 /// Long-running upload / download queue. Reports progress through an

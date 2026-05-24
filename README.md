@@ -48,12 +48,44 @@ browser usable, with **Bucketeer Pro** unlocked by a single
 🚧 In active development. v1 implementation in progress on the
 `development` branch. Not yet available on the App Store.
 
-Phases 0 – 5 are done; the Help and About menus, Touch-ID secret
-reveal, eye-button plaintext toggle, Civo path-style auto-migration
-and DNS error mapping are merged. Phase A (Azure), Phase 6 (Preview),
-Phase 7 (Drag-and-drop), Phase 8 (Menubar), Phase 9 (File Provider),
-Phase 10 (Sync engine), Phase B (Paywall), Phase 11 (Localisation
-finalisation) and Phase 12 (Hardening) follow.
+Phases 0 – 12, A, B and 9.5 – 9.10 are merged on `development`. The
+`13.x` feature block ships incrementally — each phase lands as one
+commit so the development history reads as a phase-by-phase log.
+
+| Phase | Title | Status |
+|------:|---|---|
+| 0–5 | Scaffold → browser → transfers → object actions → reveal | ✅ |
+| A | Azure Blob Storage via `ProviderRouter` | ✅ |
+| 6 | Preview + Quick Look | ✅ |
+| 7 | Drag and drop | ✅ |
+| 8 | Menubar background mode | ✅ |
+| 9 | File Provider scaffold | ✅ |
+| 9.5 | Core SPM package + live File Provider | ✅ |
+| 9.6 | Core test target (Swift Testing, 92 tests) | ✅ |
+| 9.7 | Trial bookkeeping tests | ✅ |
+| 9.8 | Local folder ↔ S3 sync | ✅ |
+| 9.9 | Presigned download URLs (S3 + Azure SAS) | ✅ |
+| 9.10 | Sync-on-change via FSEvents | ✅ |
+| 10 | Sync engine | ✅ |
+| 11 | Localisation finalisation | ✅ |
+| B | Paywall (StoreKit 2, lifetime IAP) | ✅ |
+| 12 | Hardening | ✅ |
+| 13.1 | Activity log | ✅ |
+| 13.2 | Bandwidth limit | ⏳ |
+| 13.3 | Watch folder → bucket | ⏳ |
+| 13.4 | Trash / soft-delete | ⏳ |
+| 13.5 | Bucket dashboard | ⏳ |
+| 13.6 | Versions browser | ⏳ |
+| 13.7 | Metadata / tags editor | ⏳ |
+| 13.8 | Auto-tagging rules | ⏳ |
+| 13.9 | Lifecycle / policy / CORS viewer | ⏳ |
+| 13.10 | Resumable transfers | ⏳ |
+| 13.11 | `bucketeer://` URL scheme | ⏳ |
+| 13.12 | App Intents (Shortcuts / Siri) | ⏳ |
+| 13.13 | Spotlight indexing | ⏳ |
+| 13.14 | Server-side copy across accounts | ⏳ |
+| 13.15 | Client-side encryption per bucket | ⏳ |
+| 13.16 | Hardware-key unlock (CryptoTokenKit) | ⏳ |
 
 See [`CHANGELOG.md`](CHANGELOG.md) for the per-phase history and
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the architectural

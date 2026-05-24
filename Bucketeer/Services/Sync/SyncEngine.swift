@@ -60,16 +60,20 @@ actor SyncEngine {
     }
     private var watchers: [UUID: WatcherEntry] = [:]
 
+    private let activityLog: (any ActivityLogging)?
+
     init(
         accountStore: any AccountStoring,
         jobStore: any SyncJobStoring,
         browser: any S3Browsing,
-        transferManager: TransferManager
+        transferManager: TransferManager,
+        activityLog: (any ActivityLogging)? = nil
     ) {
         self.accountStore = accountStore
         self.jobStore = jobStore
         self.browser = browser
         self.transferManager = transferManager
+        self.activityLog = activityLog
         let (stream, continuation) = AsyncStream<[SyncJobStatus]>.makeStream(
             bufferingPolicy: .bufferingNewest(1)
         )
@@ -799,6 +803,7 @@ actor SyncEngine {
             startedAt: nil,
             message: nil
         )
+        let previousPhase = status.phase
         status.phase = phase
         if let planned { status.planned = planned }
         if let completed { status.completed = completed }
@@ -807,6 +812,51 @@ actor SyncEngine {
         status.message = message ?? status.message
         current[id] = status
         publish()
+        // Phase 13.1 — audit-log key job transitions. Triggering only
+        // when the phase actually changes avoids spamming the log on
+        // progress updates that keep the same phase value.
+        if previousPhase != phase {
+            recordPhaseTransition(jobID: id, status: status)
+        }
+    }
+
+    /// Translate the new phase into an activity-log row. Best-effort.
+    private func recordPhaseTransition(jobID: UUID, status: SyncJobStatus) {
+        guard let activityLog else { return }
+        let job = jobs[jobID]
+        let (kind, activityStatus): (ActivityKind, ActivityStatus)
+        switch status.phase {
+        case .planning, .awaitingConfirmation:
+            kind = .syncRunStarted
+            activityStatus = .info
+        case .finished:
+            kind = .syncRunFinished
+            activityStatus = status.failed > 0 ? .failure : .success
+        case .failed:
+            kind = .syncRunFailed
+            activityStatus = .failure
+        case .cancelled:
+            kind = .syncRunCancelled
+            activityStatus = .cancelled
+        case .running, .idle:
+            return
+        }
+        let message: String?
+        if status.planned > 0 || status.completed > 0 || status.failed > 0 {
+            message = "planned: \(status.planned), completed: \(status.completed), failed: \(status.failed)"
+        } else {
+            message = status.message
+        }
+        let entry = ActivityEntry(
+            kind: kind,
+            status: activityStatus,
+            message: message,
+            syncJobID: jobID,
+            syncJobName: job?.name
+        )
+        Task { [activityLog, entry] in
+            await activityLog.record(entry)
+        }
     }
 
     private func publish() {

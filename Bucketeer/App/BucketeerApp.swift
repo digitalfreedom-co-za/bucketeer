@@ -62,6 +62,14 @@ struct BucketeerApp: App {
         .defaultSize(width: 800, height: 700)
         .defaultPosition(.center)
 
+        Window("activity.window.title", id: "activity") {
+            ActivityLogView()
+                .environment(container)
+                .frame(minWidth: 880, minHeight: 480)
+        }
+        .defaultSize(width: 1000, height: 600)
+        .defaultPosition(.center)
+
         Settings {
             SettingsView()
                 .environment(container)
@@ -87,6 +95,15 @@ private struct AppCommands: Commands {
         // do something useful. Codex low #15: a stubbed no-op menu item
         // is shipped dead code.
         CommandGroup(replacing: .newItem) {}
+
+        // Window menu — surface the Activity Log so users can find it
+        // without going through Help. Phase 13.1.
+        CommandGroup(after: .windowArrangement) {
+            Button("menu.window.activity") {
+                openWindow(id: "activity")
+            }
+            .keyboardShortcut("0", modifiers: [.command, .option])
+        }
 
         // Replace the default Help menu with our own entries.
         CommandGroup(replacing: .help) {

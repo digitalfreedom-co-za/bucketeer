@@ -101,7 +101,8 @@ struct ObjectListView: View {
                     account: account,
                     bucket: bucket,
                     object: object,
-                    generator: container.s3Browser
+                    generator: container.s3Browser,
+                    activityLog: container.activityLog
                 )
             }
         }
