@@ -18,41 +18,6 @@ import Foundation
 public enum SyncEndpoint: Codable, Hashable, Sendable {
     case s3(accountID: UUID, bucket: String, prefix: String)
     case localFolder(bookmark: Data, displayPath: String)
-
-    /// Convenience: the bucket name for S3 endpoints, the display path
-    /// for local folders. Used for list-row rendering.
-    public var displayLocation: String {
-        switch self {
-        case .s3(_, let bucket, let prefix):
-            return prefix.isEmpty ? bucket : "\(bucket)/\(prefix)"
-        case .localFolder(_, let displayPath):
-            return displayPath
-        }
-    }
-
-    /// The S3 account ID, if any. `nil` for local folders.
-    public var accountID: UUID? {
-        if case let .s3(accountID, _, _) = self { return accountID }
-        return nil
-    }
-
-    /// String tag for log lines / status messages.
-    public var kindLabel: String {
-        switch self {
-        case .s3: return "s3"
-        case .localFolder: return "local"
-        }
-    }
-
-    public var isLocal: Bool {
-        if case .localFolder = self { return true }
-        return false
-    }
-
-    public var isS3: Bool {
-        if case .s3 = self { return true }
-        return false
-    }
 }
 
 /// Operational mode for a sync job.

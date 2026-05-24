@@ -43,6 +43,11 @@ actor SyncEngine {
     /// cancelling the orchestrating task and letting the transfers keep
     /// running.
     private var activeTransferIDs: [UUID: Set<UUID>] = [:]
+    /// Codex #7: set on cancellation so a transfer that returned
+    /// from `enqueue…` *after* the cancel call still gets caught and
+    /// torn down. Without this guard the registration-race window
+    /// could leak an in-flight transfer past the cancel.
+    private var cancelledJobIDs: Set<UUID> = []
 
     init(
         accountStore: any AccountStoring,
@@ -85,6 +90,9 @@ actor SyncEngine {
     /// running is a no-op (returns the existing runner).
     func runNow(id: UUID) async {
         guard let job = jobs[id], runners[id] == nil else { return }
+        // Clear any previous cancellation flag so re-running a
+        // cancelled job doesn't immediately tear new transfers down.
+        cancelledJobIDs.remove(id)
         updateStatus(id: id, phase: .planning, message: nil)
         let task = Task { [weak self] in
             _ = await self?.execute(job: job)
@@ -96,6 +104,7 @@ actor SyncEngine {
     /// task **and** every transfer-manager task the engine has handed
     /// to the queue for this job — Codex review #3.
     func cancel(id: UUID) async {
+        cancelledJobIDs.insert(id)
         runners[id]?.cancel()
         runners[id] = nil
         if let ids = activeTransferIDs[id] {
@@ -109,7 +118,14 @@ actor SyncEngine {
         }
     }
 
+    /// Codex #7: if the job was cancelled while the transfer was
+    /// being enqueued, the new transfer would otherwise dangle. Catch
+    /// it here and tear it down immediately.
     private func registerActiveTransfer(jobID: UUID, transferID: UUID) {
+        if cancelledJobIDs.contains(jobID) {
+            Task { [transferManager] in await transferManager.cancel(id: transferID) }
+            return
+        }
         activeTransferIDs[jobID, default: []].insert(transferID)
     }
 
@@ -349,13 +365,31 @@ actor SyncEngine {
                 localRoot: nil,
                 didStartSecurityScope: false
             )
-        case .localFolder(let bookmark, _):
-            let (url, _) = try LocalFolderEnumerator.resolveBookmark(bookmark)
-            let didStart = url.startAccessingSecurityScopedResource()
+        case .localFolder(let bookmark, let displayPath):
+            let resolved = try LocalFolderEnumerator.resolveBookmark(bookmark)
+            // Codex medium #5: a stale bookmark means macOS has
+            // garbage-collected the underlying file identity. The
+            // bookmark may still resolve to *a* URL but its security
+            // scope is not the one the user originally granted.
+            // Surface this as a job error so the user re-picks the
+            // folder rather than silently syncing the wrong place.
+            if resolved.isStale {
+                throw BucketeerError.sandboxAccessDenied(resolved.url)
+            }
+            // Codex medium #6: a failed start means the sandbox
+            // refused the scope. Continuing would either fail every
+            // operation with confusing errors or, worse, succeed only
+            // by accident if the URL happens to be inside our container.
+            // Refuse upfront with a clear error so the user knows to
+            // re-grant access.
+            let didStart = resolved.url.startAccessingSecurityScopedResource()
+            guard didStart else {
+                throw BucketeerError.sandboxAccessDenied(URL(fileURLWithPath: displayPath))
+            }
             return EndpointContext(
                 account: nil,
-                localRoot: url,
-                didStartSecurityScope: didStart
+                localRoot: resolved.url,
+                didStartSecurityScope: true
             )
         }
     }
@@ -567,7 +601,14 @@ actor SyncEngine {
         destinationAccount: S3Account,
         destinationBucket: String
     ) async throws {
-        let sourceFile = sourceRoot.appending(path: entry.sourceKey)
+        // Path-traversal guard (Codex blocker #1): even on the local
+        // *source* side, a malicious sync-job definition could carry
+        // an entry.sourceKey of `../../../etc/passwd`. Refuse to
+        // operate outside the chosen sync root.
+        let sourceFile = try LocalFolderWriter.safeChildURL(
+            root: sourceRoot,
+            relativeKey: entry.sourceKey
+        )
         guard FileManager.default.fileExists(atPath: sourceFile.path) else {
             throw BucketeerError.sandboxAccessDenied(sourceFile)
         }
@@ -588,17 +629,40 @@ actor SyncEngine {
         sourceRoot: URL,
         destinationRoot: URL
     ) async throws {
-        let sourceFile = sourceRoot.appending(path: entry.sourceKey)
-        let destination = destinationRoot.appending(path: entry.destinationKey)
+        try Task.checkCancellation()
+        let sourceFile = try LocalFolderWriter.safeChildURL(
+            root: sourceRoot,
+            relativeKey: entry.sourceKey
+        )
+        let destination = try LocalFolderWriter.safeChildURL(
+            root: destinationRoot,
+            relativeKey: entry.destinationKey
+        )
         let parent = destination.deletingLastPathComponent()
         try FileManager.default.createDirectory(
             at: parent,
             withIntermediateDirectories: true
         )
-        if FileManager.default.fileExists(atPath: destination.path) {
-            try FileManager.default.removeItem(at: destination)
+        // Atomic replace via temporary intermediate so a failed copy
+        // never leaves a partial file at the destination — Codex #8.
+        let staging = parent.appending(path: ".bucketeer-sync-staging-" + UUID().uuidString)
+        do {
+            try FileManager.default.copyItem(at: sourceFile, to: staging)
+            try Task.checkCancellation()
+            if FileManager.default.fileExists(atPath: destination.path) {
+                _ = try FileManager.default.replaceItemAt(
+                    destination,
+                    withItemAt: staging,
+                    backupItemName: nil,
+                    options: []
+                )
+            } else {
+                try FileManager.default.moveItem(at: staging, to: destination)
+            }
+        } catch {
+            try? FileManager.default.removeItem(at: staging)
+            throw error
         }
-        try FileManager.default.copyItem(at: sourceFile, to: destination)
     }
 
     /// Endpoint-aware delete used by mirror-delete and move-mode
