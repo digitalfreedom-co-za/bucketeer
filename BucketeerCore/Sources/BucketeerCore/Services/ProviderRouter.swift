@@ -143,4 +143,30 @@ public struct ProviderRouter: S3Browsing {
             versionId: versionId
         )
     }
+
+    public func loadMetadata(
+        account: S3Account,
+        bucket: String,
+        key: String
+    ) async throws -> ObjectMetadata {
+        try await backend(for: account).loadMetadata(
+            account: account,
+            bucket: bucket,
+            key: key
+        )
+    }
+
+    public func saveMetadata(
+        account: S3Account,
+        bucket: String,
+        key: String,
+        metadata: ObjectMetadata
+    ) async throws {
+        try await backend(for: account).saveMetadata(
+            account: account,
+            bucket: bucket,
+            key: key,
+            metadata: metadata
+        )
+    }
 }

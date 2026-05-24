@@ -18,6 +18,7 @@ struct ObjectListView: View {
     @State private var shareTarget: S3Object?
     @State private var dashboardViewModel: BucketDashboardViewModel?
     @State private var versionsViewModel: ObjectVersionsViewModel?
+    @State private var metadataViewModel: ObjectMetadataViewModel?
 
     var body: some View {
         Group {
@@ -141,6 +142,16 @@ struct ObjectListView: View {
         ) {
             if let versionsViewModel {
                 ObjectVersionsSheet(viewModel: versionsViewModel)
+            }
+        }
+        .sheet(
+            isPresented: Binding(
+                get: { metadataViewModel != nil },
+                set: { if !$0 { metadataViewModel = nil } }
+            )
+        ) {
+            if let metadataViewModel {
+                ObjectMetadataSheet(viewModel: metadataViewModel)
             }
         }
         .confirmationDialog(
@@ -348,6 +359,17 @@ struct ObjectListView: View {
                 Button("versions.menu.show", systemImage: "clock.arrow.circlepath") {
                     if let account = viewModel.account, let bucket = viewModel.bucket {
                         versionsViewModel = ObjectVersionsViewModel(
+                            account: account,
+                            bucket: bucket,
+                            key: object.key,
+                            browser: container.s3Browser
+                        )
+                    }
+                }
+                // Phase 13.7 — metadata + tags editor.
+                Button("metadata.menu.edit", systemImage: "tag") {
+                    if let account = viewModel.account, let bucket = viewModel.bucket {
+                        metadataViewModel = ObjectMetadataViewModel(
                             account: account,
                             bucket: bucket,
                             key: object.key,

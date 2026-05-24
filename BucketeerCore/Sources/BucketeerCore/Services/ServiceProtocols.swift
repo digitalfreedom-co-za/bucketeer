@@ -93,6 +93,26 @@ public protocol S3Browsing: Sendable {
         key: String,
         versionId: String
     ) async throws
+
+    /// Fetch the editable metadata + tags for one object. Phase 13.7.
+    /// S3 backends combine HeadObject + GetObjectTagging; Azure
+    /// combines Get Blob Properties + Get Blob Tags (when supported).
+    func loadMetadata(
+        account: S3Account,
+        bucket: String,
+        key: String
+    ) async throws -> ObjectMetadata
+
+    /// Persist an edited copy of `metadata`. Implementations decide
+    /// which round-trips are needed (S3 typically: CopyObject with
+    /// metadataDirective=replace + PutObjectTagging; Azure: Set Blob
+    /// Metadata + Set Blob Tags). Phase 13.7.
+    func saveMetadata(
+        account: S3Account,
+        bucket: String,
+        key: String,
+        metadata: ObjectMetadata
+    ) async throws
 }
 
 // MARK: - ActivityLogging

@@ -22,6 +22,28 @@ before that is internal phase work on the `development` branch.
 - `docs/DEVELOPER_SETUP.md` clone-to-run guide.
 - `CONTRIBUTING.md` per the design spec §13.2.
 
+### Phase 13.7 — Metadata + tags editor
+- `ObjectMetadata` Sendable struct holds HTTP headers
+  (Content-Type, Cache-Control, Content-Disposition, Content-
+  Encoding), `x-amz-meta-*` user metadata, object tags, and a
+  read-only storage class.
+- `S3Browsing` gains `loadMetadata` + `saveMetadata`. `S3Service`
+  loads via parallel HeadObject + GetObjectTagging; saves via
+  `copyObject(metadataDirective: .replace)` followed by
+  `putObjectTagging`. `AzureBlobObjectStore` returns
+  `.featureNotSupported` for now — Azure metadata + tag semantics
+  are different enough to deserve their own phase.
+- `ObjectMetadataViewModel` (`@Observable @MainActor`) snapshots
+  the loaded value as `original` so `hasChanges` is a simple
+  equality check. `ObjectMetadataSheet` renders four `Form`
+  sections (HTTP / user metadata / tags / storage class) with
+  add/remove rows, key-format validation (lower-case ASCII +
+  dashes), and a hard 10-tag cap.
+- Browser context menu gains **Metadata & Tags…** for single-
+  object selections; sheet sits next to the existing versions /
+  share / rename sheets in ObjectListView.
+- 17 localised strings × 10 languages.
+
 ### Phase 13.6 — Object versions browser
 - `ObjectVersion` Sendable struct in BucketeerCore covering both
   recorded versions and S3 delete markers (`isDeleteMarker`).

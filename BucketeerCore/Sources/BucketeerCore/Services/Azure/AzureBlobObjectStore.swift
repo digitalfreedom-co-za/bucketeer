@@ -393,6 +393,29 @@ public struct AzureBlobObjectStore: S3Browsing {
         throw BucketeerError.featureNotSupported(featureKey: "version delete")
     }
 
+    // MARK: - Metadata + tags (Phase 13.7)
+    //
+    // Azure Blob has Set Blob Metadata + Set Blob Tags but the
+    // semantics differ from S3 enough to deserve a dedicated phase
+    // later. v1 throws clearly so the editor surfaces a banner
+    // instead of silent partial updates.
+    public func loadMetadata(
+        account: S3Account,
+        bucket: String,
+        key: String
+    ) async throws -> ObjectMetadata {
+        throw BucketeerError.featureNotSupported(featureKey: "metadata editing")
+    }
+
+    public func saveMetadata(
+        account: S3Account,
+        bucket: String,
+        key: String,
+        metadata: ObjectMetadata
+    ) async throws {
+        throw BucketeerError.featureNotSupported(featureKey: "metadata editing")
+    }
+
     // MARK: - Internal request helpers
 
     /// Fires the request, validates the HTTP status, returns the body

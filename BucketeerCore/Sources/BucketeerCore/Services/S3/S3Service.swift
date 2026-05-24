@@ -332,6 +332,88 @@ public struct S3Service: S3Browsing {
         }
     }
 
+    // MARK: - Metadata + tags (Phase 13.7)
+
+    /// HeadObject for `Content-*` + user metadata, GetObjectTagging
+    /// for tags. Both fired in parallel.
+    public func loadMetadata(
+        account: S3Account,
+        bucket: String,
+        key: String
+    ) async throws -> ObjectMetadata {
+        let s3 = try await factory.client(for: account)
+        do {
+            async let headResponse = s3.headObject(.init(bucket: bucket, key: key))
+            async let tagResponse = s3.getObjectTagging(.init(bucket: bucket, key: key))
+            let head = try await headResponse
+            let tagging = try await tagResponse
+            var tags: [String: String] = [:]
+            for entry in tagging.tagSet ?? [] {
+                tags[entry.key] = entry.value
+            }
+            return ObjectMetadata(
+                contentType: head.contentType ?? "",
+                cacheControl: head.cacheControl ?? "",
+                contentDisposition: head.contentDisposition ?? "",
+                contentEncoding: head.contentEncoding ?? "",
+                userMetadata: head.metadata ?? [:],
+                tags: tags,
+                storageClass: head.storageClass?.rawValue
+            )
+        } catch {
+            throw Self.map(error, bucket: bucket, key: key)
+        }
+    }
+
+    /// CopyObject onto itself with `metadataDirective: .replace` to
+    /// rewrite the HTTP + user metadata + content type, then a
+    /// follow-up PutObjectTagging to replace the tag set. Both
+    /// operations are independent so we don't roll the tag write
+    /// back if the metadata write fails — the caller's UI surfaces
+    /// the failure.
+    public func saveMetadata(
+        account: S3Account,
+        bucket: String,
+        key: String,
+        metadata: ObjectMetadata
+    ) async throws {
+        let s3 = try await factory.client(for: account)
+        let source = "\(bucket)/\(key)"
+        let encodedSource = source.addingPercentEncoding(
+            withAllowedCharacters: .urlPathAllowed
+        ) ?? source
+        let userMetadata = metadata.userMetadata.isEmpty ? nil : metadata.userMetadata
+        do {
+            _ = try await s3.copyObject(.init(
+                bucket: bucket,
+                cacheControl: metadata.cacheControl.isEmpty ? nil : metadata.cacheControl,
+                contentDisposition: metadata.contentDisposition.isEmpty ? nil : metadata.contentDisposition,
+                contentEncoding: metadata.contentEncoding.isEmpty ? nil : metadata.contentEncoding,
+                contentType: metadata.contentType.isEmpty ? nil : metadata.contentType,
+                copySource: encodedSource,
+                key: key,
+                metadata: userMetadata,
+                metadataDirective: .replace
+            ))
+        } catch {
+            throw Self.map(error, bucket: bucket, key: key)
+        }
+        // PutObjectTagging — clears the existing set and replaces
+        // with the supplied one.
+        let tagSet: [S3.Tag] = metadata.tags.map { (k, v) in
+            S3.Tag(key: k, value: v)
+        }
+        do {
+            _ = try await s3.putObjectTagging(.init(
+                bucket: bucket,
+                key: key,
+                tagging: S3.Tagging(tagSet: tagSet)
+            ))
+        } catch {
+            throw Self.map(error, bucket: bucket, key: key)
+        }
+    }
+
     // MARK: - Helpers
 
     private static func unquote(_ s: String?) -> String {
