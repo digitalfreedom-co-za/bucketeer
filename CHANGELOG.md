@@ -22,6 +22,27 @@ before that is internal phase work on the `development` branch.
 - `docs/DEVELOPER_SETUP.md` clone-to-run guide.
 - `CONTRIBUTING.md` per the design spec §13.2.
 
+### Phase 13.8 — Auto-tagging rules
+- BucketeerCore: `AutoTagRule` Sendable struct (name, enabled,
+  filename glob, MIME prefix, tags, user metadata); `AutoTagRuleRecord`
+  (`@Model`) with JSON-encoded dictionaries; `AutoTagRuleStoring`
+  protocol; `AutoTagRuleStore` (`@ModelActor`); pure
+  `AutoTagRuleEvaluator` with an iterative `*`/`?` glob matcher and
+  case-insensitive MIME-prefix matching.
+- 6 new `AutoTagRuleEvaluator` tests (empty list, disabled rules,
+  empty-matches-all, glob wildcards, MIME case-insensitivity, merge
+  ordering). Total Core tests: 109.
+- Host: `AutoTagCoordinator` (`@MainActor`) subscribes to the
+  TransferManager.tasks stream, applies matching rules to each
+  successful upload by loading + merging + saving metadata via
+  `S3Browsing`, and records an audit row per apply (silently skips
+  providers that respond `.featureNotSupported`).
+- `AutoTagRulesViewModel` + `AutoTagRulesView` Settings tab with a
+  rule list, per-row context menu (edit / delete), and a modal
+  editor with key/value dict editors for tags + metadata.
+- New host-only `BucketeerAutoTags.store` SwiftData container.
+- 21 localised strings × 10 languages.
+
 ### Phase 13.7 — Metadata + tags editor
 - `ObjectMetadata` Sendable struct holds HTTP headers
   (Content-Type, Cache-Control, Content-Disposition, Content-

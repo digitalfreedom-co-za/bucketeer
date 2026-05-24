@@ -115,6 +115,17 @@ public protocol S3Browsing: Sendable {
     ) async throws
 }
 
+// MARK: - AutoTagRuleStoring
+
+/// Persistence boundary for the auto-tagging rule list. Phase 13.8.
+/// Implementations live in a host-only SwiftData container — the
+/// File Provider extension never needs rule visibility.
+public protocol AutoTagRuleStoring: Sendable {
+    func all() async throws -> [AutoTagRule]
+    func upsert(_ rule: AutoTagRule) async throws
+    func delete(id: UUID) async throws
+}
+
 // MARK: - ActivityLogging
 
 /// Records audit-log entries for user-visible operations (uploads,

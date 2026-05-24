@@ -46,4 +46,7 @@ public enum AppEnvironment {
     /// adds files on `record(cachedAt:)`, removes them on `forget`
     /// and `purgeExpired`.
     public static let trashCacheDirectoryName = "Trash"
+
+    /// Filename of the host-only auto-tagging rule store. Phase 13.8.
+    public static let autoTagStoreFileName = "BucketeerAutoTags.store"
 }

@@ -216,6 +216,12 @@ private struct SettingsView: View {
                 .tabItem {
                     Label("settings.tab.transfers", systemImage: "arrow.up.arrow.down.circle")
                 }
+            // Phase 13.8 — auto-tagging rules.
+            AutoTagRulesView()
+                .environment(container)
+                .tabItem {
+                    Label("settings.tab.rules", systemImage: "tag")
+                }
             proTab
                 .tabItem {
                     Label("settings.tab.pro", systemImage: "shippingbox.and.arrow.backward.fill")

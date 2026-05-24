@@ -24,6 +24,8 @@ final class AppContainer {
     /// trash. Kept out of both the App Group store and the activity
     /// store because trash housekeeping is independent.
     let trashContainer: ModelContainer
+    /// Phase 13.8 — auto-tag rule store, host-only.
+    let autoTagContainer: ModelContainer
     /// Shared bandwidth throttle. Phase 13.2.
     let bandwidthLimiter: BandwidthLimiter
     let bandwidthSettings: BandwidthSettings
@@ -47,6 +49,10 @@ final class AppContainer {
     let trashStore: any TrashStoring
     let trashCoordinator: TrashCoordinator
     let trashSettings: TrashSettings
+    /// Phase 13.8 — auto-tagging.
+    let autoTagStore: any AutoTagRuleStoring
+    let autoTagCoordinator: AutoTagCoordinator
+    let autoTagRulesViewModel: AutoTagRulesViewModel
     let accountListViewModel: AccountListViewModel
     let browserViewModel: BrowserViewModel
     let transferQueueViewModel: TransferQueueViewModel
@@ -69,6 +75,7 @@ final class AppContainer {
         Self.runMigrations(modelContainer)
         let activityContainer = try Self.makeActivityContainer()
         let (trashContainer, trashCacheURL) = try Self.makeTrashContainer()
+        let autoTagContainer = try Self.makeAutoTagContainer()
         // Codex blocker #3: write to the shared keychain access group
         // so the File Provider extension (which reads from the same
         // group) can load credentials. Production-signed builds need
@@ -120,6 +127,7 @@ final class AppContainer {
         self.modelContainer = modelContainer
         self.activityContainer = activityContainer
         self.trashContainer = trashContainer
+        self.autoTagContainer = autoTagContainer
         self.bandwidthLimiter = bandwidthLimiter
         self.bandwidthSettings = BandwidthSettings(limiter: bandwidthLimiter)
         self.keychainStore = keychainStore
@@ -209,6 +217,23 @@ final class AppContainer {
         // delete path can capture a soft-delete entry first.
         self.browserViewModel.trashCoordinator = trashCoordinator
         Task { [trashStore] in await trashStore.purgeExpired() }
+
+        // Phase 13.8 — auto-tagging.
+        let autoTagStore = AutoTagRuleStore(modelContainer: autoTagContainer)
+        let autoTagCoordinator = AutoTagCoordinator(
+            store: autoTagStore,
+            browser: router,
+            transferManager: transferManager,
+            activityLog: activityLog,
+            accountStore: accountStore
+        )
+        self.autoTagStore = autoTagStore
+        self.autoTagCoordinator = autoTagCoordinator
+        self.autoTagRulesViewModel = AutoTagRulesViewModel(
+            store: autoTagStore,
+            coordinator: autoTagCoordinator
+        )
+        Task { [autoTagCoordinator] in await autoTagCoordinator.start() }
         Task { @MainActor [syncJobListViewModel = self.syncJobListViewModel] in
             await syncJobListViewModel.bootstrap()
         }
@@ -308,6 +333,24 @@ final class AppContainer {
         let schema = Schema([ActivityRecord.self])
         let configuration = ModelConfiguration(
             "BucketeerActivity",
+            schema: schema,
+            url: storeURL
+        )
+        return try ModelContainer(for: schema, configurations: configuration)
+    }
+
+    /// Phase 13.8 — host-only auto-tagging rule container.
+    private static func makeAutoTagContainer() throws -> ModelContainer {
+        let support = (try? FileManager.default.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: true
+        )) ?? URL.documentsDirectory
+        let storeURL = support.appending(path: AppEnvironment.autoTagStoreFileName)
+        let schema = Schema([AutoTagRuleRecord.self])
+        let configuration = ModelConfiguration(
+            "BucketeerAutoTags",
             schema: schema,
             url: storeURL
         )
