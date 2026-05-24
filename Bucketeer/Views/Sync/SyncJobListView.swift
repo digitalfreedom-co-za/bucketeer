@@ -12,6 +12,7 @@ struct SyncJobListView: View {
     @Bindable var viewModel: SyncJobListViewModel
     @Environment(AppContainer.self) private var container
     @State private var showingNewJobSheet: Bool = false
+    @State private var showingNewWatchSheet: Bool = false
     @State private var editingJob: SyncJob?
     @State private var pendingDeletion: SyncJob?
 
@@ -26,17 +27,19 @@ struct SyncJobListView: View {
         .navigationTitle("sync.title")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button {
-                    if container.entitlementManager.isUnlocked(.syncEngine) {
-                        showingNewJobSheet = true
-                    } else {
-                        NotificationCenter.default.post(
-                            name: .showBucketeerPaywall,
-                            object: EntitlementManager.ProFeature.syncEngine
-                        )
+                Menu {
+                    Button {
+                        guardPro { showingNewJobSheet = true }
+                    } label: {
+                        Label("sync.action.new", systemImage: "arrow.triangle.2.circlepath")
+                    }
+                    Button {
+                        guardPro { showingNewWatchSheet = true }
+                    } label: {
+                        Label("watchFolder.action.new", systemImage: "eye")
                     }
                 } label: {
-                    Label("sync.action.new", systemImage: "plus")
+                    Label("sync.action.add", systemImage: "plus")
                 }
                 .disabled(viewModel.accounts.isEmpty)
             }
@@ -44,6 +47,14 @@ struct SyncJobListView: View {
         .sheet(isPresented: $showingNewJobSheet) {
             SyncJobSheet(
                 mode: .create,
+                accounts: viewModel.accounts,
+                onSave: { job in
+                    await viewModel.save(job)
+                }
+            )
+        }
+        .sheet(isPresented: $showingNewWatchSheet) {
+            WatchFolderSheet(
                 accounts: viewModel.accounts,
                 onSave: { job in
                     await viewModel.save(job)
@@ -87,8 +98,13 @@ struct SyncJobListView: View {
         } description: {
             Text("sync.empty.message")
         } actions: {
-            Button("sync.action.new") {
-                showingNewJobSheet = true
+            HStack(spacing: 8) {
+                Button("sync.action.new") {
+                    guardPro { showingNewJobSheet = true }
+                }
+                Button("watchFolder.action.new") {
+                    guardPro { showingNewWatchSheet = true }
+                }
             }
             .disabled(viewModel.accounts.isEmpty)
         }
@@ -97,12 +113,24 @@ struct SyncJobListView: View {
     private var jobTable: some View {
         Table(viewModel.jobs) {
             TableColumn("sync.column.name") { job in
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(job.name)
-                        .lineLimit(1)
-                    Text(modeLabel(job.mode))
-                        .font(.caption2)
+                HStack(alignment: .top, spacing: 8) {
+                    // Phase 13.3 — distinguish watch folders so the
+                    // user can tell at a glance which rows are event-
+                    // driven uploaders vs scheduled bidirectional syncs.
+                    Image(systemName: Self.isWatchFolder(job)
+                          ? "eye"
+                          : "arrow.triangle.2.circlepath")
+                        .font(.callout)
                         .foregroundStyle(.secondary)
+                        .help(Self.isWatchFolder(job)
+                              ? Text("sync.row.kind.watchFolder")
+                              : Text("sync.row.kind.syncJob"))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(job.name).lineLimit(1)
+                        Text(modeLabel(job.mode))
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 .contextMenu { contextActions(for: job) }
             }
@@ -235,6 +263,28 @@ struct SyncJobListView: View {
                 : "\(accountName) · \(bucket)/\(prefix)"
         case .localFolder(_, let path):
             return "📁 \(path)"
+        }
+    }
+
+    /// True when the job is a Phase 13.3 "watch folder": local
+    /// source + `.onLocalChange` schedule. The mode (`copy` vs
+    /// `move`) controls whether the original is deleted after a
+    /// successful upload.
+    private static func isWatchFolder(_ job: SyncJob) -> Bool {
+        guard case .localFolder = job.source else { return false }
+        return job.schedule == .onLocalChange
+    }
+
+    /// Gate Pro-only actions behind the paywall notification used by
+    /// the rest of the app.
+    private func guardPro(_ action: () -> Void) {
+        if container.entitlementManager.isUnlocked(.syncEngine) {
+            action()
+        } else {
+            NotificationCenter.default.post(
+                name: .showBucketeerPaywall,
+                object: EntitlementManager.ProFeature.syncEngine
+            )
         }
     }
 }

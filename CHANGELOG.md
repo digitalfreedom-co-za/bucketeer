@@ -22,6 +22,27 @@ before that is internal phase work on the `development` branch.
 - `docs/DEVELOPER_SETUP.md` clone-to-run guide.
 - `CONTRIBUTING.md` per the design spec §13.2.
 
+### Phase 13.3 — Watch folder → bucket
+- New streamlined `WatchFolderSheet` builds a `SyncJob` with a
+  `.localFolder` source, an S3 / Azure destination, `.onLocalChange`
+  schedule, and either `.copy` (keep local file) or `.move` (delete
+  local after successful upload). Reuses the entire sync engine
+  end-to-end — Phase 9.10 already wired the FSEvents watcher pump.
+- `SyncJobListView` toolbar "+" becomes a Menu with **New Sync
+  Job…** and **New Watch Folder…**. Empty state grew a second
+  affordance.
+- Watch-folder rows show an eye icon in the name column with a
+  tooltip distinguishing them from scheduled sync jobs.
+- `SyncEngine` pump task records `ActivityKind.watchFolderTriggered`
+  before each `runNow` so the user can see in the activity log why
+  a job started even when the run produces zero transfers.
+- Legal docs (EULA / Privacy / Impressum / Source-Available License /
+  Open Source Notices) redesigned with a consistent template: one-
+  sentence italic lede, labeled metadata block, numbered title-case
+  sections, bullets in place of tables (which the bundled MarkdownView
+  doesn't structure-render), consistent contact + copyright footer.
+- 20 localised strings × 10 languages.
+
 ### Phase 13.2 — Bandwidth limit
 - `BandwidthLimiter` (Core): token-bucket actor with a `consume(bytes:)`
   drain pattern that converges for requests bigger than the bucket

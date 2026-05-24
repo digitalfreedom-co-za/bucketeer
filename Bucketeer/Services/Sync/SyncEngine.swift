@@ -137,8 +137,25 @@ actor SyncEngine {
             // idempotent (guards on `runners[id] == nil`) so an event
             // that lands mid-run is dropped harmlessly.
             let jobID = job.id
+            let jobName = job.name
+            // Capture for use inside the pump task.
+            let pumpActivityLog = self.activityLog
             let pump = Task { [weak self] in
                 for await _ in watcher.events {
+                    // Phase 13.3 — record the trigger before kicking
+                    // off the job so the user can see in the activity
+                    // log why a job started even when the run itself
+                    // produces zero transfers (e.g. only a touch).
+                    if let pumpActivityLog {
+                        await pumpActivityLog.record(
+                            ActivityEntry(
+                                kind: .watchFolderTriggered,
+                                status: .info,
+                                syncJobID: jobID,
+                                syncJobName: jobName
+                            )
+                        )
+                    }
                     await self?.runNow(id: jobID)
                 }
             }

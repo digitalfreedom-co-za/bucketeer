@@ -72,7 +72,7 @@ commit so the development history reads as a phase-by-phase log.
 | 12 | Hardening | ✅ |
 | 13.1 | Activity log | ✅ |
 | 13.2 | Bandwidth limit | ✅ |
-| 13.3 | Watch folder → bucket | ⏳ |
+| 13.3 | Watch folder → bucket | ✅ |
 | 13.4 | Trash / soft-delete | ⏳ |
 | 13.5 | Bucket dashboard | ⏳ |
 | 13.6 | Versions browser | ⏳ |
