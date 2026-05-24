@@ -70,6 +70,14 @@ struct BucketeerApp: App {
         .defaultSize(width: 1000, height: 600)
         .defaultPosition(.center)
 
+        Window("trash.window.title", id: "trash") {
+            TrashView()
+                .environment(container)
+                .frame(minWidth: 900, minHeight: 480)
+        }
+        .defaultSize(width: 1000, height: 580)
+        .defaultPosition(.center)
+
         Settings {
             SettingsView()
                 .environment(container)
@@ -103,6 +111,10 @@ private struct AppCommands: Commands {
                 openWindow(id: "activity")
             }
             .keyboardShortcut("0", modifiers: [.command, .option])
+            Button("menu.window.trash") {
+                openWindow(id: "trash")
+            }
+            .keyboardShortcut(.delete, modifiers: [.command, .shift])
         }
 
         // Replace the default Help menu with our own entries.
@@ -223,6 +235,7 @@ private struct SettingsView: View {
     /// per wire byte.
     private var transfersTab: some View {
         @Bindable var bandwidthSettings = container.bandwidthSettings
+        @Bindable var trashSettings = container.trashSettings
         return Form {
             Section("settings.transfers.section.bandwidth") {
                 Picker("settings.transfers.bandwidth.cap", selection: $bandwidthSettings.selectedPreset) {
@@ -241,6 +254,30 @@ private struct SettingsView: View {
                     }
                 }
                 Text("settings.transfers.bandwidth.note")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            // Phase 13.4 — soft-delete trash behaviour.
+            Section("settings.transfers.section.trash") {
+                Toggle("settings.trash.cache.enabled", isOn: $trashSettings.cacheEnabled)
+                Stepper(value: $trashSettings.cacheCapMB, in: 0...2048, step: 25) {
+                    Text(
+                        String(
+                            format: NSLocalizedString("settings.trash.cache.cap", comment: ""),
+                            trashSettings.cacheCapMB
+                        )
+                    )
+                }
+                .disabled(!trashSettings.cacheEnabled)
+                Stepper(value: $trashSettings.retentionDays, in: 1...365) {
+                    Text(
+                        String(
+                            format: NSLocalizedString("settings.trash.retention", comment: ""),
+                            trashSettings.retentionDays
+                        )
+                    )
+                }
+                Text("settings.trash.note")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }

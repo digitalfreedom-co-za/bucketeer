@@ -22,6 +22,36 @@ before that is internal phase work on the `development` branch.
 - `docs/DEVELOPER_SETUP.md` clone-to-run guide.
 - `CONTRIBUTING.md` per the design spec §13.2.
 
+### Phase 13.4 — Trash / soft-delete
+- New host-only `BucketeerTrash.store` SwiftData container + a
+  parallel `Trash/` cache directory in sandbox Application Support.
+  Kept separate from the App Group + activity stores.
+- BucketeerCore: `TrashedItem` (Sendable snapshot) + `TrashCacheStatus`
+  enum + `TrashRecord` (`@Model`) + `TrashStoring` protocol. Impl is a
+  manual `actor TrashStore: TrashStoring, ModelActor` (custom init
+  takes a `cacheRootURL`, hence no `@ModelActor` macro). Every code
+  path that removes a row also removes the cached file.
+- `TrashSettings` (`@Observable @MainActor`) holds three knobs in
+  UserDefaults: master toggle, per-object cache cap (MB), retention
+  (days, default 30).
+- `TrashCoordinator` (`@MainActor`) glues the trash to the existing
+  browser + transfer manager:
+  - `recordDeletion(...)` is called by `BrowserViewModel.delete(keys:)`
+    *before* the provider delete; it HEADs every key, records a
+    metadata row, and downloads cacheable payloads in parallel via
+    a `TaskGroup` + `TransferManager.enqueueDownload`. Capture
+    happens before the delete so the bytes are guaranteed readable.
+  - `restore(item:)` re-uploads the cached payload via the transfer
+    manager and forgets the entry on success.
+  - `forget(item:)` / `empty()` pass through to the store.
+- `TrashViewModel` + `TrashView` window: Table with Object / Account /
+  Size / Cache status / Deleted-at / Actions columns; Restore /
+  Forget per row; Empty Trash with confirmation; refresh button.
+- Menu entry **Window → Trash** (⌘⇧⌫); Settings → Transfers gains a
+  **Trash** section.
+- `purgeExpired()` runs at launch to drop rows past `retentionDays`.
+- 39 localised strings × 10 languages.
+
 ### Phase 13.3 — Watch folder → bucket
 - New streamlined `WatchFolderSheet` builds a `SyncJob` with a
   `.localFolder` source, an S3 / Azure destination, `.onLocalChange`

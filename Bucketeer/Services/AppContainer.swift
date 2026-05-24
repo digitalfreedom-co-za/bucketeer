@@ -20,6 +20,10 @@ final class AppContainer {
     /// Group container because the File Provider extension has no
     /// reason to load this schema. Phase 13.1.
     let activityContainer: ModelContainer
+    /// Phase 13.4 — separate SwiftData container for the soft-delete
+    /// trash. Kept out of both the App Group store and the activity
+    /// store because trash housekeeping is independent.
+    let trashContainer: ModelContainer
     /// Shared bandwidth throttle. Phase 13.2.
     let bandwidthLimiter: BandwidthLimiter
     let bandwidthSettings: BandwidthSettings
@@ -39,11 +43,16 @@ final class AppContainer {
     let syncJobStore: any SyncJobStoring
     let syncEngine: SyncEngine
     let activityLog: any ActivityLogging
+    /// Phase 13.4 — soft-delete trash.
+    let trashStore: any TrashStoring
+    let trashCoordinator: TrashCoordinator
+    let trashSettings: TrashSettings
     let accountListViewModel: AccountListViewModel
     let browserViewModel: BrowserViewModel
     let transferQueueViewModel: TransferQueueViewModel
     let syncJobListViewModel: SyncJobListViewModel
     let activityLogViewModel: ActivityLogViewModel
+    let trashViewModel: TrashViewModel
 
     init() throws {
         let storeURL = Self.resolveStoreURL()
@@ -59,6 +68,7 @@ final class AppContainer {
         )
         Self.runMigrations(modelContainer)
         let activityContainer = try Self.makeActivityContainer()
+        let (trashContainer, trashCacheURL) = try Self.makeTrashContainer()
         // Codex blocker #3: write to the shared keychain access group
         // so the File Provider extension (which reads from the same
         // group) can load credentials. Production-signed builds need
@@ -109,6 +119,7 @@ final class AppContainer {
 
         self.modelContainer = modelContainer
         self.activityContainer = activityContainer
+        self.trashContainer = trashContainer
         self.bandwidthLimiter = bandwidthLimiter
         self.bandwidthSettings = BandwidthSettings(limiter: bandwidthLimiter)
         self.keychainStore = keychainStore
@@ -173,6 +184,31 @@ final class AppContainer {
             activityLog: activityLog,
             accountStore: accountStore
         )
+        let trashStore = TrashStore(
+            modelContainer: trashContainer,
+            cacheRootURL: trashCacheURL
+        )
+        let trashSettings = TrashSettings()
+        let trashCoordinator = TrashCoordinator(
+            trashStore: trashStore,
+            browser: router,
+            transferManager: transferManager,
+            activityLog: activityLog,
+            cacheRootURL: trashCacheURL,
+            settings: trashSettings
+        )
+        self.trashStore = trashStore
+        self.trashCoordinator = trashCoordinator
+        self.trashSettings = trashSettings
+        self.trashViewModel = TrashViewModel(
+            trashStore: trashStore,
+            coordinator: trashCoordinator,
+            accountStore: accountStore
+        )
+        // Hand the trash coordinator to the browser so the inline
+        // delete path can capture a soft-delete entry first.
+        self.browserViewModel.trashCoordinator = trashCoordinator
+        Task { [trashStore] in await trashStore.purgeExpired() }
         Task { @MainActor [syncJobListViewModel = self.syncJobListViewModel] in
             await syncJobListViewModel.bootstrap()
         }
@@ -276,5 +312,31 @@ final class AppContainer {
             url: storeURL
         )
         return try ModelContainer(for: schema, configurations: configuration)
+    }
+
+    /// Build the trash container + cache directory. Phase 13.4.
+    /// Returns both because the `TrashStore` actor needs the cache
+    /// directory URL alongside the model container.
+    private static func makeTrashContainer() throws -> (ModelContainer, URL) {
+        let support = (try? FileManager.default.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: true
+        )) ?? URL.documentsDirectory
+        let storeURL = support.appending(path: AppEnvironment.trashStoreFileName)
+        let cacheURL = support.appending(path: AppEnvironment.trashCacheDirectoryName)
+        try? FileManager.default.createDirectory(
+            at: cacheURL,
+            withIntermediateDirectories: true
+        )
+        let schema = Schema([TrashRecord.self])
+        let configuration = ModelConfiguration(
+            "BucketeerTrash",
+            schema: schema,
+            url: storeURL
+        )
+        let container = try ModelContainer(for: schema, configurations: configuration)
+        return (container, cacheURL)
     }
 }

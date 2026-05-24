@@ -41,6 +41,9 @@ final class BrowserViewModel {
     private let s3Browser: any S3Browsing
     private let accountStore: any AccountStoring
     private let activityLog: (any ActivityLogging)?
+    /// Phase 13.4 — captures a soft-delete copy + metadata before
+    /// the actual delete fires.
+    var trashCoordinator: TrashCoordinator?
 
     /// Monotonically increasing token incremented on every navigation
     /// or refresh. Each async load captures the value at issue time and
@@ -167,6 +170,16 @@ final class BrowserViewModel {
         guard let account, let bucket, !keys.isEmpty else { return }
         isPerformingAction = true
         defer { isPerformingAction = false }
+        // Phase 13.4 — snapshot the objects into the soft-delete bin
+        // BEFORE the provider delete so the cached copy is guaranteed
+        // to be the pre-delete bytes. Best-effort; never block on it.
+        if let trashCoordinator {
+            await trashCoordinator.recordDeletion(
+                account: account,
+                bucket: bucket,
+                keys: keys
+            )
+        }
         do {
             try await s3Browser.delete(account: account, bucket: bucket, keys: keys)
             selection.subtract(keys)

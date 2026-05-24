@@ -35,4 +35,15 @@ public enum AppEnvironment {
     /// schema otherwise. Lives in the sandbox Application Support
     /// directory.
     public static let activityStoreFileName = "BucketeerActivity.store"
+
+    /// Filename of the *host-only* trash store. Phase 13.4. Separate
+    /// container so soft-delete writes never touch the App Group or
+    /// activity stores.
+    public static let trashStoreFileName = "BucketeerTrash.store"
+
+    /// Subdirectory under Application Support that holds cached
+    /// payloads of trashed objects. The store owns this directory:
+    /// adds files on `record(cachedAt:)`, removes them on `forget`
+    /// and `purgeExpired`.
+    public static let trashCacheDirectoryName = "Trash"
 }

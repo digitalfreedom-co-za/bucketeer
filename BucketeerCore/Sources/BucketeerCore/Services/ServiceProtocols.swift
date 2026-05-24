@@ -105,6 +105,54 @@ public protocol ActivityLogging: Sendable {
     func count() async throws -> Int
 }
 
+// MARK: - TrashStoring
+
+/// Local soft-delete bin for deleted objects. Phase 13.4.
+///
+/// The contract is intentionally narrow — the store keeps metadata +
+/// (optionally) a cached payload for each deleted object so the user
+/// can answer "wait, did I really mean to delete that?" without going
+/// back to provider versioning. Implementations:
+///
+/// 1. MUST own the file lifecycle: every persisted record's payload
+///    is removed when the record is forgotten, restored, or purged.
+/// 2. MUST tolerate a missing payload on disk (e.g. user wiped the
+///    sandbox); the record stays valid, `cacheStatus` flips to
+///    `.failed`.
+/// 3. MUST treat `record(...)` as non-throwing — soft-delete is
+///    observation around the real delete and must not block it.
+public protocol TrashStoring: Sendable {
+    /// Persist a fresh trash entry. Returns the assigned record id
+    /// so the caller can later attach a cached payload via
+    /// `markCached(id:fileName:)`.
+    func record(_ item: TrashedItem) async
+
+    /// Mark an existing record as having a cached payload on disk.
+    /// Idempotent; no-op if the record was forgotten in the meantime.
+    func markCached(id: UUID, fileName: String) async
+
+    /// Update the cache status of an existing record without writing
+    /// a fileName (e.g. flip to `.skippedTooLarge` or `.failed`).
+    func markStatus(id: UUID, status: TrashCacheStatus) async
+
+    /// Most-recent-first list, hard-capped at `limit`.
+    func recent(limit: Int) async throws -> [TrashedItem]
+
+    /// Total row count (cheap; used in the trash window footer +
+    /// menubar badge).
+    func count() async throws -> Int
+
+    /// Remove one record and its cached payload from disk.
+    func forget(id: UUID) async throws
+
+    /// Wipe every record and cached payload. UI calls this from a
+    /// confirmation dialog.
+    func empty() async throws
+
+    /// Drop entries past their `expiresAt`. Called once at launch.
+    func purgeExpired() async
+}
+
 // MARK: - Transferring
 
 /// Long-running upload / download queue. Reports progress through an
