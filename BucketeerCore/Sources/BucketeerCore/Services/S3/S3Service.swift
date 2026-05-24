@@ -7,6 +7,7 @@
 
 import Foundation
 @preconcurrency import SotoS3
+import NIOCore
 
 /// Concrete `S3Browsing` implementation backed by Soto. All methods
 /// translate Soto-level errors into `BucketeerError` before re-throwing
@@ -189,6 +190,47 @@ public struct S3Service: S3Browsing {
                 contentLength: 0,
                 key: key
             ))
+        } catch {
+            throw Self.map(error)
+        }
+    }
+
+    // MARK: - Presigned URLs (Phase 9.9)
+
+    /// Soto exposes `signURL` on every AWSService — we use it to
+    /// generate a Sig v4 signed GET URL that expires after the
+    /// supplied interval. The signature is computed locally; no
+    /// network call is made.
+    ///
+    /// Quirks worth noting:
+    /// - Path-style vs virtual-host follows whatever `account.usesPathStyle`
+    ///   resolved to in `S3ClientFactory.endpoint` — the URL we hand
+    ///   to `signURL` is the same one the live request would hit.
+    /// - The expiry is in `TimeAmount` (NIO) so we clamp the supplied
+    ///   `TimeInterval` to a sane upper bound (7 days, the AWS Sig v4
+    ///   maximum).
+    public func presignedDownloadURL(
+        account: S3Account,
+        bucket: String,
+        key: String,
+        ttl: TimeInterval
+    ) async throws -> URL {
+        let s3 = try await factory.client(for: account)
+        let endpoint = S3ClientFactory.endpoint(for: account)
+        let encodedKey = key.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? key
+        // Path-style and virtual-host both work — we always go
+        // path-style here because the signed URL is independent from
+        // the account's runtime addressing mode and `endpoint` is
+        // already the right base.
+        let url = endpoint.appending(path: "\(bucket)/\(encodedKey)")
+        let clamped = max(60, min(ttl, 7 * 24 * 60 * 60))
+        let expires = TimeAmount.seconds(Int64(clamped))
+        do {
+            return try await s3.signURL(
+                url: url,
+                httpMethod: .GET,
+                expires: expires
+            )
         } catch {
             throw Self.map(error)
         }

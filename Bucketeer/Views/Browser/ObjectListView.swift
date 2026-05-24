@@ -15,6 +15,7 @@ struct ObjectListView: View {
     @State private var showingNewFolderSheet: Bool = false
     @State private var renamingObject: S3Object?
     @State private var pendingDeletion: [S3Object] = []
+    @State private var shareTarget: S3Object?
 
     var body: some View {
         Group {
@@ -92,6 +93,16 @@ struct ObjectListView: View {
         .sheet(item: $renamingObject) { object in
             RenameSheet(original: object.displayName) { newName in
                 await viewModel.rename(key: object.key, to: newName)
+            }
+        }
+        .sheet(item: $shareTarget) { object in
+            if let account = viewModel.account, let bucket = viewModel.bucket {
+                PresignedURLSheet(
+                    account: account,
+                    bucket: bucket,
+                    object: object,
+                    generator: container.s3Browser
+                )
             }
         }
         .confirmationDialog(
@@ -289,6 +300,9 @@ struct ObjectListView: View {
             if !object.isFolder {
                 Button("action.download", systemImage: "arrow.down.circle") {
                     Task { await downloadObject(object) }
+                }
+                Button("share.menu.getLink", systemImage: "link") {
+                    shareTarget = object
                 }
             }
             Button("action.rename", systemImage: "pencil") {

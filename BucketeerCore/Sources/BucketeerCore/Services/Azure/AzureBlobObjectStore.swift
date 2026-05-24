@@ -327,6 +327,39 @@ public struct AzureBlobObjectStore: S3Browsing {
         _ = try await fetch(request: request, on: session, bucket: bucket, key: key)
     }
 
+    // MARK: - Presigned URLs (Phase 9.9)
+
+    /// Build a Service-SAS URL for the blob. Loads the storage account
+    /// name + key out of the Keychain via `AzureCredentialsCache`,
+    /// then hands them to `AzureSASBuilder`. The signature is computed
+    /// locally; no network call is made.
+    public func presignedDownloadURL(
+        account: S3Account,
+        bucket: String,
+        key: String,
+        ttl: TimeInterval
+    ) async throws -> URL {
+        // Reach into the cache to get the raw account name + key so we
+        // can build the SAS independently of the request-signing pipeline.
+        let credentials = try await credentialsCache.rawCredentials(for: account)
+        guard let sas = AzureSASBuilder(
+            accountName: credentials.accountName,
+            base64AccountKey: credentials.base64AccountKey
+        ) else {
+            throw BucketeerError.authenticationFailed
+        }
+        let builder = AzureRequestBuilder(account: account)
+        guard let url = sas.presignedDownloadURL(
+            baseURL: builder.baseURL,
+            container: bucket,
+            blob: key,
+            ttl: max(60, min(ttl, 7 * 24 * 60 * 60))
+        ) else {
+            throw BucketeerError.unknown(message: "Failed to construct Azure SAS URL.")
+        }
+        return url
+    }
+
     // MARK: - Internal request helpers
 
     /// Fires the request, validates the HTTP status, returns the body

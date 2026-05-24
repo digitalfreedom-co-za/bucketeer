@@ -71,4 +71,26 @@ public actor AzureCredentialsCache {
     public func invalidateAll() async {
         cache.removeAll()
     }
+
+    /// Raw account-name + base64-key tuple. Used by the SAS-builder
+    /// path (Phase 9.9) which signs a different StringToSign layout
+    /// than the request signer and therefore can't reuse the cached
+    /// `AzureSharedKeySigner` instance. Goes through the Keychain on
+    /// every call — presigned URL generation isn't a hot path and
+    /// the data is too small to bother caching twice.
+    public struct RawCredentials: Sendable {
+        public let accountName: String
+        public let base64AccountKey: String
+    }
+
+    func rawCredentials(for account: S3Account) async throws -> RawCredentials {
+        let credentials = try await keychainStore.load(for: account.id)
+        let accountName = account.accountID?.isEmpty == false
+            ? account.accountID!
+            : credentials.accessKey
+        return RawCredentials(
+            accountName: accountName,
+            base64AccountKey: credentials.secretKey
+        )
+    }
 }

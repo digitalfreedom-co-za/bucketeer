@@ -52,6 +52,18 @@ public protocol S3Browsing: Sendable {
         metadata: [String: String]?
     ) async throws
     func createFolder(account: S3Account, bucket: String, prefix: String) async throws
+
+    /// Time-limited download URL the user can share without giving the
+    /// recipient access to the credentials. S3 family signs via AWS
+    /// Signature v4 (Soto `signURL`); Azure family issues a Service
+    /// SAS token. The returned URL is anonymous-readable for the
+    /// supplied TTL and then expires. Phase 9.9.
+    func presignedDownloadURL(
+        account: S3Account,
+        bucket: String,
+        key: String,
+        ttl: TimeInterval
+    ) async throws -> URL
 }
 
 // MARK: - Transferring

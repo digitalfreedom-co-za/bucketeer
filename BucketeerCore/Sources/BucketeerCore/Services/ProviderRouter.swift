@@ -89,4 +89,18 @@ public struct ProviderRouter: S3Browsing {
             prefix: prefix
         )
     }
+
+    public func presignedDownloadURL(
+        account: S3Account,
+        bucket: String,
+        key: String,
+        ttl: TimeInterval
+    ) async throws -> URL {
+        try await backend(for: account).presignedDownloadURL(
+            account: account,
+            bucket: bucket,
+            key: key,
+            ttl: ttl
+        )
+    }
 }
