@@ -1,44 +1,42 @@
-# END USER LICENSE AGREEMENT — Bucketeer for macOS
+# End User License Agreement
 
-**Effective Date:** 24 May 2026
-**Application:** Bucketeer for macOS (the "App")
-**Publisher:**
-DigitalFreedom — a brand of Berger & Rosenstock GbR
-Dieselstr. 22e, 61231 Bad Nauheim, Germany
-Contact: hello@digitalfreedom.co.za
-Website: https://digitalfreedom.co.za
+*The terms under which you may install and use Bucketeer for macOS.*
+
+**Application** — Bucketeer for macOS (the "App")
+**Publisher** — DigitalFreedom · Berger & Rosenstock GbR · Dieselstr. 22e · 61231 Bad Nauheim · Germany
+**Contact** — hello@digitalfreedom.co.za
+**Effective date** — 24 May 2026
 
 ---
 
-## 1. ACCEPTANCE
+## 1. Acceptance
 
-By installing or using Bucketeer, you agree to this End User License
+By installing or using Bucketeer you agree to this End User License
 Agreement (the "Agreement"). If you do not agree, do not install or use
 the App.
 
 This Agreement applies to the version of Bucketeer that you download
 from the **Apple Mac App Store**. The App is not distributed through
-any other channel (no Homebrew cask, no direct DMG download, no Google
-Play, no enterprise distribution).
+any other channel — no Homebrew cask, no direct DMG, no enterprise
+distribution.
 
-Apple's standard licensed-application end-user license agreement applies
-to your use of the App in parallel with this Agreement. Where the two
-conflict, the Apple terms govern only the matters Apple's terms
-specifically address (App-Store sale, refunds, Family Sharing); this
-Agreement governs everything else.
-
----
-
-## 2. THE APP
-
-Bucketeer is a native macOS application that lets you browse, transfer,
-mount, and synchronise objects across S3-compatible providers and Azure
-Blob Storage. It runs entirely on your Mac. The Publisher operates no
-servers in connection with the App.
+Apple's standard licensed-application end-user license agreement
+applies in parallel. Where the two conflict, the Apple terms govern
+only the matters they specifically address (the App Store sale itself,
+refunds, Family Sharing); this Agreement governs everything else.
 
 ---
 
-## 3. LICENSE GRANT
+## 2. The App
+
+Bucketeer is a native macOS application that lets you browse,
+transfer, mount, and synchronise objects across S3-compatible
+providers and Azure Blob Storage. It runs entirely on your Mac. The
+Publisher operates **no servers** in connection with the App.
+
+---
+
+## 3. License grant
 
 Subject to this Agreement, the Publisher grants you a personal,
 non-exclusive, non-transferable, revocable license to install and use
@@ -46,45 +44,43 @@ Bucketeer on Mac devices you personally own or control, in accordance
 with the Apple Media Services Terms.
 
 Open-source components bundled with the App are governed by their own
-licenses; see `OPEN_SOURCE_NOTICES.md` in the in-App **About** view.
+licenses. See **Open Source Notices** in the in-app **About** view.
 
 ---
 
-## 4. PRICING AND IN-APP PURCHASE
+## 4. Pricing and in-app purchase
 
-Bucketeer is free to download from the Mac App Store and includes a
+Bucketeer is free to download from the Mac App Store and ships with a
 **14-day Pro trial** that activates on first launch and unlocks every
-feature for the trial period. After the trial expires, the App stays
-usable in a **Free tier** that retains the core browser (multi-account
-browsing, upload, download, delete, rename, multipart transfers, Quick
-Look preview, drag-and-drop).
+feature for the trial period. After the trial expires the App keeps
+working in a **Free tier** that retains the core browser: multi-
+account browsing, upload, download, delete, rename, multipart
+transfers, Quick Look preview, drag-and-drop.
 
 The four **Bucketeer Pro pillars** — Mount as Drive (File Provider
 extension), Sync Engine (copy / move / mirror jobs), cross-account
 copy, and Menubar background mode — unlock with a single in-app
-purchase:
+purchase.
 
-| | |
-|---|---|
-| **Product** | Bucketeer Pro (Lifetime) |
-| **Product ID** | `za.co.digitalfreedom.bucketeer.pro.lifetime` |
-| **Price** | EUR 14.99 (or local equivalent set by Apple) |
-| **Type** | One-time, non-consumable in-app purchase |
-| **Family Sharing** | Enabled — a single purchase covers your Family Sharing group |
-| **Subscription** | No subscription, no auto-renewal, no recurring charge |
+**Product** — Bucketeer Pro (Lifetime)
+**Product ID** — `za.co.digitalfreedom.bucketeer.pro.lifetime`
+**Price** — EUR 14.99 (or the local equivalent set by Apple)
+**Type** — One-time, non-consumable in-app purchase
+**Family Sharing** — Enabled; one purchase covers your group
+**Subscription** — None; no auto-renewal; no recurring charge
 
 The purchase is processed by Apple under the Apple Media Services
 Terms. Refunds are handled exclusively by Apple via
 `reportaproblem.apple.com`; the Publisher cannot process refunds
 directly.
 
-The Publisher reserves the right to change the price for new buyers in
-future releases. A price change never affects an already-purchased
-lifetime entitlement.
+The Publisher may change the price for new buyers in future releases.
+A price change never affects an already-purchased lifetime
+entitlement.
 
 ---
 
-## 5. PERMITTED USE
+## 5. Permitted use
 
 You may:
 
@@ -97,29 +93,29 @@ You may:
 
 ---
 
-## 6. RESTRICTIONS
+## 6. Restrictions
 
 You must not:
 
 - Reverse-engineer, decompile, or disassemble the App except to the
-  extent permitted by Section 69e of the German Copyright Act
-  (Urheberrechtsgesetz) or other mandatory law.
+  extent permitted by §69e UrhG (German Copyright Act) or other
+  mandatory law.
 - Circumvent the in-app purchase, the trial timer, or any other
   technical protection in the App.
-- Use the App to connect to storage endpoints that you are not
-  authorised to access. Bucketeer is a thin client: any access control
-  is enforced by your provider, not by the Publisher.
-- Use the App's name, icon, or branding to imply endorsement of, or
-  affiliation with, derivative works.
-- Use the App in violation of export-control or sanctions laws.
+- Use the App to connect to storage endpoints you are not authorised
+  to access. Bucketeer is a thin client — access control is enforced
+  by your provider, not by the Publisher.
+- Use the App's name, icon, or branding in a way that implies
+  endorsement of, or affiliation with, derivative works.
+- Use the App in violation of export-control or sanctions law.
 
 The App's source code is published under the separate
-**Source-Available License** in `LICENSE.md`; redistribution rights for
-the source are governed there.
+**Source-Available License** (see **License** in the in-app About
+view). Redistribution rights for the source are governed there.
 
 ---
 
-## 7. YOUR RESPONSIBILITIES
+## 7. Your responsibilities
 
 Bucketeer acts on your behalf against the storage endpoints you
 configure. You are responsible for:
@@ -134,12 +130,13 @@ configure. You are responsible for:
   delete destination objects that are missing from the source.
 - The costs your provider bills you for storage, requests, and egress
   bandwidth consumed via the App. Bucketeer makes no attempt to
-  estimate or cap these costs.
+  estimate or cap these costs — the **Bandwidth limit** setting only
+  governs throughput, not provider-side charges.
 - Backups of any data you store via the App.
 
 ---
 
-## 8. THIRD-PARTY STORAGE ENDPOINTS
+## 8. Third-party storage endpoints
 
 Bucketeer connects only to the S3-compatible endpoints or Azure Blob
 Storage accounts you yourself configure. Each provider is a separate
@@ -149,7 +146,7 @@ operator with its own terms and privacy policy. The Publisher:
   endpoints;
 - is not responsible for their availability, performance, charging,
   data-handling, or security;
-- cannot read your credentials, your bucket/container listings, or
+- cannot read your credentials, your bucket / container listings, or
   your file contents.
 
 Disputes about provider behaviour, billing, or data-handling are
@@ -157,7 +154,7 @@ between you and the relevant provider.
 
 ---
 
-## 9. DATA AND PRIVACY
+## 9. Data and privacy
 
 The App processes data exclusively on your Mac and against the
 endpoints you configure. The Publisher does not collect, transmit, or
@@ -166,21 +163,23 @@ full statement.
 
 ---
 
-## 10. UPDATES
+## 10. Updates
 
-The App may receive updates via the Mac App Store. Updates are subject
-to this Agreement. Where an update materially changes paid features,
-the Publisher will note the change in the App Store release notes.
+The App may receive updates via the Mac App Store. Updates are
+subject to this Agreement. Where an update materially changes paid
+features, the Publisher will note the change in the App Store release
+notes.
 
 ---
 
-## 11. WARRANTY DISCLAIMER
+## 11. Warranty disclaimer
 
-TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE APP IS PROVIDED "AS IS" AND
-"AS AVAILABLE" WITHOUT WARRANTY OF ANY KIND. THE PUBLISHER SPECIFICALLY
-DISCLAIMS THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-PARTICULAR PURPOSE, AND NON-INFRINGEMENT. THE PUBLISHER DOES NOT
-WARRANT THAT THE APP WILL BE UNINTERRUPTED, ERROR-FREE, OR SECURE.
+To the maximum extent permitted by law, the App is provided **"as is"
+and "as available"** without warranty of any kind. The Publisher
+specifically disclaims the implied warranties of merchantability,
+fitness for a particular purpose, and non-infringement. The Publisher
+does not warrant that the App will be uninterrupted, error-free, or
+secure.
 
 This Section does not exclude warranties or rights that cannot be
 excluded under mandatory consumer law. Statutory rights of consumers
@@ -189,12 +188,12 @@ residence remain unaffected.
 
 ---
 
-## 12. LIABILITY
+## 12. Liability
 
-The Publisher's liability for damages, except for damages caused
-intentionally or by gross negligence, for damages from injury to life,
-body, or health, and for liability under the German Product Liability
-Act (Produkthaftungsgesetz), is limited to:
+The Publisher's liability for damages — except for damages caused
+intentionally or by gross negligence, damages from injury to life,
+body, or health, and liability under the German Product Liability Act
+(Produkthaftungsgesetz) — is limited to:
 
 - damages typical and foreseeable for an app of this kind; and
 - in aggregate, the amount you paid for the Bucketeer Pro in-app
@@ -206,26 +205,26 @@ The Publisher is not liable for:
   use of the App;
 - damage caused by third-party storage providers, including outages,
   account suspensions, or data loss at the provider's end;
-- damage caused by your own loss of, or mismanagement of, your
-  credentials.
+- damage caused by your own loss or mismanagement of credentials.
 
 ---
 
-## 13. NOT FOR HIGH-RISK USE
+## 13. Not for high-risk use
 
-Bucketeer is a general-purpose object-storage browser. It must not be
-used as a component of medical, life-support, safety-critical
+Bucketeer is a general-purpose object-storage browser. It must **not**
+be used as a component of medical, life-support, safety-critical
 industrial, nuclear-control, aviation-control, or military-critical
 systems. Such use is at your sole risk.
 
 ---
 
-## 14. TERMINATION
+## 14. Termination
 
 This Agreement applies for as long as you have the App installed. You
 may terminate it at any time by deleting the App. The Publisher may
-terminate this Agreement with immediate effect if you materially breach
-its terms. On termination you must stop using the App and delete it.
+terminate this Agreement with immediate effect if you materially
+breach its terms. On termination you must stop using the App and
+delete it.
 
 The Bucketeer Pro lifetime entitlement, once purchased, survives
 termination of this Agreement only insofar as Apple's Media Services
@@ -234,7 +233,7 @@ entitlement Apple has revoked.
 
 ---
 
-## 15. GOVERNING LAW AND JURISDICTION
+## 15. Governing law and jurisdiction
 
 This Agreement is governed by the laws of the Federal Republic of
 Germany, excluding the conflict-of-laws rules. The UN Convention on
@@ -251,25 +250,23 @@ the German VSBG.
 
 ---
 
-## 16. CHANGES TO THIS AGREEMENT
+## 16. Changes to this Agreement
 
-Material changes to this Agreement will be reflected in a new
-"Effective Date" at the top of this document and announced in the App
-Store release notes for the release that introduces them. Continued use
-of the App after the Effective Date of the new version constitutes
-acceptance of the changed terms.
+Material changes are reflected in a new **Effective date** at the top
+of this document and announced in the App Store release notes for the
+release that introduces them. Continued use of the App after the
+Effective date of the new version constitutes acceptance of the
+changed terms.
 
 ---
 
-## 17. CONTACT
+## 17. Contact
 
 Berger & Rosenstock GbR (DigitalFreedom)
-Dieselstr. 22e
-61231 Bad Nauheim, Germany
-
+Dieselstr. 22e · 61231 Bad Nauheim · Germany
 Email: hello@digitalfreedom.co.za
 Privacy contact: data-protection@digitalfreedom.co.za
 
 ---
 
-(c) 2026 DigitalFreedom — Berger & Rosenstock GbR. All rights reserved.
+© 2026 DigitalFreedom · Berger & Rosenstock GbR · All rights reserved.
