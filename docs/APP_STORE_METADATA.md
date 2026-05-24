@@ -83,7 +83,7 @@ first TestFlight cycle.
 
 ## Support URL
 
-`https://github.com/digitalfreedom-co-za/bucketeer/issues`
+`https://support.apps.digitalfreedom.co.za/`
 
 ## Marketing URL
 

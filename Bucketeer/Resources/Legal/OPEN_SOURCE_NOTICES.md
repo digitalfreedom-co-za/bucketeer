@@ -1,156 +1,248 @@
 # OPEN SOURCE NOTICES
 
-## Third-Party Open Source Software Used by Bucketeer
+## Third-Party Open-Source Software in Bucketeer
 
-**Last Updated:** May 2026
-
-**Publisher:**
-DigitalFreedom — a brand of Berger & Rosenstock GbR
-Dieselstr. 22e, 61231 Bad Nauheim, Germany
+**Last Updated:** 24 May 2026
+**Application:** Bucketeer for macOS
+**Publisher:** DigitalFreedom — Berger & Rosenstock GbR
 Contact: hello@digitalfreedom.co.za
 
 ---
 
-## 1. INTRODUCTION
+## 1. SCOPE
 
-Bucketeer includes the following open-source software. Each component
-is subject to its own license terms, reproduced or referenced below.
+Bucketeer integrates the following open-source libraries via Swift
+Package Manager. The pinned versions are recorded in
+`Bucketeer.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved`
+for the App-Store build that this document accompanies.
 
-Inclusion of these components in Bucketeer does not extend any
-redistribution rights to the App as a whole; the App is distributed
-under the Publisher's [Source-Available License](../../LICENSE) for the
-source code and the [End User License Agreement](EULA.md) for the binary.
+Inclusion of these components does not extend redistribution rights to
+Bucketeer as a whole: the App's source code is published under the
+[Source-Available License](LICENSE.md) and the compiled binary under
+the [End User License Agreement](EULA.md). Your use of each upstream
+library is governed by the library's own license, reproduced below.
 
 ---
 
-## 2. COMPONENTS
+## 2. DIRECT DEPENDENCY
 
-### 2.1 Soto
+### Soto (SotoS3)
 
 ```
-Component: Soto (SotoS3)
-Project:   soto-project/soto
-License:   Apache-2.0
-Copyright: Copyright 2017-2026 the Soto project authors
+Project:    soto-project/soto
 Repository: https://github.com/soto-project/soto
+License:    Apache-2.0
+Copyright:  Copyright 2017-2026 the Soto project authors
+Used for:   AWS S3 protocol client for every S3-compatible provider
+            (AWS, Civo, Cloudflare R2, Backblaze B2, Wasabi,
+             DigitalOcean Spaces, Storj, MinIO and any custom S3
+             endpoint).
 ```
 
-Pure-Swift SDK for AWS and S3-compatible services. Used by Bucketeer
-for all S3 protocol operations.
+---
 
-### 2.2 Soto Core
+## 3. TRANSITIVE DEPENDENCIES (Pulled in by Soto)
 
-```
-Component: SotoCore
-Project:   soto-project/soto-core
-License:   Apache-2.0
-Copyright: Copyright 2017-2026 the Soto project authors
-Repository: https://github.com/soto-project/soto-core
-```
+All entries are licensed under the **Apache License 2.0** unless noted
+otherwise. Copyright lines reflect the upstream `LICENSE` header at the
+pinned version. Repository URLs are the canonical sources from which
+the linker pulls the binaries during the App-Store build.
 
-Transitive dependency of Soto.
-
-### 2.3 SwiftNIO
+### Apple Swift Ecosystem
 
 ```
-Component: SwiftNIO
-Project:   apple/swift-nio
-License:   Apache-2.0
-Copyright: Copyright (c) 2017-2026 Apple Inc. and the SwiftNIO project authors
+SwiftNIO
 Repository: https://github.com/apple/swift-nio
-```
+Copyright:  © 2017-2026 Apple Inc. and the SwiftNIO project authors
 
-Transitive dependency of Soto Core.
+SwiftNIO Extras
+Repository: https://github.com/apple/swift-nio-extras
+Copyright:  © 2017-2026 Apple Inc. and the SwiftNIO project authors
 
-### 2.4 AsyncHTTPClient
+SwiftNIO SSL
+Repository: https://github.com/apple/swift-nio-ssl
+Copyright:  © 2017-2026 Apple Inc. and the SwiftNIO project authors
 
-```
-Component: AsyncHTTPClient
-Project:   swift-server/async-http-client
-License:   Apache-2.0
-Copyright: Copyright (c) 2018-2026 the AsyncHTTPClient project authors
-Repository: https://github.com/swift-server/async-http-client
-```
+SwiftNIO HTTP/2
+Repository: https://github.com/apple/swift-nio-http2
+Copyright:  © 2017-2026 Apple Inc. and the SwiftNIO project authors
 
-Transitive dependency of Soto Core.
+SwiftNIO Transport Services
+Repository: https://github.com/apple/swift-nio-transport-services
+Copyright:  © 2017-2026 Apple Inc. and the SwiftNIO project authors
 
-### 2.5 SwiftCrypto
-
-```
-Component: SwiftCrypto
-Project:   apple/swift-crypto
-License:   Apache-2.0
-Copyright: Copyright (c) 2019-2026 Apple Inc. and the SwiftCrypto project authors
+SwiftCrypto
 Repository: https://github.com/apple/swift-crypto
-```
+Copyright:  © 2019-2026 Apple Inc. and the SwiftCrypto project authors
 
-Transitive dependency of Soto Core.
+Swift Certificates
+Repository: https://github.com/apple/swift-certificates
+Copyright:  © 2022-2026 Apple Inc. and the swift-certificates project authors
 
-### 2.6 SwiftLog
+Swift ASN.1
+Repository: https://github.com/apple/swift-asn1
+Copyright:  © 2022-2026 Apple Inc. and the swift-asn1 project authors
 
-```
-Component: SwiftLog
-Project:   apple/swift-log
-License:   Apache-2.0
-Copyright: Copyright (c) 2018-2026 Apple Inc. and the SwiftLog project authors
+Swift Collections
+Repository: https://github.com/apple/swift-collections
+Copyright:  © 2021-2026 Apple Inc. and the Swift project authors
+
+Swift Algorithms
+Repository: https://github.com/apple/swift-algorithms
+Copyright:  © 2020-2026 Apple Inc. and the Swift project authors
+
+Swift Async Algorithms
+Repository: https://github.com/apple/swift-async-algorithms
+Copyright:  © 2022-2026 Apple Inc. and the Swift project authors
+
+Swift Atomics
+Repository: https://github.com/apple/swift-atomics
+Copyright:  © 2020-2026 Apple Inc. and the Swift project authors
+
+Swift Numerics
+Repository: https://github.com/apple/swift-numerics
+Copyright:  © 2019-2026 Apple Inc. and the Swift Numerics project authors
+
+Swift System
+Repository: https://github.com/apple/swift-system
+Copyright:  © 2020-2026 Apple Inc. and the Swift System project authors
+
+Swift HTTP Types
+Repository: https://github.com/apple/swift-http-types
+Copyright:  © 2023-2026 Apple Inc. and the Swift project authors
+
+Swift HTTP Structured Headers
+Repository: https://github.com/apple/swift-http-structured-headers
+Copyright:  © 2021-2026 Apple Inc. and the swift-http-structured-headers project authors
+
+Swift Log
 Repository: https://github.com/apple/swift-log
-```
+Copyright:  © 2018-2026 Apple Inc. and the SwiftLog project authors
 
-Transitive dependency of Soto Core.
-
-### 2.7 SwiftMetrics
-
-```
-Component: SwiftMetrics
-Project:   apple/swift-metrics
-License:   Apache-2.0
-Copyright: Copyright (c) 2018-2026 Apple Inc. and the SwiftMetrics project authors
+Swift Metrics
 Repository: https://github.com/apple/swift-metrics
+Copyright:  © 2018-2026 Apple Inc. and the SwiftMetrics project authors
+
+Swift Distributed Tracing
+Repository: https://github.com/apple/swift-distributed-tracing
+Copyright:  © 2020-2026 Apple Inc. and the Swift Distributed Tracing project authors
+
+Swift Service Context
+Repository: https://github.com/apple/swift-service-context
+Copyright:  © 2022-2026 Apple Inc. and the Swift Service Context project authors
+
+Swift Service Lifecycle
+Repository: https://github.com/swift-server/swift-service-lifecycle
+Copyright:  © 2019-2026 the Swift Server project authors
+
+Swift Configuration
+Repository: https://github.com/apple/swift-configuration
+Copyright:  © 2024-2026 Apple Inc. and the Swift Configuration project authors
 ```
 
-Transitive dependency of Soto Core.
+### Swift Server Ecosystem
+
+```
+AsyncHTTPClient
+Repository: https://github.com/swift-server/async-http-client
+Copyright:  © 2018-2026 the AsyncHTTPClient project authors
+```
+
+### Soto Project
+
+```
+SotoCore
+Repository: https://github.com/soto-project/soto-core
+Copyright:  © 2017-2026 the Soto project authors
+
+JMESPath (jmespath.swift)
+Repository: https://github.com/adam-fowler/jmespath.swift
+License:    MIT
+Copyright:  © 2022-2026 Adam Fowler
+```
 
 ---
 
-## 3. APACHE LICENSE 2.0
+## 4. LICENSE TEXTS
 
-All components listed above are licensed under the Apache License,
-Version 2.0 ("License"). The full text of the License is available at:
+### 4.1 Apache License 2.0
 
-<https://www.apache.org/licenses/LICENSE-2.0>
+All components above (except `jmespath.swift`) are licensed under the
+**Apache License, Version 2.0**. Full text:
 
-Excerpt — Notice file requirement (Section 4(d)):
+`https://www.apache.org/licenses/LICENSE-2.0`
 
-> If the Work includes a "NOTICE" text file as part of its distribution,
-> then any Derivative Works that You distribute must include a readable
-> copy of the attribution notices contained within such NOTICE file,
-> excluding those notices that do not pertain to any part of the
-> Derivative Works.
+Key compliance requirements observed by this document (Apache 2.0
+Section 4):
 
-The full NOTICE files of the components above are reproduced verbatim in
-the in-App "About → Open Source Notices" view.
+- Each component's copyright notice is reproduced above (Section 4(c)).
+- The `NOTICE` files of components that publish one are reproduced
+  verbatim in the in-App **About → Open Source** view (Section 4(d)).
+- No modifications to the upstream sources are bundled; the App links
+  pristine binaries built from the pinned versions in `Package.resolved`
+  (Section 4(b) — not triggered).
+- Source code is available at the repository URLs above (Section 4(a)).
+
+### 4.2 MIT License (jmespath.swift)
+
+```
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```
 
 ---
 
-## 4. SOURCE CODE AVAILABILITY
+## 5. SYSTEM FRAMEWORKS
 
-Source code for the Apache-2.0 components above is available at the
-repository URLs listed for each component. The pinned versions used by
-Bucketeer are recorded in `Package.resolved` in the project repository.
-
-For requests directly to the Publisher, contact:
-hello@digitalfreedom.co.za
-
----
-
-## 5. UPDATES
-
-This document is updated whenever a dependency is added, removed, or
-upgraded across a major version. Pinned versions for the current release
-live in the `Package.resolved` of the App Store build.
+In addition to the third-party packages above, Bucketeer relies on
+first-party Apple system frameworks (Foundation, SwiftUI, SwiftData,
+AppKit, FileProvider, StoreKit, LocalAuthentication, CryptoKit,
+UniformTypeIdentifiers, Quartz / Quick Look). These are part of macOS
+and governed by the Apple Operating System Software License Agreement;
+no separate open-source notice applies to them.
 
 ---
 
-(c) 2026 DigitalFreedom — Berger & Rosenstock GbR. The copyright notice
-in this section applies to this document only, not to the open-source
-components listed herein, which are subject to their respective licenses.
+## 6. SOURCE CODE AVAILABILITY
+
+Source code for every Apache-2.0 and MIT component listed above is
+available at the repository URL specified for that component. The
+exact versions in the App-Store build of Bucketeer are pinned in
+`Package.resolved` in the project repository:
+
+`https://github.com/digitalfreedom-co-za/bucketeer`
+
+For direct requests, contact: hello@digitalfreedom.co.za
+
+---
+
+## 7. UPDATES
+
+This document is regenerated whenever a dependency is added, removed,
+or upgraded across a major version. Patch-level upgrades follow the
+existing entries' license and copyright lines and do not require a
+notice update.
+
+---
+
+(c) 2026 DigitalFreedom — Berger & Rosenstock GbR. The copyright in this
+document covers this notice file only; the open-source components
+listed herein remain subject to their respective upstream licenses.

@@ -1,249 +1,304 @@
-# PRIVACY POLICY
+# PRIVACY POLICY — Bucketeer for macOS
 
-## Bucketeer — Data Protection and Privacy Notice
-
-**Effective Date:** May 2026
+**Effective Date:** 24 May 2026
 **Application:** Bucketeer for macOS
-**Publisher:** DigitalFreedom — a brand of Berger & Rosenstock GbR
+**Publisher:** DigitalFreedom — Berger & Rosenstock GbR
+Postal address: Dieselstr. 22e, 61231 Bad Nauheim, Germany
+VAT-ID: DE 455 096 022
+Authorised representatives: Marcel R. G. Berger, Jasmin Rosenstock
+Privacy contact: data-protection@digitalfreedom.co.za
 
 ---
 
 ## 1. SUMMARY
 
-**Bucketeer does not collect, store, transmit, or process any personal
-data on behalf of its publisher.** The App runs entirely on your Mac, talks
-directly to the S3-compatible endpoints you configure, and keeps your
-credentials in your local macOS Keychain.
+**Bucketeer is a strictly local-first macOS app.** The Publisher
+operates **no servers** in connection with the App, runs **no
+telemetry**, ships **no analytics SDK**, embeds **no crash reporter
+that sends data off your Mac**, and has **no account system**.
 
-The Publisher operates no servers in connection with this App. There is no
-account system, no telemetry, no analytics, no crash reporting, and no
-advertising. The Publisher cannot read your credentials, your file
-listings, or your file contents.
+The App holds:
+
+- Your S3 / Azure connection metadata in a SwiftData store inside the
+  App's sandboxed App Group container.
+- Your S3 / Azure credentials in the macOS Keychain access group
+  `$(TeamID).za.co.digitalfreedom.bucketeer.shared`.
+- Optionally, a preview cache and downloaded files in your macOS user
+  directories.
+
+The only network traffic Bucketeer creates is the **direct, signed
+request** your Mac sends to the storage endpoint **you** configured.
+The Publisher cannot read your credentials, your bucket listings, or
+your object contents.
 
 ---
 
 ## 2. DATA CONTROLLER
 
-The legal entity responsible for processing personal data ("data
-controller" under Art. 4(7) GDPR), to the extent there is any, is:
+Where any personal data is processed locally on your Mac (e.g. your
+secret access keys held in the Keychain on your behalf), the data
+controller under Art. 4(7) GDPR is:
 
 Berger & Rosenstock GbR (trading as DigitalFreedom)
-Dieselstr. 22e
-61231 Bad Nauheim
-Germany
+Dieselstr. 22e, 61231 Bad Nauheim, Germany
 
-Authorized Representatives: Marcel R. G. Berger, Jasmin Rosenstock
-VAT-ID: DE455096022
-
-For data protection inquiries: data-protection@digitalfreedom.co.za
-General contact: hello@digitalfreedom.co.za
-Website: https://digitalfreedom.co.za
+The Publisher does not act as a controller for any data that crosses
+the network — that traffic is between your Mac and the storage
+provider you configured.
 
 ---
 
 ## 3. DATA THE APP HANDLES
 
-### 3.1 Data You Provide to the App (stored locally only)
+### 3.1 Stored locally on your Mac
 
-| Data | Where it is stored | Why |
+| Data | Storage | Purpose |
 |---|---|---|
-| Account name (label) | SwiftData store in your App Group container | So you can identify accounts in the sidebar |
-| Provider, region, endpoint URL, account ID, default bucket, path-style flag | SwiftData store in your App Group container | So the App can connect to your S3 endpoint |
-| Access key, secret key, optional session token | **macOS Keychain** (access group, sandboxed) | So the App can sign S3 requests on your behalf |
-| Sync job definitions (source/destination, schedule, options) | SwiftData store in your App Group container | So scheduled sync jobs can run |
+| Account name, provider type, region, endpoint URL, account ID, default bucket, path-style flag, last-used timestamp | SwiftData store in the App Group container `group.za.co.digitalfreedom.bucketeer` | Identify and connect to each configured storage account |
+| Access key, secret key, optional session token (S3) / storage-account name + account key (Azure) | macOS Keychain, access group `$(TeamID).za.co.digitalfreedom.bucketeer.shared`, item attribute `kSecAttrAccessibleWhenUnlocked` | Sign authenticated requests to the configured endpoint |
+| Sync job definitions (source / destination endpoint, mode, glob filters, schedule, last-run summary) | Same SwiftData store as above | Schedule and execute the user-defined sync jobs |
+| Trial start date, "trial consumed" marker | `UserDefaults.standard`, keys `bucketeer.trial.start` and `bucketeer.trial.consumed` | Track the 14-day Bucketeer Pro trial |
+| Active StoreKit entitlement | Read on demand from `Transaction.currentEntitlements`; not duplicated by the Publisher | Determine whether Bucketeer Pro features are unlocked |
+| Preview cache (downloaded object payloads for inline Quick Look) | Sandboxed temporary directory; SHA-256-keyed, 2 GiB LRU cap | Show inline previews without re-fetching |
+| Downloaded files | The location you choose in the save panel | Your data, retained as long as you want |
+| File Provider mount staging files | The system-managed File Provider replica directory | Required by the macOS File Provider replicated-extension model |
 
-None of this data is transmitted to the Publisher or to any third party
-that is not the S3 endpoint you yourself configured.
+### 3.2 Sent over the network — but never to the Publisher
 
-### 3.2 Data the App Reads from Your S3 Endpoints
+When you use the App, it sends standard S3 / Azure Blob requests
+(`ListBuckets`, `ListObjectsV2` or `List Containers` / `List Blobs`,
+`GetObject` / `Get Blob`, `PutObject` / `Put Block Blob`,
+`DeleteObject` / `Delete Blob`, `CopyObject` / `Copy Blob`,
+`HeadObject` / `Get Blob Properties`) to the endpoint URL configured
+for each account. Each request is signed locally using AWS Signature
+v4 (S3 family) or Azure Shared Key HMAC-SHA256 (Azure family).
 
-When you use the App, it sends standard S3 API requests (`ListBuckets`,
-`ListObjectsV2`, `GetObject`, `PutObject`, `DeleteObject`, `CopyObject`,
-`HeadObject`) to the endpoint URL configured for each account. The
-responses — bucket names, object keys, metadata, file contents — are held
-in memory and, for downloads and previews, written to disk in the App's
-sandbox container (specifically the temporary directory for previews and
-the location you select for downloads).
+The Publisher is not on the path of those requests and has no
+visibility into them.
 
-The Publisher has no visibility into, and no control over, the data that
-flows between your Mac and your S3 endpoint. Each S3 provider you connect
-to is a separate data controller with its own privacy policy.
+### 3.3 Data the App does NOT collect
 
-### 3.3 Data the App Does NOT Collect
+The App does not, at any time, collect, process, transmit, or store
+on the Publisher's behalf:
 
-The App does **not** collect, transmit, store, or process:
-
-- Personal identifiers (name, email, phone, address)
-- Device identifiers (advertising ID, IDFV, IDFA, hardware UUID)
-- Usage analytics, telemetry, or product-interaction data
-- Crash reports or diagnostic data sent to the Publisher
-- Location data
-- Camera, microphone, photo library, or contacts data
-- Browsing history beyond what is shown in the App's own bucket listings
-- Any data for advertising or marketing purposes
-
----
-
-## 4. LEGAL BASIS (GDPR Art. 6)
-
-Where the App processes personal data locally on your Mac (e.g. holds your
-S3 access keys in the Keychain so it can sign requests), the legal basis
-is **Art. 6(1)(b) GDPR** — performance of a contract (this EULA) at your
-request — and **Art. 6(1)(f) GDPR** — the legitimate interest of providing
-you with the requested functionality. No data leaves your Mac as a result
-of this processing, except API requests to the S3 endpoint **you**
-configured.
+- Personal identifiers (name, email, phone, postal address)
+- Device identifiers (advertising identifier, IDFV, IDFA, hardware
+  UUID, MAC address, serial number)
+- Usage analytics, telemetry, feature-engagement events
+- Crash reports, diagnostic logs, performance traces
+- Location data of any kind
+- Microphone, camera, photo library, contacts, calendar, reminders,
+  HealthKit, HomeKit, or Apple Pay data
+- Browsing history beyond the bucket listings the App displays in its
+  own window for your own session
+- Data for advertising, marketing, attribution, or profiling
 
 ---
 
-## 5. THIRD-PARTY SERVICES
+## 4. LEGAL BASIS UNDER GDPR
 
-### 5.1 S3 Endpoints You Configure
+Where the App processes personal data locally on your Mac (essentially
+just your storage credentials in the Keychain), the legal basis is:
 
-When you add an account, you point the App at a service provider you
-choose: AWS, Cloudflare, Backblaze, Wasabi, DigitalOcean, Civo, Storj,
-MinIO, or your own server. Each of those providers is a separate data
-controller. The App's role is limited to acting on your instructions as
-a client. We provide no contractual or technical link between any of
-these providers and the Publisher.
+- **Art. 6(1)(b) GDPR** — performance of the contract (this Privacy
+  Policy + the EULA) at your request, and
+- **Art. 6(1)(f) GDPR** — the Publisher's legitimate interest in
+  providing the functionality you installed the App to use.
 
-For the privacy policy of the provider you choose, see that provider's
-own documentation. Your S3 endpoint receives the standard fields of an
-S3 request (signing material derived from your access key, the request
-URL, HTTP headers, and any payload you upload).
+No data leaves your Mac as a consequence of this processing, except
+the API requests to the storage endpoints **you** configured.
 
-### 5.2 Apple App Store
+---
 
-Apple distributes the App and, in connection with that distribution,
-processes its own data (purchase, download, crash data). Apple's
-processing is governed by Apple's privacy policies. See
-<https://www.apple.com/legal/privacy/>.
+## 5. THIRD PARTIES
 
-### 5.3 No Other Third Parties
+### 5.1 Storage endpoints you configure
 
-The App contains no advertising SDKs, no analytics SDKs, no crash
-reporting SDKs, and no other third-party services that transmit data off
-your device.
+Each storage provider you connect to (AWS, Azure, Cloudflare,
+Backblaze, Wasabi, DigitalOcean, Civo, Storj, MinIO, or any custom
+endpoint) is a **separate data controller**. The App acts purely as
+your client and routes your requests to the endpoint URL you chose.
+The Publisher has no contractual relationship with those providers and
+makes no representations about how they handle your data. Consult each
+provider's own privacy policy.
+
+### 5.2 Apple (Mac App Store + StoreKit)
+
+Apple distributes the App and processes the Bucketeer Pro in-app
+purchase. Apple receives standard purchase, download, and crash data
+in connection with that distribution under Apple's own privacy policy
+(`https://www.apple.com/legal/privacy/`). The Publisher receives only
+aggregated payout reports from App Store Connect.
+
+### 5.3 No other third parties
+
+The App contains no advertising, analytics, crash-reporting, or
+attribution SDKs. There are no third-party services the App contacts
+of its own accord.
 
 ---
 
 ## 6. INTERNATIONAL TRANSFERS
 
-The Publisher does not transfer your data internationally because the
-Publisher does not receive your data in the first place.
+The Publisher does not receive your data, so there is no international
+transfer on the Publisher's side.
 
-S3 traffic generated by the App may cross international boundaries
-depending on which endpoint you configure. That transfer is between you
-and your S3 provider; the Publisher is not a party to it.
+Network traffic the App generates to your storage endpoint may cross
+international borders depending on the region you selected for that
+provider. That transfer is between you and the provider; the Publisher
+is not party to it.
 
 ---
 
 ## 7. RETENTION
 
-- Account metadata and credentials persist on your Mac until you delete
-  the account inside the App or uninstall the App.
-- Downloaded files persist at the location you chose to save them.
-- The preview cache is bounded at 2 GB and rotated automatically; it is
-  also cleared whenever you uninstall the App.
-- Uninstalling the App removes all data the App stored in its sandbox
-  container, in the App Group container, and in the Keychain access
-  group it owns.
+| Item | Retention |
+|---|---|
+| Account metadata | Until you delete the account in the App or uninstall the App |
+| Keychain credentials | Until you delete the account, change credentials, or uninstall the App |
+| Sync job definitions | Until you delete the job or uninstall the App |
+| Trial start / consumed marker | Permanent on your Mac; survives App uninstall in `~/Library/Preferences` and is sticky to prevent trial reset |
+| Preview cache | LRU-evicted at 2 GiB; cleared on user-initiated "Clear Cache" and on uninstall |
+| Downloaded files | Under your full control; the Publisher never receives or tracks them |
+| File Provider mount replicas | Managed by the macOS File Provider system; removed when you unmount the bucket or uninstall the App |
+
+The Publisher holds **no** copies of any of the above.
 
 ---
 
-## 8. YOUR RIGHTS UNDER GDPR
+## 8. YOUR GDPR RIGHTS
 
-Because the Publisher does not hold any of your personal data, the
-classical GDPR data-subject rights (access, rectification, erasure,
-portability, restriction, objection — Articles 15 to 22 GDPR) have
-nothing to act on at the Publisher's end. You retain full control of
-the data the App handles on your own Mac through normal Mac and App
-controls (deleting accounts in the App, removing files in Finder,
-uninstalling the App, clearing the Keychain entries).
+Because the Publisher holds no personal data about you, the rights
+under GDPR Art. 15 – 22 have nothing to act on at the Publisher's
+end:
 
-For data held by your S3 provider, please exercise those rights with
-that provider directly.
+- **Right of access (Art. 15):** the Publisher holds no data on you to
+  disclose.
+- **Right to rectification (Art. 16):** none to rectify.
+- **Right to erasure (Art. 17):** none to erase.
+- **Right to data portability (Art. 20):** none to export.
+- **Right to restriction (Art. 18) / objection (Art. 21):** no
+  processing of your personal data takes place at the Publisher's end.
 
-For data held by Apple in connection with App Store distribution, please
-exercise those rights with Apple directly.
+You retain full control of the data the App handles on your Mac:
+delete accounts in the App, remove files in Finder, uninstall the App
+to clear everything, or use Keychain Access to inspect/remove the
+stored credentials directly.
 
-If you nevertheless have any privacy-related question, please contact
-data-protection@digitalfreedom.co.za. The Publisher will respond within
-one month (Art. 12(3) GDPR).
+For data held by your **storage providers**: exercise those rights
+with each provider directly.
 
-You also have the right to lodge a complaint with a supervisory
-authority. The Publisher's lead authority is:
+For data held by **Apple** in connection with the App Store: exercise
+those rights with Apple directly.
 
-Der Hessische Beauftragte für Datenschutz und Informationsfreiheit
+If you nevertheless have a privacy question, please contact
+data-protection@digitalfreedom.co.za. The Publisher will respond
+within one month per Art. 12(3) GDPR.
+
+You have the right to lodge a complaint with a supervisory authority.
+The Publisher's lead authority is:
+
+**Der Hessische Beauftragte für Datenschutz und Informationsfreiheit**
 Postfach 3163, 65021 Wiesbaden, Germany
-<https://datenschutz.hessen.de/>
+`https://datenschutz.hessen.de/`
 
 ---
 
 ## 9. CHILDREN
 
-The App is a developer tool. It is not directed at children under 16 and
-is rated 17+ on the App Store. The App does not collect any personal data
-and so does not knowingly process personal data of children.
+Bucketeer is a developer / power-user tool. It is not directed at
+children and is rated 17+ on the Mac App Store. The App does not
+collect personal data and so does not knowingly process personal data
+of children.
 
 ---
 
 ## 10. SECURITY
 
-The App is sandboxed by macOS and runs with the hardened runtime enabled.
-Credentials are stored in the macOS Keychain with `kSecAttrAccessible
-= kSecAttrAccessibleWhenUnlocked` and are never written to disk in
-plaintext, never logged, and never displayed in error messages. Network
-connections to S3 endpoints use TLS 1.2 or higher; Apple's Application
-Transport Security default policy is enforced without exceptions.
+- The App runs inside the macOS **App Sandbox** with only these
+  entitlements: outgoing network client, user-selected file read-
+  write, default Downloads folder read-write, App Group container,
+  shared Keychain access group.
+- Credentials are stored in the macOS Keychain with
+  `kSecAttrAccessible = kSecAttrAccessibleWhenUnlocked` and
+  `kSecAttrSynchronizable = false`. They are never written to disk in
+  plaintext, never written to system logs (`Logger` markers use
+  `privacy: .private` on credential-derived strings), and never
+  displayed in user-facing error messages.
+- Touch ID / device-owner authentication gates the "Reveal stored
+  credentials" affordance in the Add/Edit Account sheet via
+  `LAContext.deviceOwnerAuthentication`.
+- All network connections to storage endpoints use TLS (Application
+  Transport Security default policy, no ATS exceptions). The Soto S3
+  client enforces TLS 1.2 minimum.
+- Azure Shared Key signing uses HMAC-SHA256 from Apple's CryptoKit.
 
-The Publisher operates no servers in connection with this App; therefore
-there is no server-side security boundary to maintain.
-
----
-
-## 11. CHANGES TO THIS POLICY
-
-Material changes to this Policy will be reflected in a new "Effective
-Date" at the top and will be communicated in App release notes for the
-release that introduces the change.
-
----
-
-## 12. JURISDICTION-SPECIFIC ADDENDA
-
-Where the App is downloaded from an App Store in a jurisdiction whose
-data-protection law adds rights or obligations beyond the GDPR baseline
-applied above, those local rights apply additionally. Specifically:
-
-- **California (CCPA/CPRA):** the App sells, shares, and discloses no
-  personal information. Categories of personal information collected:
-  none. Right to opt-out of "sale" / "share": not applicable.
-- **Brazil (LGPD):** the Publisher acts in no role under Art. 5 LGPD in
-  respect of this App's local operation.
-- **South Africa (POPIA):** the App's operation does not engage the
-  Publisher as a "responsible party" under POPIA.
-- **India (DPDP Act):** the App's operation does not engage the Publisher
-  as a "Data Fiduciary" under the DPDP Act.
-- **Japan (APPI), South Korea (PIPA), Australian Privacy Act:** no
-  personal information is collected by the Publisher.
-
-If your local regime nevertheless creates obligations, please contact
-data-protection@digitalfreedom.co.za and the Publisher will respond
-within the time required by your local law.
+The Publisher operates no servers in connection with this App;
+therefore there is no server-side security boundary to maintain.
 
 ---
 
-## 13. CONTACT
+## 11. STOREKIT PURCHASES
 
-Data protection: data-protection@digitalfreedom.co.za
-General contact: hello@digitalfreedom.co.za
+When you buy Bucketeer Pro, the App reads
+`Transaction.currentEntitlements` from the macOS App Store framework
+to verify the purchase locally on your Mac. The Publisher receives
+only the aggregated payout reports App Store Connect provides;
+individual transactions are processed and stored by Apple under
+Apple's own privacy policy. Family Sharing is enabled for the
+Bucketeer Pro IAP — a single purchase covers your Family Sharing
+group at no extra cost.
 
-Postal address:
-Berger & Rosenstock GbR
-Dieselstr. 22e
-61231 Bad Nauheim
-Germany
+Refunds are handled exclusively by Apple via
+`reportaproblem.apple.com`. The Publisher cannot process refunds or
+access purchase records beyond the App Store Connect payout summary.
+
+---
+
+## 12. JURISDICTION-SPECIFIC NOTES
+
+Bucketeer is sold through Apple's Mac App Store and reaches every
+country where Apple distributes apps. Because the App collects no
+personal data on the Publisher's behalf, the Publisher takes no role
+under most international privacy regimes for the App's local
+operation:
+
+- **California (CCPA / CPRA):** the App does not collect, sell, share,
+  or disclose any personal information. The right to opt-out of "sale"
+  or "sharing" is not applicable because no such activity takes place.
+- **Brazil (LGPD):** the Publisher is neither *controlador* nor
+  *operador* under Art. 5 LGPD with respect to this App's local
+  operation.
+- **South Africa (POPIA):** the Publisher does not engage as
+  "responsible party" within the meaning of POPIA.
+- **India (Digital Personal Data Protection Act):** the Publisher is
+  not a "Data Fiduciary" with respect to App users.
+- **Japan (APPI), South Korea (PIPA), Australian Privacy Act 1988:**
+  no personal information is collected by the Publisher.
+- **United Kingdom (UK GDPR + DPA 2018):** the Publisher applies the
+  GDPR-equivalent rules described above.
+
+If your local regime creates obligations that are not addressed above,
+contact data-protection@digitalfreedom.co.za and the Publisher will
+respond within the time required by your local law.
+
+---
+
+## 13. CHANGES TO THIS POLICY
+
+Material changes are reflected in a new **Effective Date** at the top
+of this document and announced in the Mac App Store release notes for
+the release that introduces them.
+
+---
+
+## 14. CONTACT
+
+| Purpose | Address |
+|---|---|
+| Privacy / data-protection inquiries | data-protection@digitalfreedom.co.za |
+| General inquiries | hello@digitalfreedom.co.za |
+| Postal | Berger & Rosenstock GbR, Dieselstr. 22e, 61231 Bad Nauheim, Germany |
 
 ---
 

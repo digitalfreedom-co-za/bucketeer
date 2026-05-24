@@ -55,5 +55,5 @@ Bucketeer does not collect, transmit, store, or analyse any personal data on beh
 
 ## Need help?
 
-- Report bugs or request features on GitHub at <https://github.com/digitalfreedom-co-za/bucketeer/issues>
+- Report bugs or request features at <https://support.apps.digitalfreedom.co.za/>
 - Visit <https://digitalfreedom.co.za>

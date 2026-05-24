@@ -83,7 +83,7 @@ struct AboutWindow: View {
                     Link("about.link.github",
                          destination: URL(string: "https://github.com/digitalfreedom-co-za/bucketeer")!)
                     Link("about.link.issues",
-                         destination: URL(string: "https://github.com/digitalfreedom-co-za/bucketeer/issues")!)
+                         destination: URL(string: "https://support.apps.digitalfreedom.co.za/")!)
                 }
                 .font(.callout)
             }

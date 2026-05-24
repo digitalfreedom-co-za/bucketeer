@@ -103,7 +103,7 @@ private struct AppCommands: Commands {
             )
             Link(
                 "menu.help.issue",
-                destination: URL(string: "https://github.com/digitalfreedom-co-za/bucketeer/issues/new")!
+                destination: URL(string: "https://support.apps.digitalfreedom.co.za/")!
             )
             Link(
                 "menu.help.website",
