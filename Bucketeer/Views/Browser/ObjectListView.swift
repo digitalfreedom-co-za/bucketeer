@@ -16,6 +16,7 @@ struct ObjectListView: View {
     @State private var renamingObject: S3Object?
     @State private var pendingDeletion: [S3Object] = []
     @State private var shareTarget: S3Object?
+    @State private var dashboardViewModel: BucketDashboardViewModel?
 
     var body: some View {
         Group {
@@ -53,6 +54,21 @@ struct ObjectListView: View {
                     Label("browser.action.newFolder", systemImage: "folder.badge.plus")
                 }
                 .keyboardShortcut("n", modifiers: [.command, .shift])
+                .disabled(viewModel.account == nil || viewModel.bucket == nil)
+            }
+            // Phase 13.5 — Bucket dashboard.
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    if let account = viewModel.account, let bucket = viewModel.bucket {
+                        dashboardViewModel = BucketDashboardViewModel(
+                            account: account,
+                            bucket: bucket,
+                            browser: container.s3Browser
+                        )
+                    }
+                } label: {
+                    Label("browser.action.dashboard", systemImage: "chart.bar.doc.horizontal")
+                }
                 .disabled(viewModel.account == nil || viewModel.bucket == nil)
             }
             ToolbarItem(placement: .primaryAction) {
@@ -104,6 +120,16 @@ struct ObjectListView: View {
                     generator: container.s3Browser,
                     activityLog: container.activityLog
                 )
+            }
+        }
+        .sheet(
+            isPresented: Binding(
+                get: { dashboardViewModel != nil },
+                set: { if !$0 { dashboardViewModel = nil } }
+            )
+        ) {
+            if let dashboardViewModel {
+                BucketDashboardSheet(viewModel: dashboardViewModel)
             }
         }
         .confirmationDialog(

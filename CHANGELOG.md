@@ -22,6 +22,29 @@ before that is internal phase work on the `development` branch.
 - `docs/DEVELOPER_SETUP.md` clone-to-run guide.
 - `CONTRIBUTING.md` per the design spec §13.2.
 
+### Phase 13.5 — Bucket dashboard
+- BucketeerCore: `BucketStats` Sendable struct (object count, folder
+  count, total bytes, top-N largest, last modified, truncated flag);
+  `BucketStatsCollector` walks every `listObjects` page with a
+  `pageCap` (default 100 pages = ~100k objects) and a single-pass
+  top-N largest tracker; `ProviderPricing` table with USD per
+  GB-month per provider (AWS S3 0.023, Azure Hot 0.0184, R2 0.015,
+  B2 0.006, Wasabi 0.00585, DO Spaces 0.020, Civo 0.005,
+  Storj 0.004, Custom → nil).
+- 6 new unit tests covering `insertLargest` (under-capacity, evict
+  smallest, ignore-too-small) and `ProviderPricing` (every concrete
+  provider has a rate, AWS GB rate matches, zero bytes → zero cost).
+  Total Core test count: 103.
+- Host: `BucketDashboardViewModel` (`@Observable @MainActor`) runs
+  the collector in a cancellable task; `BucketDashboardSheet`
+  surfaces a 2×2 stats grid, monthly-cost estimate GroupBox with a
+  scope disclaimer, top-10 largest objects list, truncation hint
+  when the cap was hit, and an error banner.
+- Browser toolbar gets a **Dashboard** button alongside the existing
+  new-folder + upload buttons; sheet is presented and the view
+  model is cancelled on dismiss.
+- 11 localised strings × 10 languages.
+
 ### Phase 13.4 — Trash / soft-delete
 - New host-only `BucketeerTrash.store` SwiftData container + a
   parallel `Trash/` cache directory in sandbox Application Support.
