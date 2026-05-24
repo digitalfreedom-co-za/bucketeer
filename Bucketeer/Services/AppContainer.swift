@@ -56,6 +56,8 @@ final class AppContainer {
     let autoTagStore: any AutoTagRuleStoring
     let autoTagCoordinator: AutoTagCoordinator
     let autoTagRulesViewModel: AutoTagRulesViewModel
+    /// Phase 13.11 — deep-link router.
+    let deepLinkRouter: DeepLinkRouter
     let accountListViewModel: AccountListViewModel
     let browserViewModel: BrowserViewModel
     let transferQueueViewModel: TransferQueueViewModel
@@ -246,6 +248,15 @@ final class AppContainer {
             coordinator: autoTagCoordinator
         )
         Task { [autoTagCoordinator] in await autoTagCoordinator.start() }
+
+        // Phase 13.11 — deep-link router. Holds a reference to the
+        // browser so external bucketeer:// URLs land in the right
+        // bucket and the AppleEvent handler can fire even when the
+        // app is in `.accessory` (menu-bar) mode.
+        self.deepLinkRouter = DeepLinkRouter(
+            browser: self.browserViewModel,
+            accountStore: accountStore
+        )
         Task { @MainActor [syncJobListViewModel = self.syncJobListViewModel] in
             await syncJobListViewModel.bootstrap()
         }

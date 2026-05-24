@@ -80,7 +80,7 @@ commit so the development history reads as a phase-by-phase log.
 | 13.8 | Auto-tagging rules | ✅ |
 | 13.9 | Lifecycle / policy / CORS viewer | ✅ |
 | 13.10 | Resumable transfers | ✅ |
-| 13.11 | `bucketeer://` URL scheme | ⏳ |
+| 13.11 | `bucketeer://` URL scheme | ✅ |
 | 13.12 | App Intents (Shortcuts / Siri) | ⏳ |
 | 13.13 | Spotlight indexing | ⏳ |
 | 13.14 | Server-side copy across accounts | ⏳ |

@@ -366,6 +366,22 @@ struct ObjectListView: View {
                         )
                     }
                 }
+                // Phase 13.11 — copy a `bucketeer://object/…` deep
+                // link to the clipboard so it can be shared in
+                // Slack / Mail / Notes etc.
+                Button("deeplink.menu.copy", systemImage: "link.circle") {
+                    if let account = viewModel.account, let bucket = viewModel.bucket {
+                        let link = BucketeerDeepLink.object(
+                            accountID: account.id,
+                            bucket: bucket,
+                            key: object.key
+                        )
+                        if let url = link.url {
+                            NSPasteboard.general.clearContents()
+                            NSPasteboard.general.setString(url.absoluteString, forType: .string)
+                        }
+                    }
+                }
                 // Phase 13.7 — metadata + tags editor.
                 Button("metadata.menu.edit", systemImage: "tag") {
                     if let account = viewModel.account, let bucket = viewModel.bucket {

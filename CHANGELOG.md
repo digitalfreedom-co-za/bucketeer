@@ -22,6 +22,29 @@ before that is internal phase work on the `development` branch.
 - `docs/DEVELOPER_SETUP.md` clone-to-run guide.
 - `CONTRIBUTING.md` per the design spec §13.2.
 
+### Phase 13.11 — `bucketeer://` URL scheme
+- BucketeerCore: `BucketeerDeepLink` Sendable enum with six cases —
+  `account`, `bucket` (incl. optional prefix), `object`, `syncJob`,
+  `activity`, `trash`. `init?(url:)` + `url` getter round-trip.
+- 9 new parser tests (account / bucket / object / sync round-trips,
+  empty + deep prefixes, singletons, unknown scheme, bad UUID,
+  missing bucket). Core test count: 118.
+- Host: `DeepLinkRouter` (`@MainActor @Observable`) consumes parsed
+  links, focuses the App, routes via the browser view model
+  (`account`/`bucket`/`prefix`) or opens the Activity / Trash
+  window. Installs an `NSAppleEventManager` handler for `kAEGetURL`
+  with a fallback `Notification.bucketeerDeepLinkReceived`, so URLs
+  delivered while the App is in menu-bar mode still route.
+- `BucketeerApp` uses a private `DeepLinkAwareContent` wrapper view
+  so `@Environment(\.openWindow)` is in scope for both `.onOpenURL`
+  and the notification observer.
+- Object context menu gained **Copy Deep Link** (writes a
+  `bucketeer://object/…` URL to the pasteboard).
+- `docs/DEEP_LINKS.md` documents the grammar plus the manual Xcode
+  step to add `CFBundleURLTypes` to the auto-generated Info.plist
+  for cold-launch system registration.
+- 1 localised string × 10 languages.
+
 ### Phase 13.10 — Resumable transfers
 - BucketeerCore: `MultipartUploadCheckpoint` Sendable struct +
   `CompletedUploadPart` (part number + ETag) + `MultipartUploadRecord`

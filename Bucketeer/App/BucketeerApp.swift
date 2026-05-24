@@ -7,6 +7,7 @@
 
 import SwiftUI
 import AppKit
+import BucketeerCore
 
 @main
 struct BucketeerApp: App {
@@ -33,7 +34,11 @@ struct BucketeerApp: App {
 
     var body: some Scene {
         Window("app.name", id: "main") {
-            ContentView()
+            // Phase 13.11 — wrap the content so we have access to
+            // `@Environment(\.openWindow)` for routing deep links
+            // (the App protocol itself doesn't expose environment
+            // properties).
+            DeepLinkAwareContent()
                 .environment(container)
         }
         .windowResizability(.contentMinSize)
@@ -82,6 +87,26 @@ struct BucketeerApp: App {
             SettingsView()
                 .environment(container)
         }
+    }
+}
+
+/// Hosting wrapper that injects SwiftUI's `OpenWindowAction` into
+/// the deep-link router. Lives here because the App protocol can't
+/// declare `@Environment` properties — the wrapper view can.
+private struct DeepLinkAwareContent: View {
+    @Environment(AppContainer.self) private var container
+    @Environment(\.openWindow) private var openWindow
+
+    var body: some View {
+        ContentView()
+            .onOpenURL { url in
+                container.deepLinkRouter.handle(url: url, openWindow: openWindow)
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .bucketeerDeepLinkReceived)) { note in
+                if let link = note.object as? BucketeerDeepLink {
+                    container.deepLinkRouter.handle(link, openWindow: openWindow)
+                }
+            }
     }
 }
 
