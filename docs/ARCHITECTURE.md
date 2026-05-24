@@ -1,9 +1,10 @@
 # Bucketeer — Architecture
 
-This document is the canonical architectural reference. It supplements
-the design spec at `docs/superpowers/specs/2026-05-22-bucketeer-design.md`
-with the diagrams that fell out of the phase-by-phase implementation
-(Phases A → 12, plus 9.5 / 9.6 / 9.7 / 9.8).
+This document is the canonical architectural reference: how the host
+app, the BucketeerCore Swift package, and the File Provider extension
+fit together; how the four sync-routing paths land; how the entitlement
+state machine moves; and where the provisioning identifiers live. The
+per-release history is in [`CHANGELOG.md`](../CHANGELOG.md).
 
 ---
 
@@ -374,6 +375,6 @@ because Core tests are cheaper to wire than a host XCTest bundle.
 | Trial logic | `BucketeerCore/Sources/BucketeerCore/Services/Entitlements/TrialBookkeeping.swift` |
 | File Provider host coordinator | `Bucketeer/Services/MountController.swift` |
 | File Provider extension | `Bucketeer File Provider/*` |
-| Specs (per-phase) | `docs/superpowers/specs/` |
+| Per-phase changelog | `CHANGELOG.md` |
 | Manual setup checklist | `PHASE_9_SETUP.md` |
 | App Store metadata draft | `docs/APP_STORE_METADATA.md` |

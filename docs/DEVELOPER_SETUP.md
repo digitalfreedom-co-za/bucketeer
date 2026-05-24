@@ -198,7 +198,7 @@ mirrors to other locales.
 | What you want to look at | Where |
 |---|---|
 | End-to-end architecture diagrams | `docs/ARCHITECTURE.md` |
-| Per-phase design specs | `docs/superpowers/specs/` |
+| Per-phase changelog | `CHANGELOG.md` |
 | File Provider manual setup | `PHASE_9_SETUP.md` |
 | App Store metadata draft | `docs/APP_STORE_METADATA.md` |
 | Composition root | `Bucketeer/Services/AppContainer.swift` |

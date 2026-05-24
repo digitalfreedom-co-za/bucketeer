@@ -39,9 +39,7 @@ Mac App Store.
 Bucketeer is **free to evaluate for 14 days** with every feature
 unlocked, then converts to a **Free tier** that keeps the core
 browser usable, with **Bucketeer Pro** unlocked by a single
-**€14.99 lifetime in-app purchase** (no subscription). See
-`docs/superpowers/specs/2026-05-23-phase-b-paywall.md` for the
-detailed tier matrix.
+**€14.99 lifetime in-app purchase** (no subscription).
 
 ---
 
@@ -57,9 +55,9 @@ Phase 7 (Drag-and-drop), Phase 8 (Menubar), Phase 9 (File Provider),
 Phase 10 (Sync engine), Phase B (Paywall), Phase 11 (Localisation
 finalisation) and Phase 12 (Hardening) follow.
 
-See the design specs in [`docs/superpowers/specs/`](docs/superpowers/specs/)
-for the full roadmap and [`CHANGELOG.md`](CHANGELOG.md) for the
-per-phase history.
+See [`CHANGELOG.md`](CHANGELOG.md) for the per-phase history and
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the architectural
+reference.
 
 **Documentation map:**
 

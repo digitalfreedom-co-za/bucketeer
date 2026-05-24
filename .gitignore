@@ -57,3 +57,20 @@ fastlane/test_output
 
 # Misc
 *.log
+
+# Claude Code artifacts — IDE-specific tooling, kept out of the repo
+# so contributors aren't asked to pick up another contributor's local
+# AI-tool configuration. CLAUDE.md is also covered by Marcel's global
+# git-ignore but listed here explicitly so a clone on any machine
+# without that global rule still keeps the file out.
+CLAUDE.md
+.claude/
+.claude/**
+
+# Same for other AI / IDE assistant artifacts.
+.cursor/
+.cursorrules
+.aider*
+.github/copilot-instructions.md
+AGENTS.md
+GEMINI.md
