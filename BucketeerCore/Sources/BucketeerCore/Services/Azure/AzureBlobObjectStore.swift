@@ -416,6 +416,19 @@ public struct AzureBlobObjectStore: S3Browsing {
         throw BucketeerError.featureNotSupported(featureKey: "metadata editing")
     }
 
+    // MARK: - Bucket insights (Phase 13.9)
+    //
+    // Azure expresses lifecycle differently (Storage Account level
+    // management policies via the management plane) and CORS lives on
+    // the storage account too. Surfaces a clear "not supported" until
+    // we wire the management-plane RPCs.
+    public func loadInsights(
+        account: S3Account,
+        bucket: String
+    ) async throws -> BucketInsights {
+        throw BucketeerError.featureNotSupported(featureKey: "bucket insights")
+    }
+
     // MARK: - Internal request helpers
 
     /// Fires the request, validates the HTTP status, returns the body

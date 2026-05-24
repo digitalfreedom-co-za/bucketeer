@@ -22,6 +22,26 @@ before that is internal phase work on the `development` branch.
 - `docs/DEVELOPER_SETUP.md` clone-to-run guide.
 - `CONTRIBUTING.md` per the design spec §13.2.
 
+### Phase 13.9 — Lifecycle / CORS / policy viewer
+- BucketeerCore: `LifecycleRule`, `CORSRule`, and `BucketInsights`
+  Sendable types. `S3Browsing` gains `loadInsights(account:bucket:)`.
+- `S3Service` fans out three Soto calls in parallel
+  (`getBucketLifecycleConfiguration` + `getBucketCors` +
+  `getBucketPolicy`) and treats every "no such config" response as
+  an empty section rather than a hard error. Bucket policy JSON is
+  pretty-printed with sorted keys for stable display.
+- `AzureBlobObjectStore` returns `.featureNotSupported` until the
+  Azure management-plane phase lands. `ProviderRouter` fans out.
+- `BucketDashboardViewModel.reload()` now runs stats + insights in
+  parallel via two `async let Task` values. Failures of either side
+  are captured in separate properties so a missing-policy provider
+  doesn't blank the stats panel.
+- `BucketDashboardSheet` gains three new GroupBox sections
+  (Lifecycle / CORS / Policy) with per-section "none configured"
+  placeholders and a clean "not supported on this provider" banner
+  for Azure.
+- 6 localised strings × 10 languages.
+
 ### Phase 13.8 — Auto-tagging rules
 - BucketeerCore: `AutoTagRule` Sendable struct (name, enabled,
   filename glob, MIME prefix, tags, user metadata); `AutoTagRuleRecord`

@@ -36,6 +36,7 @@ struct BucketDashboardSheet: View {
                     if let error = viewModel.error {
                         errorBanner(error)
                     }
+                    insightsSection
                 }
                 .padding(20)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -159,6 +160,125 @@ struct BucketDashboardSheet: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
+        }
+    }
+
+    // MARK: - Insights (Phase 13.9)
+
+    @ViewBuilder
+    private var insightsSection: some View {
+        if let error = viewModel.insightsError, case .featureNotSupported = error {
+            GroupBox {
+                Label(error.errorDescription ?? "", systemImage: "info.circle")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+        } else if let insights = viewModel.insights {
+            lifecycleGroup(insights.lifecycleRules)
+            corsGroup(insights.corsRules)
+            policyGroup(insights.policyJSON)
+        }
+    }
+
+    private func lifecycleGroup(_ rules: [LifecycleRule]) -> some View {
+        GroupBox {
+            VStack(alignment: .leading, spacing: 8) {
+                Label("dashboard.section.lifecycle", systemImage: "calendar")
+                    .font(.headline)
+                if rules.isEmpty {
+                    Text("dashboard.lifecycle.empty")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(rules) { rule in
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(spacing: 8) {
+                                Image(systemName: rule.enabled
+                                      ? "checkmark.circle.fill"
+                                      : "pause.circle")
+                                    .foregroundStyle(rule.enabled ? .green : .secondary)
+                                Text(rule.id).font(.callout.weight(.medium))
+                                if let prefix = rule.prefix, !prefix.isEmpty {
+                                    Text("prefix: \(prefix)")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            ForEach(rule.transitions + rule.expirations, id: \.self) { line in
+                                Text("• \(line)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .padding(.leading, 22)
+                            }
+                        }
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private func corsGroup(_ rules: [CORSRule]) -> some View {
+        GroupBox {
+            VStack(alignment: .leading, spacing: 8) {
+                Label("dashboard.section.cors", systemImage: "globe")
+                    .font(.headline)
+                if rules.isEmpty {
+                    Text("dashboard.cors.empty")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(rules) { rule in
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(rule.id).font(.callout.weight(.medium))
+                            corsLine("Origins", rule.allowedOrigins)
+                            corsLine("Methods", rule.allowedMethods)
+                            if !rule.allowedHeaders.isEmpty {
+                                corsLine("Allowed headers", rule.allowedHeaders)
+                            }
+                            if !rule.exposeHeaders.isEmpty {
+                                corsLine("Expose headers", rule.exposeHeaders)
+                            }
+                            if let age = rule.maxAgeSeconds {
+                                Text("Max age: \(age)s")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private func corsLine(_ label: String, _ values: [String]) -> some View {
+        Text("\(label): \(values.joined(separator: ", "))")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+    }
+
+    @ViewBuilder
+    private func policyGroup(_ json: String?) -> some View {
+        GroupBox {
+            VStack(alignment: .leading, spacing: 8) {
+                Label("dashboard.section.policy", systemImage: "doc.text.below.ecg")
+                    .font(.headline)
+                if let json {
+                    ScrollView {
+                        Text(json)
+                            .font(.system(.caption, design: .monospaced))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .textSelection(.enabled)
+                    }
+                    .frame(maxHeight: 200)
+                } else {
+                    Text("dashboard.policy.empty")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 

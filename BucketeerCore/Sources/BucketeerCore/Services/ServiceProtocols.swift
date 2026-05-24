@@ -113,6 +113,15 @@ public protocol S3Browsing: Sendable {
         key: String,
         metadata: ObjectMetadata
     ) async throws
+
+    /// Pull the bucket-level configuration triplet — lifecycle rules,
+    /// CORS rules, and the bucket policy — into one `BucketInsights`
+    /// snapshot. Missing sections show as empty / nil. Phase 13.9.
+    /// Azure / non-supporting backends throw `.featureNotSupported`.
+    func loadInsights(
+        account: S3Account,
+        bucket: String
+    ) async throws -> BucketInsights
 }
 
 // MARK: - AutoTagRuleStoring

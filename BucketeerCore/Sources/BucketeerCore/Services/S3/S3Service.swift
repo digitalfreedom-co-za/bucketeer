@@ -414,6 +414,108 @@ public struct S3Service: S3Browsing {
         }
     }
 
+    // MARK: - Bucket insights (Phase 13.9)
+
+    /// Pull lifecycle + CORS + policy in parallel and stitch the
+    /// results into a single `BucketInsights`. Each call is
+    /// independently optional — providers commonly return
+    /// `NoSuchLifecycleConfiguration` / `NoSuchCORSConfiguration` /
+    /// `NoSuchBucketPolicy` when nothing is set, which we treat as
+    /// empty rather than as an error.
+    public func loadInsights(
+        account: S3Account,
+        bucket: String
+    ) async throws -> BucketInsights {
+        let s3 = try await factory.client(for: account)
+        async let lifecycleTask = Self.safeLifecycle(s3: s3, bucket: bucket)
+        async let corsTask = Self.safeCors(s3: s3, bucket: bucket)
+        async let policyTask = Self.safePolicy(s3: s3, bucket: bucket)
+        let lifecycle = await lifecycleTask
+        let cors = await corsTask
+        let policy = await policyTask
+        return BucketInsights(
+            bucket: bucket,
+            lifecycleRules: lifecycle,
+            corsRules: cors,
+            policyJSON: policy
+        )
+    }
+
+    private static func safeLifecycle(s3: S3, bucket: String) async -> [LifecycleRule] {
+        do {
+            let response = try await s3.getBucketLifecycleConfiguration(.init(bucket: bucket))
+            return (response.rules ?? []).map { rule in
+                let transitions: [String] = (rule.transitions ?? []).map { t in
+                    let days = t.days.map { String($0) } ?? "?"
+                    let cls = t.storageClass?.rawValue ?? "?"
+                    return "after \(days) days → \(cls)"
+                }
+                var expirations: [String] = []
+                if let exp = rule.expiration {
+                    if let days = exp.days {
+                        expirations.append("expire after \(days) days")
+                    }
+                    if let date = exp.date {
+                        expirations.append("expire on \(date)")
+                    }
+                }
+                if let nc = rule.noncurrentVersionExpiration?.noncurrentDays {
+                    expirations.append("non-current expire after \(nc) days")
+                }
+                let filterPrefix = rule.filter.prefix
+                return LifecycleRule(
+                    id: rule.id ?? "(unnamed)",
+                    prefix: filterPrefix,
+                    enabled: rule.status == .enabled,
+                    transitions: transitions,
+                    expirations: expirations
+                )
+            }
+        } catch {
+            return []
+        }
+    }
+
+    private static func safeCors(s3: S3, bucket: String) async -> [CORSRule] {
+        do {
+            let response = try await s3.getBucketCors(.init(bucket: bucket))
+            return (response.corsRules ?? []).enumerated().map { (index, rule) in
+                CORSRule(
+                    id: rule.id ?? "rule-\(index)",
+                    allowedOrigins: rule.allowedOrigins,
+                    allowedMethods: rule.allowedMethods,
+                    allowedHeaders: rule.allowedHeaders ?? [],
+                    exposeHeaders: rule.exposeHeaders ?? [],
+                    maxAgeSeconds: rule.maxAgeSeconds.map { Int($0) }
+                )
+            }
+        } catch {
+            return []
+        }
+    }
+
+    private static func safePolicy(s3: S3, bucket: String) async -> String? {
+        do {
+            let response = try await s3.getBucketPolicy(.init(bucket: bucket))
+            let raw = response.policy
+            // Pretty-print so the read-only viewer shows formatted
+            // JSON rather than a single line. Falls back to raw text
+            // if parse fails.
+            guard let data = raw.data(using: .utf8),
+                  let object = try? JSONSerialization.jsonObject(with: data),
+                  let prettyData = try? JSONSerialization.data(
+                    withJSONObject: object,
+                    options: [.prettyPrinted, .sortedKeys]
+                  ),
+                  let prettyString = String(data: prettyData, encoding: .utf8) else {
+                return raw
+            }
+            return prettyString
+        } catch {
+            return nil
+        }
+    }
+
     // MARK: - Helpers
 
     private static func unquote(_ s: String?) -> String {

@@ -21,40 +21,68 @@ final class BucketDashboardViewModel {
     let bucket: String
 
     var stats: BucketStats?
+    /// Phase 13.9 — lifecycle / CORS / policy snapshot fetched in
+    /// parallel with the stats walk. `nil` while loading, set to a
+    /// possibly-empty `BucketInsights` once the load completes, or
+    /// left at `nil` if the provider returns `.featureNotSupported`.
+    var insights: BucketInsights?
+    /// Captured separately so the UI can show a "not supported"
+    /// banner rather than just blank panels.
+    var insightsError: BucketeerError?
     var isLoading: Bool = false
     var error: BucketeerError?
 
     private let collector: BucketStatsCollector
+    private let browser: any S3Browsing
     private var loadTask: Task<Void, Never>?
 
     init(account: S3Account, bucket: String, browser: any S3Browsing) {
         self.account = account
         self.bucket = bucket
         self.collector = BucketStatsCollector(browser: browser)
+        self.browser = browser
     }
 
     func reload() {
         loadTask?.cancel()
         let collector = collector
+        let browser = browser
         let account = account
         let bucket = bucket
         isLoading = true
         error = nil
+        insightsError = nil
         loadTask = Task { [weak self] in
+            async let statsTask = Task<BucketStats?, Error> {
+                try await collector.collect(account: account, bucket: bucket)
+            }.value
+            // Phase 13.9 — pull insights in parallel with the stats
+            // walk so the dashboard reveals lifecycle / CORS / policy
+            // info as soon as both come back. Insight failures are
+            // captured separately so a missing-policy provider
+            // doesn't blank out the stats panel.
+            async let insightsTask = Task<BucketInsights?, Error> {
+                try await browser.loadInsights(account: account, bucket: bucket)
+            }.value
             do {
-                let result = try await collector.collect(account: account, bucket: bucket)
+                let result = try await statsTask
                 if Task.isCancelled { return }
                 self?.stats = result
-                self?.isLoading = false
             } catch is CancellationError {
-                self?.isLoading = false
+                // Cancellation = user closed the sheet. Bail.
             } catch let bucketeerError as BucketeerError {
                 self?.error = bucketeerError
-                self?.isLoading = false
             } catch {
                 self?.error = .unknown(message: error.localizedDescription)
-                self?.isLoading = false
             }
+            do {
+                self?.insights = try await insightsTask
+            } catch let bucketeerError as BucketeerError {
+                self?.insightsError = bucketeerError
+            } catch {
+                self?.insightsError = .unknown(message: error.localizedDescription)
+            }
+            self?.isLoading = false
         }
     }
 

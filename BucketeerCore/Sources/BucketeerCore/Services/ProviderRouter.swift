@@ -169,4 +169,14 @@ public struct ProviderRouter: S3Browsing {
             metadata: metadata
         )
     }
+
+    public func loadInsights(
+        account: S3Account,
+        bucket: String
+    ) async throws -> BucketInsights {
+        try await backend(for: account).loadInsights(
+            account: account,
+            bucket: bucket
+        )
+    }
 }
