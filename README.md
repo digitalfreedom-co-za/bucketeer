@@ -58,7 +58,19 @@ Phase 10 (Sync engine), Phase B (Paywall), Phase 11 (Localisation
 finalisation) and Phase 12 (Hardening) follow.
 
 See the design specs in [`docs/superpowers/specs/`](docs/superpowers/specs/)
-for the full roadmap.
+for the full roadmap and [`CHANGELOG.md`](CHANGELOG.md) for the
+per-phase history.
+
+**Documentation map:**
+
+| Doc | Purpose |
+|---|---|
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | End-to-end architecture with eight Mermaid diagrams (module composition, sync routing, sandbox lifecycle, File Provider sequence, entitlement state machine, account save flow, multipart transfer flow, provisioning topology) |
+| [`docs/DEVELOPER_SETUP.md`](docs/DEVELOPER_SETUP.md) | Clone → build → test in five minutes |
+| [`PHASE_9_SETUP.md`](PHASE_9_SETUP.md) | One-time manual setup for the File Provider extension target |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Branch model, coding standards, review process |
+| [`CHANGELOG.md`](CHANGELOG.md) | Per-phase development history |
+| [`docs/APP_STORE_METADATA.md`](docs/APP_STORE_METADATA.md) | App Store Connect copy + launch checklist |
 
 ---
 
