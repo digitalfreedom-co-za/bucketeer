@@ -103,4 +103,44 @@ public struct ProviderRouter: S3Browsing {
             ttl: ttl
         )
     }
+
+    public func listVersions(
+        account: S3Account,
+        bucket: String,
+        key: String
+    ) async throws -> [ObjectVersion] {
+        try await backend(for: account).listVersions(
+            account: account,
+            bucket: bucket,
+            key: key
+        )
+    }
+
+    public func restoreVersion(
+        account: S3Account,
+        bucket: String,
+        key: String,
+        versionId: String
+    ) async throws {
+        try await backend(for: account).restoreVersion(
+            account: account,
+            bucket: bucket,
+            key: key,
+            versionId: versionId
+        )
+    }
+
+    public func deleteVersion(
+        account: S3Account,
+        bucket: String,
+        key: String,
+        versionId: String
+    ) async throws {
+        try await backend(for: account).deleteVersion(
+            account: account,
+            bucket: bucket,
+            key: key,
+            versionId: versionId
+        )
+    }
 }

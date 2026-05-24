@@ -360,6 +360,39 @@ public struct AzureBlobObjectStore: S3Browsing {
         return url
     }
 
+    // MARK: - Versioning (Phase 13.6)
+    //
+    // Azure Blob has *snapshots* and *versions* (the newer API), each
+    // distinct from S3's `versionId` model. v1 of Bucketeer treats the
+    // feature as S3-only and surfaces a clear error on Azure rather
+    // than shipping a half-baked snapshot implementation.
+
+    public func listVersions(
+        account: S3Account,
+        bucket: String,
+        key: String
+    ) async throws -> [ObjectVersion] {
+        throw BucketeerError.featureNotSupported(featureKey: "object versions")
+    }
+
+    public func restoreVersion(
+        account: S3Account,
+        bucket: String,
+        key: String,
+        versionId: String
+    ) async throws {
+        throw BucketeerError.featureNotSupported(featureKey: "version restore")
+    }
+
+    public func deleteVersion(
+        account: S3Account,
+        bucket: String,
+        key: String,
+        versionId: String
+    ) async throws {
+        throw BucketeerError.featureNotSupported(featureKey: "version delete")
+    }
+
     // MARK: - Internal request helpers
 
     /// Fires the request, validates the HTTP status, returns the body

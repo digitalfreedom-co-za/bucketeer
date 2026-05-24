@@ -64,6 +64,35 @@ public protocol S3Browsing: Sendable {
         key: String,
         ttl: TimeInterval
     ) async throws -> URL
+
+    /// List every recorded version of an object on a versioning-
+    /// enabled bucket. Implementations that don't speak version-aware
+    /// listings throw `BucketeerError.featureNotSupported`. Phase 13.6.
+    func listVersions(
+        account: S3Account,
+        bucket: String,
+        key: String
+    ) async throws -> [ObjectVersion]
+
+    /// Restore the named version as the current state of the object.
+    /// On the S3 family this is a `CopyObject` from the source
+    /// version to itself; on Azure Blob this copies from the snapshot
+    /// URL back onto the live blob. Phase 13.6.
+    func restoreVersion(
+        account: S3Account,
+        bucket: String,
+        key: String,
+        versionId: String
+    ) async throws
+
+    /// Permanently delete one specific version (or delete marker) of
+    /// an object. Bypasses the lifecycle rules. Phase 13.6.
+    func deleteVersion(
+        account: S3Account,
+        bucket: String,
+        key: String,
+        versionId: String
+    ) async throws
 }
 
 // MARK: - ActivityLogging

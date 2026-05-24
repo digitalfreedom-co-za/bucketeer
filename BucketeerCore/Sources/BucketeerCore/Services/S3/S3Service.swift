@@ -236,6 +236,102 @@ public struct S3Service: S3Browsing {
         }
     }
 
+    // MARK: - Versioning (Phase 13.6)
+
+    /// `ListObjectVersions` with prefix-matching on the requested key.
+    /// We filter post-hoc to the exact key because S3 has no
+    /// equivalent of "give me versions for one key only".
+    public func listVersions(
+        account: S3Account,
+        bucket: String,
+        key: String
+    ) async throws -> [ObjectVersion] {
+        let s3 = try await factory.client(for: account)
+        do {
+            let response = try await s3.listObjectVersions(
+                .init(bucket: bucket, prefix: key)
+            )
+            var result: [ObjectVersion] = []
+            for entry in response.versions ?? [] where entry.key == key {
+                result.append(
+                    ObjectVersion(
+                        key: entry.key ?? key,
+                        versionId: entry.versionId ?? "",
+                        isLatest: entry.isLatest ?? false,
+                        isDeleteMarker: false,
+                        size: entry.size ?? 0,
+                        lastModified: entry.lastModified ?? Date(),
+                        etag: Self.unquote(entry.eTag),
+                        storageClass: entry.storageClass?.rawValue
+                    )
+                )
+            }
+            for marker in response.deleteMarkers ?? [] where marker.key == key {
+                result.append(
+                    ObjectVersion(
+                        key: marker.key ?? key,
+                        versionId: marker.versionId ?? "",
+                        isLatest: marker.isLatest ?? false,
+                        isDeleteMarker: true,
+                        size: 0,
+                        lastModified: marker.lastModified ?? Date(),
+                        etag: nil,
+                        storageClass: nil
+                    )
+                )
+            }
+            // Sort newest-first so the latest version is at the top.
+            result.sort { $0.lastModified > $1.lastModified }
+            return result
+        } catch {
+            throw Self.map(error, bucket: bucket, key: key)
+        }
+    }
+
+    /// Restore = server-side copy of the source version on top of
+    /// itself, which becomes the new latest version. The original
+    /// version is preserved.
+    public func restoreVersion(
+        account: S3Account,
+        bucket: String,
+        key: String,
+        versionId: String
+    ) async throws {
+        let s3 = try await factory.client(for: account)
+        let source = "\(bucket)/\(key)?versionId=\(versionId)"
+        let encodedSource = source.addingPercentEncoding(
+            withAllowedCharacters: .urlPathAllowed
+        ) ?? source
+        do {
+            _ = try await s3.copyObject(.init(
+                bucket: bucket,
+                copySource: encodedSource,
+                key: key,
+                metadataDirective: .copy
+            ))
+        } catch {
+            throw Self.map(error, bucket: bucket, key: key)
+        }
+    }
+
+    public func deleteVersion(
+        account: S3Account,
+        bucket: String,
+        key: String,
+        versionId: String
+    ) async throws {
+        let s3 = try await factory.client(for: account)
+        do {
+            _ = try await s3.deleteObject(.init(
+                bucket: bucket,
+                key: key,
+                versionId: versionId
+            ))
+        } catch {
+            throw Self.map(error, bucket: bucket, key: key)
+        }
+    }
+
     // MARK: - Helpers
 
     private static func unquote(_ s: String?) -> String {

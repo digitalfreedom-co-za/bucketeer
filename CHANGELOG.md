@@ -22,6 +22,28 @@ before that is internal phase work on the `development` branch.
 - `docs/DEVELOPER_SETUP.md` clone-to-run guide.
 - `CONTRIBUTING.md` per the design spec §13.2.
 
+### Phase 13.6 — Object versions browser
+- `ObjectVersion` Sendable struct in BucketeerCore covering both
+  recorded versions and S3 delete markers (`isDeleteMarker`).
+- `BucketeerError.featureNotSupported(featureKey:)` for providers
+  that don't implement a requested operation.
+- `S3Browsing` gains `listVersions`, `restoreVersion`,
+  `deleteVersion`. `S3Service` implements them via Soto
+  (`listObjectVersions`, version-aware `copyObject`,
+  `deleteObject(versionId:)`); `AzureBlobObjectStore` returns
+  `.featureNotSupported` (snapshot semantics are sufficiently
+  different that they get their own phase later); `ProviderRouter`
+  fans out.
+- `ObjectVersionsViewModel` (`@Observable @MainActor`) wraps the
+  three operations with per-row in-flight tracking.
+- `ObjectVersionsSheet` shows a Table with Modified / Size /
+  Version-ID / Actions columns, "Latest" tag, "Delete marker"
+  badge, Restore + Delete-version confirmations, and a clear
+  "feature not supported" empty state for Azure.
+- Browser context menu gains **Show Versions…** for single-object
+  selections.
+- 19 localised strings × 10 languages.
+
 ### Phase 13.5 — Bucket dashboard
 - BucketeerCore: `BucketStats` Sendable struct (object count, folder
   count, total bytes, top-N largest, last modified, truncated flag);

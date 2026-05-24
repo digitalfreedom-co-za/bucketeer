@@ -17,6 +17,7 @@ struct ObjectListView: View {
     @State private var pendingDeletion: [S3Object] = []
     @State private var shareTarget: S3Object?
     @State private var dashboardViewModel: BucketDashboardViewModel?
+    @State private var versionsViewModel: ObjectVersionsViewModel?
 
     var body: some View {
         Group {
@@ -130,6 +131,16 @@ struct ObjectListView: View {
         ) {
             if let dashboardViewModel {
                 BucketDashboardSheet(viewModel: dashboardViewModel)
+            }
+        }
+        .sheet(
+            isPresented: Binding(
+                get: { versionsViewModel != nil },
+                set: { if !$0 { versionsViewModel = nil } }
+            )
+        ) {
+            if let versionsViewModel {
+                ObjectVersionsSheet(viewModel: versionsViewModel)
             }
         }
         .confirmationDialog(
@@ -330,6 +341,19 @@ struct ObjectListView: View {
                 }
                 Button("share.menu.getLink", systemImage: "link") {
                     shareTarget = object
+                }
+                // Phase 13.6 — version browser. Only meaningful on the
+                // S3 family; Azure surfaces a clear "not supported"
+                // banner inside the sheet if the user lands there.
+                Button("versions.menu.show", systemImage: "clock.arrow.circlepath") {
+                    if let account = viewModel.account, let bucket = viewModel.bucket {
+                        versionsViewModel = ObjectVersionsViewModel(
+                            account: account,
+                            bucket: bucket,
+                            key: object.key,
+                            browser: container.s3Browser
+                        )
+                    }
                 }
             }
             Button("action.rename", systemImage: "pencil") {

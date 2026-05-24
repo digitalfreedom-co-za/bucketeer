@@ -20,6 +20,10 @@ public enum BucketeerError: Error, Sendable, Equatable {
     case keychainFailure(status: Int32)
     case persistenceFailure(message: String)
     case cancelled
+    /// The current provider doesn't expose the requested feature
+    /// (e.g. asking Azure Blob Storage for S3-style object versions).
+    /// Phase 13.6.
+    case featureNotSupported(featureKey: String)
     case unknown(message: String)
 }
 
@@ -53,6 +57,9 @@ extension BucketeerError: LocalizedError {
         case .cancelled:
             return String(localized: "error.cancelled",
                           defaultValue: "The operation was cancelled.")
+        case .featureNotSupported(let featureKey):
+            return String(localized: "error.featureNotSupported",
+                          defaultValue: "This provider does not support \(featureKey).")
         case .unknown(let message):
             return String(localized: "error.unknown",
                           defaultValue: "Unexpected error: \(message)")
