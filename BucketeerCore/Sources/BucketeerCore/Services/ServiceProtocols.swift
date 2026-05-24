@@ -124,6 +124,34 @@ public protocol S3Browsing: Sendable {
     ) async throws -> BucketInsights
 }
 
+// MARK: - CheckpointStoring
+
+/// Persistence boundary for resumable-upload checkpoints. Phase 13.10.
+public protocol CheckpointStoring: Sendable {
+    /// Locate an existing checkpoint for the given upload identity.
+    /// Returns `nil` when none exists — the caller then starts a
+    /// fresh `createMultipartUpload`.
+    func find(
+        accountID: UUID,
+        bucket: String,
+        key: String,
+        localPath: String,
+        fileSize: Int64
+    ) async throws -> MultipartUploadCheckpoint?
+
+    /// Persist a brand-new checkpoint (or replace an existing one
+    /// with the same `id`).
+    func upsert(_ checkpoint: MultipartUploadCheckpoint) async throws
+
+    /// Discard a checkpoint after the upload completed or was
+    /// permanently abandoned.
+    func delete(id: UUID) async throws
+
+    /// All checkpoints currently on disk — used by the optional
+    /// "Resume" picker in the host app.
+    func all() async throws -> [MultipartUploadCheckpoint]
+}
+
 // MARK: - AutoTagRuleStoring
 
 /// Persistence boundary for the auto-tagging rule list. Phase 13.8.

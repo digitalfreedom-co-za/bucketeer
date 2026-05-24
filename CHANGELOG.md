@@ -22,6 +22,30 @@ before that is internal phase work on the `development` branch.
 - `docs/DEVELOPER_SETUP.md` clone-to-run guide.
 - `CONTRIBUTING.md` per the design spec §13.2.
 
+### Phase 13.10 — Resumable transfers
+- BucketeerCore: `MultipartUploadCheckpoint` Sendable struct +
+  `CompletedUploadPart` (part number + ETag) + `MultipartUploadRecord`
+  (`@Model`, JSON-encoded completed-parts blob) + `CheckpointStoring`
+  protocol + `CheckpointStore` (`@ModelActor`) addressed by id for
+  upsert/delete and by `(accountID, bucket, key, localPath, fileSize)`
+  for lookup.
+- New `S3ResumableUploader` Sendable driver: manual
+  `createMultipartUpload → listParts → uploadPart → completeMultipart`
+  loop with a checkpoint persisted after each successful part. On
+  resume it reconciles the local checkpoint with the server's
+  `listParts` view and skips parts that already landed — covers
+  crash-mid-upload and network-blip recovery without re-sending the
+  bytes that already made it.
+- `TransferManager` routes uploads ≥ 50 MB through the resumable
+  driver and keeps Soto's parallel helper for the 5–50 MB band where
+  retry cost is acceptable. Sub-5 MB single-PUT path unchanged.
+- AppContainer wires a new host-only `BucketeerCheckpoints.store`
+  SwiftData container, builds the store + uploader, and threads
+  them into `TransferManager`.
+- v1 ships the simplest correct variant: sequential parts. The
+  resume guarantee outweighs the parallel-throughput hit at the
+  ≥ 50 MB band; a future phase will fan out under a semaphore.
+
 ### Phase 13.9 — Lifecycle / CORS / policy viewer
 - BucketeerCore: `LifecycleRule`, `CORSRule`, and `BucketInsights`
   Sendable types. `S3Browsing` gains `loadInsights(account:bucket:)`.

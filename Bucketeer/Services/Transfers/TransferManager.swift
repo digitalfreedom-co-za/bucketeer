@@ -41,6 +41,10 @@ actor TransferManager: Transferring {
     private let factory: S3ClientFactory
     private let azure: AzureBlobTransporter?
     private let activityLog: (any ActivityLogging)?
+    /// Optional resumable multipart driver. Phase 13.10. Bound at
+    /// init time from `AppContainer` when the checkpoint store is
+    /// available; absent in unit tests that don't need persistence.
+    private let resumableUploader: S3ResumableUploader?
     /// Optional bandwidth limiter. Phase 13.2. Charged accurately for
     /// the Azure block-blob path (transporter owns every wire chunk)
     /// and best-effort for Soto S3 — Soto's multipart helpers only
@@ -71,12 +75,14 @@ actor TransferManager: Transferring {
         factory: S3ClientFactory,
         azure: AzureBlobTransporter? = nil,
         activityLog: (any ActivityLogging)? = nil,
-        limiter: BandwidthLimiter? = nil
+        limiter: BandwidthLimiter? = nil,
+        resumableUploader: S3ResumableUploader? = nil
     ) {
         self.factory = factory
         self.azure = azure
         self.activityLog = activityLog
         self.limiter = limiter
+        self.resumableUploader = resumableUploader
         let (stream, continuation) = AsyncStream<[TransferTask]>.makeStream(
             bufferingPolicy: .bufferingNewest(1)
         )
@@ -268,7 +274,29 @@ actor TransferManager: Transferring {
         }
 
         do {
-            if item.fileSize >= Self.multipartThreshold {
+            // Phase 13.10 — files large enough that an interruption
+            // costs noticeable bandwidth go through the resumable
+            // path (sequential parts + checkpoint after each).
+            // Smaller multiparts keep Soto's parallel helper.
+            if item.fileSize >= S3ResumableUploader.resumableThreshold,
+               let resumableUploader {
+                let total = item.fileSize
+                try await resumableUploader.upload(
+                    account: item.account,
+                    bucket: item.task.bucket,
+                    key: item.task.key,
+                    localURL: item.task.localURL,
+                    contentType: item.contentType,
+                    fileSize: total,
+                    progress: { @Sendable [weak self] bytes in
+                        await self?.setState(
+                            id: id,
+                            state: .running(bytesTransferred: bytes, totalBytes: total)
+                        )
+                        await self?.chargeMultipartLimiter(id: id, observedBytes: bytes)
+                    }
+                )
+            } else if item.fileSize >= Self.multipartThreshold {
                 let total = item.fileSize
                 _ = try await s3.multipartUpload(
                     .init(

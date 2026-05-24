@@ -26,6 +26,9 @@ final class AppContainer {
     let trashContainer: ModelContainer
     /// Phase 13.8 — auto-tag rule store, host-only.
     let autoTagContainer: ModelContainer
+    /// Phase 13.10 — resumable-upload checkpoints, host-only.
+    let checkpointContainer: ModelContainer
+    let checkpointStore: any CheckpointStoring
     /// Shared bandwidth throttle. Phase 13.2.
     let bandwidthLimiter: BandwidthLimiter
     let bandwidthSettings: BandwidthSettings
@@ -76,6 +79,8 @@ final class AppContainer {
         let activityContainer = try Self.makeActivityContainer()
         let (trashContainer, trashCacheURL) = try Self.makeTrashContainer()
         let autoTagContainer = try Self.makeAutoTagContainer()
+        let checkpointContainer = try Self.makeCheckpointContainer()
+        let checkpointStore = CheckpointStore(modelContainer: checkpointContainer)
         // Codex blocker #3: write to the shared keychain access group
         // so the File Provider extension (which reads from the same
         // group) can load credentials. Production-signed builds need
@@ -111,11 +116,16 @@ final class AppContainer {
         Task { [activityLog] in
             await activityLog.purgeExpired(retentionDays: 180)
         }
+        let resumableUploader = S3ResumableUploader(
+            factory: clientFactory,
+            checkpointStore: checkpointStore
+        )
         let transferManager = TransferManager(
             factory: clientFactory,
             azure: azureTransporter,
             activityLog: activityLog,
-            limiter: bandwidthLimiter
+            limiter: bandwidthLimiter,
+            resumableUploader: resumableUploader
         )
         let previewCache = PreviewCache(
             downloader: PreviewDownloader(
@@ -128,6 +138,8 @@ final class AppContainer {
         self.activityContainer = activityContainer
         self.trashContainer = trashContainer
         self.autoTagContainer = autoTagContainer
+        self.checkpointContainer = checkpointContainer
+        self.checkpointStore = checkpointStore
         self.bandwidthLimiter = bandwidthLimiter
         self.bandwidthSettings = BandwidthSettings(limiter: bandwidthLimiter)
         self.keychainStore = keychainStore
@@ -333,6 +345,24 @@ final class AppContainer {
         let schema = Schema([ActivityRecord.self])
         let configuration = ModelConfiguration(
             "BucketeerActivity",
+            schema: schema,
+            url: storeURL
+        )
+        return try ModelContainer(for: schema, configurations: configuration)
+    }
+
+    /// Phase 13.10 — host-only resumable-upload checkpoint container.
+    private static func makeCheckpointContainer() throws -> ModelContainer {
+        let support = (try? FileManager.default.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: true
+        )) ?? URL.documentsDirectory
+        let storeURL = support.appending(path: AppEnvironment.checkpointStoreFileName)
+        let schema = Schema([MultipartUploadRecord.self])
+        let configuration = ModelConfiguration(
+            "BucketeerCheckpoints",
             schema: schema,
             url: storeURL
         )

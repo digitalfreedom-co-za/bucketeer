@@ -49,4 +49,8 @@ public enum AppEnvironment {
 
     /// Filename of the host-only auto-tagging rule store. Phase 13.8.
     public static let autoTagStoreFileName = "BucketeerAutoTags.store"
+
+    /// Filename of the host-only resumable-upload checkpoint store.
+    /// Phase 13.10.
+    public static let checkpointStoreFileName = "BucketeerCheckpoints.store"
 }
