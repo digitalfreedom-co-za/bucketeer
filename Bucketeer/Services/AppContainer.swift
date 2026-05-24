@@ -15,6 +15,15 @@ import BucketeerCore
 @MainActor
 @Observable
 final class AppContainer {
+    /// Process-wide singleton handle. Phase 13.12 — App Intents
+    /// execute inside the host process and need access to the live
+    /// container without having to rebuild SwiftData / Keychain.
+    /// `BucketeerApp.init` sets this immediately after construction;
+    /// nothing else writes to it. `nonisolated(unsafe)` because the
+    /// pointer is set once at launch and only read on the main
+    /// actor afterwards.
+    nonisolated(unsafe) static var shared: AppContainer?
+
     let modelContainer: ModelContainer
     /// Host-only audit-log container — kept separate from the App
     /// Group container because the File Provider extension has no

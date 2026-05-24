@@ -22,6 +22,10 @@ struct BucketeerApp: App {
             fatalError("Failed to initialise AppContainer: \(error)")
         }
         _container = State(initialValue: container)
+        // Phase 13.12 — expose the live container to App Intents,
+        // which run inside the host process but cannot reach
+        // SwiftUI state directly.
+        AppContainer.shared = container
         // Inject the activation controller into the **adaptor-managed**
         // delegate instance, not a separate singleton. Codex high #5:
         // the adaptor creates a fresh BucketeerAppDelegate at launch;

@@ -22,6 +22,30 @@ before that is internal phase work on the `development` branch.
 - `docs/DEVELOPER_SETUP.md` clone-to-run guide.
 - `CONTRIBUTING.md` per the design spec §13.2.
 
+### Phase 13.12 — App Intents (Shortcuts / Siri)
+- AppContainer gained a `nonisolated(unsafe) static var shared`
+  set in `BucketeerApp.init` so App Intents — which run inside the
+  host process — can reach the live services without rebuilding
+  SwiftData / Keychain access.
+- `Bucketeer/Services/AppIntents/`:
+  - `AccountEntity` (`AppEntity` wrapping `S3Account`) + `AccountQuery`
+    feeds Shortcuts' parameter picker from the live `AccountStore`.
+  - `AppIntentsBridge` singleton facade polls `AppContainer.shared`
+    up to 5 s on cold-launch and exposes `accounts()` + `liveAccount(for:)`.
+  - `ListBucketsIntent` → returns `[String]` bucket names.
+  - `GeneratePresignedURLIntent` → account + bucket + key + TTL
+    minutes (clamped 1…10 080) → `URL`.
+  - `UploadFileIntent` → `IntentFile` + account + bucket + key →
+    queues via `TransferManager`, returns the transfer ID.
+  - `RunSyncJobIntent` → matches a saved job by name, calls
+    `SyncEngine.runNow`, returns the confirmed name.
+  - `BucketeerShortcuts` (`AppShortcutsProvider`) binds all four
+    intents to Siri / Spotlight invocation phrases with SF Symbols.
+- All four intents work with macOS 14's App Intents runtime and
+  default `openAppWhenRun = true` so cold invocations launch the
+  App.
+- No new tests: intents require a live container to be meaningful.
+
 ### Phase 13.11 — `bucketeer://` URL scheme
 - BucketeerCore: `BucketeerDeepLink` Sendable enum with six cases —
   `account`, `bucket` (incl. optional prefix), `object`, `syncJob`,
