@@ -17,6 +17,9 @@ import Foundation
 public struct AzureBlobTransporter: Sendable {
     public let credentialsCache: AzureCredentialsCache
     public let session: URLSession
+    /// Optional bandwidth limiter charged per ranged GET / per block
+    /// PUT / per single-shot PUT. Phase 13.2.
+    public let limiter: BandwidthLimiter?
 
     /// Switch threshold between single-shot Put Block Blob and the
     /// staged Put Block + Put Block List path. Mirrors the S3 multipart
@@ -34,9 +37,14 @@ public struct AzureBlobTransporter: Sendable {
     /// monopolising the user's bandwidth.
     public static let maxBlockParallelism: Int = 4
 
-    public init(credentialsCache: AzureCredentialsCache, session: URLSession = .shared) {
+    public init(
+        credentialsCache: AzureCredentialsCache,
+        session: URLSession = .shared,
+        limiter: BandwidthLimiter? = nil
+    ) {
         self.credentialsCache = credentialsCache
         self.session = session
+        self.limiter = limiter
     }
 
     // MARK: - Upload
@@ -110,6 +118,9 @@ public struct AzureBlobTransporter: Sendable {
         signer.sign(&request)
 
         let (responseData, response) = try await session.data(for: request)
+        // Phase 13.2 — post-charge the limiter once the bytes have hit
+        // the wire so the next call back-pressures correctly.
+        await limiter?.consume(bytes: data.count)
         guard let http = response as? HTTPURLResponse else {
             throw BucketeerError.unknown(message: "Azure PUT returned a non-HTTP response.")
         }
@@ -158,7 +169,7 @@ public struct AzureBlobTransporter: Sendable {
                 guard let chunk = try handle.read(upToCount: Int(chunkSize)) else { return }
                 let blockID = blockIDs[index]
 
-                group.addTask { [session] in
+                group.addTask { [session, limiter] in
                     try await Self.putBlock(
                         builder: builder,
                         signer: signer,
@@ -168,6 +179,11 @@ public struct AzureBlobTransporter: Sendable {
                         blockID: blockID,
                         data: chunk
                     )
+                    // Phase 13.2 — charge the bandwidth bucket per
+                    // committed block. Concurrent block tasks all
+                    // serialise on the actor so the global throughput
+                    // never exceeds the configured cap.
+                    await limiter?.consume(bytes: chunk.count)
                     await counter.add(Int64(chunk.count))
                 }
             }
@@ -345,6 +361,8 @@ public struct AzureBlobTransporter: Sendable {
         ) {
             throw mapped
         }
+        // Phase 13.2 — post-charge after the bytes have arrived.
+        await limiter?.consume(bytes: data.count)
         try data.write(to: localURL)
         await progress(total, total)
     }
@@ -380,7 +398,7 @@ public struct AzureBlobTransporter: Sendable {
                 func enqueueRange(_ index: Int) {
                     let offset = Int64(index) * chunkSize
                     let length = min(chunkSize, total - offset)
-                    group.addTask { [session] in
+                    group.addTask { [session, limiter] in
                         try await Self.fetchRange(
                             builder: builder,
                             signer: signer,
@@ -391,6 +409,9 @@ public struct AzureBlobTransporter: Sendable {
                             length: length,
                             writer: writer
                         )
+                        // Phase 13.2 — charge the bucket once the
+                        // ranged GET has landed its bytes.
+                        await limiter?.consume(bytes: Int(length))
                     }
                 }
                 for _ in 0..<min(Self.maxBlockParallelism, chunkCount) {

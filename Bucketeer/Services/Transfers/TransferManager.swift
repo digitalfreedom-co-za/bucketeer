@@ -41,6 +41,15 @@ actor TransferManager: Transferring {
     private let factory: S3ClientFactory
     private let azure: AzureBlobTransporter?
     private let activityLog: (any ActivityLogging)?
+    /// Optional bandwidth limiter. Phase 13.2. Charged accurately for
+    /// the Azure block-blob path (transporter owns every wire chunk)
+    /// and best-effort for Soto S3 — Soto's multipart helpers only
+    /// surface fractional progress, so we charge per progress delta.
+    private let limiter: BandwidthLimiter?
+    /// Per-Soto-multipart cursor: how many bytes we've already charged
+    /// the limiter for, keyed by transfer ID. Cleared on terminal
+    /// transition.
+    private var multipartBytesCharged: [UUID: Int64] = [:]
     private var items: [UUID: QueuedItem] = [:]
     private var order: [UUID] = []
     private var workers: [UUID: Task<Void, Never>] = [:]
@@ -61,11 +70,13 @@ actor TransferManager: Transferring {
     init(
         factory: S3ClientFactory,
         azure: AzureBlobTransporter? = nil,
-        activityLog: (any ActivityLogging)? = nil
+        activityLog: (any ActivityLogging)? = nil,
+        limiter: BandwidthLimiter? = nil
     ) {
         self.factory = factory
         self.azure = azure
         self.activityLog = activityLog
+        self.limiter = limiter
         let (stream, continuation) = AsyncStream<[TransferTask]>.makeStream(
             bufferingPolicy: .bufferingNewest(1)
         )
@@ -273,6 +284,7 @@ actor TransferManager: Transferring {
                             id: id,
                             state: .running(bytesTransferred: bytes, totalBytes: total)
                         )
+                        await self?.chargeMultipartLimiter(id: id, observedBytes: bytes)
                     }
                 )
             } else {
@@ -284,6 +296,8 @@ actor TransferManager: Transferring {
                     contentType: item.contentType,
                     key: item.task.key
                 ))
+                // Phase 13.2 — post-charge small PUTs as one chunk.
+                await limiter?.consume(bytes: data.count)
                 setState(
                     id: id,
                     state: .running(bytesTransferred: item.fileSize, totalBytes: item.fileSize)
@@ -370,6 +384,8 @@ actor TransferManager: Transferring {
                 let buffer = try await response.body.collect(upTo: Int(total) + 1)
                 let fileData = Data(buffer.readableBytesView)
                 try fileData.write(to: item.task.localURL)
+                // Phase 13.2 — post-charge small GETs as one chunk.
+                await limiter?.consume(bytes: fileData.count)
                 setState(
                     id: id,
                     state: .running(bytesTransferred: total, totalBytes: total)
@@ -388,6 +404,7 @@ actor TransferManager: Transferring {
                         id: id,
                         state: .running(bytesTransferred: bytes, totalBytes: total)
                     )
+                    await self?.chargeMultipartLimiter(id: id, observedBytes: bytes)
                 }
             )
             setState(id: id, state: .completed)
@@ -477,6 +494,21 @@ actor TransferManager: Transferring {
         }
     }
 
+    // MARK: - Bandwidth (Phase 13.2)
+
+    /// Soto's progress callback only gives us a fraction; this helper
+    /// derives the delta since the last call and charges the limiter
+    /// once. The cumulative observed-bytes value is monotonic per
+    /// transfer, so we keep a per-ID cursor.
+    private func chargeMultipartLimiter(id: UUID, observedBytes: Int64) async {
+        guard let limiter else { return }
+        let previous = multipartBytesCharged[id] ?? 0
+        guard observedBytes > previous else { return }
+        let delta = observedBytes - previous
+        multipartBytesCharged[id] = observedBytes
+        await limiter.consume(bytes: Int(delta))
+    }
+
     // MARK: - State helpers
 
     private func setState(id: UUID, state: TransferState) {
@@ -490,6 +522,10 @@ actor TransferManager: Transferring {
         if state.isTerminal {
             terminated.insert(id)
             terminalCache[id] = state
+            // Phase 13.2 — drop the bandwidth cursor; the transfer is
+            // done and we don't want a future ID collision (UUIDs are
+            // unique, but cleaning up is still tidy).
+            multipartBytesCharged.removeValue(forKey: id)
             // Resume every waiter for this ID with the terminal state.
             // The waiter list is removed before resuming so a continuation
             // that immediately re-subscribes (unusual) does not loop.

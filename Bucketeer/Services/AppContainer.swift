@@ -20,6 +20,9 @@ final class AppContainer {
     /// Group container because the File Provider extension has no
     /// reason to load this schema. Phase 13.1.
     let activityContainer: ModelContainer
+    /// Shared bandwidth throttle. Phase 13.2.
+    let bandwidthLimiter: BandwidthLimiter
+    let bandwidthSettings: BandwidthSettings
     let keychainStore: any KeychainStoring
     let accountStore: any AccountStoring
     let clientFactory: S3ClientFactory
@@ -77,7 +80,14 @@ final class AppContainer {
         let clientFactory = S3ClientFactory(keychainStore: keychainStore)
         let azureCredentialsCache = AzureCredentialsCache(keychainStore: keychainStore)
         let azureObjectStore = AzureBlobObjectStore(credentialsCache: azureCredentialsCache)
-        let azureTransporter = AzureBlobTransporter(credentialsCache: azureCredentialsCache)
+        // Phase 13.2 — one shared bandwidth limiter is hot-plugged
+        // into both the Azure transporter and the TransferManager so
+        // the cap counts every byte across providers.
+        let bandwidthLimiter = BandwidthLimiter()
+        let azureTransporter = AzureBlobTransporter(
+            credentialsCache: azureCredentialsCache,
+            limiter: bandwidthLimiter
+        )
         let s3ObjectStore = S3Service(factory: clientFactory)
         let router = ProviderRouter(s3: s3ObjectStore, azure: azureObjectStore)
         let activityLog = ActivityLogStore(modelContainer: activityContainer)
@@ -87,7 +97,8 @@ final class AppContainer {
         let transferManager = TransferManager(
             factory: clientFactory,
             azure: azureTransporter,
-            activityLog: activityLog
+            activityLog: activityLog,
+            limiter: bandwidthLimiter
         )
         let previewCache = PreviewCache(
             downloader: PreviewDownloader(
@@ -98,6 +109,8 @@ final class AppContainer {
 
         self.modelContainer = modelContainer
         self.activityContainer = activityContainer
+        self.bandwidthLimiter = bandwidthLimiter
+        self.bandwidthSettings = BandwidthSettings(limiter: bandwidthLimiter)
         self.keychainStore = keychainStore
         self.accountStore = accountStore
         self.clientFactory = clientFactory

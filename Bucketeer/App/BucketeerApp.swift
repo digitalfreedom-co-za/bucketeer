@@ -200,6 +200,10 @@ private struct SettingsView: View {
                 .tabItem {
                     Label("settings.tab.general", systemImage: "gearshape")
                 }
+            transfersTab
+                .tabItem {
+                    Label("settings.tab.transfers", systemImage: "arrow.up.arrow.down.circle")
+                }
             proTab
                 .tabItem {
                     Label("settings.tab.pro", systemImage: "shippingbox.and.arrow.backward.fill")
@@ -210,6 +214,39 @@ private struct SettingsView: View {
             PaywallSheet(feature: nil)
                 .environment(container)
         }
+    }
+
+    /// Phase 13.2 — global bandwidth throttle. Honest about scope: the
+    /// cap is accurate end-to-end for Azure (the transporter owns
+    /// every wire chunk) and best-effort for Soto S3 multipart, where
+    /// the bucket is charged per progress callback delta rather than
+    /// per wire byte.
+    private var transfersTab: some View {
+        @Bindable var bandwidthSettings = container.bandwidthSettings
+        return Form {
+            Section("settings.transfers.section.bandwidth") {
+                Picker("settings.transfers.bandwidth.cap", selection: $bandwidthSettings.selectedPreset) {
+                    ForEach(BandwidthSettings.Preset.allCases) { preset in
+                        Text(LocalizedStringKey(preset.labelKey)).tag(preset)
+                    }
+                }
+                if bandwidthSettings.selectedPreset == .custom {
+                    Stepper(value: $bandwidthSettings.customMegabytesPerSecond, in: 1...512) {
+                        Text(
+                            String(
+                                format: NSLocalizedString("settings.transfers.bandwidth.custom", comment: ""),
+                                bandwidthSettings.customMegabytesPerSecond
+                            )
+                        )
+                    }
+                }
+                Text("settings.transfers.bandwidth.note")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .formStyle(.grouped)
+        .padding()
     }
 
     private var generalTab: some View {

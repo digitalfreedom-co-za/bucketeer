@@ -22,6 +22,26 @@ before that is internal phase work on the `development` branch.
 - `docs/DEVELOPER_SETUP.md` clone-to-run guide.
 - `CONTRIBUTING.md` per the design spec §13.2.
 
+### Phase 13.2 — Bandwidth limit
+- `BandwidthLimiter` (Core): token-bucket actor with a `consume(bytes:)`
+  drain pattern that converges for requests bigger than the bucket
+  capacity. `0 bytes/s = unlimited`.
+- 5 `BandwidthLimiterTests` covering the unlimited path, sub-burst,
+  oversized requests with deficit sleep, mid-flight toggle to
+  unlimited, and `currentLimit` reflection.
+- `AzureBlobTransporter` charges the limiter per ranged GET, per block
+  PUT, and per single-shot PUT — accurate end-to-end.
+- `TransferManager` charges the limiter for the small-object PUT/GET
+  paths and (best-effort) for Soto multipart via per-progress-delta
+  charging through a per-transfer `multipartBytesCharged` cursor.
+- `BandwidthSettings` (`@Observable @MainActor`) projects user-picked
+  preset / custom MB/s into the limiter and persists to UserDefaults.
+  Settings → **Transfers** tab exposes Unlimited, 256 KB/s, 1 MB/s,
+  5 MB/s, 25 MB/s, Custom (1–512 MB/s).
+- Localised across 10 languages with an explicit note that the cap is
+  exact for Azure and approximate for Soto-backed S3 (Soto reports
+  byte progress only in fractions).
+
 ### Phase 13.1 — Activity log
 - Host-only SwiftData container `BucketeerActivity.store` in sandbox
   Application Support; kept out of the App Group so the File Provider
