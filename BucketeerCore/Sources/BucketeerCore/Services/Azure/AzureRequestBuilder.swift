@@ -103,6 +103,68 @@ struct AzureRequestBuilder: Sendable {
         url(path: blobPath(container: container, blob: blob))
     }
 
+    // MARK: - Metadata + tags (Phase 13.7 — Azure parity)
+
+    /// `PUT /{container}/{blob}?comp=metadata` — replaces every
+    /// `x-ms-meta-*` header on the blob with the supplied set.
+    func setBlobMetadataURL(container: String, blob: String) -> URL {
+        url(
+            path: blobPath(container: container, blob: blob),
+            query: [("comp", "metadata")]
+        )
+    }
+
+    /// `GET /{container}/{blob}?comp=tags` — list blob index tags.
+    func getBlobTagsURL(container: String, blob: String) -> URL {
+        url(
+            path: blobPath(container: container, blob: blob),
+            query: [("comp", "tags")]
+        )
+    }
+
+    /// `PUT /{container}/{blob}?comp=tags` — replace the entire tag set.
+    func setBlobTagsURL(container: String, blob: String) -> URL {
+        url(
+            path: blobPath(container: container, blob: blob),
+            query: [("comp", "tags")]
+        )
+    }
+
+    // MARK: - Versions / snapshots (Phase 13.6 — Azure parity)
+
+    /// `GET /{container}?restype=container&comp=list&prefix=<blob>&include=snapshots`
+    /// — Azure's equivalent of S3's listObjectVersions for one
+    /// specific blob. Filtered post-hoc to the exact blob name.
+    func listSnapshotsURL(container: String, blob: String) -> URL {
+        url(
+            path: "/" + container,
+            query: [
+                ("restype", "container"),
+                ("comp", "list"),
+                ("prefix", blob),
+                ("include", "snapshots")
+            ]
+        )
+    }
+
+    /// `DELETE /{container}/{blob}?snapshot=<timestamp>` — delete one
+    /// snapshot without touching the live blob.
+    func deleteSnapshotURL(container: String, blob: String, snapshot: String) -> URL {
+        url(
+            path: blobPath(container: container, blob: blob),
+            query: [("snapshot", snapshot)]
+        )
+    }
+
+    /// Source URL for a Copy Blob operation that pulls from a
+    /// specific snapshot. Goes into the `x-ms-copy-source` header.
+    func snapshotSourceURL(container: String, blob: String, snapshot: String) -> URL {
+        url(
+            path: blobPath(container: container, blob: blob),
+            query: [("snapshot", snapshot)]
+        )
+    }
+
     // MARK: - Bodies
 
     /// XML body for `Put Block List` — orders the previously-staged
@@ -122,6 +184,30 @@ struct AzureRequestBuilder: Sendable {
     static func blockID(index: Int) -> String {
         let raw = String(format: "block-%08d", index)
         return Data(raw.utf8).base64EncodedString()
+    }
+
+    /// XML body for `Set Blob Tags` — Azure's expected envelope.
+    /// `<Tags><TagSet><Tag><Key>k</Key><Value>v</Value></Tag>…</TagSet></Tags>`
+    static func tagsXML(tags: [String: String]) -> Data {
+        var body = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<Tags><TagSet>"
+        for (key, value) in tags.sorted(by: { $0.key < $1.key }) {
+            body += "<Tag><Key>\(xmlEscape(key))</Key><Value>\(xmlEscape(value))</Value></Tag>"
+        }
+        body += "</TagSet></Tags>"
+        return Data(body.utf8)
+    }
+
+    /// Minimal XML escape for the values that go into Set Blob Tags.
+    /// Azure tag keys are alphanumeric + a small set, but values can
+    /// contain spaces and a wider charset — escape the structural
+    /// characters defensively.
+    static func xmlEscape(_ value: String) -> String {
+        value
+            .replacingOccurrences(of: "&", with: "&amp;")
+            .replacingOccurrences(of: "<", with: "&lt;")
+            .replacingOccurrences(of: ">", with: "&gt;")
+            .replacingOccurrences(of: "\"", with: "&quot;")
+            .replacingOccurrences(of: "'", with: "&apos;")
     }
 
     // MARK: - Helpers

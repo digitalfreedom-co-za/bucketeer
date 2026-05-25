@@ -360,19 +360,44 @@ public struct AzureBlobObjectStore: S3Browsing {
         return url
     }
 
-    // MARK: - Versioning (Phase 13.6)
+    // MARK: - Versioning (Phase 13.6 — Azure snapshots parity)
     //
-    // Azure Blob has *snapshots* and *versions* (the newer API), each
-    // distinct from S3's `versionId` model. v1 of Bucketeer treats the
-    // feature as S3-only and surfaces a clear error on Azure rather
-    // than shipping a half-baked snapshot implementation.
+    // Azure expresses object history as **snapshots**: time-stamped
+    // read-only copies of the blob. We map them onto the same
+    // `ObjectVersion` shape S3 uses, stuffing the snapshot timestamp
+    // into `versionId`. Restore is a Copy-Blob from the snapshot URL
+    // onto the live blob; delete-version removes a single snapshot.
 
     public func listVersions(
         account: S3Account,
         bucket: String,
         key: String
     ) async throws -> [ObjectVersion] {
-        throw BucketeerError.featureNotSupported(featureKey: "object versions")
+        let signer = try await credentialsCache.signer(for: account)
+        let builder = AzureRequestBuilder(account: account)
+        var request = URLRequest(url: builder.listSnapshotsURL(container: bucket, blob: key))
+        request.httpMethod = "GET"
+        signer.sign(&request)
+        let data = try await fetch(request: request, on: session, bucket: bucket, key: key)
+        let listing = try AzureListXMLParser.parseBlobs(data)
+        // Two pieces of state to merge: the live blob (snapshot == nil)
+        // and zero or more snapshots. `isLatest` is true exactly when
+        // `snapshot == nil`. We filter to the exact key — `prefix=`
+        // can match neighbours that share a path component.
+        let matching = listing.blobs.filter { $0.name == key }
+        let versions: [ObjectVersion] = matching.map { blob in
+            ObjectVersion(
+                key: blob.name,
+                versionId: blob.snapshot ?? "",
+                isLatest: blob.snapshot == nil,
+                isDeleteMarker: false,
+                size: blob.size,
+                lastModified: blob.lastModified ?? Date.distantPast,
+                etag: blob.etag,
+                storageClass: blob.accessTier
+            )
+        }
+        return versions.sorted { $0.lastModified > $1.lastModified }
     }
 
     public func restoreVersion(
@@ -381,7 +406,34 @@ public struct AzureBlobObjectStore: S3Browsing {
         key: String,
         versionId: String
     ) async throws {
-        throw BucketeerError.featureNotSupported(featureKey: "version restore")
+        // Azure restores by Copy-Blob from the snapshot URL onto the
+        // live blob. The empty-versionId case means "live blob" —
+        // no-op.
+        guard !versionId.isEmpty else { return }
+        let signer = try await credentialsCache.signer(for: account)
+        let builder = AzureRequestBuilder(account: account)
+        var request = URLRequest(url: builder.blobURL(container: bucket, blob: key))
+        request.httpMethod = "PUT"
+        request.setValue("0", forHTTPHeaderField: "Content-Length")
+        request.setValue(
+            builder.snapshotSourceURL(container: bucket, blob: key, snapshot: versionId).absoluteString,
+            forHTTPHeaderField: "x-ms-copy-source"
+        )
+        signer.sign(&request)
+        let (_, response) = try await session.data(for: request)
+        guard let http = response as? HTTPURLResponse else {
+            throw BucketeerError.unknown(message: "Azure snapshot restore returned a non-HTTP response.")
+        }
+        if let mapped = AzureBlobObjectStore.mapHTTP(http, body: nil, bucket: bucket, key: key) {
+            throw mapped
+        }
+        let status = http.value(forHTTPHeaderField: "x-ms-copy-status") ?? "success"
+        if status.lowercased() == "pending" {
+            try await waitForCopyToFinish(
+                account: account, builder: builder, signer: signer,
+                container: bucket, key: key
+            )
+        }
     }
 
     public func deleteVersion(
@@ -390,21 +442,97 @@ public struct AzureBlobObjectStore: S3Browsing {
         key: String,
         versionId: String
     ) async throws {
-        throw BucketeerError.featureNotSupported(featureKey: "version delete")
+        // Deleting the empty versionId would wipe the live blob —
+        // refuse so callers can't fall through here when they meant
+        // `delete(account:bucket:keys:)`.
+        guard !versionId.isEmpty else {
+            throw BucketeerError.unknown(
+                message: "Cannot delete the live blob through deleteVersion — use delete(keys:) instead."
+            )
+        }
+        let signer = try await credentialsCache.signer(for: account)
+        let builder = AzureRequestBuilder(account: account)
+        var request = URLRequest(url: builder.deleteSnapshotURL(container: bucket, blob: key, snapshot: versionId))
+        request.httpMethod = "DELETE"
+        // `x-ms-delete-snapshots = only` would error here because the
+        // URL already targets a snapshot — leave it off.
+        signer.sign(&request)
+        let (data, response) = try await session.data(for: request)
+        guard let http = response as? HTTPURLResponse else {
+            throw BucketeerError.unknown(message: "Azure snapshot delete returned a non-HTTP response.")
+        }
+        if let mapped = AzureBlobObjectStore.mapHTTP(http, body: data, bucket: bucket, key: key) {
+            throw mapped
+        }
     }
 
-    // MARK: - Metadata + tags (Phase 13.7)
+    // MARK: - Metadata + tags (Phase 13.7 — Azure parity)
     //
-    // Azure Blob has Set Blob Metadata + Set Blob Tags but the
-    // semantics differ from S3 enough to deserve a dedicated phase
-    // later. v1 throws clearly so the editor surfaces a banner
-    // instead of silent partial updates.
+    // Load: Get Blob Properties (HEAD) returns Content-Type +
+    // Cache-Control + Content-Disposition + Content-Encoding +
+    // x-ms-meta-* (user metadata) + x-ms-access-tier (storage class).
+    // Tags come from a separate `?comp=tags` GET.
+    //
+    // Save: Set Blob Properties is the right RPC for the Content-*
+    // headers, Set Blob Metadata for x-ms-meta-*, Set Blob Tags for
+    // the tag XML. We collapse the four RPCs into one save call so
+    // the editor stays simple; failures partway leave the previous
+    // state visible to the user.
     public func loadMetadata(
         account: S3Account,
         bucket: String,
         key: String
     ) async throws -> ObjectMetadata {
-        throw BucketeerError.featureNotSupported(featureKey: "metadata editing")
+        let signer = try await credentialsCache.signer(for: account)
+        let builder = AzureRequestBuilder(account: account)
+
+        var head = URLRequest(url: builder.blobPropertiesURL(container: bucket, blob: key))
+        head.httpMethod = "HEAD"
+        signer.sign(&head)
+        let (_, headResponse) = try await session.data(for: head)
+        guard let http = headResponse as? HTTPURLResponse else {
+            throw BucketeerError.unknown(message: "Azure HEAD for metadata returned a non-HTTP response.")
+        }
+        if let mapped = AzureBlobObjectStore.mapHTTP(http, body: nil, bucket: bucket, key: key) {
+            throw mapped
+        }
+
+        // Build the user-metadata dictionary from every x-ms-meta-*
+        // response header. Casing is preserved as Azure returned it;
+        // the editor normalises on save anyway.
+        var userMetadata: [String: String] = [:]
+        for (rawKey, value) in http.allHeaderFields {
+            guard let stringKey = rawKey as? String,
+                  let stringValue = value as? String else { continue }
+            let lower = stringKey.lowercased()
+            if lower.hasPrefix("x-ms-meta-") {
+                let metaKey = String(lower.dropFirst("x-ms-meta-".count))
+                userMetadata[metaKey] = stringValue
+            }
+        }
+
+        // Tags via a separate GET. Treat any failure as "no tags" —
+        // Azure returns 404 when tags have never been set.
+        var tagRequest = URLRequest(url: builder.getBlobTagsURL(container: bucket, blob: key))
+        tagRequest.httpMethod = "GET"
+        signer.sign(&tagRequest)
+        let tags: [String: String]
+        do {
+            let tagData = try await fetch(request: tagRequest, on: session, bucket: bucket, key: key)
+            tags = AzureListXMLParser.parseTags(tagData)
+        } catch {
+            tags = [:]
+        }
+
+        return ObjectMetadata(
+            contentType: http.value(forHTTPHeaderField: "Content-Type") ?? "",
+            cacheControl: http.value(forHTTPHeaderField: "Cache-Control") ?? "",
+            contentDisposition: http.value(forHTTPHeaderField: "Content-Disposition") ?? "",
+            contentEncoding: http.value(forHTTPHeaderField: "Content-Encoding") ?? "",
+            userMetadata: userMetadata,
+            tags: tags,
+            storageClass: http.value(forHTTPHeaderField: "x-ms-access-tier")
+        )
     }
 
     public func saveMetadata(
@@ -413,20 +541,61 @@ public struct AzureBlobObjectStore: S3Browsing {
         key: String,
         metadata: ObjectMetadata
     ) async throws {
-        throw BucketeerError.featureNotSupported(featureKey: "metadata editing")
+        let signer = try await credentialsCache.signer(for: account)
+        let builder = AzureRequestBuilder(account: account)
+
+        // 1) Set Blob Metadata — overwrites the entire x-ms-meta-*
+        //    header set. An empty dict means "clear all".
+        var metaRequest = URLRequest(url: builder.setBlobMetadataURL(container: bucket, blob: key))
+        metaRequest.httpMethod = "PUT"
+        metaRequest.setValue("0", forHTTPHeaderField: "Content-Length")
+        for (k, v) in metadata.userMetadata {
+            metaRequest.setValue(v, forHTTPHeaderField: "x-ms-meta-" + k.lowercased())
+        }
+        signer.sign(&metaRequest)
+        try await fireAndCheck(request: metaRequest, bucket: bucket, key: key)
+
+        // 2) Set Blob Tags — overwrites the entire tag set with the
+        //    supplied envelope.
+        let body = AzureRequestBuilder.tagsXML(tags: metadata.tags)
+        var tagRequest = URLRequest(url: builder.setBlobTagsURL(container: bucket, blob: key))
+        tagRequest.httpMethod = "PUT"
+        tagRequest.setValue(String(body.count), forHTTPHeaderField: "Content-Length")
+        tagRequest.setValue("application/xml", forHTTPHeaderField: "Content-Type")
+        tagRequest.httpBody = body
+        signer.sign(&tagRequest)
+        try await fireAndCheck(request: tagRequest, bucket: bucket, key: key)
+    }
+
+    /// Small helper used by saveMetadata to send a request and bubble
+    /// any non-2xx response through the standard `mapHTTP` path.
+    private func fireAndCheck(request: URLRequest, bucket: String, key: String) async throws {
+        let (data, response) = try await session.data(for: request)
+        guard let http = response as? HTTPURLResponse else {
+            throw BucketeerError.unknown(
+                message: "Azure metadata update returned a non-HTTP response."
+            )
+        }
+        if let mapped = AzureBlobObjectStore.mapHTTP(http, body: data, bucket: bucket, key: key) {
+            throw mapped
+        }
     }
 
     // MARK: - Bucket insights (Phase 13.9)
     //
-    // Azure expresses lifecycle differently (Storage Account level
-    // management policies via the management plane) and CORS lives on
-    // the storage account too. Surfaces a clear "not supported" until
-    // we wire the management-plane RPCs.
+    // Azure lifecycle, CORS and access policies all live on the
+    // **storage account** at the Azure Resource Manager (ARM)
+    // management plane — a separate OAuth-authenticated API surface
+    // from the Shared-Key-signed data plane Bucketeer talks to today.
+    // Surfaced as a clear `featureNotSupported` until the OAuth
+    // bring-up lands as its own phase (out of scope for v1).
     public func loadInsights(
         account: S3Account,
         bucket: String
     ) async throws -> BucketInsights {
-        throw BucketeerError.featureNotSupported(featureKey: "bucket insights")
+        throw BucketeerError.featureNotSupported(
+            featureKey: "bucket insights (Azure ARM management plane)"
+        )
     }
 
     // MARK: - Internal request helpers

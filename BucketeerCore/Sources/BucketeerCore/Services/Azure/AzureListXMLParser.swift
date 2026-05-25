@@ -50,6 +50,10 @@ enum AzureListXMLParser {
         let etag: String?
         let contentType: String?
         let accessTier: String?
+        /// `<Snapshot>` timestamp when the request asked for
+        /// `include=snapshots`. `nil` for the live blob. Phase 13.6
+        /// Azure parity.
+        let snapshot: String?
     }
 
     static func parseBlobs(_ data: Data) throws -> BlobListing {
@@ -86,6 +90,19 @@ enum AzureListXMLParser {
     }()
 
     // MARK: - Error responses
+
+    /// Parse Azure's tag envelope:
+    /// `<?xml ...?><Tags><TagSet><Tag><Key>k</Key><Value>v</Value></Tag>…</TagSet></Tags>`.
+    /// Returns `[:]` when the envelope is empty or malformed — the
+    /// caller renders that as "no tags set". Phase 13.7 Azure parity.
+    static func parseTags(_ data: Data) -> [String: String] {
+        guard !data.isEmpty else { return [:] }
+        let delegate = TagDelegate()
+        let parser = XMLParser(data: data)
+        parser.delegate = delegate
+        guard parser.parse() else { return [:] }
+        return delegate.tags
+    }
 
     /// Best-effort parse of Azure's error envelope:
     /// `<?xml ...?><Error><Code>...</Code><Message>...</Message></Error>`.
@@ -172,6 +189,7 @@ private final class BlobDelegate: NSObject, XMLParserDelegate {
     private var etag: String?
     private var contentType: String?
     private var accessTier: String?
+    private var snapshot: String?
 
     private var buffer: String = ""
 
@@ -187,6 +205,7 @@ private final class BlobDelegate: NSObject, XMLParserDelegate {
             etag = nil
             contentType = nil
             accessTier = nil
+            snapshot = nil
         }
     }
 
@@ -232,6 +251,8 @@ private final class BlobDelegate: NSObject, XMLParserDelegate {
             contentType = trimmed.isEmpty ? nil : trimmed
         case "AccessTier":
             accessTier = trimmed.isEmpty ? nil : trimmed
+        case "Snapshot" where parent == "Blob":
+            snapshot = trimmed.isEmpty ? nil : trimmed
         case "Blob":
             guard !name.isEmpty else { return }
             blobs.append(
@@ -241,7 +262,8 @@ private final class BlobDelegate: NSObject, XMLParserDelegate {
                     lastModified: lastModified,
                     etag: etag,
                     contentType: contentType,
-                    accessTier: accessTier
+                    accessTier: accessTier,
+                    snapshot: snapshot
                 )
             )
         default:
@@ -282,5 +304,50 @@ private final class ErrorDelegate: NSObject, XMLParserDelegate {
         }
         current = ""
         buffer = ""
+    }
+}
+
+// MARK: - Tag delegate (Phase 13.7 Azure parity)
+
+private final class TagDelegate: NSObject, XMLParserDelegate {
+    var tags: [String: String] = [:]
+    private var path: [String] = []
+    private var buffer: String = ""
+    private var currentKey: String = ""
+    private var currentValue: String = ""
+
+    func parser(_ parser: XMLParser, didStartElement elementName: String,
+                namespaceURI: String?, qualifiedName qName: String?,
+                attributes attributeDict: [String : String] = [:]) {
+        path.append(elementName)
+        buffer = ""
+        if elementName == "Tag" {
+            currentKey = ""
+            currentValue = ""
+        }
+    }
+
+    func parser(_ parser: XMLParser, foundCharacters string: String) {
+        buffer += string
+    }
+
+    func parser(_ parser: XMLParser, didEndElement elementName: String,
+                namespaceURI: String?, qualifiedName qName: String?) {
+        defer {
+            buffer = ""
+            if !path.isEmpty { path.removeLast() }
+        }
+        let trimmed = buffer.trimmingCharacters(in: .whitespacesAndNewlines)
+        switch elementName {
+        case "Key":
+            currentKey = trimmed
+        case "Value":
+            currentValue = trimmed
+        case "Tag":
+            guard !currentKey.isEmpty else { return }
+            tags[currentKey] = currentValue
+        default:
+            break
+        }
     }
 }
