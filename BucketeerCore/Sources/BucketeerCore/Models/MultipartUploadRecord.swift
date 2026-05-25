@@ -25,6 +25,11 @@ public final class MultipartUploadRecord {
     public var uploadId: String
     public var createdAt: Date
     public var lastTouchedAt: Date
+    /// Optional for the SwiftData migration path: rows written
+    /// before the Codex audit fix lack a fingerprint. The store
+    /// treats `nil` as "no match" so legacy checkpoints get
+    /// rebuilt rather than reused incorrectly.
+    public var fileFingerprint: String?
     public var completedPartsData: Data
 
     public init(checkpoint: MultipartUploadCheckpoint) {
@@ -38,12 +43,14 @@ public final class MultipartUploadRecord {
         self.uploadId = checkpoint.uploadId
         self.createdAt = checkpoint.createdAt
         self.lastTouchedAt = checkpoint.lastTouchedAt
+        self.fileFingerprint = checkpoint.fileFingerprint
         let encoder = JSONEncoder()
         self.completedPartsData = (try? encoder.encode(checkpoint.completedParts)) ?? Data()
     }
 
     public func update(from checkpoint: MultipartUploadCheckpoint) {
         self.lastTouchedAt = checkpoint.lastTouchedAt
+        self.fileFingerprint = checkpoint.fileFingerprint
         let encoder = JSONEncoder()
         if let data = try? encoder.encode(checkpoint.completedParts) {
             self.completedPartsData = data
@@ -64,6 +71,7 @@ public final class MultipartUploadRecord {
             uploadId: uploadId,
             createdAt: createdAt,
             lastTouchedAt: lastTouchedAt,
+            fileFingerprint: fileFingerprint ?? "",
             completedParts: parts.sorted { $0.partNumber < $1.partNumber }
         )
     }

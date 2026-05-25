@@ -161,6 +161,7 @@ public struct S3ResumableUploader: Sendable {
         contentType: String?,
         s3: S3
     ) async throws -> MultipartUploadCheckpoint {
+        let fingerprint = MultipartUploadCheckpoint.fingerprint(for: localURL)
         if let existing = try await checkpointStore.find(
             accountID: account.id,
             bucket: bucket,
@@ -168,7 +169,15 @@ public struct S3ResumableUploader: Sendable {
             localPath: localURL.path,
             fileSize: fileSize
         ) {
-            return existing
+            // Codex audit fix (high #3): a stale checkpoint with the
+            // same path + size but a different mtime is a *different
+            // file*. Reusing its uploadId would assemble the final
+            // object from a mix of old and new parts. Drop and
+            // restart.
+            if existing.fileFingerprint == fingerprint {
+                return existing
+            }
+            try? await checkpointStore.delete(id: existing.id)
         }
         let response = try await s3.createMultipartUpload(.init(
             bucket: bucket,
@@ -188,7 +197,8 @@ public struct S3ResumableUploader: Sendable {
             localPath: localURL.path,
             fileSize: fileSize,
             partSize: Self.partSize,
-            uploadId: uploadId
+            uploadId: uploadId,
+            fileFingerprint: fingerprint
         )
         try await checkpointStore.upsert(checkpoint)
         return checkpoint

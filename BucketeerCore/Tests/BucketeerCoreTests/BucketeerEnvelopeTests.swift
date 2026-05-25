@@ -66,6 +66,46 @@ struct BucketeerEnvelopeTests {
         #expect(!BucketeerEnvelope.looksEncrypted(Data()))
     }
 
+    @Test("Empty plaintext round-trips (Codex audit fix low #1)")
+    func emptyPlaintext() throws {
+        let key = SymmetricKey(size: .bits256)
+        let envelope = try BucketeerEnvelope.seal(plaintext: Data(), key: key)
+        let recovered = try BucketeerEnvelope.open(envelope: envelope, key: key)
+        #expect(recovered.isEmpty)
+        // The minimum envelope size is exactly header + nonce + tag.
+        #expect(envelope.count == BucketeerEnvelope.headerSize + BucketeerEnvelope.nonceSize + 16)
+    }
+
+    @Test("Tampering with the version byte fails authentication (AAD)")
+    func versionTamperingDetected() throws {
+        let key = SymmetricKey(size: .bits256)
+        var envelope = try BucketeerEnvelope.seal(plaintext: Data("payload".utf8), key: key)
+        // Flip the version byte. Pre-AAD this passed silently; after
+        // the Codex audit fix the header is authenticated and the
+        // tag check fails.
+        envelope[envelope.startIndex + 4] = 0x02
+        do {
+            _ = try BucketeerEnvelope.open(envelope: envelope, key: key)
+            #expect(Bool(false), "Expected unsupportedVersion or auth failure")
+        } catch let error as EncryptionError {
+            #expect(error == .unsupportedVersion || error == .authenticationFailed)
+        }
+    }
+
+    @Test("Tampering with the reserved bytes flips authentication (AAD)")
+    func reservedTamperingDetected() throws {
+        let key = SymmetricKey(size: .bits256)
+        var envelope = try BucketeerEnvelope.seal(plaintext: Data("payload".utf8), key: key)
+        // Flip one of the reserved bytes (positions 5..7).
+        envelope[envelope.startIndex + 6] ^= 0xFF
+        do {
+            _ = try BucketeerEnvelope.open(envelope: envelope, key: key)
+            #expect(Bool(false), "Expected authentication failure on AAD tamper")
+        } catch let error as EncryptionError {
+            #expect(error == .authenticationFailed)
+        }
+    }
+
     @Test("Tampering with the ciphertext flips authentication")
     func tamperingDetected() throws {
         let key = SymmetricKey(size: .bits256)

@@ -87,10 +87,28 @@ public actor EncryptionKeyStore: EncryptionKeyStoring {
     }
 
     public func keyMaterial(id: UUID) async throws -> Data {
-        try readKeychain(id: id)
+        let bytes = try readKeychain(id: id)
+        // Codex audit fix (medium #2): every key in this store is an
+        // AES-256 symmetric key — anything that isn't 32 bytes is a
+        // corrupted / tampered Keychain item and must not be handed
+        // to CryptoKit, which would silently key under it.
+        guard bytes.count == 32 else {
+            throw BucketeerError.unknown(
+                message: "Encryption key on disk is not 32 bytes (got \(bytes.count))."
+            )
+        }
+        return bytes
     }
 
     public func delete(id: UUID) async throws {
+        // Codex audit fix (low #2): delete the Keychain bytes
+        // *before* the SwiftData metadata. A Keychain failure here
+        // throws; we never end up with raw key material on disk that
+        // has no visible record pointing at it. Metadata-without-
+        // key is harmless (the snapshot view shows a stale entry the
+        // user can re-delete); key-without-metadata is a real
+        // forensic-recovery hazard.
+        try deleteKeychain(id: id)
         do {
             let descriptor = FetchDescriptor<BucketEncryptionKeyRecord>(
                 predicate: #Predicate { $0.id == id }
@@ -102,7 +120,6 @@ public actor EncryptionKeyStore: EncryptionKeyStoring {
         } catch {
             throw BucketeerError.persistenceFailure(message: error.localizedDescription)
         }
-        try deleteKeychain(id: id)
     }
 
     // MARK: - Keychain helpers

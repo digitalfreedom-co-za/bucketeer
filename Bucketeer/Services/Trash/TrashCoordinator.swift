@@ -130,11 +130,18 @@ final class TrashCoordinator {
     ) async {
         let fileName = id.uuidString + ".bin"
         let destURL = cacheRootURL.appendingPathComponent(fileName)
+        // Codex audit fix (high #2): the trash cache must keep the
+        // raw bytes as the object exists on the provider — for an
+        // encrypted bucket that's the Bucketeer envelope, not
+        // plaintext. Without `bypassDecryption: true`, the local
+        // cache would hold a plaintext copy of every encrypted
+        // object the user ever deleted.
         let downloadID = await transferManager.enqueueDownload(
             account: account,
             bucket: bucket,
             key: key,
-            localURL: destURL
+            localURL: destURL,
+            bypassDecryption: true
         )
         let state = await transferManager.awaitCompletion(id: downloadID)
         switch state {

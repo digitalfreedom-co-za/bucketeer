@@ -36,6 +36,13 @@ actor TransferManager: Transferring {
         var task: TransferTask
         let contentType: String?
         let fileSize: Int64
+        /// Codex audit fix (high #2): set on the trash-capture
+        /// download so `finalizeDownloadDecryption` leaves the
+        /// raw Bucketeer envelope on disk instead of decrypting
+        /// it into plaintext. Without this, an encrypted object
+        /// gets decrypted on capture and the local trash cache
+        /// holds plaintext outside the encryption boundary.
+        var bypassDecryption: Bool = false
     }
 
     private let factory: S3ClientFactory
@@ -144,6 +151,28 @@ actor TransferManager: Transferring {
         key: String,
         localURL: URL
     ) async -> UUID {
+        await enqueueDownload(
+            account: account,
+            bucket: bucket,
+            key: key,
+            localURL: localURL,
+            bypassDecryption: false
+        )
+    }
+
+    /// Variant that lets internal callers (Phase 13.4 trash capture)
+    /// opt out of `finalizeDownloadDecryption`. Outside the protocol
+    /// because no UI / view-model needs the raw-envelope path —
+    /// only the trash coordinator does, and it depends on the
+    /// concrete `TransferManager` already.
+    @discardableResult
+    func enqueueDownload(
+        account: S3Account,
+        bucket: String,
+        key: String,
+        localURL: URL,
+        bypassDecryption: Bool
+    ) async -> UUID {
         let id = UUID()
         let task = TransferTask(
             id: id,
@@ -159,7 +188,8 @@ actor TransferManager: Transferring {
             account: account,
             task: task,
             contentType: nil,
-            fileSize: 0
+            fileSize: 0,
+            bypassDecryption: bypassDecryption
         )
         order.append(id)
         publish()
@@ -590,6 +620,11 @@ actor TransferManager: Transferring {
     /// Called from every download completion site so encryption is
     /// transparent regardless of single-shot vs multipart path.
     private func finalizeDownloadDecryption(item: QueuedItem) async {
+        // Codex audit fix (high #2): trash-capture downloads pass
+        // `bypassDecryption = true` so the local cache keeps the
+        // raw envelope instead of holding plaintext copies of
+        // encrypted objects.
+        if item.bypassDecryption { return }
         guard let encryptionGate else { return }
         let url = item.task.localURL
         guard FileManager.default.fileExists(atPath: url.path) else { return }

@@ -294,12 +294,18 @@ final class AppContainer {
         self.spotlightIndexer = spotlightIndexer
         self.browserViewModel.spotlightIndexer = spotlightIndexer
 
-        // Phase 13.14 — cross-account copy / move.
+        // Phase 13.14 — cross-account copy / move. Encryption gate
+        // wired in after Codex audit (high #1) so server-side copy
+        // is automatically disabled on encrypted buckets.
         self.crossAccountCopyCoordinator = CrossAccountCopyCoordinator(
             browser: router,
             transferManager: transferManager,
-            activityLog: activityLog
+            activityLog: activityLog,
+            encryptionGate: bucketEncryptionGate
         )
+        // Codex audit fix (medium #3) — wipe any plaintext staging
+        // files left over from a crashed round-trip copy.
+        CrossAccountCopyCoordinator.scavengeOrphans()
 
         // Phase 13.15 — client-side encryption.
         self.encryptionContainer = encryptionContainer

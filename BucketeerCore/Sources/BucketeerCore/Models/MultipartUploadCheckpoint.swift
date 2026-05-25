@@ -35,6 +35,13 @@ public struct MultipartUploadCheckpoint: Identifiable, Hashable, Sendable {
     public let uploadId: String
     public let createdAt: Date
     public var lastTouchedAt: Date
+    /// File-identity fingerprint at the moment the upload started —
+    /// Codex audit fix (high #3). Without this, a different file
+    /// with the same path + size as a stale checkpoint would have
+    /// its first parts assembled from the *previous* file's
+    /// already-uploaded chunks. Format is opaque to callers; see
+    /// `MultipartUploadCheckpoint.fingerprint(for:)`.
+    public let fileFingerprint: String
     /// Parts confirmed by the server. Sorted by part number on read so
     /// the resumable loop can compute the next part with a simple
     /// `completedParts.count + 1`.
@@ -51,6 +58,7 @@ public struct MultipartUploadCheckpoint: Identifiable, Hashable, Sendable {
         uploadId: String,
         createdAt: Date = Date(),
         lastTouchedAt: Date = Date(),
+        fileFingerprint: String,
         completedParts: [CompletedUploadPart] = []
     ) {
         self.id = id
@@ -63,6 +71,21 @@ public struct MultipartUploadCheckpoint: Identifiable, Hashable, Sendable {
         self.uploadId = uploadId
         self.createdAt = createdAt
         self.lastTouchedAt = lastTouchedAt
+        self.fileFingerprint = fileFingerprint
         self.completedParts = completedParts
+    }
+
+    /// Cheap identity blob for a local file — mtime + size. Mtime
+    /// changes whenever the file's content does (sandbox writes
+    /// always touch mtime), so two files with the same path + size
+    /// but different content produce different fingerprints. We
+    /// avoid hashing the whole file because resumable uploads
+    /// specifically target the huge-file band where rehashing on
+    /// every resume would dwarf the part-upload cost.
+    public static func fingerprint(for url: URL) -> String {
+        let attrs = try? FileManager.default.attributesOfItem(atPath: url.path)
+        let mtime = (attrs?[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0
+        let size = (attrs?[.size] as? NSNumber)?.int64Value ?? 0
+        return "\(Int64(mtime))|\(size)"
     }
 }

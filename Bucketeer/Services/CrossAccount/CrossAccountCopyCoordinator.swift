@@ -26,15 +26,23 @@ final class CrossAccountCopyCoordinator {
     private let browser: any S3Browsing
     private let transferManager: TransferManager
     private let activityLog: any ActivityLogging
+    /// Optional encryption gate so we can detect "either side has a
+    /// BYOK key" and force the round-trip rewrap path — Codex audit
+    /// fix (high #1). Without it, server-side `CopyObject` would
+    /// copy an encrypted envelope under the wrong destination key
+    /// or write plaintext into an encrypted-bucket destination.
+    private let encryptionGate: BucketEncryptionGate?
 
     init(
         browser: any S3Browsing,
         transferManager: TransferManager,
-        activityLog: any ActivityLogging
+        activityLog: any ActivityLogging,
+        encryptionGate: BucketEncryptionGate? = nil
     ) {
         self.browser = browser
         self.transferManager = transferManager
         self.activityLog = activityLog
+        self.encryptionGate = encryptionGate
     }
 
     /// Perform the copy. `keepSource == false` deletes the source
@@ -52,7 +60,25 @@ final class CrossAccountCopyCoordinator {
         keepSource: Bool
     ) async -> [(key: String, error: BucketeerError?)] {
         var results: [(key: String, error: BucketeerError?)] = []
-        let canServerCopy = Self.canServerSideCopy(
+        // Codex audit fix (high #1): once either side of the copy
+        // touches a BYOK-protected bucket, we MUST go through the
+        // round-trip path. Server-side `CopyObject` doesn't know
+        // about Bucketeer envelopes and would otherwise produce
+        // ciphertext encrypted under the wrong key (or plaintext
+        // landing in an encrypted destination).
+        let encryptionInvolved: Bool = await {
+            guard let encryptionGate else { return false }
+            if await encryptionGate.key(
+                accountID: sourceAccount.id,
+                bucket: sourceBucket
+            ) != nil { return true }
+            if await encryptionGate.key(
+                accountID: destinationAccount.id,
+                bucket: destinationBucket
+            ) != nil { return true }
+            return false
+        }()
+        let canServerCopy = !encryptionInvolved && Self.canServerSideCopy(
             from: sourceAccount,
             to: destinationAccount
         )
@@ -159,8 +185,26 @@ final class CrossAccountCopyCoordinator {
         destinationBucket: String,
         destinationKey: String
     ) async throws {
-        let temp = FileManager.default.temporaryDirectory
-            .appendingPathComponent(UUID().uuidString)
+        // Codex audit fix (medium #3): keep the plaintext staging
+        // file inside the App-private Application Support directory
+        // and under a `bucketeer-roundtrip-*` prefix so the
+        // launch-time scavenger (`CrossAccountCopyCoordinator.scavengeOrphans()`)
+        // can clean up after a crash. `FileManager.temporaryDirectory`
+        // is sandboxed already, but its retention is OS-decided —
+        // App Support is under our control.
+        let support = (try? FileManager.default.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: true
+        )) ?? FileManager.default.temporaryDirectory
+        let stagingDir = support.appending(path: "CrossAccountStaging")
+        try? FileManager.default.createDirectory(
+            at: stagingDir,
+            withIntermediateDirectories: true
+        )
+        let temp = stagingDir
+            .appendingPathComponent("bucketeer-roundtrip-\(UUID().uuidString)")
             .appendingPathExtension(URL(fileURLWithPath: sourceKey).pathExtension)
 
         let downloadID = await transferManager.enqueueDownload(
@@ -200,6 +244,27 @@ final class CrossAccountCopyCoordinator {
             throw BucketeerError.cancelled
         default:
             throw BucketeerError.unknown(message: "Upload did not finish.")
+        }
+    }
+
+    /// Sweep any leftover round-trip staging files. Called by
+    /// `AppContainer.init` on every launch so a crash mid-copy
+    /// doesn't leave plaintext on disk indefinitely. Codex audit
+    /// fix (medium #3).
+    static func scavengeOrphans() {
+        let support = (try? FileManager.default.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: false
+        )) ?? FileManager.default.temporaryDirectory
+        let stagingDir = support.appending(path: "CrossAccountStaging")
+        guard let entries = try? FileManager.default.contentsOfDirectory(
+            at: stagingDir,
+            includingPropertiesForKeys: nil
+        ) else { return }
+        for url in entries where url.lastPathComponent.hasPrefix("bucketeer-roundtrip-") {
+            try? FileManager.default.removeItem(at: url)
         }
     }
 
