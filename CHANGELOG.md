@@ -22,6 +22,26 @@ before that is internal phase work on the `development` branch.
 - `docs/DEVELOPER_SETUP.md` clone-to-run guide.
 - `CONTRIBUTING.md` per the design spec §13.2.
 
+### Phase 13.13 — Spotlight indexing (opt-in)
+- `SpotlightIndexer` (`@MainActor`) wraps `CSSearchableIndex` with
+  `indexPage(account:bucket:objects:)`, `purge(accountID:)`,
+  `purgeAll()`. Each indexed item's `uniqueIdentifier` is the
+  `bucketeer://object/…` deep link, so a Spotlight click hands the
+  App back the same URL an external `open` would deliver — routing
+  is the existing deep-link path.
+- `SpotlightSettings` (`@Observable @MainActor`) holds an opt-in
+  toggle in UserDefaults, **off** by default. Privacy-first: turning
+  it on is an explicit decision to make object filenames + bucket /
+  account context searchable system-wide. Object contents are never
+  indexed.
+- `BrowserViewModel` indexes every loaded page when the toggle is
+  on (no-op otherwise).
+- Settings → Transfers tab gains a **Spotlight** section. Turning the
+  toggle off purges the entire Bucketeer domain from the index.
+- `DeepLinkAwareContent.onContinueUserActivity(CSSearchableItemActionType)`
+  routes Spotlight clicks back through `DeepLinkRouter`.
+- 3 localised strings × 10 languages.
+
 ### Phase 13.12 — App Intents (Shortcuts / Siri)
 - AppContainer gained a `nonisolated(unsafe) static var shared`
   set in `BucketeerApp.init` so App Intents — which run inside the

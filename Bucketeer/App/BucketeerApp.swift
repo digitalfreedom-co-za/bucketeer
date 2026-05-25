@@ -7,6 +7,7 @@
 
 import SwiftUI
 import AppKit
+import CoreSpotlight
 import BucketeerCore
 
 @main
@@ -109,6 +110,17 @@ private struct DeepLinkAwareContent: View {
             .onReceive(NotificationCenter.default.publisher(for: .bucketeerDeepLinkReceived)) { note in
                 if let link = note.object as? BucketeerDeepLink {
                     container.deepLinkRouter.handle(link, openWindow: openWindow)
+                }
+            }
+            // Phase 13.13 — Spotlight click hands us an
+            // NSUserActivity whose `userInfo` carries the item's
+            // `uniqueIdentifier` under `CSSearchableItemActivityIdentifier`.
+            // We stored the deep-link URL there at index time, so
+            // routing is the same path as an external `open`.
+            .onContinueUserActivity(CSSearchableItemActionType) { activity in
+                if let raw = activity.userInfo?[CSSearchableItemActivityIdentifier] as? String,
+                   let url = URL(string: raw) {
+                    container.deepLinkRouter.handle(url: url, openWindow: openWindow)
                 }
             }
     }
@@ -289,6 +301,19 @@ private struct SettingsView: View {
                     }
                 }
                 Text("settings.transfers.bandwidth.note")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            // Phase 13.13 — Spotlight indexing toggle (opt-in).
+            Section("settings.spotlight.section") {
+                @Bindable var spotlightSettings = container.spotlightSettings
+                Toggle("settings.spotlight.toggle", isOn: $spotlightSettings.enabled)
+                    .onChange(of: spotlightSettings.enabled) { _, newValue in
+                        if !newValue {
+                            Task { await container.spotlightIndexer.purgeAll() }
+                        }
+                    }
+                Text("settings.spotlight.note")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }

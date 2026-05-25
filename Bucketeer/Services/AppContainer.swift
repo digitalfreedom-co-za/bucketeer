@@ -67,6 +67,9 @@ final class AppContainer {
     let autoTagRulesViewModel: AutoTagRulesViewModel
     /// Phase 13.11 — deep-link router.
     let deepLinkRouter: DeepLinkRouter
+    /// Phase 13.13 — Spotlight indexer + its opt-in toggle.
+    let spotlightIndexer: SpotlightIndexer
+    let spotlightSettings: SpotlightSettings
     let accountListViewModel: AccountListViewModel
     let browserViewModel: BrowserViewModel
     let transferQueueViewModel: TransferQueueViewModel
@@ -266,6 +269,15 @@ final class AppContainer {
             browser: self.browserViewModel,
             accountStore: accountStore
         )
+
+        // Phase 13.13 — Spotlight indexer. Opt-in (default off).
+        // Hooked into BrowserViewModel so every loaded page rolls
+        // into the system index when the toggle is on.
+        let spotlightSettings = SpotlightSettings()
+        let spotlightIndexer = SpotlightIndexer(settings: spotlightSettings)
+        self.spotlightSettings = spotlightSettings
+        self.spotlightIndexer = spotlightIndexer
+        self.browserViewModel.spotlightIndexer = spotlightIndexer
         Task { @MainActor [syncJobListViewModel = self.syncJobListViewModel] in
             await syncJobListViewModel.bootstrap()
         }

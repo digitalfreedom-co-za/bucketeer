@@ -44,6 +44,10 @@ final class BrowserViewModel {
     /// Phase 13.4 — captures a soft-delete copy + metadata before
     /// the actual delete fires.
     var trashCoordinator: TrashCoordinator?
+    /// Phase 13.13 — pushes browsed-object metadata into Spotlight
+    /// when the user has the opt-in toggle on. Optional so unit
+    /// tests don't have to wire it up.
+    var spotlightIndexer: SpotlightIndexer?
 
     /// Monotonically increasing token incremented on every navigation
     /// or refresh. Each async load captures the value at issue time and
@@ -397,6 +401,15 @@ final class BrowserViewModel {
             continuationToken = page.continuationToken
             hasMore = page.hasMore
             error = nil
+            // Phase 13.13 — opt-in Spotlight indexing. The indexer
+            // is a no-op when the user hasn't enabled the toggle.
+            if let spotlightIndexer {
+                await spotlightIndexer.indexPage(
+                    account: account,
+                    bucket: bucket,
+                    objects: page.objects
+                )
+            }
         } catch let error as BucketeerError {
             guard !isStale(token),
                   self.account?.id == account.id,

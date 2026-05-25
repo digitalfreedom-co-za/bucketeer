@@ -30365,6 +30365,201 @@
           }
         }
       }
+    },
+    "settings.spotlight.section": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spotlight"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spotlight"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spotlight"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spotlight"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spotlight"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spotlight"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spotlight"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spotlight"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spotlight"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spotlight"
+          }
+        }
+      }
+    },
+    "settings.spotlight.toggle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Index browsed objects in Spotlight"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Durchsuchte Objekte in Spotlight indizieren"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indexer dans Spotlight les objets consultés"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indexar en Spotlight los objetos consultados"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indicizza in Spotlight gli oggetti sfogliati"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "参照したオブジェクトをSpotlightに登録"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "열람한 객체를 Spotlight에 색인"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bekeken objecten in Spotlight indexeren"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indeksuj przeglądane obiekty w Spotlight"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indexar objetos vistos no Spotlight"
+          }
+        }
+      }
+    },
+    "settings.spotlight.note": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off by default. When on, object filenames + bucket / account context become searchable system-wide. Object contents are never indexed."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standardmäßig aus. Eingeschaltet werden Dateinamen sowie Bucket-/Konto-Kontext systemweit durchsuchbar. Objekt-Inhalte werden nie indiziert."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Désactivé par défaut. Activé, les noms de fichiers et le contexte bucket/compte deviennent recherchables au niveau système. Le contenu n’est jamais indexé."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desactivado por defecto. Activado, los nombres de archivo y el contexto bucket/cuenta son buscables a nivel del sistema. El contenido nunca se indexa."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disattivato di default. Attivo, nomi file e contesto bucket/account diventano cercabili a livello sistema. Il contenuto non viene mai indicizzato."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "既定はオフ。有効にすると、ファイル名とバケット/アカウントの情報がシステム全体で検索可能になります。本体の内容はインデックスされません。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기본값은 꺼짐. 켜면 파일명과 버킷/계정 정보가 시스템 전체에서 검색됩니다. 객체 콘텐츠는 색인하지 않습니다."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standaard uit. Aan: bestandsnamen en bucket-/accountcontext zijn systeembreed doorzoekbaar. Objectinhoud wordt nooit geïndexeerd."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domyślnie wyłączone. Po włączeniu nazwy plików i kontekst bucket/konto są przeszukiwalne w całym systemie. Zawartość nigdy nie jest indeksowana."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desativado por padrão. Quando ativo, nomes de arquivo e contexto bucket/conta ficam pesquisáveis no sistema. O conteúdo nunca é indexado."
+          }
+        }
+      }
     }
   },
   "version": "1.1"
