@@ -22,6 +22,81 @@ before that is internal phase work on the `development` branch.
 - `docs/DEVELOPER_SETUP.md` clone-to-run guide.
 - `CONTRIBUTING.md` per the design spec §13.2.
 
+### Phase 14 — Pre-release hardening, audit follow-ups, polish
+Captures everything between the v1.0 feature freeze (end of
+Phase 13.16) and the development → main draft PR.
+
+**Codex audits**: two rounds across the 13.x delta, 35 findings
+addressed total.
+
+- Round 1 (security-critical): 3 high, 3 medium, 2 low. CSE
+  envelope AAD, EncryptionKeyStore validation + delete order,
+  resumable-upload file fingerprint, trash plaintext-cache leak,
+  cross-account server-side bypass on encrypted buckets,
+  round-trip staging file location.
+- Round 2 (remaining 13.x): 2 high, 12 medium, 5 low. Upload
+  intent temp-file leak, watch-folder pending-rerun bit,
+  activity-log overflow guards, bucket stats clamps + saturating
+  add, deep-link exact-component-count, deep-link router route
+  token, hardware-key timeout + weak-self exit, auto-tag
+  observer exit, sync-engine bookmark equality, sync-engine
+  shutdown method.
+- Round 3 (post-Azure-parity): 3 high, 4 medium, 1 low. Azure
+  Set Blob Properties RPC was missing (Content-* edits silently
+  dropped), tag-load only treats 404 as empty, Spotlight
+  per-account purge via tracked UserDefaults set,
+  restoreVersion exhaustive copy-status switch, nanosecond +
+  inode fingerprint, abort-multipart on fingerprint mismatch,
+  xmlEscape strips XML-1.0 control scalars.
+
+**Azure feature gaps**: snapshots (versions browser parity),
+metadata + tags (Get/Set Blob Properties + Set Blob Metadata +
+Get/Set Blob Tags via XML envelope). loadInsights still
+featureNotSupported until the ARM management plane lands in v1.1.
+
+**Per-account Spotlight purge**: per-account sub-domain layout +
+UserDefaults-backed tracking set so purgeAccount targets one
+account and purgeAll iterates every indexed sub-domain.
+AccountListViewModel.delete wired in.
+
+**SyncJobEntity**: AppEntity wrapping SyncJob + AccountQuery-
+style EntityQuery. RunSyncJobIntent picks by stable id from a
+typed list instead of matching by name.
+
+**Brand icon**: scripts/generate_app_icon.swift renders a
+Bucketeer-branded squircle (cloud-blue → navy gradient, white
+bucket glyph with handle arc + upload chevrons) via raw
+CGContext at exact pixel sizes per slot. All 10 AppIcon
+assets regenerated correctly (the previous May-22 set was off
+by 2× in every slot and would have failed App Store validation).
+Re-runnable; `scripts/build/bucketeer-icon-master-1024.png`
+gitignored as a build product.
+
+**URL scheme registration**: Bucketeer/Info.plist with
+CFBundleURLTypes for `bucketeer://` (Viewer role,
+za.co.digitalfreedom.bucketeer.deeplink). pbxproj sets
+INFOPLIST_FILE alongside the existing GENERATE_INFOPLIST_FILE
+so Xcode merges the file keys with INFOPLIST_KEY_* + auto-gen
+versions. Cold-launch from Safari / Mail / Terminal now
+routes through DeepLinkRouter without an in-process App Event
+handler fallback.
+
+**Pre-release CI**: .github/workflows/ci.yml runs the
+BucketeerCore suite + an unsigned Debug build on every push
+and PR (macos-15, Xcode 16). ci_scripts/ for Xcode Cloud
+(ci_post_clone.sh, ci_pre_xcodebuild.sh with SHIP_BLOCKER +
+icon checks, ci_post_xcodebuild.sh). scripts/preflight.sh
+mirrors the gates locally.
+
+**Release plan**: docs/RELEASE_v1.0.md with the full 22-step
+TestFlight smoke-test plan + branch flow + v1.1 backlog.
+
+**Things bulk import**: scripts/bucketeer-things-import.py
+opens a `things:///json` URL that creates a "Bucketeer v1.0
+release" project with 19 to-dos covering every Xcode /
+developer.apple.com / App Store Connect / Xcode Cloud /
+TestFlight step that can't be automated, plus v1.1 follow-ups.
+
 ### Phase 13.16 — Hardware-key unlock (technical preview)
 - `HardwareKeyAvailability` (`@Observable @MainActor`) wraps
   `TKSmartCardSlotManager.default`, enumerates slots, resolves

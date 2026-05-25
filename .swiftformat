@@ -1,0 +1,32 @@
+# Bucketeer SwiftFormat config — opinionated but minimal so the
+# diff churn on every PR stays small. Matches the style the repo
+# already converged on; SwiftFormat just enforces it.
+
+--swiftversion 6.0
+
+# Indentation + line length
+--indent 4
+--maxwidth 100
+--wraparguments before-first
+--wrapparameters before-first
+--wrapcollections before-first
+--funcattributes prev-line
+--typeattributes prev-line
+
+# Imports
+--importgrouping testable-bottom
+
+# Trailing commas in multi-line collections (Swift 6 syntax)
+--commas always
+
+# Spaces inside braces / brackets
+--ranges spaced
+
+# Self
+--self init-only
+
+# Rules we explicitly disable (already follow informal conventions)
+--disable redundantSelf,trailingClosures,enumNamespaces,markTypes
+
+# Strip trailing whitespace + final newline
+--trimwhitespace always

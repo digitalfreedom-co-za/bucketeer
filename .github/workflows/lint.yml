@@ -1,0 +1,32 @@
+name: Lint
+
+# Runs SwiftFormat in --lint mode on every push and PR. Catches
+# style drift before it lands. No fix-up is auto-committed — the
+# dev runs `swiftformat .` locally and re-pushes.
+#
+# No user-controlled GitHub-event input is interpolated into any
+# run: block; the workflow only operates on the checked-out tree.
+
+on:
+  push:
+    branches: [development, test, beta, main]
+  pull_request:
+    branches: [development, test, beta, main]
+
+jobs:
+  swiftformat:
+    name: SwiftFormat lint
+    runs-on: macos-15
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install SwiftFormat
+        run: brew install swiftformat
+
+      - name: Show version
+        run: swiftformat --version
+
+      - name: Lint
+        run: swiftformat --lint Bucketeer BucketeerCore

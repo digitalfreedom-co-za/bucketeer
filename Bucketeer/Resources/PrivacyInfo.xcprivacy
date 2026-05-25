@@ -10,11 +10,22 @@
     <key>NSPrivacyTrackingDomains</key>
     <array/>
 
-    <!-- Bucketeer collects no personal data on behalf of its publisher.
-         All data the app handles stays on the user's Mac. Apple
-         processes purchase transactions for the Bucketeer Pro IAP under
-         their own privacy policy; the publisher receives only the
-         aggregated payout reports App Store Connect provides. -->
+    <!--
+        Bucketeer collects no personal data on behalf of its publisher.
+        Every host-side store stays on the user's Mac:
+
+          • Bucketeer.store          — accounts + sync jobs (App Group)
+          • BucketeerActivity.store  — Phase 13.1 audit log
+          • BucketeerTrash.store     — Phase 13.4 soft-delete + cache
+          • BucketeerAutoTags.store  — Phase 13.8 rule definitions
+          • BucketeerCheckpoints.store — Phase 13.10 resumable uploads
+          • BucketeerEncryptionKeys.store + Keychain — Phase 13.15 BYOK
+
+        Apple processes purchase transactions for the Bucketeer Pro IAP
+        under their own privacy policy; the publisher receives only the
+        aggregated payout reports App Store Connect provides — which is
+        why PurchaseHistory is declared below.
+    -->
     <key>NSPrivacyCollectedDataTypes</key>
     <array>
         <dict>
@@ -31,12 +42,33 @@
         </dict>
     </array>
 
-    <!-- Required-reason API declarations. -->
+    <!--
+        Required-reason API declarations.
+
+        Apple introduced this manifest gate in 2024 to make sure apps
+        only call the listed API categories for documented purposes.
+        Reasons referenced below come from Apple's published table:
+        https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api
+    -->
     <key>NSPrivacyAccessedAPITypes</key>
     <array>
 
-        <!-- UserDefaults: app's own preferences (window state,
-             column visibility, last-used account, etc.). -->
+        <!--
+            UserDefaults: app's own preferences.
+
+            Phase 13.x added a lot of small toggles that all live in
+            standard UserDefaults via @Observable / @AppStorage:
+              • activity log filter state
+              • bandwidth-limit preset + custom MB/s (13.2)
+              • trash retention days + cache cap MB + master toggle (13.4)
+              • Spotlight indexing toggle (13.13)
+              • indexed-account UUIDs set (13.14 follow-up, Phase 14)
+              • hardware-key preferred slot + enabled toggle (13.16)
+              • trial start date + consumed marker (Phase B)
+
+            All read/written by the app itself. Reason CA92.1 covers
+            "app's own preferences".
+        -->
         <dict>
             <key>NSPrivacyAccessedAPIType</key>
             <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
@@ -46,9 +78,18 @@
             </array>
         </dict>
 
-        <!-- FileTimestamp: display object Last-Modified to user;
-             display local download file timestamps in the app's own
-             file lists. -->
+        <!--
+            FileTimestamp uses, expanded for Phase 13.x:
+              • C617.1 — display Last-Modified to user (browser + sync)
+              • DDA9.1 — display local file timestamps in the app's
+                          own download / preview lists
+              • B8FF.1 — inspect timestamp of files the user explicitly
+                          granted access to (security-scoped local
+                          folder sync, Phase 9.8 + 9.10 + 13.3)
+              • 0A2A.1 — file-replace / metadata reads on the user's
+                          own caches (resumable-upload fingerprint
+                          mtime/inode, Phase 13.10 + Codex R3 medium)
+        -->
         <dict>
             <key>NSPrivacyAccessedAPIType</key>
             <string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
@@ -56,12 +97,17 @@
             <array>
                 <string>C617.1</string>
                 <string>DDA9.1</string>
+                <string>B8FF.1</string>
+                <string>0A2A.1</string>
             </array>
         </dict>
 
-        <!-- DiskSpace: check available disk space before downloading
-             a large object; display free space when managing the
-             preview cache. -->
+        <!--
+            DiskSpace: check available disk before downloading a large
+            object; display free space when managing the preview cache
+            or the trash cache (Phase 13.4 added the trash cache;
+            preview cache predates 13.x).
+        -->
         <dict>
             <key>NSPrivacyAccessedAPIType</key>
             <string>NSPrivacyAccessedAPICategoryDiskSpace</string>
@@ -72,8 +118,12 @@
             </array>
         </dict>
 
-        <!-- SystemBootTime: measure transfer durations for live
-             progress estimates. -->
+        <!--
+            SystemBootTime: measure transfer durations for live
+            progress estimates + bandwidth-limit token bucket
+            (Phase 13.2). Reason 35F9.1 covers measuring time
+            intervals within the app.
+        -->
         <dict>
             <key>NSPrivacyAccessedAPIType</key>
             <string>NSPrivacyAccessedAPICategorySystemBootTime</string>

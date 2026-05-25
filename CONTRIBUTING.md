@@ -84,16 +84,45 @@ Provider extension fit together.
 Key seams:
 
 - **`BucketeerCore`** holds shared models + storage + S3/Azure
-  services + sync planner + trial logic. Pure-logic extraction is
-  the preferred way to make host code testable (`SyncPlanner`,
-  `TrialBookkeeping` are the pattern).
-- **Host** holds composition (`AppContainer`), ViewModels, SwiftUI,
-  StoreKit (`EntitlementManager`), File Provider host
-  (`MountController`), DragDrop coordinator, TransferManager queue,
-  SyncEngine.
+  services + sync planner + trial logic + the 13.x feature surface
+  (activity, trash, auto-tag, encryption envelope, bucket stats,
+  bandwidth limiter, deep-link grammar, resumable-upload
+  checkpoints). Pure-logic extraction is the preferred way to make
+  host code testable — `SyncPlanner`, `TrialBookkeeping`,
+  `AutoTagRuleEvaluator`, `BucketeerEnvelope`, `BucketeerDeepLink`,
+  `BucketStatsCollector`, and `BandwidthLimiter` are all in Core
+  precisely because they have no live-state dependency.
+- **Host** holds composition (`AppContainer` with one static
+  `.shared` for App Intents), ViewModels, SwiftUI, StoreKit
+  (`EntitlementManager`), File Provider host (`MountController`),
+  DragDrop coordinator, TransferManager queue (with resumable +
+  encryption-gate plumbing), SyncEngine (with FSEvents pump + rerun
+  bit), TrashCoordinator, AutoTagCoordinator, CrossAccountCopyCoordinator,
+  DeepLinkRouter, SpotlightIndexer, App Intents adapters.
 - **File Provider extension** is a separate target you add manually
   per `PHASE_9_SETUP.md`; the code lives in `Bucketeer File Provider/`
   and uses the same `BucketeerCore` services as the host.
+
+### Adding a new 13.x-style feature
+
+If your contribution adds a self-contained feature (auto-tagging,
+encryption, etc.), the pattern is:
+
+1. Define Sendable Models in `BucketeerCore/Sources/BucketeerCore/Models/`.
+2. `@Model` SwiftData record if persistence is needed; the host
+   builds a dedicated `ModelContainer` in `AppContainer.makeXxxContainer()`.
+3. `XxxStoring` protocol in `Services/ServiceProtocols.swift`; impl
+   as `@ModelActor` in `Services/Xxx/XxxStore.swift`.
+4. Host-side coordinator (`@MainActor` / `@Observable`) glues the
+   store to the rest of the app and records to the activity log.
+5. ViewModel + View pair under `Bucketeer/ViewModels/` +
+   `Bucketeer/Views/...`.
+6. New `Localizable.xcstrings` keys for every user-visible string
+   in all 10 languages.
+7. Wire into `AppContainer.init` once; never let view code reach
+   directly past the container.
+8. Add unit tests for the pure logic to `BucketeerCore/Tests/`.
+9. Document under `docs/ARCHITECTURE.md` + `CHANGELOG.md`.
 
 ---
 
@@ -180,4 +209,15 @@ For anything you'd rather not file publicly:
 - Code / architecture questions → open a PR draft and tag the
   Publisher for an early read.
 - Private contact → hello@digitalfreedom.co.za
-- Privacy / security disclosure → data-protection@digitalfreedom.co.za
+- Privacy / data-protection disclosure → data-protection@digitalfreedom.co.za
+- **Security vulnerabilities** → `SECURITY.md` (private email to
+  security@digitalfreedom.co.za, **not** a public issue)
+
+---
+
+## 12. Code of Conduct
+
+By participating you agree to follow the project's
+[Code of Conduct](CODE_OF_CONDUCT.md). Maintainers enforce it
+proportionally — private nudge → public correction → temporary
+ban → permanent ban for harassment or repeat offences.
