@@ -22,6 +22,25 @@ before that is internal phase work on the `development` branch.
 - `docs/DEVELOPER_SETUP.md` clone-to-run guide.
 - `CONTRIBUTING.md` per the design spec §13.2.
 
+### Phase 13.16 — Hardware-key unlock (technical preview)
+- `HardwareKeyAvailability` (`@Observable @MainActor`) wraps
+  `TKSmartCardSlotManager.default`, enumerates slots, resolves
+  each via a Sendable-safe continuation that captures only the
+  `Bool` "card present" flag (not the non-Sendable
+  `TKSmartCardSlot` reference). 2-second poll loop while the
+  Security view is on screen.
+- `HardwareKeySettings` (`@Observable @MainActor`) persists an
+  opt-in `enabled` toggle + optional `preferredSlot` name to
+  UserDefaults. Default off.
+- Settings → **Security** tab lists every detected reader with a
+  card-present indicator, the opt-in toggle, the preferred-slot
+  picker, and a clearly-flagged Technical Preview notice — the
+  full secret-reveal-gate replacement ships in v1.1 after a
+  wider device-validation pass against multiple YubiKey / PIV
+  combinations.
+- AppContainer wires the settings store.
+- 13 localised strings × 10 languages.
+
 ### Phase 13.15 — Client-side encryption per bucket
 - BucketeerCore: `BucketEncryptionKey` Sendable struct (metadata
   only — the raw 256-bit key never crosses this boundary) +

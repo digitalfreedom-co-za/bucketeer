@@ -77,6 +77,8 @@ final class AppContainer {
     let encryptionKeyStore: any EncryptionKeyStoring
     let encryptionKeysViewModel: EncryptionKeysViewModel
     let bucketEncryptionGate: BucketEncryptionGate
+    /// Phase 13.16 — hardware-key (CryptoTokenKit) unlock toggle.
+    let hardwareKeySettings: HardwareKeySettings
     let accountListViewModel: AccountListViewModel
     let browserViewModel: BrowserViewModel
     let transferQueueViewModel: TransferQueueViewModel
@@ -308,6 +310,9 @@ final class AppContainer {
             accountStore: accountStore,
             gate: bucketEncryptionGate
         )
+
+        // Phase 13.16 — hardware-key unlock.
+        self.hardwareKeySettings = HardwareKeySettings()
         Task { @MainActor [syncJobListViewModel = self.syncJobListViewModel] in
             await syncJobListViewModel.bootstrap()
         }

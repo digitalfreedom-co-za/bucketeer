@@ -269,6 +269,12 @@ private struct SettingsView: View {
                 .tabItem {
                     Label("settings.tab.encryption", systemImage: "lock.shield")
                 }
+            // Phase 13.16 — hardware-key (CryptoTokenKit) unlock.
+            HardwareKeyView()
+                .environment(container)
+                .tabItem {
+                    Label("settings.tab.security", systemImage: "key.fill")
+                }
             proTab
                 .tabItem {
                     Label("settings.tab.pro", systemImage: "shippingbox.and.arrow.backward.fill")
