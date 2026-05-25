@@ -19,6 +19,7 @@ struct ObjectListView: View {
     @State private var dashboardViewModel: BucketDashboardViewModel?
     @State private var versionsViewModel: ObjectVersionsViewModel?
     @State private var metadataViewModel: ObjectMetadataViewModel?
+    @State private var crossCopyTarget: [String]?
 
     var body: some View {
         Group {
@@ -152,6 +153,34 @@ struct ObjectListView: View {
         ) {
             if let metadataViewModel {
                 ObjectMetadataSheet(viewModel: metadataViewModel)
+            }
+        }
+        .sheet(
+            isPresented: Binding(
+                get: { crossCopyTarget != nil },
+                set: { if !$0 { crossCopyTarget = nil } }
+            )
+        ) {
+            if let keys = crossCopyTarget,
+               let account = viewModel.account,
+               let bucket = viewModel.bucket {
+                CrossAccountCopySheet(
+                    sourceAccount: account,
+                    sourceBucket: bucket,
+                    keys: keys,
+                    accounts: container.accountListViewModel.accounts,
+                    onSubmit: { destAcc, destBucket, destPrefix, keepSource in
+                        await container.crossAccountCopyCoordinator.copy(
+                            sourceAccount: account,
+                            sourceBucket: bucket,
+                            keys: keys,
+                            destinationAccount: destAcc,
+                            destinationBucket: destBucket,
+                            destinationPrefix: destPrefix,
+                            keepSource: keepSource
+                        )
+                    }
+                )
             }
         }
         .confirmationDialog(
@@ -401,11 +430,26 @@ struct ObjectListView: View {
             Button("action.delete", systemImage: "trash", role: .destructive) {
                 pendingDeletion = [object]
             }
+            // Phase 13.14 — cross-account copy / move.
+            Button("crossCopy.menu.start", systemImage: "arrow.right.arrow.left.square") {
+                crossCopyTarget = [object.key]
+            }
+            .disabled(!hasMultipleAccounts)
         } else if !resolved.isEmpty {
             Button("action.delete.multi \(resolved.count)", systemImage: "trash", role: .destructive) {
                 pendingDeletion = resolved
             }
+            Button("crossCopy.menu.start.multi \(resolved.count)", systemImage: "arrow.right.arrow.left.square") {
+                crossCopyTarget = resolved.map(\.key)
+            }
+            .disabled(!hasMultipleAccounts)
         }
+    }
+
+    /// True only when at least two accounts are configured — the
+    /// cross-account copy entry has no meaning with just one.
+    private var hasMultipleAccounts: Bool {
+        container.accountListViewModel.accounts.count >= 2
     }
 
     // MARK: - Actions

@@ -70,6 +70,8 @@ final class AppContainer {
     /// Phase 13.13 — Spotlight indexer + its opt-in toggle.
     let spotlightIndexer: SpotlightIndexer
     let spotlightSettings: SpotlightSettings
+    /// Phase 13.14 — cross-account copy / move.
+    let crossAccountCopyCoordinator: CrossAccountCopyCoordinator
     let accountListViewModel: AccountListViewModel
     let browserViewModel: BrowserViewModel
     let transferQueueViewModel: TransferQueueViewModel
@@ -278,6 +280,13 @@ final class AppContainer {
         self.spotlightSettings = spotlightSettings
         self.spotlightIndexer = spotlightIndexer
         self.browserViewModel.spotlightIndexer = spotlightIndexer
+
+        // Phase 13.14 — cross-account copy / move.
+        self.crossAccountCopyCoordinator = CrossAccountCopyCoordinator(
+            browser: router,
+            transferManager: transferManager,
+            activityLog: activityLog
+        )
         Task { @MainActor [syncJobListViewModel = self.syncJobListViewModel] in
             await syncJobListViewModel.bootstrap()
         }

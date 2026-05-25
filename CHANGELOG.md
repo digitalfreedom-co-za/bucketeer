@@ -22,6 +22,27 @@ before that is internal phase work on the `development` branch.
 - `docs/DEVELOPER_SETUP.md` clone-to-run guide.
 - `CONTRIBUTING.md` per the design spec §13.2.
 
+### Phase 13.14 — Cross-account copy / move
+- `CrossAccountCopyCoordinator` (`@MainActor`) routes a multi-key
+  copy with two strategies, picked automatically:
+  - **Server-side `CopyObject`** when source + destination accounts
+    share an endpoint (same provider family + region / custom URL).
+    No bytes cross the user's network.
+  - **Local round-trip** otherwise — download to a sandboxed temp
+    file via `TransferManager.enqueueDownload` →
+    `awaitCompletion`, then upload to the destination, then
+    cleanup. Defers all retry / progress to the existing
+    transfer pipeline.
+- Activity log records one row per object (success or failure).
+- `CrossAccountCopySheet` picks destination account + bucket +
+  prefix, keep-source toggle, and shows a strategy badge (green
+  bolt for server-side, orange double-arrow for round-trip) so
+  the user knows what's about to happen.
+- Browser context menu gains **Copy to other account…** for
+  single + multi selections, gated on having ≥ 2 configured
+  accounts. AppContainer wires the coordinator.
+- 18 localised strings × 10 languages.
+
 ### Phase 13.13 — Spotlight indexing (opt-in)
 - `SpotlightIndexer` (`@MainActor`) wraps `CSSearchableIndex` with
   `indexPage(account:bucket:objects:)`, `purge(accountID:)`,
