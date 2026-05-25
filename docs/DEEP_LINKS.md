@@ -25,11 +25,9 @@ bucketeer://object/11111111-2222-3333-4444-555555555555/photos/2026/05/img.jpg
 `BucketeerDeepLink.url` builds these for you from `BucketeerCore`;
 the canonical Swift API is `BucketeerDeepLink(url: URL)`.
 
-## Mac App Store packaging requirement
+## Registration
 
-For `open bucketeer://…` from another app (Safari, Mail, Notes,
-Terminal, …) to launch Bucketeer or focus it when it's already
-running, the scheme **must be registered** in the App's Info.plist:
+The scheme is registered system-wide via `Bucketeer/Info.plist`:
 
 ```xml
 <key>CFBundleURLTypes</key>
@@ -47,26 +45,15 @@ running, the scheme **must be registered** in the App's Info.plist:
 </array>
 ```
 
-The project currently uses `GENERATE_INFOPLIST_FILE = YES`, so
-this is a **manual Xcode step** before the next App Store build:
-
-1. Open the Bucketeer target in Xcode.
-2. **Info** tab → **URL Types** section → **+** button.
-3. Identifier: `za.co.digitalfreedom.bucketeer.deeplink`
-4. URL Schemes: `bucketeer`
-5. Role: **Viewer**
-6. Build once → Xcode writes the keys above into the generated
-   Info.plist for you.
-
-Without this step, deep links still work **inside a running
-Bucketeer process** because `DeepLinkRouter` installs an
-`NSAppleEventManager` handler at startup. Cold-launch from
-`open` / Safari / Mail will silently no-op until the keys land
-in Info.plist.
+The project keeps `GENERATE_INFOPLIST_FILE = YES` alongside
+`INFOPLIST_FILE = Bucketeer/Info.plist` — Xcode merges the file
+keys, the `INFOPLIST_KEY_*` build settings, and the auto-generated
+version stamps into the final Info.plist.
 
 ## Verifying the handler
 
-After the app has launched once with the URL types registered:
+After Bucketeer has launched once on the user's Mac (Launch Services
+indexes the URL scheme at install time):
 
 ```bash
 open "bucketeer://activity"
@@ -74,3 +61,8 @@ open "bucketeer://bucket/<accountUUID>/<bucket>"
 ```
 
 Should focus the App and route to the named destination.
+
+`DeepLinkRouter` additionally installs an `NSAppleEventManager`
+handler at startup so URLs that arrive while the App is in
+menu-bar (`.accessory`) mode still route — the handler is the
+in-process fallback to the system-wide registration.
