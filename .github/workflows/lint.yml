@@ -29,4 +29,7 @@ jobs:
         run: swiftformat --version
 
       - name: Lint
-        run: swiftformat --lint Bucketeer BucketeerCore
+        # `--lint` is a flag in newer SwiftFormat (0.61+); placing
+        # it after the paths avoids the parser consuming the next
+        # positional argument as its value.
+        run: swiftformat Bucketeer BucketeerCore --lint
