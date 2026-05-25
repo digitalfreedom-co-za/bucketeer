@@ -20,6 +20,10 @@ final class AccountListViewModel {
     private let azureCredentialsCache: AzureCredentialsCache
     private let transferManager: TransferManager
     private let activityLog: (any ActivityLogging)?
+    /// Phase 14 / Codex R2 (low) follow-up: hand the indexer to the
+    /// view model so account-delete purges the right sub-domain
+    /// instead of nuking the whole Bucketeer Spotlight index.
+    var spotlightIndexer: SpotlightIndexer?
 
     init(
         accountStore: any AccountStoring,
@@ -176,6 +180,11 @@ final class AccountListViewModel {
         }
 
         await invalidateAllCaches(for: account.id)
+        // Codex audit R2 (low) follow-up: targeted Spotlight purge.
+        // Other accounts' search results stay intact.
+        if let spotlightIndexer {
+            await spotlightIndexer.purgeAccount(account.id)
+        }
         await refresh()
         await record(.accountDeleted, status: .info, account: account)
         return nil

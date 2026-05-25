@@ -177,6 +177,16 @@ public struct S3ResumableUploader: Sendable {
             if existing.fileFingerprint == fingerprint {
                 return existing
             }
+            // Codex R3 (medium): also abort the dangling multipart
+            // upload on the server so the orphan parts aren't
+            // billed until the bucket's lifecycle policy reaps
+            // them. Best-effort — a failure here doesn't block
+            // creating the fresh upload.
+            _ = try? await s3.abortMultipartUpload(.init(
+                bucket: bucket,
+                key: key,
+                uploadId: existing.uploadId
+            ))
             try? await checkpointStore.delete(id: existing.id)
         }
         let response = try await s3.createMultipartUpload(.init(

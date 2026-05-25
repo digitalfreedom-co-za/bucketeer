@@ -62,4 +62,13 @@ struct AppIntentsBridge: Sendable {
         }
         return match
     }
+
+    /// Snapshot of every configured sync job for the Shortcuts
+    /// picker. Codex R2 (low) follow-up so `RunSyncJobIntent`
+    /// matches by stable ID rather than collision-prone name.
+    func syncJobs() async throws -> [SyncJobEntity] {
+        let container = try await container()
+        let jobs = try await container.syncJobStore.all()
+        return jobs.map(SyncJobEntity.init(job:))
+    }
 }

@@ -427,11 +427,28 @@ public struct AzureBlobObjectStore: S3Browsing {
         if let mapped = AzureBlobObjectStore.mapHTTP(http, body: nil, bucket: bucket, key: key) {
             throw mapped
         }
-        let status = http.value(forHTTPHeaderField: "x-ms-copy-status") ?? "success"
-        if status.lowercased() == "pending" {
+        // Codex R3 (medium): every non-`success`, non-`pending`
+        // status was previously eaten by the default-success
+        // branch — `failed` and `aborted` looked like wins.
+        let status = (http.value(forHTTPHeaderField: "x-ms-copy-status") ?? "success").lowercased()
+        switch status {
+        case "success":
+            return
+        case "pending":
             try await waitForCopyToFinish(
                 account: account, builder: builder, signer: signer,
                 container: bucket, key: key
+            )
+        case "failed", "aborted":
+            let description = http.value(forHTTPHeaderField: "x-ms-copy-status-description") ?? status
+            throw BucketeerError.providerError(
+                statusCode: http.statusCode,
+                message: "Azure snapshot restore \(status): \(description)"
+            )
+        default:
+            throw BucketeerError.providerError(
+                statusCode: http.statusCode,
+                message: "Azure snapshot restore returned unknown status \(status)."
             )
         }
     }
@@ -498,21 +515,25 @@ public struct AzureBlobObjectStore: S3Browsing {
         }
 
         // Build the user-metadata dictionary from every x-ms-meta-*
-        // response header. Casing is preserved as Azure returned it;
-        // the editor normalises on save anyway.
+        // response header. Codex R3 (medium): refuse keys / values
+        // that aren't safe to echo back into an outbound request,
+        // so a hostile Azure response can't fold a CR/LF into the
+        // next saveMetadata call.
         var userMetadata: [String: String] = [:]
         for (rawKey, value) in http.allHeaderFields {
             guard let stringKey = rawKey as? String,
                   let stringValue = value as? String else { continue }
             let lower = stringKey.lowercased()
-            if lower.hasPrefix("x-ms-meta-") {
-                let metaKey = String(lower.dropFirst("x-ms-meta-".count))
-                userMetadata[metaKey] = stringValue
-            }
+            guard lower.hasPrefix("x-ms-meta-") else { continue }
+            let metaKey = String(lower.dropFirst("x-ms-meta-".count))
+            guard AzureRequestBuilder.isValidHeaderToken(metaKey) else { continue }
+            userMetadata[metaKey] = AzureRequestBuilder.sanitiseHeaderValue(stringValue)
         }
 
-        // Tags via a separate GET. Treat any failure as "no tags" —
-        // Azure returns 404 when tags have never been set.
+        // Tags via a separate GET. Codex R3 (high): only treat a
+        // 404 (`objectNotFound`) as "no tags". Re-throw every other
+        // failure so a follow-up saveMetadata doesn't silently
+        // overwrite real tags with the empty set.
         var tagRequest = URLRequest(url: builder.getBlobTagsURL(container: bucket, blob: key))
         tagRequest.httpMethod = "GET"
         signer.sign(&tagRequest)
@@ -520,8 +541,12 @@ public struct AzureBlobObjectStore: S3Browsing {
         do {
             let tagData = try await fetch(request: tagRequest, on: session, bucket: bucket, key: key)
             tags = AzureListXMLParser.parseTags(tagData)
-        } catch {
-            tags = [:]
+        } catch let error as BucketeerError {
+            if case .objectNotFound = error {
+                tags = [:]
+            } else {
+                throw error
+            }
         }
 
         return ObjectMetadata(
@@ -544,19 +569,50 @@ public struct AzureBlobObjectStore: S3Browsing {
         let signer = try await credentialsCache.signer(for: account)
         let builder = AzureRequestBuilder(account: account)
 
-        // 1) Set Blob Metadata — overwrites the entire x-ms-meta-*
-        //    header set. An empty dict means "clear all".
+        // 1) Set Blob Properties — Codex R3 (high #2). Without this
+        //    RPC every HTTP-section edit (Content-Type, Cache-
+        //    Control, Content-Disposition, Content-Encoding) was
+        //    silently dropped because Set Metadata + Set Tags
+        //    don't touch those fields. Azure uses `x-ms-blob-
+        //    content-*` headers (not the bare HTTP headers).
+        var propsRequest = URLRequest(url: builder.setBlobPropertiesURL(container: bucket, blob: key))
+        propsRequest.httpMethod = "PUT"
+        propsRequest.setValue("0", forHTTPHeaderField: "Content-Length")
+        let propertyHeaders: [(String, String)] = [
+            ("x-ms-blob-content-type",        metadata.contentType),
+            ("x-ms-blob-cache-control",       metadata.cacheControl),
+            ("x-ms-blob-content-disposition", metadata.contentDisposition),
+            ("x-ms-blob-content-encoding",    metadata.contentEncoding)
+        ]
+        for (header, value) in propertyHeaders where !value.isEmpty {
+            propsRequest.setValue(
+                AzureRequestBuilder.sanitiseHeaderValue(value),
+                forHTTPHeaderField: header
+            )
+        }
+        signer.sign(&propsRequest)
+        try await fireAndCheck(request: propsRequest, bucket: bucket, key: key)
+
+        // 2) Set Blob Metadata — overwrites the entire x-ms-meta-*
+        //    header set. An empty dict means "clear all". Keys are
+        //    validated as HTTP tokens; values are CR/LF-stripped.
         var metaRequest = URLRequest(url: builder.setBlobMetadataURL(container: bucket, blob: key))
         metaRequest.httpMethod = "PUT"
         metaRequest.setValue("0", forHTTPHeaderField: "Content-Length")
         for (k, v) in metadata.userMetadata {
-            metaRequest.setValue(v, forHTTPHeaderField: "x-ms-meta-" + k.lowercased())
+            let lowerKey = k.lowercased()
+            guard AzureRequestBuilder.isValidHeaderToken(lowerKey) else { continue }
+            metaRequest.setValue(
+                AzureRequestBuilder.sanitiseHeaderValue(v),
+                forHTTPHeaderField: "x-ms-meta-" + lowerKey
+            )
         }
         signer.sign(&metaRequest)
         try await fireAndCheck(request: metaRequest, bucket: bucket, key: key)
 
-        // 2) Set Blob Tags — overwrites the entire tag set with the
-        //    supplied envelope.
+        // 3) Set Blob Tags — overwrites the entire tag set with the
+        //    supplied envelope. xmlEscape strips XML-illegal
+        //    control scalars (Codex R3 low) before escaping.
         let body = AzureRequestBuilder.tagsXML(tags: metadata.tags)
         var tagRequest = URLRequest(url: builder.setBlobTagsURL(container: bucket, blob: key))
         tagRequest.httpMethod = "PUT"

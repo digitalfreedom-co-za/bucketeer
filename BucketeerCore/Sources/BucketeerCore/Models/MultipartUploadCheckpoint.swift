@@ -75,17 +75,22 @@ public struct MultipartUploadCheckpoint: Identifiable, Hashable, Sendable {
         self.completedParts = completedParts
     }
 
-    /// Cheap identity blob for a local file — mtime + size. Mtime
-    /// changes whenever the file's content does (sandbox writes
-    /// always touch mtime), so two files with the same path + size
-    /// but different content produce different fingerprints. We
-    /// avoid hashing the whole file because resumable uploads
-    /// specifically target the huge-file band where rehashing on
-    /// every resume would dwarf the part-upload cost.
+    /// Cheap identity blob for a local file — nanosecond-precision
+    /// mtime + inode + size. Codex R3 (medium) bumped this from
+    /// the previous second-precision mtime so a same-path
+    /// same-size replacement within one second still flips the
+    /// fingerprint. We avoid full-content hashing because
+    /// resumable uploads target the huge-file band where a
+    /// rehash on every resume would dwarf the part-upload cost.
     public static func fingerprint(for url: URL) -> String {
         let attrs = try? FileManager.default.attributesOfItem(atPath: url.path)
         let mtime = (attrs?[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0
         let size = (attrs?[.size] as? NSNumber)?.int64Value ?? 0
-        return "\(Int64(mtime))|\(size)"
+        let inode = (attrs?[.systemFileNumber] as? NSNumber)?.uint64Value ?? 0
+        // Encode mtime in nanoseconds — Date carries sub-millisecond
+        // precision on macOS, more than enough to differentiate
+        // same-second replacements.
+        let ns = Int64((mtime * 1_000_000_000).rounded())
+        return "\(ns)|\(size)|\(inode)"
     }
 }

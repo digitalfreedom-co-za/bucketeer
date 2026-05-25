@@ -41,6 +41,9 @@ struct BucketeerShortcuts: AppShortcutsProvider {
             shortTitle: "Upload file",
             systemImageName: "arrow.up.circle"
         )
+        // RunSyncJobIntent now takes a SyncJobEntity parameter
+        // (Phase 14 / Codex R2 low follow-up). The picker handles
+        // the visible side; we just need to expose the intent.
         AppShortcut(
             intent: RunSyncJobIntent(),
             phrases: [

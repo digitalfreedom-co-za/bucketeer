@@ -19,23 +19,36 @@ import BucketeerCore
 /// indexer never indexes object contents, only filenames + bucket /
 /// account context.
 ///
-/// Storage:
-/// - Domain identifier: `za.co.digitalfreedom.bucketeer.spotlight`
-/// - Each item's `uniqueIdentifier` is the `bucketeer://object/…`
-///   deep link, so when the user clicks a Spotlight result the
-///   `NSUserActivity` Apple hands us already carries the URL —
-///   `DeepLinkRouter` routes it the same way as an external `open`.
+/// Domain layout (Codex audit R2 low + R3 high #3 follow-ups):
+/// - Base domain: `za.co.digitalfreedom.bucketeer.spotlight`
+/// - Per-account sub-domain:
+///   `za.co.digitalfreedom.bucketeer.spotlight.<accountUUID>`
+///
+/// Items live under their account's sub-domain so
+/// `purgeAccount(_:)` can wipe one account without touching the
+/// rest. `CSSearchableIndex.deleteSearchableItems(withDomainIdentifiers:)`
+/// matches by **exact** domain string (not prefix — Codex R3
+/// caught the wrong assumption), so `purgeAll()` iterates every
+/// sub-domain we've ever indexed plus the base domain.
+///
+/// The set of indexed-account UUIDs is mirrored to `UserDefaults`
+/// under `spotlight.indexed.accounts` so the iteration survives an
+/// app relaunch.
 @MainActor
 final class SpotlightIndexer {
     private let index: CSSearchableIndex
     private let domainID: String
     private let settings: SpotlightSettings
+    private let defaults: UserDefaults
+    private static let indexedAccountsKey = "spotlight.indexed.accounts"
 
     init(domainID: String = "za.co.digitalfreedom.bucketeer.spotlight",
-         settings: SpotlightSettings) {
+         settings: SpotlightSettings,
+         defaults: UserDefaults = .standard) {
         self.index = CSSearchableIndex(name: domainID)
         self.domainID = domainID
         self.settings = settings
+        self.defaults = defaults
     }
 
     /// Add or refresh a page of objects in the index. No-op when
@@ -47,6 +60,7 @@ final class SpotlightIndexer {
         objects: [S3Object]
     ) async {
         guard settings.enabled else { return }
+        let accountDomain = Self.domain(for: account.id, baseDomain: domainID)
         let items: [CSSearchableItem] = objects.compactMap { object -> CSSearchableItem? in
             guard !object.isFolder else { return nil }
             let link = BucketeerDeepLink.object(
@@ -65,32 +79,62 @@ final class SpotlightIndexer {
             attributes.contentModificationDate = object.lastModified
             return CSSearchableItem(
                 uniqueIdentifier: url.absoluteString,
-                domainIdentifier: domainID,
+                domainIdentifier: accountDomain,
                 attributeSet: attributes
             )
         }
         guard !items.isEmpty else { return }
         try? await index.indexSearchableItems(items)
+        rememberAccountDomain(account.id)
     }
 
-    /// Wipe the entire Bucketeer Spotlight domain. Called from the
-    /// Settings toggle when the user turns indexing off, and from
-    /// the account-delete path when a per-account purge is needed
-    /// (see `purgeAllForAccountDeletion(_:)`). Codex audit R2 (low)
-    /// merged the previous misleading `purge(accountID:)` into this
-    /// single all-or-nothing API — Spotlight has no domain-level
-    /// per-attribute deletion and the implicit nuke-everything
-    /// behaviour was surprising.
+    /// Wipe every Bucketeer Spotlight entry. Codex R3 (high #3):
+    /// CSSearchableIndex domain-match is exact, so we explicitly
+    /// iterate every sub-domain we've ever touched plus the base
+    /// domain (legacy items indexed before the sub-domain layout
+    /// landed).
     func purgeAll() async {
-        try? await index.deleteSearchableItems(withDomainIdentifiers: [domainID])
+        var domains = trackedAccountDomains()
+        domains.append(domainID)
+        try? await index.deleteSearchableItems(withDomainIdentifiers: domains)
+        defaults.removeObject(forKey: Self.indexedAccountsKey)
     }
 
-    /// Compatibility shim for the account-delete path. Honest about
-    /// what it does: until per-account identifier tracking lands,
-    /// removing one account's entries means rebuilding the whole
-    /// index on next page load. The next user-visible browse
-    /// repopulates the survivors via `indexPage`.
-    func purgeAllForAccountDeletion(_ accountID: UUID) async {
-        await purgeAll()
+    /// Remove every indexed item for the given account. Targets only
+    /// the account's sub-domain, so the other accounts' items stay
+    /// searchable. Codex audit R2 (low) follow-up.
+    func purgeAccount(_ accountID: UUID) async {
+        let target = Self.domain(for: accountID, baseDomain: domainID)
+        try? await index.deleteSearchableItems(withDomainIdentifiers: [target])
+        forgetAccountDomain(accountID)
+    }
+
+    /// Stable per-account sub-domain. Lower-cased so a round-trip
+    /// through Apple's APIs (which sometimes lower-case identifiers)
+    /// is byte-stable.
+    static func domain(for accountID: UUID, baseDomain: String) -> String {
+        "\(baseDomain).\(accountID.uuidString.lowercased())"
+    }
+
+    // MARK: - UserDefaults-backed account tracking
+
+    private func trackedAccountDomains() -> [String] {
+        let ids = (defaults.array(forKey: Self.indexedAccountsKey) as? [String]) ?? []
+        return ids.compactMap { idString in
+            guard let uuid = UUID(uuidString: idString) else { return nil }
+            return Self.domain(for: uuid, baseDomain: domainID)
+        }
+    }
+
+    private func rememberAccountDomain(_ accountID: UUID) {
+        var ids = Set((defaults.array(forKey: Self.indexedAccountsKey) as? [String]) ?? [])
+        ids.insert(accountID.uuidString.lowercased())
+        defaults.set(Array(ids), forKey: Self.indexedAccountsKey)
+    }
+
+    private func forgetAccountDomain(_ accountID: UUID) {
+        var ids = Set((defaults.array(forKey: Self.indexedAccountsKey) as? [String]) ?? [])
+        ids.remove(accountID.uuidString.lowercased())
+        defaults.set(Array(ids), forKey: Self.indexedAccountsKey)
     }
 }

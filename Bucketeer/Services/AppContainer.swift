@@ -293,6 +293,8 @@ final class AppContainer {
         self.spotlightSettings = spotlightSettings
         self.spotlightIndexer = spotlightIndexer
         self.browserViewModel.spotlightIndexer = spotlightIndexer
+        // Phase 14 — per-account Spotlight purge on account delete.
+        self.accountListViewModel.spotlightIndexer = spotlightIndexer
 
         // Phase 13.14 — cross-account copy / move. Encryption gate
         // wired in after Codex audit (high #1) so server-side copy

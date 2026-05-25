@@ -130,6 +130,19 @@ struct AzureRequestBuilder: Sendable {
         )
     }
 
+    /// `PUT /{container}/{blob}?comp=properties` — Set Blob
+    /// Properties. Phase 14 / Codex R3 (high #2): the previous
+    /// metadata save path silently dropped Content-Type,
+    /// Cache-Control, Content-Disposition, Content-Encoding —
+    /// every Azure HTTP-section edit was a no-op. Set Properties
+    /// is the correct RPC for those.
+    func setBlobPropertiesURL(container: String, blob: String) -> URL {
+        url(
+            path: blobPath(container: container, blob: blob),
+            query: [("comp", "properties")]
+        )
+    }
+
     // MARK: - Versions / snapshots (Phase 13.6 — Azure parity)
 
     /// `GET /{container}?restype=container&comp=list&prefix=<blob>&include=snapshots`
@@ -200,14 +213,61 @@ struct AzureRequestBuilder: Sendable {
     /// Minimal XML escape for the values that go into Set Blob Tags.
     /// Azure tag keys are alphanumeric + a small set, but values can
     /// contain spaces and a wider charset — escape the structural
-    /// characters defensively.
+    /// characters defensively. Codex R3 (low): also strip every
+    /// XML-1.0-illegal control scalar so a value with a stray
+    /// `\u{0001}` doesn't produce a body Azure rejects.
     static func xmlEscape(_ value: String) -> String {
-        value
+        var stripped = ""
+        stripped.reserveCapacity(value.count)
+        for scalar in value.unicodeScalars {
+            let v = scalar.value
+            // XML 1.0 allows: 0x09, 0x0A, 0x0D, 0x20-0xD7FF,
+            // 0xE000-0xFFFD, 0x10000-0x10FFFF. Anything else is
+            // structurally illegal and the Azure XML parser will
+            // reject the whole envelope.
+            if v == 0x09 || v == 0x0A || v == 0x0D
+                || (v >= 0x20 && v <= 0xD7FF)
+                || (v >= 0xE000 && v <= 0xFFFD)
+                || (v >= 0x10000 && v <= 0x10FFFF) {
+                stripped.unicodeScalars.append(scalar)
+            }
+        }
+        return stripped
             .replacingOccurrences(of: "&", with: "&amp;")
             .replacingOccurrences(of: "<", with: "&lt;")
             .replacingOccurrences(of: ">", with: "&gt;")
             .replacingOccurrences(of: "\"", with: "&quot;")
             .replacingOccurrences(of: "'", with: "&apos;")
+    }
+
+    /// Sanitise an HTTP header value before it gets sent. Phase 14
+    /// / Codex R3 (medium #1): metadata + tag values that came back
+    /// from an untrusted Azure response are echoed into outbound
+    /// request headers on save; without stripping CR/LF a hostile
+    /// header value could fold a second header onto the request.
+    static func sanitiseHeaderValue(_ value: String) -> String {
+        var out = ""
+        out.reserveCapacity(value.count)
+        for scalar in value.unicodeScalars {
+            let v = scalar.value
+            // Block CR (0x0D), LF (0x0A), NUL (0x00) and other
+            // control chars below space. Tab (0x09) is allowed by
+            // RFC 9110 so we keep it.
+            if v == 0x09 || v >= 0x20 {
+                out.unicodeScalars.append(scalar)
+            }
+        }
+        return out
+    }
+
+    /// HTTP-token check for header field names — RFC 9110 §5.6.2.
+    /// Reject anything outside the token grammar so loaded
+    /// `x-ms-meta-*` keys can't carry hostile characters into a
+    /// later `setValue(forHTTPHeaderField:)` call.
+    static func isValidHeaderToken(_ name: String) -> Bool {
+        guard !name.isEmpty else { return false }
+        let tokenCharacters = Set("!#$%&'*+-.^_`|~0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+        return name.allSatisfy { tokenCharacters.contains($0) }
     }
 
     // MARK: - Helpers
