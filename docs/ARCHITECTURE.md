@@ -3,8 +3,9 @@
 This document is the canonical architectural reference: how the host
 app, the BucketeerCore Swift package, and the File Provider extension
 fit together; how the four sync-routing paths land; how the entitlement
-state machine moves; and where the provisioning identifiers live. The
-per-release history is in [`CHANGELOG.md`](../CHANGELOG.md).
+state machine moves; where the provisioning identifiers live; and how
+the Phase 13.x feature block layers on top. The per-release history is
+in [`CHANGELOG.md`](../CHANGELOG.md).
 
 ---
 
@@ -17,21 +18,27 @@ and the (yet-to-be-target-wired) File Provider extension both link it.
 ```mermaid
 graph LR
     subgraph BucketeerCore["BucketeerCore<br/>(local Swift package)"]
-        Models["Models<br/>S3Account · S3Provider · S3Object<br/>S3Page · AccountCredentials · BucketeerError<br/>TransferTask · SyncJob · S3AccountRecord"]
-        S3Layer["S3 layer<br/>S3ClientFactory (actor) · S3Service<br/>via SotoS3"]
-        AzureLayer["Azure layer<br/>AzureSharedKeySigner · AzureRequestBuilder<br/>AzureListXMLParser · AzureCredentialsCache<br/>AzureBlobObjectStore · AzureBlobTransporter"]
-        Storage["Storage<br/>KeychainStore (actor) · AccountStore (@ModelActor)"]
-        Sync["Sync helpers<br/>SyncPlanner (pure) · LocalFolderEnumerator<br/>LocalFolderWriter (incl. safeChildURL)"]
+        Models["Models<br/>S3Account · S3Provider · S3Object · S3Page<br/>AccountCredentials · BucketeerError · TransferTask<br/>SyncJob · S3AccountRecord · ActivityEntry<br/>ObjectVersion · ObjectMetadata · BucketStats<br/>BucketInsights · TrashedItem · MultipartUploadCheckpoint<br/>AutoTagRule · BucketEncryptionKey"]
+        S3Layer["S3 layer<br/>S3ClientFactory (actor) · S3Service<br/>S3ResumableUploader (Phase 13.10)<br/>via SotoS3"]
+        AzureLayer["Azure layer<br/>AzureSharedKeySigner · AzureRequestBuilder<br/>AzureListXMLParser · AzureCredentialsCache<br/>AzureBlobObjectStore · AzureBlobTransporter<br/>AzureSASBuilder"]
+        Storage["Persistence (all @ModelActor)<br/>KeychainStore · AccountStore · ActivityLogStore<br/>TrashStore · CheckpointStore · AutoTagRuleStore<br/>EncryptionKeyStore · SyncJobStore"]
+        Sync["Sync helpers<br/>SyncPlanner (pure) · LocalFolderEnumerator<br/>LocalFolderWriter (incl. safeChildURL)<br/>LocalFolderWatcher (FSEvents)"]
         Routing["Routing<br/>ProviderRouter (S3Browsing facade)"]
         Trial["Entitlements<br/>TrialBookkeeping (pure, DI store)"]
+        Crypto["Encryption (13.15)<br/>BucketeerEnvelope (AES-GCM + AAD)<br/>EncryptionError"]
+        AutoTag["Auto-tagging (13.8)<br/>AutoTagRuleEvaluator (pure, glob+MIME)"]
+        Stats["Stats (13.5)<br/>BucketStatsCollector · ProviderPricing"]
+        Bandwidth["Throttling (13.2)<br/>BandwidthLimiter (token bucket)"]
+        DeepLink["Deep link (13.11)<br/>BucketeerDeepLink"]
         Env["AppEnvironment + ServiceProtocols"]
     end
 
     subgraph HostApp["Bucketeer.app<br/>(host target)"]
-        Container["AppContainer<br/>@MainActor @Observable composition root"]
-        ViewModels["ViewModels<br/>AccountList · Browser · TransferQueue · SyncJobList"]
-        Views["SwiftUI Views<br/>Sidebar · Browser · Sync · Paywall · Menubar · About"]
-        HostOnly["Host-only services<br/>EntitlementManager (StoreKit) · MountController<br/>DragDropCoordinator · TransferManager (actor)<br/>SyncEngine (actor) · PreviewCache · AppActivationController"]
+        Container["AppContainer<br/>@MainActor @Observable composition root<br/>+ static .shared for App Intents"]
+        ViewModels["ViewModels<br/>AccountList · Browser · TransferQueue · SyncJobList<br/>ActivityLog · Trash · BucketDashboard<br/>ObjectVersions · ObjectMetadata · AutoTagRules<br/>EncryptionKeys"]
+        Views["SwiftUI Views<br/>Sidebar · Browser · Sync · Paywall · Menubar · About<br/>Activity · Trash · Settings (General · Transfers · Rules<br/>· Encryption · Security · Pro)"]
+        HostOnly["Host-only services<br/>EntitlementManager (StoreKit) · MountController<br/>DragDropCoordinator · TransferManager (actor)<br/>SyncEngine (actor) · PreviewCache · AppActivationController<br/>TrashCoordinator · BandwidthSettings · TrashSettings<br/>AutoTagCoordinator · DeepLinkRouter · CrossAccountCopyCoordinator<br/>SpotlightIndexer · SpotlightSettings · BucketEncryptionGate<br/>HardwareKeyAvailability · HardwareKeySettings"]
+        AppIntents["App Intents (13.12)<br/>AccountEntity · AppIntentsBridge<br/>ListBucketsIntent · GeneratePresignedURLIntent<br/>UploadFileIntent · RunSyncJobIntent<br/>BucketeerShortcuts (AppShortcutsProvider)"]
     end
 
     subgraph FPExt["Bucketeer File Provider.appex<br/>(manual Xcode target — PHASE_9_SETUP.md)"]
@@ -44,11 +51,17 @@ graph LR
 
     Container --> ViewModels
     Container --> HostOnly
+    Container --> AppIntents
     HostOnly -- "uses" --> S3Layer
     HostOnly -- "uses" --> AzureLayer
     HostOnly -- "uses" --> Storage
     HostOnly -- "uses" --> Sync
     HostOnly -- "uses" --> Routing
+    HostOnly -- "uses" --> Crypto
+    HostOnly -- "uses" --> AutoTag
+    HostOnly -- "uses" --> Stats
+    HostOnly -- "uses" --> Bandwidth
+    HostOnly -- "uses" --> DeepLink
     HostOnly -- "TrialBookkeeping" --> Trial
 
     FPCallbacks --> FPContainer
@@ -61,7 +74,49 @@ graph LR
 **Why this layout:** the design spec §3 wanted shared `Models` + `Services`
 between host and extension. Phase 9.5 extracted them into
 `BucketeerCore` so neither side duplicates code and a test target can
-hammer the storage / network / signing surface without a UI.
+hammer the storage / network / signing / encryption surface without a
+UI. The 13.x block keeps adding to Core whenever the logic is
+deterministic / unit-testable (planner, evaluator, envelope,
+fingerprint, deep-link parser) and to the host whenever it depends on
+live state (transfer manager, coordinators, view models).
+
+### 1.1 SwiftData container topology
+
+The host now owns **six** SwiftData containers. The shared App Group
+container is read by the File Provider extension; everything else stays
+host-private so the extension never has to load schemas it has no use
+for.
+
+```mermaid
+graph TB
+    Group["App Group<br/>group.za.co.digitalfreedom.bucketeer"]
+    GroupStore["Bucketeer.store<br/>S3AccountRecord · SyncJobRecord"]
+    Group --> GroupStore
+
+    HostSandbox["Host sandbox<br/>~/Library/Application Support"]
+    Activity["BucketeerActivity.store<br/>ActivityRecord (Phase 13.1)"]
+    Trash["BucketeerTrash.store<br/>TrashRecord (Phase 13.4)<br/>+ Trash/ cache dir"]
+    AutoTag["BucketeerAutoTags.store<br/>AutoTagRuleRecord (Phase 13.8)"]
+    Checkpoint["BucketeerCheckpoints.store<br/>MultipartUploadRecord (Phase 13.10)"]
+    Encryption["BucketeerEncryptionKeys.store<br/>BucketEncryptionKeyRecord (Phase 13.15)<br/>+ Keychain (.cse service) for raw bytes"]
+    Staging["CrossAccountStaging/<br/>bucketeer-roundtrip-* (Phase 13.14)<br/>scavenged at launch"]
+
+    HostSandbox --> Activity
+    HostSandbox --> Trash
+    HostSandbox --> AutoTag
+    HostSandbox --> Checkpoint
+    HostSandbox --> Encryption
+    HostSandbox --> Staging
+
+    FPExt["File Provider .appex"]
+    FPExt -. "reads only" .-> GroupStore
+```
+
+The 5 host-only stores live in the sandbox so each can grow / shrink /
+purge independently. None of them are needed by the extension's
+mount-callbacks path. Auto-purge runs on launch for the activity log
+(180 days), the trash (user-configured retention, default 30 days),
+and the cross-account staging directory (any leftover file).
 
 ---
 
@@ -254,34 +309,78 @@ sequenceDiagram
 
 ---
 
-## 6. Multipart transfer flow (Soto / Azure)
+## 6. Multipart transfer flow (Soto / Azure / resumable / encrypted)
 
 `TransferManager` is the actor-backed queue with bounded
 concurrency, the snapshot stream the UI consumes, and the per-ID
 `awaitCompletion(id:)` API the sync engine + drag-drop coordinator
 suspend on. Cancellation routes through `setState` so waiters get
-resumed (Codex blocker #2 fix).
+resumed (Codex blocker #2 fix). The 13.x block layered three
+optional transforms on top: bandwidth throttling, transparent
+client-side encryption, and resumable multipart uploads.
 
 ```mermaid
 flowchart TD
-    Enqueue["enqueueUpload / enqueueDownload<br/>UUID generated, item added to order[]"]
+    Enqueue["enqueueUpload / enqueueDownload<br/>UUID generated, item added to order[]<br/>(13.4) trash bypassDecryption flag carried"]
     Enqueue --> Pump["pump()<br/>start up to maxConcurrent workers"]
     Pump --> Worker["startWorker(item)<br/>setState .running"]
-    Worker --> Route{{"item.account.provider.family"}}
-    Route -->|"s3"| Soto["performUpload / performDownload<br/>via SotoS3 — multipart at ≥5 MB"]
-    Route -->|"azureBlob"| Azure["performAzureUpload / performAzureDownload<br/>via AzureBlobTransporter<br/>(8 MiB blocks, up to 4 parallel,<br/>ranged 206-only download)"]
+    Worker --> EncryptGate{{"(13.15) BucketEncryptionGate<br/>has key for (account, bucket)?"}}
+    EncryptGate -->|"yes — upload only"| Seal["BucketeerEnvelope.seal<br/>AES-GCM with header as AAD<br/>writes temp file, rebuilds QueuedItem"]
+    EncryptGate -->|"no"| Route
+    Seal --> Route
+    Route{{"item.account.provider.family"}}
+    Route -->|"s3"| Size{{"item.fileSize"}}
+    Route -->|"azureBlob"| Azure["AzureBlobTransporter<br/>(8 MiB blocks, ≤4 parallel,<br/>ranged 206-only download)<br/>(13.2) limiter charged per block"]
+    Size -->|"≥ 50 MB"| Resumable["(13.10) S3ResumableUploader<br/>createMultipartUpload → listParts →<br/>uploadPart loop with per-part<br/>SwiftData checkpoint + mtime fingerprint<br/>→ completeMultipartUpload"]
+    Size -->|"5–50 MB"| Soto["Soto multipartUpload helper<br/>(13.2) limiter charged per progress delta"]
+    Size -->|"< 5 MB"| SinglePut["putObject single shot<br/>(13.2) limiter charged once"]
+    Resumable --> Progress
     Soto --> Progress
+    SinglePut --> Progress
     Azure --> Progress
     Progress["setState .running(bytesTransferred, totalBytes)<br/>publishes snapshot to tasks AsyncStream"]
-    Progress --> Terminal["setState .completed / .failed / .cancelled<br/>terminalCache[id] = state<br/>resume every waiters[id]"]
-    Cancel["cancel(id)"] --> SetCancel["workers[id]?.cancel()<br/>setState .cancelled<br/>(routes through same terminal path)"]
+    Progress --> DownloadGate{{"download AND envelope on disk<br/>AND key available AND<br/>NOT bypassDecryption?"}}
+    DownloadGate -->|"yes"| Open["BucketeerEnvelope.open<br/>AES-GCM verify header AAD<br/>rewrite file in place"]
+    DownloadGate -->|"no"| Terminal
+    Open --> Terminal
+    Terminal["setState .completed / .failed / .cancelled<br/>terminalCache[id] = state<br/>resume every waiters[id]<br/>(13.1) recordTerminal → activity log<br/>cleanup temp envelope file"]
+    Cancel["cancel(id)"] --> SetCancel["workers[id]?.cancel()<br/>setState .cancelled"]
     SetCancel --> Terminal
 
-    Await["awaitCompletion(id)<br/>SyncEngine / DragDropCoordinator"]
+    Await["awaitCompletion(id)<br/>SyncEngine / DragDropCoordinator<br/>TrashCoordinator / CrossAccountCopy"]
     Await --> CheckCache{{"terminalCache[id] set?"}}
     CheckCache -->|"yes"| ReturnCached["return cached state"]
     CheckCache -->|"no"| Suspend["withCheckedContinuation<br/>waiters[id] += continuation"]
     Terminal --> Suspend
+```
+
+### 6.1 Trash, cross-account, auto-tag co-tenants
+
+Three host services hang off the same TransferManager + activity-log
+bus. None of them ever bypass the encryption gate or the bandwidth
+limiter unless they explicitly opt in (e.g. trash capture sets
+`bypassDecryption: true` so the local cache holds the raw envelope
+instead of plaintext — Codex audit fix high #2).
+
+```mermaid
+flowchart LR
+    Browser["BrowserViewModel.delete(keys)"]
+    Browser --> TC["TrashCoordinator.recordDeletion<br/>HEAD + parallel cached downloads<br/>(bypassDecryption: true)"]
+    TC --> ProviderDelete["S3Browsing.delete on provider"]
+    Browser -. provider delete .-> ProviderDelete
+
+    ContextMenu["ObjectListView context menu<br/>Copy to other account…"]
+    ContextMenu --> CrossSheet["CrossAccountCopySheet"]
+    CrossSheet --> CACoord["CrossAccountCopyCoordinator<br/>(13.14)"]
+    CACoord --> EncryptionCheck{{"CSE on either side?<br/>(audit fix high #1)"}}
+    EncryptionCheck -->|"yes"| RoundTrip["enqueueDownload + enqueueUpload<br/>via TransferManager (re-encrypts)"]
+    EncryptionCheck -->|"no"| ServerCheck{{"same endpoint?"}}
+    ServerCheck -->|"yes"| ServerCopy["S3Browsing.copy<br/>server-side CopyObject"]
+    ServerCheck -->|"no"| RoundTrip
+
+    Upload["TransferManager upload completion<br/>(any path)"]
+    Upload --> AutoTag["AutoTagCoordinator (13.8)<br/>observes .tasks stream<br/>evaluates rules → saveMetadata"]
+    Upload --> Activity["ActivityLogStore (13.1)<br/>recordTerminal"]
 ```
 
 ---
@@ -352,11 +451,19 @@ runs them in ~25 ms; no Xcode test target is required.
 | `SyncPlanner` | 19 | plan computation, prefix relocation, name+size vs name+ETag, mirror deletes respect globs, 5 local-folder cases |
 | `TrialBookkeeping` | 11 | trial start, expiry, sticky consumed marker, future-date clamp, custom length |
 | `LocalFolderWriter.safeChildURL` | 6 | empty / absolute / `..` / `.` / legitimate paths |
-| **Total** | **84** | |
+| `BandwidthLimiter` (13.2) | 5 | unlimited fast-path, sub-burst, deficit-sleep loop, mid-flight toggle, `currentLimit` |
+| `BucketStatsCollector` + `ProviderPricing` (13.5) | 6 | top-N maintenance, every provider rate, AWS GB precision, zero bytes |
+| `AutoTagRuleEvaluator` (13.8) | 6 | empty list, disabled rules, empty-matches-all, `*`/`?` glob, case-insensitive MIME prefix, merge order |
+| `BucketeerDeepLink` (13.11) | 9+4 | grammar round-trip per case, prefix variants, bad UUID, missing bucket, case-insensitive scheme, percent-encoded key, query string ignored |
+| `BucketeerEnvelope` (13.15 + audit fix) | 9 | round-trip, header layout, wrong-key auth fail, garbage reject, prefix detection, tamper detection, **empty plaintext** (audit low #1), **version tamper** + **reserved tamper** (audit medium #1) |
+| `TrashedItem.displayName` | 4 | multi-segment, single-segment, empty, trailing-slash folder-style |
+| **Total** | **135** | |
 
 Pure logic that lived in host classes was extracted to Core in three
-waves (SyncPlanner, TrialBookkeeping, LocalFolderWriter) precisely
-because Core tests are cheaper to wire than a host XCTest bundle.
+waves (SyncPlanner, TrialBookkeeping, LocalFolderWriter) and then
+incrementally per 13.x phase whenever the work was deterministic
+(envelope, evaluator, fingerprint, parser). Core tests run in ~3 s
+end-to-end; no Xcode test target is required.
 
 ---
 
@@ -378,3 +485,16 @@ because Core tests are cheaper to wire than a host XCTest bundle.
 | Per-phase changelog | `CHANGELOG.md` |
 | Manual setup checklist | `PHASE_9_SETUP.md` |
 | App Store metadata draft | `docs/APP_STORE_METADATA.md` |
+| Deep-link scheme + Info.plist requirement | `docs/DEEP_LINKS.md` |
+| Audit log storage + recording hooks | `BucketeerCore/.../Services/Activity/ActivityLogStore.swift` + per-service `record(...)` calls |
+| Soft-delete trash + cached restore | `BucketeerCore/.../Services/Trash/TrashStore.swift` + `Bucketeer/Services/Trash/TrashCoordinator.swift` |
+| Resumable multipart upload | `BucketeerCore/.../Services/S3/S3ResumableUploader.swift` + `CheckpointStore.swift` |
+| Client-side encryption envelope + key store | `BucketeerCore/.../Services/Encryption/ObjectEncryptor.swift` + `EncryptionKeyStore.swift` + `Bucketeer/Services/Encryption/BucketEncryptionGate.swift` |
+| Bandwidth throttle | `BucketeerCore/.../Services/Transfers/BandwidthLimiter.swift` + `Bucketeer/Services/Transfers/BandwidthSettings.swift` |
+| Auto-tag rule engine | `BucketeerCore/.../Services/AutoTag/AutoTagRuleEvaluator.swift` + `Bucketeer/Services/AutoTag/AutoTagCoordinator.swift` |
+| Bucket dashboard + insights | `BucketeerCore/.../Services/Stats/BucketStatsCollector.swift` + `ProviderPricing.swift` + `Bucketeer/Views/Browser/BucketDashboardSheet.swift` |
+| Cross-account copy / move | `Bucketeer/Services/CrossAccount/CrossAccountCopyCoordinator.swift` |
+| `bucketeer://` deep links | `BucketeerCore/.../Services/DeepLink/BucketeerDeepLink.swift` + `Bucketeer/Services/DeepLink/DeepLinkRouter.swift` |
+| App Intents (Shortcuts / Siri) | `Bucketeer/Services/AppIntents/*.swift` |
+| Spotlight indexing | `Bucketeer/Services/Spotlight/SpotlightIndexer.swift` + `SpotlightSettings.swift` |
+| Hardware-key detection (preview) | `Bucketeer/Services/HardwareKey/HardwareKeyAvailability.swift` + `HardwareKeySettings.swift` |
