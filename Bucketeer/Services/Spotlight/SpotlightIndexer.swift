@@ -93,20 +93,38 @@ final class SpotlightIndexer {
     /// iterate every sub-domain we've ever touched plus the base
     /// domain (legacy items indexed before the sub-domain layout
     /// landed).
+    ///
+    /// Codex R4 (high): only clear the tracking set after the
+    /// delete actually succeeds. A failed delete that still
+    /// emptied the tracking set would leave stale Spotlight items
+    /// with no way to target them on a re-attempt.
     func purgeAll() async {
         var domains = trackedAccountDomains()
         domains.append(domainID)
-        try? await index.deleteSearchableItems(withDomainIdentifiers: domains)
-        defaults.removeObject(forKey: Self.indexedAccountsKey)
+        do {
+            try await index.deleteSearchableItems(withDomainIdentifiers: domains)
+            defaults.removeObject(forKey: Self.indexedAccountsKey)
+        } catch {
+            // Leave the tracking set intact — a subsequent purgeAll
+            // will retry the same domain list.
+        }
     }
 
     /// Remove every indexed item for the given account. Targets only
     /// the account's sub-domain, so the other accounts' items stay
     /// searchable. Codex audit R2 (low) follow-up.
+    ///
+    /// Codex R4 (high): same retry-friendliness as `purgeAll` —
+    /// the tracking entry only goes away after Spotlight confirms
+    /// the delete.
     func purgeAccount(_ accountID: UUID) async {
         let target = Self.domain(for: accountID, baseDomain: domainID)
-        try? await index.deleteSearchableItems(withDomainIdentifiers: [target])
-        forgetAccountDomain(accountID)
+        do {
+            try await index.deleteSearchableItems(withDomainIdentifiers: [target])
+            forgetAccountDomain(accountID)
+        } catch {
+            // Tracking set stays; the next purge attempt re-tries.
+        }
     }
 
     /// Stable per-account sub-domain. Lower-cased so a round-trip

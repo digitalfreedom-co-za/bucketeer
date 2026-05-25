@@ -219,9 +219,18 @@ public struct AzureBlobObjectStore: S3Browsing {
             builder.absoluteBlobURL(container: fromBucket, blob: fromKey).absoluteString,
             forHTTPHeaderField: "x-ms-copy-source"
         )
+        // Codex R4 (high): copy(...) previously bypassed the
+        // header sanitisation that saveMetadata uses. Same
+        // hardening here so a hostile metadata value can't fold a
+        // CR/LF into the outbound request.
         if let metadata, !metadata.isEmpty {
             for (key, value) in metadata {
-                request.setValue(value, forHTTPHeaderField: "x-ms-meta-" + key.lowercased())
+                let lowerKey = key.lowercased()
+                guard AzureRequestBuilder.isValidHeaderToken(lowerKey) else { continue }
+                request.setValue(
+                    AzureRequestBuilder.sanitiseHeaderValue(value),
+                    forHTTPHeaderField: "x-ms-meta-" + lowerKey
+                )
             }
         }
         signer.sign(&request)
@@ -575,15 +584,43 @@ public struct AzureBlobObjectStore: S3Browsing {
         //    silently dropped because Set Metadata + Set Tags
         //    don't touch those fields. Azure uses `x-ms-blob-
         //    content-*` headers (not the bare HTTP headers).
+        // Codex R4 (medium): Set Blob Properties **replaces** the
+        // full property set — anything we don't pass gets wiped.
+        // ObjectMetadata only models four fields, but Azure also
+        // tracks Content-Language and Content-MD5. Re-read them
+        // via HEAD and pass them back so an editor save doesn't
+        // silently drop properties the user never touched.
+        var preservedLanguage: String?
+        var preservedMD5:      String?
+        do {
+            var head = URLRequest(url: builder.blobPropertiesURL(container: bucket, blob: key))
+            head.httpMethod = "HEAD"
+            signer.sign(&head)
+            let (_, headResponse) = try await session.data(for: head)
+            if let http = headResponse as? HTTPURLResponse {
+                preservedLanguage = http.value(forHTTPHeaderField: "Content-Language")
+                preservedMD5      = http.value(forHTTPHeaderField: "Content-MD5")
+            }
+        } catch {
+            // Best-effort preservation; continue with the user's
+            // edits even when HEAD fails.
+        }
+
         var propsRequest = URLRequest(url: builder.setBlobPropertiesURL(container: bucket, blob: key))
         propsRequest.httpMethod = "PUT"
         propsRequest.setValue("0", forHTTPHeaderField: "Content-Length")
-        let propertyHeaders: [(String, String)] = [
+        var propertyHeaders: [(String, String)] = [
             ("x-ms-blob-content-type",        metadata.contentType),
             ("x-ms-blob-cache-control",       metadata.cacheControl),
             ("x-ms-blob-content-disposition", metadata.contentDisposition),
             ("x-ms-blob-content-encoding",    metadata.contentEncoding)
         ]
+        if let lang = preservedLanguage, !lang.isEmpty {
+            propertyHeaders.append(("x-ms-blob-content-language", lang))
+        }
+        if let md5 = preservedMD5, !md5.isEmpty {
+            propertyHeaders.append(("x-ms-blob-content-md5", md5))
+        }
         for (header, value) in propertyHeaders where !value.isEmpty {
             propsRequest.setValue(
                 AzureRequestBuilder.sanitiseHeaderValue(value),

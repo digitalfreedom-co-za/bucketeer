@@ -337,12 +337,17 @@ private final class TagDelegate: NSObject, XMLParserDelegate {
             buffer = ""
             if !path.isEmpty { path.removeLast() }
         }
-        let trimmed = buffer.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Codex R4 (low): only trim the key (Azure tag keys are
+        // alphanumeric + a few punct chars, never whitespace).
+        // Leave the value verbatim — leading / trailing spaces in a
+        // tag value are legitimate user data and trimming them
+        // would corrupt the round-trip when saveMetadata writes
+        // the value back.
         switch elementName {
         case "Key":
-            currentKey = trimmed
+            currentKey = buffer.trimmingCharacters(in: .whitespacesAndNewlines)
         case "Value":
-            currentValue = trimmed
+            currentValue = buffer
         case "Tag":
             guard !currentKey.isEmpty else { return }
             tags[currentKey] = currentValue

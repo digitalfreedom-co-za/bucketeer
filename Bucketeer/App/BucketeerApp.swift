@@ -88,6 +88,24 @@ struct BucketeerApp: App {
         .defaultSize(width: 1000, height: 580)
         .defaultPosition(.center)
 
+        // Phase 14 — dedicated detail window so `bucketeer://sync/<id>`
+        // deep links open a focused per-job view instead of just
+        // bringing the main window forward. Uses WindowGroup
+        // (per-value) so multiple sync jobs can be open side-by-side.
+        WindowGroup("syncDetail.window.title", id: "sync-job", for: UUID.self) { $jobID in
+            if let jobID {
+                SyncJobDetailWindow(jobID: jobID)
+                    .environment(container)
+            } else {
+                ContentUnavailableView(
+                    "syncDetail.error.title",
+                    systemImage: "exclamationmark.triangle",
+                    description: Text("syncDetail.error.noID")
+                )
+            }
+        }
+        .defaultSize(width: 600, height: 480)
+
         Settings {
             SettingsView()
                 .environment(container)

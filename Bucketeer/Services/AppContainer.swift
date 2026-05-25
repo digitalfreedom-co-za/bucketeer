@@ -79,6 +79,11 @@ final class AppContainer {
     let bucketEncryptionGate: BucketEncryptionGate
     /// Phase 13.16 — hardware-key (CryptoTokenKit) unlock toggle.
     let hardwareKeySettings: HardwareKeySettings
+    /// Phase 14 / Codex R4 (high): multicast broker around the
+    /// single `SyncEngine.statuses` AsyncStream so the sync list
+    /// view model and the new sync-job detail window can both
+    /// observe without racing for events.
+    let syncStatusBroker: SyncStatusBroker
     let accountListViewModel: AccountListViewModel
     let browserViewModel: BrowserViewModel
     let transferQueueViewModel: TransferQueueViewModel
@@ -224,10 +229,15 @@ final class AppContainer {
         )
         self.syncJobStore = syncJobStore
         self.syncEngine = syncEngine
+        // The broker has to be constructed *before* the list view
+        // model so it can pass through; without it, list + detail
+        // window would race the single AsyncStream iterator.
+        let syncStatusBroker = SyncStatusBroker(syncEngine: syncEngine)
         self.syncJobListViewModel = SyncJobListViewModel(
             jobStore: syncJobStore,
             engine: syncEngine,
-            accountStore: accountStore
+            accountStore: accountStore,
+            statusBroker: syncStatusBroker
         )
         self.activityLogViewModel = ActivityLogViewModel(
             activityLog: activityLog,
@@ -321,6 +331,12 @@ final class AppContainer {
 
         // Phase 13.16 — hardware-key unlock.
         self.hardwareKeySettings = HardwareKeySettings()
+
+        // Phase 14 — multicast broker for SyncEngine.statuses.
+        // Constructed above so the sync list view model can take
+        // it as a dependency; assigned to the container property
+        // here.
+        self.syncStatusBroker = syncStatusBroker
         Task { @MainActor [syncJobListViewModel = self.syncJobListViewModel] in
             await syncJobListViewModel.bootstrap()
         }

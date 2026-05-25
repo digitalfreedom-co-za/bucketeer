@@ -12,28 +12,41 @@ import BucketeerCore
 @Observable
 final class SyncJobListViewModel {
     var jobs: [SyncJob] = []
-    var statuses: [UUID: SyncJobStatus] = [:]
     var accounts: [S3Account] = []
     var error: BucketeerError?
 
     private let jobStore: any SyncJobStoring
     private let engine: SyncEngine
     private let accountStore: any AccountStoring
-    private var statusObserver: Task<Void, Never>?
+    /// Phase 14 / Codex R4 (high): read status snapshots from the
+    /// multicast broker instead of subscribing to
+    /// `SyncEngine.statuses` directly. AsyncStream delivers each
+    /// value to one waiter, so racing the sync-job detail window
+    /// on the same stream starved one side. The broker is
+    /// @Observable; views that read `viewModel.statuses` re-render
+    /// when the broker's snapshot changes.
+    private let statusBroker: SyncStatusBroker
+
+    /// Computed re-export so existing call sites
+    /// (`viewModel.statuses[job.id]`) keep working unchanged.
+    var statuses: [UUID: SyncJobStatus] { statusBroker.statuses }
 
     init(
         jobStore: any SyncJobStoring,
         engine: SyncEngine,
-        accountStore: any AccountStoring
+        accountStore: any AccountStoring,
+        statusBroker: SyncStatusBroker
     ) {
         self.jobStore = jobStore
         self.engine = engine
         self.accountStore = accountStore
+        self.statusBroker = statusBroker
     }
 
     /// Initial load called once from the AppContainer construction
-    /// site. Refreshes the in-memory model, primes the engine with the
-    /// persisted job list, and subscribes to its status stream.
+    /// site. Refreshes the in-memory model + primes the engine with
+    /// the persisted job list. The broker handles status updates;
+    /// no per-view-model subscription is needed any more.
     func bootstrap() async {
         await refresh()
         do {
@@ -43,7 +56,6 @@ final class SyncJobListViewModel {
         } catch {
             self.error = .unknown(message: error.localizedDescription)
         }
-        startObservingStatuses()
     }
 
     func refresh() async {
@@ -94,17 +106,5 @@ final class SyncJobListViewModel {
 
     func cancel(id: UUID) async {
         await engine.cancel(id: id)
-    }
-
-    private func startObservingStatuses() {
-        guard statusObserver == nil else { return }
-        let stream = engine.statuses
-        statusObserver = Task { [weak self] in
-            for await snapshot in stream {
-                var map: [UUID: SyncJobStatus] = [:]
-                for status in snapshot { map[status.jobID] = status }
-                self?.statuses = map
-            }
-        }
     }
 }

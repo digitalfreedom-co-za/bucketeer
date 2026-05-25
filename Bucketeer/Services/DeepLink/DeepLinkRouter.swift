@@ -60,8 +60,12 @@ final class DeepLinkRouter {
             openWindow(id: "main")
             let prefix = Self.derivePrefix(fromKey: key)
             Task { await navigateToBucket(accountID: id, bucket: bucket, prefix: prefix, token: token) }
-        case .syncJob:
-            openWindow(id: "main")
+        case .syncJob(let id):
+            // Phase 14 — dedicated detail window. Falls back to
+            // the main window if the WindowGroup binding isn't
+            // resolvable (e.g. older macOS), so the link still
+            // does *something* useful.
+            openWindow(id: "sync-job", value: id)
         case .activity:
             openWindow(id: "activity")
         case .trash:
