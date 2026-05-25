@@ -1,32 +1,19 @@
-# Bucketeer SwiftFormat config — opinionated but minimal so the
-# diff churn on every PR stays small. Matches the style the repo
-# already converged on; SwiftFormat just enforces it.
+# Bucketeer SwiftFormat config — sanity gate, not a style
+# enforcer. The repo already converged on its own hand-written
+# conventions (variable-aligned columns, informal line lengths,
+# explicit multi-line lists); applying SwiftFormat's full ruleset
+# would mass-rewrite ~85% of the codebase for cosmetic-only
+# reasons.
+#
+# Instead we run a *deny everything by default, allow a tiny set
+# of objectively-correct rules* policy. Every rule listed here
+# catches a real bug a human reviewer would also flag. Add more
+# only after a coordinated cleanup pass for that specific rule
+# across the existing codebase.
 
 --swiftversion 6.0
-
-# Indentation + line length
 --indent 4
---maxwidth 100
---wraparguments before-first
---wrapparameters before-first
---wrapcollections before-first
---funcattributes prev-line
---typeattributes prev-line
-
-# Imports
---importgrouping testable-bottom
-
-# Trailing commas in multi-line collections (Swift 6 syntax)
---commas always
-
-# Spaces inside braces / brackets
---ranges spaced
-
-# Self
 --self init-only
 
-# Rules we explicitly disable (already follow informal conventions)
---disable redundantSelf,trailingClosures,enumNamespaces,markTypes
-
-# Strip trailing whitespace + final newline
---trimwhitespace always
+# Allow-list: only these rules fire.
+--rules linebreakAtEndOfFile,trailingSpace,duplicateImports,redundantBackticks,redundantBreak
