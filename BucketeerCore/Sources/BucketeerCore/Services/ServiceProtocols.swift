@@ -124,6 +124,39 @@ public protocol S3Browsing: Sendable {
     ) async throws -> BucketInsights
 }
 
+// MARK: - EncryptionKeyStoring
+
+/// Persistence boundary for per-bucket BYOK encryption keys. Phase
+/// 13.15. The metadata lives in SwiftData, the actual key bytes in
+/// the Keychain — implementations write to both atomically so a key
+/// can never end up with metadata-but-no-bytes (or vice versa).
+public protocol EncryptionKeyStoring: Sendable {
+    /// Every registered key's metadata.
+    func all() async throws -> [BucketEncryptionKey]
+
+    /// Lookup by `(accountID, bucket)` so callers asking "is THIS
+    /// bucket encrypted?" don't have to scan the whole list.
+    func key(accountID: UUID, bucket: String) async throws -> BucketEncryptionKey?
+
+    /// Generate a fresh 256-bit key, persist metadata + bytes.
+    func create(
+        label: String,
+        accountID: UUID,
+        bucket: String
+    ) async throws -> BucketEncryptionKey
+
+    /// Retrieve the raw 256-bit key material for cryptographic use.
+    /// Implementations MUST treat this as security-sensitive (e.g.
+    /// not log it) — the return value is `Data` so callers can wrap
+    /// it in `CryptoKit.SymmetricKey` at the use site.
+    func keyMaterial(id: UUID) async throws -> Data
+
+    /// Delete metadata + bytes. Caller is responsible for warning
+    /// the user that data already encrypted under the key becomes
+    /// unrecoverable.
+    func delete(id: UUID) async throws
+}
+
 // MARK: - CheckpointStoring
 
 /// Persistence boundary for resumable-upload checkpoints. Phase 13.10.

@@ -53,4 +53,14 @@ public enum AppEnvironment {
     /// Filename of the host-only resumable-upload checkpoint store.
     /// Phase 13.10.
     public static let checkpointStoreFileName = "BucketeerCheckpoints.store"
+
+    /// Filename of the host-only encryption key metadata store.
+    /// Phase 13.15. The 256-bit key material itself lives in the
+    /// Keychain under `keychainServiceEncryption`.
+    public static let encryptionStoreFileName = "BucketeerEncryptionKeys.store"
+
+    /// `kSecAttrService` value for per-bucket BYOK encryption keys.
+    /// Phase 13.15. Distinct from the connection-credential service
+    /// so a Keychain Access search for one doesn't surface the other.
+    public static let keychainServiceEncryption = "za.co.digitalfreedom.bucketeer.cse"
 }

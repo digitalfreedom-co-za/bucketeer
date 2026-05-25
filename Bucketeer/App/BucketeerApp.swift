@@ -263,6 +263,12 @@ private struct SettingsView: View {
                 .tabItem {
                     Label("settings.tab.rules", systemImage: "tag")
                 }
+            // Phase 13.15 — per-bucket BYOK encryption keys.
+            EncryptionKeysView()
+                .environment(container)
+                .tabItem {
+                    Label("settings.tab.encryption", systemImage: "lock.shield")
+                }
             proTab
                 .tabItem {
                     Label("settings.tab.pro", systemImage: "shippingbox.and.arrow.backward.fill")

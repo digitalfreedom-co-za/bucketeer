@@ -45,6 +45,12 @@ actor TransferManager: Transferring {
     /// init time from `AppContainer` when the checkpoint store is
     /// available; absent in unit tests that don't need persistence.
     private let resumableUploader: S3ResumableUploader?
+    /// Optional client-side-encryption gate. Phase 13.15. When
+    /// present, upload bytes get wrapped in a `BucketeerEnvelope`
+    /// before they hit the wire and download bytes get unwrapped
+    /// after they arrive — but only for buckets the user has
+    /// registered a key for.
+    private let encryptionGate: BucketEncryptionGate?
     /// Optional bandwidth limiter. Phase 13.2. Charged accurately for
     /// the Azure block-blob path (transporter owns every wire chunk)
     /// and best-effort for Soto S3 — Soto's multipart helpers only
@@ -76,13 +82,15 @@ actor TransferManager: Transferring {
         azure: AzureBlobTransporter? = nil,
         activityLog: (any ActivityLogging)? = nil,
         limiter: BandwidthLimiter? = nil,
-        resumableUploader: S3ResumableUploader? = nil
+        resumableUploader: S3ResumableUploader? = nil,
+        encryptionGate: BucketEncryptionGate? = nil
     ) {
         self.factory = factory
         self.azure = azure
         self.activityLog = activityLog
         self.limiter = limiter
         self.resumableUploader = resumableUploader
+        self.encryptionGate = encryptionGate
         let (stream, continuation) = AsyncStream<[TransferTask]>.makeStream(
             bufferingPolicy: .bufferingNewest(1)
         )
@@ -260,6 +268,52 @@ actor TransferManager: Transferring {
             }
         }
 
+        // Phase 13.15 — if the destination bucket has a BYOK key
+        // registered, seal the file into a sandboxed temp envelope
+        // first and rewrite QueuedItem to point at it. The rest of
+        // the upload pipeline (Soto helper / resumable / multipart /
+        // single PUT) sees the encrypted file as if it were the
+        // user-selected one.
+        var item = item
+        var encryptionCleanup: URL? = nil
+        if let encryptionGate,
+           let key = await encryptionGate.key(
+               accountID: item.account.id,
+               bucket: item.task.bucket
+           ) {
+            do {
+                let plaintext = try Data(contentsOf: url, options: .mappedIfSafe)
+                let envelope = try BucketeerEnvelope.seal(plaintext: plaintext, key: key)
+                let temp = FileManager.default.temporaryDirectory
+                    .appendingPathComponent("bucketeer-enc-\(UUID().uuidString).bin")
+                try envelope.write(to: temp, options: .atomic)
+                item = QueuedItem(
+                    account: item.account,
+                    task: TransferTask(
+                        id: item.task.id,
+                        direction: item.task.direction,
+                        accountID: item.task.accountID,
+                        bucket: item.task.bucket,
+                        key: item.task.key,
+                        localURL: temp,
+                        state: item.task.state,
+                        startedAt: item.task.startedAt
+                    ),
+                    contentType: item.contentType,
+                    fileSize: Int64(envelope.count)
+                )
+                encryptionCleanup = temp
+            } catch {
+                setState(id: id, state: .failed(message: errorMessage(error)))
+                return
+            }
+        }
+        defer {
+            if let temp = encryptionCleanup {
+                try? FileManager.default.removeItem(at: temp)
+            }
+        }
+
         if item.account.provider.family == .azureBlob {
             await performAzureUpload(item: item)
             return
@@ -418,6 +472,7 @@ actor TransferManager: Transferring {
                     id: id,
                     state: .running(bytesTransferred: total, totalBytes: total)
                 )
+                await finalizeDownloadDecryption(item: item)
                 setState(id: id, state: .completed)
                 return
             }
@@ -435,6 +490,7 @@ actor TransferManager: Transferring {
                     await self?.chargeMultipartLimiter(id: id, observedBytes: bytes)
                 }
             )
+            await finalizeDownloadDecryption(item: item)
             setState(id: id, state: .completed)
         } catch is CancellationError {
             setState(id: id, state: .cancelled)
@@ -510,6 +566,7 @@ actor TransferManager: Transferring {
                     )
                 }
             )
+            await finalizeDownloadDecryption(item: item)
             setState(id: id, state: .completed)
         } catch is CancellationError {
             setState(id: id, state: .cancelled)
@@ -519,6 +576,48 @@ actor TransferManager: Transferring {
             } else {
                 setState(id: id, state: .failed(message: errorMessage(error)))
             }
+        }
+    }
+
+    // MARK: - Encryption finalisation (Phase 13.15)
+
+    /// Inspect the just-downloaded file. If it starts with the
+    /// Bucketeer envelope magic AND we have a key for the
+    /// (account, bucket) pair, decrypt in place. On a `failed`
+    /// terminal state, this is a no-op — the caller's failure path
+    /// stays untouched.
+    ///
+    /// Called from every download completion site so encryption is
+    /// transparent regardless of single-shot vs multipart path.
+    private func finalizeDownloadDecryption(item: QueuedItem) async {
+        guard let encryptionGate else { return }
+        let url = item.task.localURL
+        guard FileManager.default.fileExists(atPath: url.path) else { return }
+        guard let data = try? Data(contentsOf: url, options: .mappedIfSafe) else { return }
+        guard BucketeerEnvelope.looksEncrypted(data) else { return }
+        guard let key = await encryptionGate.key(
+            accountID: item.account.id,
+            bucket: item.task.bucket
+        ) else { return }
+        do {
+            let plaintext = try BucketeerEnvelope.open(envelope: data, key: key)
+            try plaintext.write(to: url, options: .atomic)
+        } catch {
+            // Leave the envelope on disk so the user can inspect /
+            // re-attempt. The transfer's `completed` state remains —
+            // the file simply isn't decrypted. Surfaced via the
+            // activity log.
+            await activityLog?.record(
+                ActivityEntry(
+                    kind: .download,
+                    status: .failure,
+                    accountID: item.account.id,
+                    accountName: item.account.name,
+                    bucket: item.task.bucket,
+                    key: item.task.key,
+                    errorMessage: "Decryption failed: \(error.localizedDescription)"
+                )
+            )
         }
     }
 

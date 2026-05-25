@@ -84,7 +84,7 @@ commit so the development history reads as a phase-by-phase log.
 | 13.12 | App Intents (Shortcuts / Siri) | ✅ |
 | 13.13 | Spotlight indexing | ✅ |
 | 13.14 | Server-side copy across accounts | ✅ |
-| 13.15 | Client-side encryption per bucket | ⏳ |
+| 13.15 | Client-side encryption per bucket | ✅ |
 | 13.16 | Hardware-key unlock (CryptoTokenKit) | ⏳ |
 
 See [`CHANGELOG.md`](CHANGELOG.md) for the per-phase history and

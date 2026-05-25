@@ -22,6 +22,39 @@ before that is internal phase work on the `development` branch.
 - `docs/DEVELOPER_SETUP.md` clone-to-run guide.
 - `CONTRIBUTING.md` per the design spec §13.2.
 
+### Phase 13.15 — Client-side encryption per bucket
+- BucketeerCore: `BucketEncryptionKey` Sendable struct (metadata
+  only — the raw 256-bit key never crosses this boundary) +
+  `BucketEncryptionKeyRecord` `@Model`. `EncryptionKeyStoring`
+  protocol. `EncryptionKeyStore` (`@ModelActor`) stores SwiftData
+  metadata + Keychain bytes atomically — Keychain rollback if
+  the SwiftData write fails. Distinct Keychain service
+  `…cse` so the existing connection-credential search doesn't
+  surface BYOK keys.
+- `BucketeerEnvelope` wire format: `BCKT` magic + version byte +
+  3 reserved zeros + 12-byte AES-GCM nonce + ciphertext + 16-byte
+  GCM tag. `seal` / `open` / `looksEncrypted` API powered by
+  CryptoKit. `EncryptionError` enum for typed failures.
+- 6 envelope tests (round-trip, header layout, wrong-key auth
+  fail, garbage reject, prefix detection, tamper detection).
+  Core test count: **124**.
+- Host: `BucketEncryptionGate` (`actor`) caches key lookups for
+  30 s so multipart uploads don't hammer the store. Invalidated
+  on key create / delete.
+- `TransferManager` now optionally takes the gate. On upload:
+  seals the file into a sandboxed temp envelope and rewrites
+  `QueuedItem` so single-PUT / Soto multipart / resumable
+  upload all see the encrypted file. On download:
+  `finalizeDownloadDecryption(item:)` runs at every completion
+  site, detects the `BCKT` prefix, fetches the key, and
+  rewrites the file in place. Failed decrypt logs to the
+  activity log and leaves the envelope on disk.
+- `EncryptionKeysViewModel` + `EncryptionKeysView` Settings tab
+  with create / delete + an explicit warning about key loss.
+- AppContainer wires a new host-only
+  `BucketeerEncryptionKeys.store` SwiftData container.
+- 16 localised strings × 10 languages.
+
 ### Phase 13.14 — Cross-account copy / move
 - `CrossAccountCopyCoordinator` (`@MainActor`) routes a multi-key
   copy with two strategies, picked automatically:

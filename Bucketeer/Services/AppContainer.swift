@@ -72,6 +72,11 @@ final class AppContainer {
     let spotlightSettings: SpotlightSettings
     /// Phase 13.14 — cross-account copy / move.
     let crossAccountCopyCoordinator: CrossAccountCopyCoordinator
+    /// Phase 13.15 — per-bucket BYOK client-side encryption.
+    let encryptionContainer: ModelContainer
+    let encryptionKeyStore: any EncryptionKeyStoring
+    let encryptionKeysViewModel: EncryptionKeysViewModel
+    let bucketEncryptionGate: BucketEncryptionGate
     let accountListViewModel: AccountListViewModel
     let browserViewModel: BrowserViewModel
     let transferQueueViewModel: TransferQueueViewModel
@@ -97,6 +102,11 @@ final class AppContainer {
         let autoTagContainer = try Self.makeAutoTagContainer()
         let checkpointContainer = try Self.makeCheckpointContainer()
         let checkpointStore = CheckpointStore(modelContainer: checkpointContainer)
+        let encryptionContainer = try Self.makeEncryptionContainer()
+        let encryptionKeyStore: any EncryptionKeyStoring = EncryptionKeyStore(
+            modelContainer: encryptionContainer
+        )
+        let bucketEncryptionGate = BucketEncryptionGate(keyStore: encryptionKeyStore)
         // Codex blocker #3: write to the shared keychain access group
         // so the File Provider extension (which reads from the same
         // group) can load credentials. Production-signed builds need
@@ -141,7 +151,8 @@ final class AppContainer {
             azure: azureTransporter,
             activityLog: activityLog,
             limiter: bandwidthLimiter,
-            resumableUploader: resumableUploader
+            resumableUploader: resumableUploader,
+            encryptionGate: bucketEncryptionGate
         )
         let previewCache = PreviewCache(
             downloader: PreviewDownloader(
@@ -287,6 +298,16 @@ final class AppContainer {
             transferManager: transferManager,
             activityLog: activityLog
         )
+
+        // Phase 13.15 — client-side encryption.
+        self.encryptionContainer = encryptionContainer
+        self.encryptionKeyStore = encryptionKeyStore
+        self.bucketEncryptionGate = bucketEncryptionGate
+        self.encryptionKeysViewModel = EncryptionKeysViewModel(
+            keyStore: encryptionKeyStore,
+            accountStore: accountStore,
+            gate: bucketEncryptionGate
+        )
         Task { @MainActor [syncJobListViewModel = self.syncJobListViewModel] in
             await syncJobListViewModel.bootstrap()
         }
@@ -386,6 +407,24 @@ final class AppContainer {
         let schema = Schema([ActivityRecord.self])
         let configuration = ModelConfiguration(
             "BucketeerActivity",
+            schema: schema,
+            url: storeURL
+        )
+        return try ModelContainer(for: schema, configurations: configuration)
+    }
+
+    /// Phase 13.15 — host-only encryption-key metadata container.
+    private static func makeEncryptionContainer() throws -> ModelContainer {
+        let support = (try? FileManager.default.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: true
+        )) ?? URL.documentsDirectory
+        let storeURL = support.appending(path: AppEnvironment.encryptionStoreFileName)
+        let schema = Schema([BucketEncryptionKeyRecord.self])
+        let configuration = ModelConfiguration(
+            "BucketeerEncryptionKeys",
             schema: schema,
             url: storeURL
         )
