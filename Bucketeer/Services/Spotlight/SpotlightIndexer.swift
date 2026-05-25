@@ -73,20 +73,24 @@ final class SpotlightIndexer {
         try? await index.indexSearchableItems(items)
     }
 
-    /// Remove every indexed item for the given account. Called from
-    /// `AccountListViewModel.delete` so removed accounts don't leave
-    /// stale Spotlight hits.
-    func purge(accountID: UUID) async {
-        // Spotlight has no "filter by attribute" API at the
-        // CSSearchableIndex level — the cleanest cross-version
-        // approach is to nuke the whole domain and let the next
-        // page-load rebuild it for remaining accounts.
+    /// Wipe the entire Bucketeer Spotlight domain. Called from the
+    /// Settings toggle when the user turns indexing off, and from
+    /// the account-delete path when a per-account purge is needed
+    /// (see `purgeAllForAccountDeletion(_:)`). Codex audit R2 (low)
+    /// merged the previous misleading `purge(accountID:)` into this
+    /// single all-or-nothing API — Spotlight has no domain-level
+    /// per-attribute deletion and the implicit nuke-everything
+    /// behaviour was surprising.
+    func purgeAll() async {
         try? await index.deleteSearchableItems(withDomainIdentifiers: [domainID])
     }
 
-    /// Wipe the entire Bucketeer Spotlight domain. Called from the
-    /// Settings toggle when the user turns indexing off.
-    func purgeAll() async {
-        try? await index.deleteSearchableItems(withDomainIdentifiers: [domainID])
+    /// Compatibility shim for the account-delete path. Honest about
+    /// what it does: until per-account identifier tracking lands,
+    /// removing one account's entries means rebuilding the whole
+    /// index on next page load. The next user-visible browse
+    /// repopulates the survivors via `indexPage`.
+    func purgeAllForAccountDeletion(_ accountID: UUID) async {
+        await purgeAll()
     }
 }

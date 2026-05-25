@@ -31,7 +31,7 @@ public actor ActivityLogStore: ActivityLogging {
     }
 
     public func recent(limit: Int) async throws -> [ActivityEntry] {
-        try fetch(limit: limit, predicate: nil)
+        try fetch(limit: max(0, limit), predicate: nil)
     }
 
     public func search(
@@ -40,7 +40,11 @@ public actor ActivityLogStore: ActivityLogging {
         accountID: UUID?,
         limit: Int
     ) async throws -> [ActivityEntry] {
-        var results = try fetch(limit: limit * 4, predicate: nil)
+        // Codex audit R2 (medium): clamp before the over-fetch
+        // multiplication so a giant caller limit can't overflow Int
+        // into a trap and a negative limit can't reach `prefix`.
+        let safeLimit = max(0, min(limit, Int.max / 4))
+        var results = try fetch(limit: safeLimit * 4, predicate: nil)
         if let kinds, !kinds.isEmpty {
             let allowed = Set(kinds.map(\.rawValue))
             results = results.filter { allowed.contains($0.kind.rawValue) }
@@ -62,7 +66,7 @@ public actor ActivityLogStore: ActivityLogging {
                 return haystacks.contains { ($0 ?? "").lowercased().contains(needle) }
             }
         }
-        return Array(results.prefix(limit))
+        return Array(results.prefix(safeLimit))
     }
 
     public func deleteAll() async throws {

@@ -67,7 +67,13 @@ final class AutoTagCoordinator {
         observerTask?.cancel()
         observerTask = Task { [weak self] in
             for await snapshot in stream {
-                await self?.handle(snapshot: snapshot)
+                // Codex audit R2 (medium): exit promptly when the
+                // owning coordinator is gone. Without this the
+                // observer keeps draining the AsyncStream until
+                // the stream itself closes, which it never does
+                // for a long-lived TransferManager.
+                guard let self else { return }
+                await self.handle(snapshot: snapshot)
             }
         }
     }

@@ -24,6 +24,14 @@ import BucketeerCore
 final class DeepLinkRouter {
     private let browser: BrowserViewModel
     private let accountStore: any AccountStoring
+    /// Monotonically increasing route token — Codex audit R2
+    /// (medium): when the user pastes several `bucketeer://` URLs
+    /// rapidly, each spawns an async load. Without a token, the
+    /// loads can resolve out of order and leave the browser on a
+    /// stale destination. Every async navigation checks its
+    /// captured token against the current value and bails when
+    /// stale.
+    private var routeToken: UInt64 = 0
 
     init(browser: BrowserViewModel, accountStore: any AccountStoring) {
         self.browser = browser
@@ -37,23 +45,23 @@ final class DeepLinkRouter {
     /// state.
     func handle(_ link: BucketeerDeepLink, openWindow: OpenWindowAction) {
         NSApp.activate(ignoringOtherApps: true)
+        // Bump the token *first* so any in-flight navigation from
+        // an earlier link sees a stale value and bails.
+        routeToken &+= 1
+        let token = routeToken
         switch link {
         case .account(let id):
             openWindow(id: "main")
-            Task { await navigateToBucket(accountID: id, bucket: nil, prefix: "") }
+            Task { await navigateToBucket(accountID: id, bucket: nil, prefix: "", token: token) }
         case .bucket(let id, let bucket, let prefix):
             openWindow(id: "main")
-            Task { await navigateToBucket(accountID: id, bucket: bucket, prefix: prefix) }
+            Task { await navigateToBucket(accountID: id, bucket: bucket, prefix: prefix, token: token) }
         case .object(let id, let bucket, let key):
             openWindow(id: "main")
             let prefix = Self.derivePrefix(fromKey: key)
-            Task { await navigateToBucket(accountID: id, bucket: bucket, prefix: prefix) }
+            Task { await navigateToBucket(accountID: id, bucket: bucket, prefix: prefix, token: token) }
         case .syncJob:
             openWindow(id: "main")
-            // Sync drill-down lives in the sidebar; for v1 we just
-            // bring the App forward and let the user click the
-            // Sync row. A dedicated sync-job-detail window can come
-            // in v1.1 when the surface justifies it.
         case .activity:
             openWindow(id: "activity")
         case .trash:
@@ -69,9 +77,17 @@ final class DeepLinkRouter {
 
     // MARK: - Private
 
-    private func navigateToBucket(accountID: UUID, bucket: String?, prefix: String) async {
+    private func navigateToBucket(
+        accountID: UUID,
+        bucket: String?,
+        prefix: String,
+        token: UInt64
+    ) async {
         do {
             let accounts = try await accountStore.all()
+            // Codex audit R2 (medium): bail if a newer handle()
+            // bumped the token while we were awaiting accountStore.
+            guard token == routeToken else { return }
             guard let account = accounts.first(where: { $0.id == accountID }) else { return }
             browser.account = account
             browser.bucket = bucket

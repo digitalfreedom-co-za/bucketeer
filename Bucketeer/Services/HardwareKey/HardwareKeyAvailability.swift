@@ -61,16 +61,14 @@ final class HardwareKeyAvailability {
             // so we can ask whether a card is present. Returns nil
             // when the slot was unplugged between names lookup and
             // resolve.
-            // Resume with a plain Bool to avoid passing the non-Sendable
-            // TKSmartCardSlot reference across the continuation boundary
-            // (Swift 6 strict concurrency requirement).
+            // Codex audit R2 (medium): CryptoTokenKit can fail to
+            // invoke the callback at all if the driver crashed or
+            // the reader was hot-unplugged. Without a timeout the
+            // continuation hangs `refresh()` and the polling loop
+            // with it. 500 ms is generous for a local USB call.
             let present: Bool
             if let mgr = manager {
-                present = await withCheckedContinuation { (cont: CheckedContinuation<Bool, Never>) in
-                    mgr.getSlot(withName: name) { slot in
-                        cont.resume(returning: slot?.state == .validCard)
-                    }
-                }
+                present = await Self.cardPresent(in: mgr, name: name)
             } else {
                 present = false
             }
@@ -81,13 +79,49 @@ final class HardwareKeyAvailability {
         self.slots = next
     }
 
+    /// Race the slot-resolve callback against a 500 ms timeout via
+    /// `TaskGroup` so a stuck driver can't wedge the UI.
+    ///
+    /// `TKSmartCardSlotManager` is a non-`Sendable` ObjC class, so it
+    /// cannot be captured directly by a `@Sendable` `addTask` closure.
+    /// We box it in a `@unchecked Sendable` wrapper — the CryptoTokenKit
+    /// manager is a thread-safe system singleton designed for concurrent
+    /// use; the wrapper is a known-safe suppression of the Swift 6 check.
+    private static func cardPresent(in mgr: TKSmartCardSlotManager, name: String) async -> Bool {
+        struct SendableMgr: @unchecked Sendable {
+            let value: TKSmartCardSlotManager
+        }
+        let box = SendableMgr(value: mgr)
+        return await withTaskGroup(of: Bool.self) { group in
+            group.addTask {
+                await withCheckedContinuation { (cont: CheckedContinuation<Bool, Never>) in
+                    box.value.getSlot(withName: name) { slot in
+                        cont.resume(returning: slot?.state == .validCard)
+                    }
+                }
+            }
+            group.addTask {
+                try? await Task.sleep(nanoseconds: 500_000_000)
+                return false
+            }
+            let first = await group.next() ?? false
+            group.cancelAll()
+            return first
+        }
+    }
+
     /// Begin a poll loop while the view is alive. Cancelled when
     /// `stopMonitoring()` is called.
     func startMonitoring() {
         pollTask?.cancel()
         pollTask = Task { [weak self] in
             while !Task.isCancelled {
-                await self?.refresh()
+                // Codex audit R2 (medium): break the loop when the
+                // owning availability instance is gone so the poll
+                // task self-terminates rather than sleeping forever
+                // against a nil weak-self.
+                guard let self else { return }
+                await self.refresh()
                 try? await Task.sleep(nanoseconds: 2_000_000_000)
             }
         }

@@ -43,7 +43,13 @@ public enum BucketeerDeepLink: Hashable, Sendable {
 
         switch host {
         case "account":
-            guard let first = raw.first, let id = UUID(uuidString: first) else { return nil }
+            // Codex audit R2 (medium): require an exact 1-component
+            // path so `bucketeer://account/<uuid>/garbage` doesn't
+            // route as a valid link with the garbage silently
+            // dropped.
+            guard raw.count == 1,
+                  let first = raw.first,
+                  let id = UUID(uuidString: first) else { return nil }
             self = .account(id: id)
         case "bucket":
             guard raw.count >= 2,
@@ -61,11 +67,15 @@ public enum BucketeerDeepLink: Hashable, Sendable {
             let key = raw.dropFirst(2).joined(separator: "/")
             self = .object(accountID: id, bucket: bucket, key: key)
         case "sync":
-            guard let first = raw.first, let id = UUID(uuidString: first) else { return nil }
+            guard raw.count == 1,
+                  let first = raw.first,
+                  let id = UUID(uuidString: first) else { return nil }
             self = .syncJob(id: id)
         case "activity":
+            guard raw.isEmpty else { return nil }
             self = .activity
         case "trash":
+            guard raw.isEmpty else { return nil }
             self = .trash
         default:
             return nil

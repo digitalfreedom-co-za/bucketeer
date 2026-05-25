@@ -27,8 +27,12 @@ public struct BucketStatsCollector: Sendable {
 
     public init(browser: any S3Browsing, pageCap: Int = 100, largestKeep: Int = 10) {
         self.browser = browser
-        self.pageCap = pageCap
-        self.largestKeep = largestKeep
+        // Codex audit R2 (medium + low): clamp both knobs so a
+        // negative `largestKeep` can't trap the `reserveCapacity`
+        // call below and a zero/negative `pageCap` consistently
+        // means "no walk", not "one page with truncated=false".
+        self.pageCap = max(1, pageCap)
+        self.largestKeep = max(0, largestKeep)
     }
 
     public func collect(account: S3Account, bucket: String) async throws -> BucketStats {
@@ -57,7 +61,12 @@ public struct BucketStatsCollector: Sendable {
                     continue
                 }
                 objectCount += 1
-                totalBytes += object.size
+                // Codex audit R2 (medium): petabyte-scale buckets
+                // can overflow Int64. Overflow-aware add saturates
+                // at .max and the dashboard still shows useful
+                // partial stats rather than crashing.
+                let (sum, overflow) = totalBytes.addingReportingOverflow(object.size)
+                totalBytes = overflow ? .max : sum
                 if lastModified == nil || object.lastModified > (lastModified ?? .distantPast) {
                     lastModified = object.lastModified
                 }

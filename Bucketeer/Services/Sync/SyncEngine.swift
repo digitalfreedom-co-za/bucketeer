@@ -48,6 +48,13 @@ actor SyncEngine {
     /// torn down. Without this guard the registration-race window
     /// could leak an in-flight transfer past the cancel.
     private var cancelledJobIDs: Set<UUID> = []
+    /// Codex audit R2 (high): watch-folder events that arrive while
+    /// a job is already running used to be dropped (runNow no-ops
+    /// when `runners[id] != nil`). Local file changes could then
+    /// stay unsynced until a *future* event nudged the watcher
+    /// again. The pending-rerun bit fires one immediate re-run as
+    /// soon as the current run finishes.
+    private var pendingReruns: Set<UUID> = []
     /// Phase 9.10: per-job FSEvents watcher + the Task that pumps the
     /// watcher's debounced AsyncStream into runNow calls. Started on
     /// reload() for jobs with a local source and `.onLocalChange`
@@ -56,7 +63,11 @@ actor SyncEngine {
     private struct WatcherEntry {
         let watcher: LocalFolderWatcher
         let pumpTask: Task<Void, Never>
-        let bookmarkSignature: Int  // hashValue of the bookmark data
+        /// The raw bookmark `Data` — used to detect that the user
+        /// re-picked the folder. Codex audit R2 (medium) replaced
+        /// the old `Int` hashValue (which collides) with the full
+        /// bytes; equality is the only correct identity check.
+        let bookmarkData: Data
     }
     private var watchers: [UUID: WatcherEntry] = [:]
 
@@ -82,6 +93,21 @@ actor SyncEngine {
     }
 
     deinit { continuation.finish() }
+
+    /// Tear down every FSEvents watcher + pump task. Codex audit
+    /// R2 (medium): actor deinit can't reach actor-isolated state
+    /// in Swift 6, so we expose an explicit shutdown the host
+    /// calls from its own dealloc path (or from a hot-reload
+    /// hook in tests). Idempotent.
+    func shutdown() {
+        for entry in watchers.values {
+            entry.pumpTask.cancel()
+            entry.watcher.stop()
+        }
+        watchers.removeAll()
+        runners.values.forEach { $0.cancel() }
+        runners.removeAll()
+    }
 
     // MARK: - Registration
 
@@ -113,9 +139,11 @@ actor SyncEngine {
         for job in jobs where job.enabled && job.schedule == .onLocalChange {
             guard case .localFolder(let bookmark, _) = job.source else { continue }
             keepIDs.insert(job.id)
-            let signature = bookmark.hashValue
             // Existing watcher with the same bookmark → leave running.
-            if let existing = watchers[job.id], existing.bookmarkSignature == signature {
+            // Codex audit R2 (medium): equality on the raw bytes
+            // instead of `hashValue`; hashValue collisions would
+            // falsely treat an edited bookmark as identical.
+            if let existing = watchers[job.id], existing.bookmarkData == bookmark {
                 continue
             }
             // Tear down stale watcher (bookmark moved or job edited)
@@ -162,7 +190,7 @@ actor SyncEngine {
             watchers[job.id] = WatcherEntry(
                 watcher: watcher,
                 pumpTask: pump,
-                bookmarkSignature: signature
+                bookmarkData: bookmark
             )
         }
         // Stop every watcher whose job is gone or no longer eligible.
@@ -176,9 +204,17 @@ actor SyncEngine {
     // MARK: - Job control
 
     /// Run the job immediately. Idempotent — calling while already
-    /// running is a no-op (returns the existing runner).
+    /// running is a no-op for the *current* run but now records a
+    /// pending-rerun flag so the job re-fires the moment the
+    /// in-flight run terminates. Codex audit R2 (high): without the
+    /// rerun bit, watch-folder events that landed mid-run were lost
+    /// and only a *future* event triggered another sync.
     func runNow(id: UUID) async {
-        guard let job = jobs[id], runners[id] == nil else { return }
+        guard let job = jobs[id] else { return }
+        if runners[id] != nil {
+            pendingReruns.insert(id)
+            return
+        }
         // Clear any previous cancellation flag so re-running a
         // cancelled job doesn't immediately tear new transfers down.
         cancelledJobIDs.remove(id)
@@ -226,7 +262,17 @@ actor SyncEngine {
 
     private func execute(job: SyncJob) async {
         let start = Date()
-        defer { runners[job.id] = nil }
+        // Codex audit R2 (high): release the runner slot, then
+        // immediately re-trigger if a watch-folder event landed
+        // while we were running. Without this, the rerun bit stays
+        // set and is only acted on by the *next* fsevent, which
+        // could be hours away.
+        defer {
+            runners[job.id] = nil
+            if pendingReruns.remove(job.id) != nil {
+                Task { [weak self] in await self?.runNow(id: job.id) }
+            }
+        }
 
         let context: SyncRunContext
         do {

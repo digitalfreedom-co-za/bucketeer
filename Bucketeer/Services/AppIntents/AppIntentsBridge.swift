@@ -23,13 +23,19 @@ struct AppIntentsBridge: Sendable {
     /// Block until `AppContainer.shared` resolves or the timeout
     /// elapses. Default 5 s — enough for cold-launch on a healthy
     /// Mac, short enough that a wedged App still returns an error.
-    func container(timeout: TimeInterval = 5.0) async throws -> AppContainer {
-        let deadline = Date().addingTimeInterval(timeout)
-        while Date() < deadline {
+    ///
+    /// Codex audit R2 (low): use the monotonic `ContinuousClock`
+    /// instead of wall-clock `Date` arithmetic so system-clock
+    /// changes (NTP sync, manual user adjustment) can't shorten or
+    /// extend the wait window.
+    func container(timeout: Duration = .seconds(5)) async throws -> AppContainer {
+        let clock = ContinuousClock()
+        let deadline = clock.now.advanced(by: timeout)
+        while clock.now < deadline {
             if let container = await MainActor.run(body: { AppContainer.shared }) {
                 return container
             }
-            try await Task.sleep(nanoseconds: 100_000_000) // 100 ms
+            try await Task.sleep(for: .milliseconds(100), clock: clock)
         }
         throw BucketeerError.unknown(
             message: "Bucketeer is not running — open the App and try again."
