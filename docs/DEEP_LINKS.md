@@ -12,7 +12,7 @@ inspector windows.
 | `account` | `/<accountUUID>` | Open the main window, focus the account's bucket list |
 | `bucket` | `/<accountUUID>/<bucket>[/<prefix>…]` | Focus the bucket at the given prefix |
 | `object` | `/<accountUUID>/<bucket>/<key…>` | Focus the bucket and navigate to the object's folder |
-| `sync` | `/<jobUUID>` | Open the main window (sync drill-down lands in v1.1) |
+| `sync` | `/<jobUUID>` | Open the dedicated sync-job detail window |
 | `activity` | *(empty)* | Open the Activity Log window |
 | `trash` | *(empty)* | Open the Trash window |
 
@@ -66,3 +66,20 @@ Should focus the App and route to the named destination.
 handler at startup so URLs that arrive while the App is in
 menu-bar (`.accessory`) mode still route — the handler is the
 in-process fallback to the system-wide registration.
+
+## Sync-job detail window
+
+`bucketeer://sync/<jobUUID>` opens `SyncJobDetailWindow` (a
+SwiftUI `WindowGroup(id: "sync-job", for: UUID.self)`). The window
+shows identity (name, mode, schedule, enabled flag), the two
+endpoints with friendly account names, live phase + progress, and
+a Run Now / Cancel / Open-in-List action row.
+
+Status comes from `SyncStatusBroker` — a `@MainActor @Observable`
+multicast wrapper around `SyncEngine.statuses`. Both the sync
+list view model and the detail window read from the broker, so
+they don't race the single AsyncStream iterator. The detail
+window reloads its `SyncJob` snapshot from the store on terminal
+phase transitions (`finished` / `failed` / `cancelled`) so
+`lastRunAt` and `lastRunSummary` refresh when the in-flight run
+completes.

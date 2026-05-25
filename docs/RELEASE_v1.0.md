@@ -181,6 +181,3 @@ report through the support URL and fix on `development` first.
 - Hardware-key unlock gate replacement (CryptoTokenKit detection
   shipped in 13.16 as preview; the actual secret-reveal gate
   swap follows after wider device validation).
-- Per-account Spotlight purge (today's `purgeAll`-on-account-delete
-  is honest but wasteful).
-- A sync-job-detail window for `bucketeer://sync/<id>` deep links.

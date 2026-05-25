@@ -9,11 +9,42 @@ import Foundation
 import Testing
 @testable import BucketeerCore
 
-/// Phase 14 / Codex R3 coverage for the new Azure-parity helpers
+/// Phase 14 / Codex R3 + R5 coverage for the Azure-parity helpers
 /// in `AzureRequestBuilder`: XML escaping, control-scalar stripping,
-/// HTTP-token validation, and header-value sanitisation.
+/// HTTP-token validation, header-value sanitisation, and the
+/// Azure-specific metadata name + value validators.
 @Suite("AzureRequestBuilder helpers")
 struct AzureRequestBuilderTagsTests {
+
+    // MARK: - Azure metadata validators (Codex R5)
+
+    @Test("Azure metadata name accepts C#-identifier-style names")
+    func azureMetaNameAcceptsIdentifiers() {
+        #expect(AzureRequestBuilder.isValidAzureMetadataName("project"))
+        #expect(AzureRequestBuilder.isValidAzureMetadataName("Project_Name"))
+        #expect(AzureRequestBuilder.isValidAzureMetadataName("_underscore"))
+        #expect(AzureRequestBuilder.isValidAzureMetadataName("a1"))
+    }
+
+    @Test("Azure metadata name rejects HTTP-token-only legal chars")
+    func azureMetaNameRejectsTokenChars() {
+        // Valid HTTP tokens, invalid Azure metadata names — these
+        // would have slipped through `isValidHeaderToken` and only
+        // failed on the Azure round trip.
+        #expect(!AzureRequestBuilder.isValidAzureMetadataName("abc-123"))
+        #expect(!AzureRequestBuilder.isValidAzureMetadataName("foo.bar"))
+        #expect(!AzureRequestBuilder.isValidAzureMetadataName("with+plus"))
+        #expect(!AzureRequestBuilder.isValidAzureMetadataName("1leadingDigit"))
+        #expect(!AzureRequestBuilder.isValidAzureMetadataName(""))
+    }
+
+    @Test("Azure metadata value rejects non-ASCII")
+    func azureMetaValueAsciiOnly() {
+        #expect(AzureRequestBuilder.isValidAzureMetadataValue("ascii-only-1.0"))
+        #expect(!AzureRequestBuilder.isValidAzureMetadataValue("Müller"))
+        #expect(!AzureRequestBuilder.isValidAzureMetadataValue("emoji✨"))
+        #expect(AzureRequestBuilder.isValidAzureMetadataValue(""))
+    }
 
     @Test("xmlEscape replaces the five XML structural characters")
     func xmlEscapeStructural() {

@@ -441,6 +441,20 @@ actor SyncEngine {
         let summary = moveDeleteFailures > 0
             ? "\(completed) ok / \(failed) failed (\(moveDeleteFailures) move-delete) / \(planned) planned"
             : "\(completed) ok / \(failed) failed / \(planned) planned"
+        // Codex R5 (medium): persist *before* publishing the
+        // terminal status. Observers (`SyncJobDetailWindow` via
+        // `SyncStatusBroker`) reload the job from the store on
+        // terminal-phase transitions; if we updateStatus first
+        // they race in ahead of `touchLastRun` and render a stale
+        // snapshot. Swap the order so the store is up to date by
+        // the time any observer reacts.
+        let lastRunAt = Date()
+        try? await jobStore.touchLastRun(id: job.id, at: lastRunAt, summary: summary)
+        if var refreshed = jobs[job.id] {
+            refreshed.lastRunAt = lastRunAt
+            refreshed.lastRunSummary = summary
+            jobs[job.id] = refreshed
+        }
         updateStatus(
             id: job.id,
             phase: failed > 0 ? .failed : .finished,
@@ -449,12 +463,6 @@ actor SyncEngine {
             failed: failed,
             message: summary
         )
-        try? await jobStore.touchLastRun(id: job.id, at: Date(), summary: summary)
-        if var refreshed = jobs[job.id] {
-            refreshed.lastRunAt = Date()
-            refreshed.lastRunSummary = summary
-            jobs[job.id] = refreshed
-        }
     }
 
     // MARK: - Endpoint context

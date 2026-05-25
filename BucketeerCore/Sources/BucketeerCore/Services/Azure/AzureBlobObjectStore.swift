@@ -222,11 +222,17 @@ public struct AzureBlobObjectStore: S3Browsing {
         // Codex R4 (high): copy(...) previously bypassed the
         // header sanitisation that saveMetadata uses. Same
         // hardening here so a hostile metadata value can't fold a
-        // CR/LF into the outbound request.
+        // CR/LF into the outbound request. Codex R5 (medium):
+        // tighten validation from RFC 9110 HTTP-token (which
+        // would let `abc-123` through) to Azure's C#-identifier
+        // metadata-name rule, and reject non-ASCII values which
+        // Azure rejects with HTTP 400 anyway.
         if let metadata, !metadata.isEmpty {
             for (key, value) in metadata {
                 let lowerKey = key.lowercased()
-                guard AzureRequestBuilder.isValidHeaderToken(lowerKey) else { continue }
+                guard AzureRequestBuilder.isValidAzureMetadataName(lowerKey),
+                      AzureRequestBuilder.isValidAzureMetadataValue(value)
+                else { continue }
                 request.setValue(
                     AzureRequestBuilder.sanitiseHeaderValue(value),
                     forHTTPHeaderField: "x-ms-meta-" + lowerKey
@@ -590,21 +596,28 @@ public struct AzureBlobObjectStore: S3Browsing {
         // tracks Content-Language and Content-MD5. Re-read them
         // via HEAD and pass them back so an editor save doesn't
         // silently drop properties the user never touched.
+        //
+        // Codex R5 (medium): treat HEAD failure as fatal. The
+        // previous "best-effort" path turned a transient 5xx on
+        // HEAD followed by a successful Set Blob Properties into
+        // silent property loss — exactly the regression R4 was
+        // meant to close.
         var preservedLanguage: String?
         var preservedMD5:      String?
-        do {
-            var head = URLRequest(url: builder.blobPropertiesURL(container: bucket, blob: key))
-            head.httpMethod = "HEAD"
-            signer.sign(&head)
-            let (_, headResponse) = try await session.data(for: head)
-            if let http = headResponse as? HTTPURLResponse {
-                preservedLanguage = http.value(forHTTPHeaderField: "Content-Language")
-                preservedMD5      = http.value(forHTTPHeaderField: "Content-MD5")
-            }
-        } catch {
-            // Best-effort preservation; continue with the user's
-            // edits even when HEAD fails.
+        var head = URLRequest(url: builder.blobPropertiesURL(container: bucket, blob: key))
+        head.httpMethod = "HEAD"
+        signer.sign(&head)
+        let (_, headResponse) = try await session.data(for: head)
+        guard let headHTTP = headResponse as? HTTPURLResponse else {
+            throw BucketeerError.unknown(
+                message: "Azure HEAD before saveMetadata returned a non-HTTP response."
+            )
         }
+        if let mapped = AzureBlobObjectStore.mapHTTP(headHTTP, body: nil, bucket: bucket, key: key) {
+            throw mapped
+        }
+        preservedLanguage = headHTTP.value(forHTTPHeaderField: "Content-Language")
+        preservedMD5      = headHTTP.value(forHTTPHeaderField: "Content-MD5")
 
         var propsRequest = URLRequest(url: builder.setBlobPropertiesURL(container: bucket, blob: key))
         propsRequest.httpMethod = "PUT"
@@ -636,9 +649,15 @@ public struct AzureBlobObjectStore: S3Browsing {
         var metaRequest = URLRequest(url: builder.setBlobMetadataURL(container: bucket, blob: key))
         metaRequest.httpMethod = "PUT"
         metaRequest.setValue("0", forHTTPHeaderField: "Content-Length")
+        // Codex R5 (medium): align with copy() — use Azure's
+        // C#-identifier metadata rules + ASCII-only values
+        // instead of generic HTTP-token validation so we surface
+        // bad names locally instead of via HTTP 400 round-trip.
         for (k, v) in metadata.userMetadata {
             let lowerKey = k.lowercased()
-            guard AzureRequestBuilder.isValidHeaderToken(lowerKey) else { continue }
+            guard AzureRequestBuilder.isValidAzureMetadataName(lowerKey),
+                  AzureRequestBuilder.isValidAzureMetadataValue(v)
+            else { continue }
             metaRequest.setValue(
                 AzureRequestBuilder.sanitiseHeaderValue(v),
                 forHTTPHeaderField: "x-ms-meta-" + lowerKey

@@ -26,7 +26,7 @@ before that is internal phase work on the `development` branch.
 Captures everything between the v1.0 feature freeze (end of
 Phase 13.16) and the development → main draft PR.
 
-**Codex audits**: two rounds across the 13.x delta, 35 findings
+**Codex audits**: four rounds across the 13.x delta, 41 findings
 addressed total.
 
 - Round 1 (security-critical): 3 high, 3 medium, 2 low. CSE
@@ -48,6 +48,26 @@ addressed total.
   restoreVersion exhaustive copy-status switch, nanosecond +
   inode fingerprint, abort-multipart on fingerprint mismatch,
   xmlEscape strips XML-1.0 control scalars.
+- Round 4 (post-detail-window): 2 high, 3 medium, 1 low.
+  `SyncStatusBroker` multicasts `SyncEngine.statuses` so list +
+  detail window no longer race the single AsyncStream iterator;
+  `SpotlightIndexer.purgeAll` / `purgeAccount` only clear
+  UserDefaults tracking on successful index deletion (do/catch,
+  not `try?`); `AzureBlobObjectStore.copy()` validates +
+  sanitises metadata keys/values; `saveMetadata()` does a HEAD
+  first to preserve Content-Language and Content-MD5; XML tag
+  values are no longer trimmed in `AzureListXMLParser`.
+- Round 5 (post-broker): 3 medium. `SyncEngine` persists
+  `lastRunAt` / `lastRunSummary` *before* publishing the
+  terminal status so observers (the new detail window) never
+  reload a stale snapshot. `AzureBlobObjectStore.saveMetadata`
+  HEAD is no longer best-effort — failures throw rather than
+  silently dropping Content-Language / Content-MD5 on the
+  follow-up Set Blob Properties. New `isValidAzureMetadataName`
+  + `isValidAzureMetadataValue` validators replace the generic
+  HTTP-token check on metadata input so names with `-`, `.`, or
+  non-ASCII values fail locally instead of round-tripping to a
+  400 from Azure.
 
 **Azure feature gaps**: snapshots (versions browser parity),
 metadata + tags (Get/Set Blob Properties + Set Blob Metadata +
@@ -87,6 +107,12 @@ and PR (macos-15, Xcode 16). ci_scripts/ for Xcode Cloud
 (ci_post_clone.sh, ci_pre_xcodebuild.sh with SHIP_BLOCKER +
 icon checks, ci_post_xcodebuild.sh). scripts/preflight.sh
 mirrors the gates locally.
+
+**Sync-job detail window**: dedicated
+`bucketeer://sync/<jobUUID>` window renders identity, endpoints,
+live phase + progress, Run Now / Cancel / Open-in-List action
+row. Reloads the job snapshot from the store on terminal phase
+transitions so lastRunAt / lastRunSummary refresh.
 
 **Release plan**: docs/RELEASE_v1.0.md with the full 22-step
 TestFlight smoke-test plan + branch flow + v1.1 backlog.

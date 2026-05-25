@@ -270,6 +270,34 @@ struct AzureRequestBuilder: Sendable {
         return name.allSatisfy { tokenCharacters.contains($0) }
     }
 
+    /// Azure-specific metadata name rule. Per Microsoft's
+    /// "Setting and retrieving properties and metadata for blob
+    /// resources" doc, `x-ms-meta-*` names must adhere to the
+    /// naming rules for C# identifiers: an ASCII letter or `_`
+    /// first, then ASCII letters, digits, or `_`. HTTP-token
+    /// characters like `-`, `.`, `+` are *valid HTTP tokens* but
+    /// will be silently rejected by Azure with HTTP 400, so we
+    /// reject locally to surface a clearer error path.
+    static func isValidAzureMetadataName(_ name: String) -> Bool {
+        guard !name.isEmpty else { return false }
+        let first = name.first!
+        let isLetterOrUnderscore: (Character) -> Bool = { c in
+            (c >= "a" && c <= "z") || (c >= "A" && c <= "Z") || c == "_"
+        }
+        let isIdentifierTail: (Character) -> Bool = { c in
+            isLetterOrUnderscore(c) || (c >= "0" && c <= "9")
+        }
+        guard isLetterOrUnderscore(first) else { return false }
+        return name.dropFirst().allSatisfy(isIdentifierTail)
+    }
+
+    /// Azure metadata values must be valid ASCII; non-ASCII is
+    /// rejected by the service. Combined with `sanitiseHeaderValue`
+    /// at the call sites to also strip CR / LF.
+    static func isValidAzureMetadataValue(_ value: String) -> Bool {
+        value.unicodeScalars.allSatisfy { $0.isASCII }
+    }
+
     // MARK: - Helpers
 
     private func blobPath(container: String, blob: String) -> String {

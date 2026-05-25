@@ -37,7 +37,7 @@ graph LR
         Container["AppContainer<br/>@MainActor @Observable composition root<br/>+ static .shared for App Intents"]
         ViewModels["ViewModels<br/>AccountList · Browser · TransferQueue · SyncJobList<br/>ActivityLog · Trash · BucketDashboard<br/>ObjectVersions · ObjectMetadata · AutoTagRules<br/>EncryptionKeys"]
         Views["SwiftUI Views<br/>Sidebar · Browser · Sync · Paywall · Menubar · About<br/>Activity · Trash · Settings (General · Transfers · Rules<br/>· Encryption · Security · Pro)"]
-        HostOnly["Host-only services<br/>EntitlementManager (StoreKit) · MountController<br/>DragDropCoordinator · TransferManager (actor)<br/>SyncEngine (actor) · PreviewCache · AppActivationController<br/>TrashCoordinator · BandwidthSettings · TrashSettings<br/>AutoTagCoordinator · DeepLinkRouter · CrossAccountCopyCoordinator<br/>SpotlightIndexer · SpotlightSettings · BucketEncryptionGate<br/>HardwareKeyAvailability · HardwareKeySettings"]
+        HostOnly["Host-only services<br/>EntitlementManager (StoreKit) · MountController<br/>DragDropCoordinator · TransferManager (actor)<br/>SyncEngine (actor) · SyncStatusBroker (multicast)<br/>PreviewCache · AppActivationController<br/>TrashCoordinator · BandwidthSettings · TrashSettings<br/>AutoTagCoordinator · DeepLinkRouter · CrossAccountCopyCoordinator<br/>SpotlightIndexer · SpotlightSettings · BucketEncryptionGate<br/>HardwareKeyAvailability · HardwareKeySettings"]
         AppIntents["App Intents (13.12)<br/>AccountEntity · AppIntentsBridge<br/>ListBucketsIntent · GeneratePresignedURLIntent<br/>UploadFileIntent · RunSyncJobIntent<br/>BucketeerShortcuts (AppShortcutsProvider)"]
     end
 
@@ -184,6 +184,19 @@ sequenceDiagram
     Note over Engine: defer { releaseSecurityScope(...) }
     Engine->>FS: url.stopAccessingSecurityScopedResource()
 ```
+
+**Status fan-out — `SyncStatusBroker`:** `SyncEngine.statuses`
+is an `AsyncStream<[SyncJobStatus]>` and its iterator only
+delivers each emission to *one* awaiter. As soon as the sync
+list view model and the `bucketeer://sync/<id>` detail window
+both want to read, they need a multicaster. `SyncStatusBroker`
+(`@MainActor @Observable`) is the single consumer: it owns one
+pump task, normalises each snapshot to `[UUID: SyncJobStatus]`,
+and republishes via its `@Observable` property. View models and
+windows read `broker.statuses[jobID]` directly — SwiftUI's
+observation tracking re-renders them when the broker's snapshot
+changes. The pump-task handle is held `nonisolated(unsafe)` so
+`deinit` can cancel it without a main-actor hop.
 
 ---
 
