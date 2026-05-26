@@ -118,6 +118,188 @@ mount-callbacks path. Auto-purge runs on launch for the activity log
 (180 days), the trash (user-configured retention, default 30 days),
 and the cross-account staging directory (any leftover file).
 
+### 1.2 Service-protocol seam
+
+`BucketeerCore/Services/ServiceProtocols.swift` is the boundary
+between services and the rest of the app. View models depend on
+the *protocols*, not the concrete services — this lets the test
+suite swap in fakes, lets `ProviderRouter` fan one `S3Browsing`
+call out to either `S3Service` (Soto) or `AzureBlobObjectStore`,
+and keeps the host / extension on the same contracts.
+
+```mermaid
+classDiagram
+    direction LR
+
+    class KeychainStoring {
+        <<protocol, Sendable>>
+        +save(credentials, accountID) async
+        +load(accountID) async
+        +delete(accountID) async
+    }
+    class AccountStoring {
+        <<protocol, Sendable>>
+        +all() async
+        +save(account, credentials) async
+        +delete(id) async
+    }
+    class S3Browsing {
+        <<protocol, Sendable>>
+        +listBuckets / listObjects / head
+        +copy / delete / createFolder
+        +presignedDownloadURL
+        +listVersions / restoreVersion
+        +loadMetadata / saveMetadata
+        +loadInsights
+    }
+    class Transferring {
+        <<protocol, Sendable>>
+        +enqueueUpload / enqueueDownload
+        +cancel(id) / awaitCompletion(id)
+        +tasks (AsyncStream)
+    }
+    class EncryptionKeyStoring {
+        <<protocol, Sendable>>
+    }
+    class CheckpointStoring {
+        <<protocol, Sendable>>
+    }
+    class AutoTagRuleStoring {
+        <<protocol, Sendable>>
+    }
+    class ActivityLogging {
+        <<protocol, Sendable>>
+    }
+    class TrashStoring {
+        <<protocol, Sendable>>
+    }
+
+    class KeychainStore {
+        <<actor>>
+        accessGroup: String?
+    }
+    class AccountStore {
+        <<@ModelActor>>
+    }
+    class S3Service {
+        <<struct, Sendable>>
+        factory: S3ClientFactory
+    }
+    class AzureBlobObjectStore {
+        <<struct, Sendable>>
+        credentialsCache
+    }
+    class ProviderRouter {
+        <<struct, Sendable>>
+        s3: S3Service
+        azure: AzureBlobObjectStore
+    }
+    class TransferManager {
+        <<actor>>
+        router: ProviderRouter
+    }
+
+    KeychainStoring <|.. KeychainStore
+    AccountStoring  <|.. AccountStore
+    S3Browsing      <|.. S3Service
+    S3Browsing      <|.. AzureBlobObjectStore
+    S3Browsing      <|.. ProviderRouter : routes by S3Provider.family
+    Transferring    <|.. TransferManager
+
+    ProviderRouter ..> S3Service        : forwards S3 family
+    ProviderRouter ..> AzureBlobObjectStore : forwards Azure family
+    TransferManager ..> ProviderRouter  : uses
+    AccountStore   ..> KeychainStore    : per-account credential save
+```
+
+### 1.3 Sendable snapshot ↔ `@Model` record pairing
+
+Six pairs follow a strict pattern: a Sendable value-type
+"snapshot" is the only thing that crosses actor / `ModelActor`
+boundaries; the `@Model` reference-type record stays inside the
+SwiftData container. View models read snapshots; stores convert.
+This is what lets the host enforce Swift 6 strict concurrency
+without leaking SwiftData's reference semantics into the UI.
+
+```mermaid
+classDiagram
+    direction LR
+
+    class S3Account {
+        <<struct, Sendable, Identifiable>>
+        id: UUID
+        name / provider / endpoint
+        region / usesPathStyle
+    }
+    class S3AccountRecord {
+        <<@Model>>
+        id: UUID
+        name / providerRaw / endpoint
+        region / usesPathStyle
+    }
+
+    class TrashedItem {
+        <<struct, Sendable, Identifiable>>
+        id / accountID / bucket / key
+        deletedAt / size / hasLocalCache
+    }
+    class TrashRecord {
+        <<@Model>>
+    }
+
+    class BucketEncryptionKey {
+        <<struct, Sendable, Identifiable>>
+        id / accountID / bucket
+        algorithm / createdAt
+    }
+    class BucketEncryptionKeyRecord {
+        <<@Model>>
+    }
+
+    class ActivityEntry {
+        <<struct, Sendable, Identifiable>>
+        id / timestamp / kind / accountID
+        bucket / key / status / detail
+    }
+    class ActivityRecord {
+        <<@Model>>
+    }
+
+    class AutoTagRule {
+        <<struct, Sendable, Identifiable>>
+        id / pattern / tagKey / tagValue
+        scope / enabled
+    }
+    class AutoTagRuleRecord {
+        <<@Model>>
+    }
+
+    class MultipartUploadCheckpoint {
+        <<struct, Sendable, Codable>>
+        accountID / bucket / key / uploadID
+        fingerprint / completedParts
+    }
+    class MultipartUploadRecord {
+        <<@Model>>
+    }
+
+    S3Account              <-- S3AccountRecord              : .toSnapshot()
+    TrashedItem            <-- TrashRecord                  : .toSnapshot()
+    BucketEncryptionKey    <-- BucketEncryptionKeyRecord    : .toSnapshot()
+    ActivityEntry          <-- ActivityRecord               : .toSnapshot()
+    AutoTagRule            <-- AutoTagRuleRecord            : .toSnapshot()
+    MultipartUploadCheckpoint <-- MultipartUploadRecord     : .toSnapshot()
+```
+
+`SyncJob`, `S3Bucket`, `S3Object`, `ObjectMetadata`,
+`ObjectVersion`, `BucketStats`, `BucketInsights`, `TransferTask`
+and `BucketeerError` are also Sendable value types but have *no*
+record sibling — they are either network-side reads
+(`S3Bucket`/`S3Object`/`ObjectVersion`), per-run state
+(`TransferTask`/`BucketStats`), or persisted by their own store
+in a different way (`SyncJob` is `Codable` to JSON in
+`SyncJobStore`).
+
 ---
 
 ## 2. Sync routing — Phase 9.8 four-way matrix
