@@ -1,0 +1,80 @@
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+*.xcuserdata/
+xcuserdata/
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+
+# Build products
+*.dSYM.zip
+*.dSYM
+*.ipa
+*.xcarchive
+
+# Swift Package Manager
+.swiftpm/
+.build/
+# Package.resolved is committed for apps to lock dependency versions
+
+# CocoaPods
+Pods/
+*.xcworkspace/contents.xcworkspacedata
+
+# Swift
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.idea/
+.vscode/
+
+# Secrets — never commit
+*.p12
+*.cer
+*.mobileprovision
+ExportOptions.plist
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+.env
+.env.*
+!.env.example
+
+# Misc
+*.log
+
+# Claude Code artifacts — IDE-specific tooling, kept out of the repo
+# so contributors aren't asked to pick up another contributor's local
+# AI-tool configuration. CLAUDE.md is also covered by Marcel's global
+# git-ignore but listed here explicitly so a clone on any machine
+# without that global rule still keeps the file out.
+CLAUDE.md
+.claude/
+.claude/**
+
+# Same for other AI / IDE assistant artifacts.
+.cursor/
+.cursorrules
+.aider*
+.github/copilot-instructions.md
+AGENTS.md
+GEMINI.md
+
+# Pre-release artifacts — keep the master in scripts/build/ as a
+# build product, not source. The iconset PNGs are committed.
+scripts/build/

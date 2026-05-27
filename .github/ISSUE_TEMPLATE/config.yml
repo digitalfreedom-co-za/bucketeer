@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Customer support
+    url: https://support.apps.digitalfreedom.co.za/
+    about: General usage questions, billing, account issues. Not for bugs or security reports.
+  - name: Security vulnerability
+    url: https://github.com/digitalfreedom-co-za/bucketeer/blob/main/SECURITY.md
+    about: Please follow SECURITY.md (private email) instead of filing a public issue.

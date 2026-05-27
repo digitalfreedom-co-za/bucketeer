@@ -1,0 +1,39 @@
+{
+  "identifier" : "0F4B1A2C-BB22-4E11-9F7B-BUCKETEER0001",
+  "nonRenewingSubscriptions" : [],
+  "products" : [
+    {
+      "displayPrice" : "14.99",
+      "familyShareable" : true,
+      "internalID" : "BUCKETEER-PRO-LIFETIME-001",
+      "localizations" : [
+        {
+          "description" : "Unlock Mount as Drive, Sync Engine, cross-provider copy and Menubar background mode forever. One-time purchase, no subscription.",
+          "displayName" : "Bucketeer Pro (Lifetime)",
+          "locale" : "en"
+        },
+        {
+          "description" : "Schaltet Mount, Sync, providerübergreifendes Kopieren und Menüleisten-Modus für immer frei. Einmaliger Kauf, kein Abo.",
+          "displayName" : "Bucketeer Pro (für immer)",
+          "locale" : "de"
+        }
+      ],
+      "productID" : "za.co.digitalfreedom.bucketeer.pro.lifetime",
+      "referenceName" : "Bucketeer Pro Lifetime",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "1",
+    "_developerTeamID" : "7TSZJCJY88",
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : []
+  },
+  "subscriptionGroups" : [],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

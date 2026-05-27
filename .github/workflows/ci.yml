@@ -1,0 +1,52 @@
+name: CI
+
+# Runs the BucketeerCore Swift package test suite + a clean Debug
+# build of the host app on every push and pull request. We do not
+# code-sign here — App Store signing lives in Xcode Cloud where the
+# Apple Developer credentials are available. GitHub Actions exists
+# only to give the dev branch fast pre-merge feedback.
+#
+# No user-controlled input flows into any `run:` block; commands
+# operate exclusively on the checked-out tree and pinned tool
+# versions, so there is no injection surface from PR titles /
+# commit messages / etc.
+
+on:
+  push:
+    branches: [development, test, beta, main]
+  pull_request:
+    branches: [development, test, beta, main]
+
+jobs:
+  test:
+    name: Tests + unsigned build
+    runs-on: macos-15
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode 16
+        run: sudo xcode-select -s /Applications/Xcode_16.0.app/Contents/Developer
+
+      - name: Show Swift / Xcode versions
+        run: |
+          swift --version
+          xcodebuild -version
+
+      - name: Resolve Swift package dependencies
+        working-directory: BucketeerCore
+        run: swift package resolve
+
+      - name: Run BucketeerCore unit tests
+        run: swift test --package-path BucketeerCore
+
+      - name: Unsigned Debug build of the host app
+        run: |
+          xcodebuild \
+            -project Bucketeer.xcodeproj \
+            -scheme "Bucketeer" \
+            -configuration Debug \
+            -destination 'generic/platform=macOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            build

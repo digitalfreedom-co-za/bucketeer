@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- App Sandbox is required for App Store distribution. -->
+    <key>com.apple.security.app-sandbox</key>
+    <true/>
+
+    <!-- Outgoing network access — for S3 endpoints. -->
+    <key>com.apple.security.network.client</key>
+    <true/>
+
+    <!-- User-selected files: upload sources and download destinations
+         picked via NSOpenPanel / NSSavePanel. -->
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+
+    <!-- Default ~/Downloads access for quick saves without picker. -->
+    <key>com.apple.security.files.downloads.read-write</key>
+    <true/>
+
+    <!-- App Group shared with the File Provider extension. Must be
+         registered at developer.apple.com under the same identifier
+         before TestFlight / App Store builds will accept it. Local
+         debug builds (CODE_SIGNING_ALLOWED=NO) ignore it; the App
+         Group container becomes available only when properly signed. -->
+    <key>com.apple.security.application-groups</key>
+    <array>
+        <string>group.za.co.digitalfreedom.bucketeer</string>
+    </array>
+
+    <!-- Shared Keychain access group so the extension can read the
+         per-account credentials. The `$(AppIdentifierPrefix)` literal
+         is substituted by codesign with the team prefix at signing
+         time. -->
+    <key>keychain-access-groups</key>
+    <array>
+        <string>$(AppIdentifierPrefix)za.co.digitalfreedom.bucketeer.shared</string>
+    </array>
+</dict>
+</plist>
