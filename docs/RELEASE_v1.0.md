@@ -97,6 +97,23 @@ Each workflow uses the `ci_scripts/` directory we ship in the repo
 - [ ] `sh scripts/preflight.sh` from the repo root passes cleanly
 - [ ] `git status` is clean on `development` before promoting
 
+### 5. Compliance answers (App Store Connect questionnaire)
+- **Encryption**: `ITSAppUsesNonExemptEncryption = NO`. Rationale
+  documented in [`docs/EXPORT_COMPLIANCE.md`](EXPORT_COMPLIANCE.md)
+  — mass-market exemption under EAR 740.17(b)(1), only standard
+  Apple CryptoKit AES-GCM + SHA-256. No ERN / SNAP-R submission
+  required.
+- **Content rights**: App owns all icon + screenshot assets;
+  Bucketeer brand is publisher-owned. Source-Available License
+  applies to source distribution only; binary distribution uses
+  Apple's standard EULA unless a custom EULA is uploaded.
+- **Tracking**: `NSPrivacyTracking = false` — no ATT prompt,
+  no IDFA usage, no cross-app/site tracking domains.
+- **In-app purchase**: Single non-consumable IAP
+  `za.co.digitalfreedom.bucketeer.pro.lifetime` (€14.99). Free
+  + 14-day trial gates; Restore Purchases wired in Paywall sheet
+  *and* Help menu.
+
 ---
 
 ## TestFlight smoke-test plan
