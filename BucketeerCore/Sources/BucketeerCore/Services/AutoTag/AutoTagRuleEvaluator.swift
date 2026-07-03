@@ -14,10 +14,15 @@ import Foundation
 /// `(tags, metadata)` of every matching rule. Order is honoured:
 /// later rules win when two rules set the same key.
 ///
-/// The glob grammar matches the macOS shell:
-/// - `*` matches zero or more characters except `/`
-/// - `?` matches exactly one character except `/`
+/// The glob grammar:
+/// - `*` matches zero or more characters (including `/`)
+/// - `?` matches exactly one character (including `/`)
 /// - everything else is literal
+///
+/// The matcher runs against upload *filenames*, which never contain
+/// path separators in practice — the UI hint only promises `*` and
+/// `?` wildcards, so the simple any-character semantics are the
+/// contract.
 ///
 /// A rule with both `filenameGlob` and `mimePrefix` empty matches
 /// every upload — useful for "default tag" rules.

@@ -15,9 +15,22 @@
 		CF398B722FC08D2B00363696 /* Bucketeer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Bucketeer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		CF398B902FC08D2B00363696 /* Exceptions for "Bucketeer" folder in "Bucketeer" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = CF398B712FC08D2B00363696 /* Bucketeer */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		CF398B742FC08D2B00363696 /* Bucketeer */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				CF398B902FC08D2B00363696 /* Exceptions for "Bucketeer" folder in "Bucketeer" target */,
+			);
 			path = Bucketeer;
 			sourceTree = "<group>";
 		};
@@ -100,15 +113,25 @@
 			knownRegions = (
 				en,
 				Base,
+				cs,
+				da,
 				de,
+				el,
+				"en-GB",
 				es,
+				fi,
 				fr,
+				hu,
 				it,
 				ja,
 				ko,
+				nb,
 				nl,
 				pl,
 				"pt-BR",
+				"pt-PT",
+				ru,
+				sv,
 			);
 			mainGroup = CF398B692FC08D2B00363696;
 			minimizedProjectReferenceProxies = 1;

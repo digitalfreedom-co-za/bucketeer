@@ -340,6 +340,18 @@ struct AddEditAccountSheet: View {
                 revealError = error.localizedDescription
                 return
             }
+        } else if (laError as? LAError)?.code != .passcodeNotSet {
+            // The policy could not be evaluated for a reason other
+            // than "this Mac has no password at all". Falling through
+            // here would reveal the secret without any challenge, so
+            // treat every other evaluation failure as a denial. The
+            // no-password case still reveals directly — there is no
+            // credential the system could challenge for.
+            revealError = String(
+                localized: "account.action.revealSecret.unavailable",
+                defaultValue: "Authentication is unavailable right now, so the stored credentials stay hidden."
+            )
+            return
         }
 
         guard let credentials = await onLoadCredentials(existing.id) else {

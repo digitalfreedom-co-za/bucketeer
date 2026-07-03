@@ -68,6 +68,17 @@ actor SyncEngine {
         /// the old `Int` hashValue (which collides) with the full
         /// bytes; equality is the only correct identity check.
         let bookmarkData: Data
+        /// The resolved URL whose security scope was started when the
+        /// watcher was created. Held for the watcher's whole lifetime
+        /// so FSEvents keeps access to the folder; released in
+        /// `teardown()`.
+        let scopedURL: URL?
+
+        func teardown() {
+            pumpTask.cancel()
+            watcher.stop()
+            scopedURL?.stopAccessingSecurityScopedResource()
+        }
     }
     private var watchers: [UUID: WatcherEntry] = [:]
 
@@ -101,12 +112,14 @@ actor SyncEngine {
     /// hook in tests). Idempotent.
     func shutdown() {
         for entry in watchers.values {
-            entry.pumpTask.cancel()
-            entry.watcher.stop()
+            entry.teardown()
         }
         watchers.removeAll()
         runners.values.forEach { $0.cancel() }
         runners.removeAll()
+        // A rerun bit left set here would fire `runNow` on the
+        // already-shut-down engine from the execute() defer.
+        pendingReruns.removeAll()
     }
 
     // MARK: - Registration
@@ -148,18 +161,22 @@ actor SyncEngine {
             }
             // Tear down stale watcher (bookmark moved or job edited)
             // before starting a fresh one.
-            if let existing = watchers[job.id] {
-                existing.pumpTask.cancel()
-                existing.watcher.stop()
-                watchers.removeValue(forKey: job.id)
+            if let existing = watchers.removeValue(forKey: job.id) {
+                existing.teardown()
             }
             guard let (url, _) = try? LocalFolderEnumerator.resolveBookmark(bookmark) else {
                 continue
             }
-            let didStart = url.startAccessingSecurityScopedResource()
-            defer { if didStart { url.stopAccessingSecurityScopedResource() } }
+            // Keep the security scope alive for the watcher's whole
+            // lifetime — releasing it right after `start()` would leave
+            // FSEvents registered on a folder the sandbox no longer
+            // grants access to. Balanced in `WatcherEntry.teardown()`.
+            let didStartScope = url.startAccessingSecurityScopedResource()
             let watcher = LocalFolderWatcher(rootURL: url, latencySeconds: 3.0)
-            guard watcher.start() else { continue }
+            guard watcher.start() else {
+                if didStartScope { url.stopAccessingSecurityScopedResource() }
+                continue
+            }
             // Pump the watcher's debounced events into runNow calls.
             // Each event triggers one sync — `runNow` is itself
             // idempotent (guards on `runners[id] == nil`) so an event
@@ -190,13 +207,13 @@ actor SyncEngine {
             watchers[job.id] = WatcherEntry(
                 watcher: watcher,
                 pumpTask: pump,
-                bookmarkData: bookmark
+                bookmarkData: bookmark,
+                scopedURL: didStartScope ? url : nil
             )
         }
         // Stop every watcher whose job is gone or no longer eligible.
         for (id, entry) in watchers where !keepIDs.contains(id) {
-            entry.pumpTask.cancel()
-            entry.watcher.stop()
+            entry.teardown()
             watchers.removeValue(forKey: id)
         }
     }

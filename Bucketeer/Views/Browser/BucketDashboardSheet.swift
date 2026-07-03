@@ -199,7 +199,7 @@ struct BucketDashboardSheet: View {
                                     .foregroundStyle(rule.enabled ? .green : .secondary)
                                 Text(rule.id).font(.callout.weight(.medium))
                                 if let prefix = rule.prefix, !prefix.isEmpty {
-                                    Text("prefix: \(prefix)")
+                                    Text("dashboard.lifecycle.prefix \(prefix)")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }
@@ -231,16 +231,32 @@ struct BucketDashboardSheet: View {
                     ForEach(rules) { rule in
                         VStack(alignment: .leading, spacing: 2) {
                             Text(rule.id).font(.callout.weight(.medium))
-                            corsLine("Origins", rule.allowedOrigins)
-                            corsLine("Methods", rule.allowedMethods)
+                            corsLine(
+                                String(localized: "dashboard.cors.origins",
+                                       defaultValue: "Origins"),
+                                rule.allowedOrigins
+                            )
+                            corsLine(
+                                String(localized: "dashboard.cors.methods",
+                                       defaultValue: "Methods"),
+                                rule.allowedMethods
+                            )
                             if !rule.allowedHeaders.isEmpty {
-                                corsLine("Allowed headers", rule.allowedHeaders)
+                                corsLine(
+                                    String(localized: "dashboard.cors.allowedHeaders",
+                                           defaultValue: "Allowed headers"),
+                                    rule.allowedHeaders
+                                )
                             }
                             if !rule.exposeHeaders.isEmpty {
-                                corsLine("Expose headers", rule.exposeHeaders)
+                                corsLine(
+                                    String(localized: "dashboard.cors.exposeHeaders",
+                                           defaultValue: "Exposed headers"),
+                                    rule.exposeHeaders
+                                )
                             }
                             if let age = rule.maxAgeSeconds {
-                                Text("Max age: \(age)s")
+                                Text("dashboard.cors.maxAge \(age)")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -253,7 +269,9 @@ struct BucketDashboardSheet: View {
     }
 
     private func corsLine(_ label: String, _ values: [String]) -> some View {
-        Text("\(label): \(values.joined(separator: ", "))")
+        // The label arrives pre-localised — `verbatim` keeps the
+        // interpolation from being treated as a catalog key.
+        Text(verbatim: "\(label): \(values.joined(separator: ", "))")
             .font(.caption)
             .foregroundStyle(.secondary)
     }

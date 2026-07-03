@@ -63,7 +63,8 @@ final class AutoTagCoordinator {
     /// from `AppContainer` after the coordinator is constructed.
     func start() async {
         await reload()
-        let stream = await transferManager.tasks
+        // `tasks` is a nonisolated let on the actor — no await needed.
+        let stream = transferManager.tasks
         observerTask?.cancel()
         observerTask = Task { [weak self] in
             for await snapshot in stream {

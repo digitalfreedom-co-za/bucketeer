@@ -78,3 +78,4 @@ GEMINI.md
 # Pre-release artifacts — keep the master in scripts/build/ as a
 # build product, not source. The iconset PNGs are committed.
 scripts/build/
+.l10n-work/

@@ -248,38 +248,62 @@ public struct S3Service: S3Browsing {
     ) async throws -> [ObjectVersion] {
         let s3 = try await factory.client(for: account)
         do {
-            let response = try await s3.listObjectVersions(
-                .init(bucket: bucket, prefix: key)
-            )
             var result: [ObjectVersion] = []
-            for entry in response.versions ?? [] where entry.key == key {
-                result.append(
-                    ObjectVersion(
-                        key: entry.key ?? key,
-                        versionId: entry.versionId ?? "",
-                        isLatest: entry.isLatest ?? false,
-                        isDeleteMarker: false,
-                        size: entry.size ?? 0,
-                        lastModified: entry.lastModified ?? Date(),
-                        etag: Self.unquote(entry.eTag),
-                        storageClass: entry.storageClass?.rawValue
+            var keyMarker: String? = nil
+            var versionIdMarker: String? = nil
+            // ListObjectVersions returns at most 1000 entries per call.
+            // Objects with a longer history need the marker loop or the
+            // UI silently shows a truncated version list. The page cap
+            // bounds a misbehaving provider that always claims
+            // isTruncated without advancing the markers.
+            let pageCap = 50
+            var pages = 0
+            repeat {
+                let response = try await s3.listObjectVersions(
+                    .init(
+                        bucket: bucket,
+                        keyMarker: keyMarker,
+                        prefix: key,
+                        versionIdMarker: versionIdMarker
                     )
                 )
-            }
-            for marker in response.deleteMarkers ?? [] where marker.key == key {
-                result.append(
-                    ObjectVersion(
-                        key: marker.key ?? key,
-                        versionId: marker.versionId ?? "",
-                        isLatest: marker.isLatest ?? false,
-                        isDeleteMarker: true,
-                        size: 0,
-                        lastModified: marker.lastModified ?? Date(),
-                        etag: nil,
-                        storageClass: nil
+                for entry in response.versions ?? [] where entry.key == key {
+                    result.append(
+                        ObjectVersion(
+                            key: entry.key ?? key,
+                            versionId: entry.versionId ?? "",
+                            isLatest: entry.isLatest ?? false,
+                            isDeleteMarker: false,
+                            size: entry.size ?? 0,
+                            lastModified: entry.lastModified ?? Date(),
+                            etag: Self.unquote(entry.eTag),
+                            storageClass: entry.storageClass?.rawValue
+                        )
                     )
-                )
-            }
+                }
+                for marker in response.deleteMarkers ?? [] where marker.key == key {
+                    result.append(
+                        ObjectVersion(
+                            key: marker.key ?? key,
+                            versionId: marker.versionId ?? "",
+                            isLatest: marker.isLatest ?? false,
+                            isDeleteMarker: true,
+                            size: 0,
+                            lastModified: marker.lastModified ?? Date(),
+                            etag: nil,
+                            storageClass: nil
+                        )
+                    )
+                }
+                pages += 1
+                if response.isTruncated == true, pages < pageCap {
+                    keyMarker = response.nextKeyMarker
+                    versionIdMarker = response.nextVersionIdMarker
+                } else {
+                    keyMarker = nil
+                    versionIdMarker = nil
+                }
+            } while keyMarker != nil || versionIdMarker != nil
             // Sort newest-first so the latest version is at the top.
             result.sort { $0.lastModified > $1.lastModified }
             return result
@@ -348,7 +372,7 @@ public struct S3Service: S3Browsing {
             let head = try await headResponse
             let tagging = try await tagResponse
             var tags: [String: String] = [:]
-            for entry in tagging.tagSet ?? [] {
+            for entry in tagging.tagSet {
                 tags[entry.key] = entry.value
             }
             return ObjectMetadata(

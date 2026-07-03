@@ -502,8 +502,11 @@ actor TransferManager: Transferring {
                     id: id,
                     state: .running(bytesTransferred: total, totalBytes: total)
                 )
-                await finalizeDownloadDecryption(item: item)
-                setState(id: id, state: .completed)
+                if let failure = await finalizeDownloadDecryption(item: item) {
+                    setState(id: id, state: .failed(message: failure))
+                } else {
+                    setState(id: id, state: .completed)
+                }
                 return
             }
 
@@ -520,8 +523,11 @@ actor TransferManager: Transferring {
                     await self?.chargeMultipartLimiter(id: id, observedBytes: bytes)
                 }
             )
-            await finalizeDownloadDecryption(item: item)
-            setState(id: id, state: .completed)
+            if let failure = await finalizeDownloadDecryption(item: item) {
+                setState(id: id, state: .failed(message: failure))
+            } else {
+                setState(id: id, state: .completed)
+            }
         } catch is CancellationError {
             setState(id: id, state: .cancelled)
         } catch {
@@ -596,8 +602,11 @@ actor TransferManager: Transferring {
                     )
                 }
             )
-            await finalizeDownloadDecryption(item: item)
-            setState(id: id, state: .completed)
+            if let failure = await finalizeDownloadDecryption(item: item) {
+                setState(id: id, state: .failed(message: failure))
+            } else {
+                setState(id: id, state: .completed)
+            }
         } catch is CancellationError {
             setState(id: id, state: .cancelled)
         } catch {
@@ -619,29 +628,35 @@ actor TransferManager: Transferring {
     ///
     /// Called from every download completion site so encryption is
     /// transparent regardless of single-shot vs multipart path.
-    private func finalizeDownloadDecryption(item: QueuedItem) async {
+    ///
+    /// Returns `nil` on success (including "nothing to decrypt") or
+    /// the failure message when the file is an envelope we could not
+    /// open. Callers translate that into a `.failed` transfer state —
+    /// a green checkmark on a file that is still ciphertext would be
+    /// a silent failure.
+    private func finalizeDownloadDecryption(item: QueuedItem) async -> String? {
         // Codex audit fix (high #2): trash-capture downloads pass
         // `bypassDecryption = true` so the local cache keeps the
         // raw envelope instead of holding plaintext copies of
         // encrypted objects.
-        if item.bypassDecryption { return }
-        guard let encryptionGate else { return }
+        if item.bypassDecryption { return nil }
+        guard let encryptionGate else { return nil }
         let url = item.task.localURL
-        guard FileManager.default.fileExists(atPath: url.path) else { return }
-        guard let data = try? Data(contentsOf: url, options: .mappedIfSafe) else { return }
-        guard BucketeerEnvelope.looksEncrypted(data) else { return }
+        guard FileManager.default.fileExists(atPath: url.path) else { return nil }
+        guard let data = try? Data(contentsOf: url, options: .mappedIfSafe) else { return nil }
+        guard BucketeerEnvelope.looksEncrypted(data) else { return nil }
         guard let key = await encryptionGate.key(
             accountID: item.account.id,
             bucket: item.task.bucket
-        ) else { return }
-        do {
-            let plaintext = try BucketeerEnvelope.open(envelope: data, key: key)
-            try plaintext.write(to: url, options: .atomic)
-        } catch {
-            // Leave the envelope on disk so the user can inspect /
-            // re-attempt. The transfer's `completed` state remains —
-            // the file simply isn't decrypted. Surfaced via the
-            // activity log.
+        ) else {
+            // Codex review: fail closed. The object is a Bucketeer
+            // envelope but no key exists for this (account, bucket) —
+            // e.g. the user deleted the key. A `.completed` transfer
+            // would hand them ciphertext with a green checkmark.
+            let message = String(
+                localized: "error.encryptedNoKey",
+                defaultValue: "The object is encrypted, but no key is configured for this bucket."
+            )
             await activityLog?.record(
                 ActivityEntry(
                     kind: .download,
@@ -650,9 +665,33 @@ actor TransferManager: Transferring {
                     accountName: item.account.name,
                     bucket: item.task.bucket,
                     key: item.task.key,
-                    errorMessage: "Decryption failed: \(error.localizedDescription)"
+                    errorMessage: message
                 )
             )
+            return message
+        }
+        do {
+            let plaintext = try BucketeerEnvelope.open(envelope: data, key: key)
+            try plaintext.write(to: url, options: .atomic)
+            return nil
+        } catch {
+            // Leave the envelope on disk so the user can inspect /
+            // re-attempt, but report the failure — the caller marks
+            // the transfer `.failed` so the queue doesn't show a
+            // green checkmark on a file that is still ciphertext.
+            let message = "Decryption failed: \(error.localizedDescription)"
+            await activityLog?.record(
+                ActivityEntry(
+                    kind: .download,
+                    status: .failure,
+                    accountID: item.account.id,
+                    accountName: item.account.name,
+                    bucket: item.task.bucket,
+                    key: item.task.key,
+                    errorMessage: message
+                )
+            )
+            return message
         }
     }
 

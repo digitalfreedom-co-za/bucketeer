@@ -206,6 +206,10 @@ final class CrossAccountCopyCoordinator {
         let temp = stagingDir
             .appendingPathComponent("bucketeer-roundtrip-\(UUID().uuidString)")
             .appendingPathExtension(URL(fileURLWithPath: sourceKey).pathExtension)
+        // Installed before the download so a failed / cancelled first
+        // half also cleans up its partial staging file — the launch
+        // scavenger only covers crashes, not in-session failures.
+        defer { try? FileManager.default.removeItem(at: temp) }
 
         let downloadID = await transferManager.enqueueDownload(
             account: sourceAccount,
@@ -224,8 +228,6 @@ final class CrossAccountCopyCoordinator {
         default:
             throw BucketeerError.unknown(message: "Download did not finish.")
         }
-
-        defer { try? FileManager.default.removeItem(at: temp) }
 
         let uploadID = await transferManager.enqueueUpload(
             account: destinationAccount,

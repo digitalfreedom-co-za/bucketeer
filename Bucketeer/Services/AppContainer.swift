@@ -202,11 +202,14 @@ final class AppContainer {
             transferManager: transferManager
         )
         self.transferQueueViewModel.startObserving()
+        let entitlementManager = EntitlementManager()
+        self.entitlementManager = entitlementManager
         self.dragDropCoordinator = DragDropCoordinator(
             s3Browser: router,
             transferManager: transferManager,
             transferQueue: self.transferQueueViewModel,
-            accountStore: accountStore
+            accountStore: accountStore,
+            entitlements: entitlementManager
         )
         self.activationController = AppActivationController()
         let mountController = MountController()
@@ -214,8 +217,6 @@ final class AppContainer {
         Task { @MainActor [mountController] in
             await mountController.refresh()
         }
-        let entitlementManager = EntitlementManager()
-        self.entitlementManager = entitlementManager
         Task { @MainActor [entitlementManager] in
             await entitlementManager.bootstrap()
         }

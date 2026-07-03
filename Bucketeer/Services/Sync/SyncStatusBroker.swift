@@ -24,11 +24,22 @@ final class SyncStatusBroker {
     /// O(1) lookup from the detail window.
     private(set) var statuses: [UUID: SyncJobStatus] = [:]
 
-    nonisolated(unsafe) private var pumpTask: Task<Void, Never>?
+    /// Owns the pump task so it gets cancelled when the broker goes
+    /// away. A separate box because `deinit` is nonisolated and the
+    /// `@Observable` macro rejects `nonisolated` stored properties —
+    /// the box's own `deinit` performs the cancel instead.
+    private final class PumpTaskBox: @unchecked Sendable {
+        var task: Task<Void, Never>?
+        deinit { task?.cancel() }
+    }
+
+    @ObservationIgnored private let pumpBox = PumpTaskBox()
 
     init(syncEngine: SyncEngine) {
         let stream = syncEngine.statuses
-        pumpTask = Task { [weak self] in
+        // The Task inherits this init's @MainActor isolation, so the
+        // `statuses` write below always happens on the main actor.
+        pumpBox.task = Task { [weak self] in
             for await snapshot in stream {
                 guard let self else { return }
                 var next: [UUID: SyncJobStatus] = [:]
@@ -48,9 +59,6 @@ final class SyncStatusBroker {
             ?? SyncJobStatus(jobID: jobID, phase: .idle)
     }
 
-    deinit {
-        // Task uses weak self so a leaked pump self-terminates;
-        // explicit cancel here is only relevant in tests.
-        pumpTask?.cancel()
-    }
+    // No explicit deinit: PumpTaskBox cancels the pump when the broker
+    // is released, and the Task's weak self self-terminates as backup.
 }

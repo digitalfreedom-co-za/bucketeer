@@ -28,17 +28,20 @@ final class DragDropCoordinator {
     private let transferManager: TransferManager
     private let transferQueue: TransferQueueViewModel
     private let accountStore: any AccountStoring
+    private let entitlements: EntitlementManager
 
     init(
         s3Browser: any S3Browsing,
         transferManager: TransferManager,
         transferQueue: TransferQueueViewModel,
-        accountStore: any AccountStoring
+        accountStore: any AccountStoring,
+        entitlements: EntitlementManager
     ) {
         self.s3Browser = s3Browser
         self.transferManager = transferManager
         self.transferQueue = transferQueue
         self.accountStore = accountStore
+        self.entitlements = entitlements
     }
 
     // MARK: - URL drops (Finder → app)
@@ -114,6 +117,18 @@ final class DragDropCoordinator {
         if sourceAccount.id == destinationAccount.id,
            ref.bucket == destinationBucket,
            destinationKey == ref.key {
+            return
+        }
+
+        // Cross-account copy is a Pro pillar — the drag path must apply
+        // the same gate as the context-menu entry, or a Free user could
+        // round-trip between accounts by dragging.
+        if sourceAccount.id != destinationAccount.id,
+           !entitlements.isUnlocked(.s3ToS3Copy) {
+            NotificationCenter.default.post(
+                name: .showBucketeerPaywall,
+                object: EntitlementManager.ProFeature.s3ToS3Copy
+            )
             return
         }
 

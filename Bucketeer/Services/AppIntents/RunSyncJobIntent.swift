@@ -32,6 +32,17 @@ struct RunSyncJobIntent: AppIntent {
     @MainActor
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
         let container = try await AppIntentsBridge.shared.container()
+        // The sync engine is a Pro pillar. The Shortcuts surface must
+        // apply the same entitlement gate as the UI, or a Free user
+        // could run sync jobs via Siri after the trial expires.
+        guard container.entitlementManager.isUnlocked(.syncEngine) else {
+            throw BucketeerError.unknown(
+                message: String(
+                    localized: "intent.error.proRequired",
+                    defaultValue: "This action requires Bucketeer Pro. Open Bucketeer to upgrade."
+                )
+            )
+        }
         // Re-resolve through the store so a job that was deleted
         // between the picker showing and the intent firing surfaces
         // a clear error.

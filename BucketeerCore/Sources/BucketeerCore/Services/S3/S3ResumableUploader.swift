@@ -88,7 +88,21 @@ public struct S3ResumableUploader: Sendable {
         }
 
         // 3. Upload remaining parts sequentially.
+        // A zero-byte file yields totalParts == 0 and `1...0` traps.
+        // Callers route small files through single-shot PutObject, but
+        // this is a public API — reject instead of crashing.
         let totalParts = Int((fileSize + Int64(checkpoint.partSize) - 1) / Int64(checkpoint.partSize))
+        guard totalParts >= 1 else {
+            _ = try? await s3.abortMultipartUpload(.init(
+                bucket: bucket,
+                key: key,
+                uploadId: checkpoint.uploadId
+            ))
+            try? await checkpointStore.delete(id: checkpoint.id)
+            throw BucketeerError.unknown(
+                message: "Multipart upload requires a non-empty file."
+            )
+        }
         let handle: FileHandle
         do {
             handle = try FileHandle(forReadingFrom: localURL)

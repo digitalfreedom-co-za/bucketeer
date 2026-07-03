@@ -432,7 +432,7 @@ struct ObjectListView: View {
             }
             // Phase 13.14 — cross-account copy / move.
             Button("crossCopy.menu.start", systemImage: "arrow.right.arrow.left.square") {
-                crossCopyTarget = [object.key]
+                startCrossCopy(keys: [object.key])
             }
             .disabled(!hasMultipleAccounts)
         } else if !resolved.isEmpty {
@@ -440,7 +440,7 @@ struct ObjectListView: View {
                 pendingDeletion = resolved
             }
             Button("crossCopy.menu.start.multi \(resolved.count)", systemImage: "arrow.right.arrow.left.square") {
-                crossCopyTarget = resolved.map(\.key)
+                startCrossCopy(keys: resolved.map(\.key))
             }
             .disabled(!hasMultipleAccounts)
         }
@@ -450,6 +450,20 @@ struct ObjectListView: View {
     /// cross-account copy entry has no meaning with just one.
     private var hasMultipleAccounts: Bool {
         container.accountListViewModel.accounts.count >= 2
+    }
+
+    /// Cross-account copy is a Pro pillar. Free users get the paywall
+    /// instead of the target sheet — same gate the mount and sync
+    /// entries already apply.
+    private func startCrossCopy(keys: [String]) {
+        guard container.entitlementManager.isUnlocked(.s3ToS3Copy) else {
+            NotificationCenter.default.post(
+                name: .showBucketeerPaywall,
+                object: EntitlementManager.ProFeature.s3ToS3Copy
+            )
+            return
+        }
+        crossCopyTarget = keys
     }
 
     // MARK: - Actions

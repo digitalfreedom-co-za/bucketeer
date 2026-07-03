@@ -40,15 +40,29 @@ final class FileProviderEnumerator: NSObject, NSFileProviderEnumerator {
         super.init()
     }
 
-    func invalidate() {}
+    /// In-flight enumeration, cancelled on `invalidate()`. The system
+    /// calls `invalidate` when the enumeration is superseded or the
+    /// observer goes away — touching the observer after that point is
+    /// undefined behaviour per Apple's contract, so every observer
+    /// call below re-checks for cancellation first.
+    private var enumerationTask: Task<Void, Never>?
+
+    func invalidate() {
+        enumerationTask?.cancel()
+        enumerationTask = nil
+    }
 
     func enumerateItems(
         for observer: NSFileProviderEnumerationObserver,
         startingAt page: NSFileProviderPage
     ) {
-        Task {
+        // A superseding enumeration must cancel the previous one, or
+        // the old task could still touch its (now stale) observer.
+        enumerationTask?.cancel()
+        enumerationTask = Task {
             do {
                 guard let mountInfo = try await extensionContainer.resolve(domain.identifier.rawValue) else {
+                    guard !Task.isCancelled else { return }
                     observer.finishEnumeratingWithError(
                         FileProviderItemResolver.mappedError(.providerDomainNotFound)
                     )
@@ -62,6 +76,7 @@ final class FileProviderEnumerator: NSObject, NSFileProviderEnumerator {
                     prefix: prefix,
                     continuationToken: token
                 )
+                guard !Task.isCancelled else { return }
                 let items: [NSFileProviderItem] = result.objects.map { object in
                     ResolvedItem(
                         identifier: FileProviderItemResolver.identifier(for: object.key),
@@ -78,6 +93,7 @@ final class FileProviderEnumerator: NSObject, NSFileProviderEnumerator {
                 }
                 observer.finishEnumerating(upTo: nextPage)
             } catch {
+                guard !Task.isCancelled else { return }
                 observer.finishEnumeratingWithError(
                     FileProviderItemResolver.fileProviderError(error, fallback: .serverUnreachable)
                 )

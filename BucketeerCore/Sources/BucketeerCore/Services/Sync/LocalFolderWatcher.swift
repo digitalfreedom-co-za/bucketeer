@@ -37,6 +37,11 @@ public final class LocalFolderWatcher: @unchecked Sendable {
     private let continuation: AsyncStream<Date>.Continuation
     private let rootURL: URL
     private let latencySeconds: Double
+    /// Guards `stream`. The engine actor serialises `start()`/`stop()`
+    /// today, but this class is `@unchecked Sendable` and `deinit` can
+    /// run on any thread — the lock makes the invariant local instead
+    /// of relying on every caller.
+    private let streamLock = NSLock()
     private var stream: FSEventStreamRef?
     private let dispatchQueue: DispatchQueue
 
@@ -58,11 +63,7 @@ public final class LocalFolderWatcher: @unchecked Sendable {
         // The Sendable-violation-free way to clean up: stop is
         // idempotent and safe to call from deinit because the FSEvents
         // C API does its own thread-safety.
-        if let stream = self.stream {
-            FSEventStreamStop(stream)
-            FSEventStreamInvalidate(stream)
-            FSEventStreamRelease(stream)
-        }
+        stop()
         continuation.finish()
     }
 
@@ -72,6 +73,8 @@ public final class LocalFolderWatcher: @unchecked Sendable {
     /// issue with the supplied URL).
     @discardableResult
     public func start() -> Bool {
+        streamLock.lock()
+        defer { streamLock.unlock() }
         guard stream == nil else { return true }
         let pathsToWatch = [rootURL.path] as CFArray
         var context = FSEventStreamContext(
@@ -115,6 +118,8 @@ public final class LocalFolderWatcher: @unchecked Sendable {
 
     /// Stop watching and close the event stream. Idempotent.
     public func stop() {
+        streamLock.lock()
+        defer { streamLock.unlock() }
         guard let stream = self.stream else { return }
         FSEventStreamStop(stream)
         FSEventStreamInvalidate(stream)

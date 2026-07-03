@@ -13,6 +13,69 @@ before that is internal phase work on the `development` branch.
 
 ## [Unreleased] — `development` branch
 
+### Production-readiness review (full-app audit)
+Full review across BucketeerCore, the host app and the File Provider
+extension: four parallel review passes (correctness/concurrency,
+security, host/UI silent failures, App Store readiness), every
+finding verified against the code before fixing.
+
+**Correctness**
+- `S3Service.listVersions` now paginates `ListObjectVersions` —
+  objects with more than 1000 versions were silently truncated.
+- `S3ResumableUploader` rejects zero-byte files instead of trapping
+  on the `1...0` part range (public-API hardening; the transfer
+  manager never routes empty files there).
+- `LocalFolderWatcher` guards its `FSEventStreamRef` with a lock —
+  `@unchecked Sendable` no longer relies on every caller
+  serialising `start()`/`stop()`/`deinit`.
+- `SyncEngine` holds the security scope of watched folders for the
+  watcher's whole lifetime instead of releasing it right after
+  `start()`; `shutdown()` clears the pending-rerun bits so a
+  shut-down engine can't be re-triggered from a stale defer.
+- `TransferManager` marks a download `failed` when client-side
+  decryption fails — previously the queue showed a green checkmark
+  while the file on disk was still ciphertext.
+- `CrossAccountCopyCoordinator` installs the staging-file cleanup
+  before the download, so a failed first half no longer leaves the
+  temp file behind until the next launch.
+- File Provider enumerator cancels its in-flight listing on
+  `invalidate()` and never touches the observer afterwards (Apple
+  contract: observer calls after invalidation are undefined).
+
+**Entitlement gates**
+- Cross-account copy (context menu, multi-selection and drag &
+  drop) now checks the `s3ToS3Copy` Pro entitlement and presents
+  the paywall for Free users — it was advertised as Pro but never
+  enforced.
+- `RunSyncJobIntent` (Shortcuts/Siri) enforces the `syncEngine`
+  entitlement — the intent surface previously bypassed the paywall.
+
+**Security**
+- Touch-ID reveal in the account sheet no longer falls through to
+  plaintext when `canEvaluatePolicy` fails for reasons other than
+  "no passcode set" — evaluation errors now deny the reveal.
+
+**Localization — 20 languages**
+- Ten new locales matching the Sommelio set: Czech, Danish, Greek,
+  English (UK), Finnish, Hungarian, Norwegian Bokmål, Portuguese
+  (Portugal), Russian, Swedish — full catalog translations plus
+  per-locale `InfoPlist.strings` and `knownRegions`.
+- Four broken keys fixed that rendered raw localization keys in the
+  UI (`account.delete.confirm.message`, `detail.multi.count`,
+  `encryption.delete.confirm.message`, `crossCopy.menu.start.multi`
+  — the catalog held arg-less keys while the call sites interpolate
+  arguments).
+- Bucket-dashboard lifecycle/CORS labels localized (were hardcoded
+  English).
+
+**Build hygiene**
+- `Info.plist` removed from Copy Bundle Resources via a
+  file-system-synchronized exception set (App Store validation
+  warning).
+- Compiler warnings fixed: `nonisolated(unsafe)` on the sync-status
+  pump, spurious `await` in `AutoTagCoordinator`, dead nil-
+  coalescing in `S3Service.objectMetadata`.
+
 ### Documentation
 - `docs/ARCHITECTURE.md` lands with eight Mermaid diagrams covering
   module composition, sync routing, sandbox lifecycle, File Provider
