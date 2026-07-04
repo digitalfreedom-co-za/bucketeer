@@ -22,6 +22,19 @@ struct MarkdownView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        // Wiki rule (template checklist #3): a relative link like
+        // [EULA](EULA.md) in a bundled doc must never reach
+        // NSWorkspace as a raw file-relative URL — that pops macOS
+        // error -50 and looks like a crash. Only real web/mail links
+        // go to the system; everything else is swallowed.
+        .environment(\.openURL, OpenURLAction { url in
+            switch url.scheme?.lowercased() {
+            case "https", "http", "mailto":
+                return .systemAction
+            default:
+                return .discarded
+            }
+        })
     }
 
     // MARK: - Block parsing

@@ -28,6 +28,7 @@ struct PresignedURLSheet: View {
     @State private var generatedURL: URL?
     @State private var expiryDate: Date?
     @State private var inFlight: Bool = false
+    @State private var generateGeneration = 0
     @State private var errorMessage: String?
 
     enum TTLOption: String, CaseIterable, Identifiable {
@@ -124,6 +125,12 @@ struct PresignedURLSheet: View {
             Stepper(value: $customMinutes, in: 1...10_080, step: 5, label: { EmptyView() })
                 .labelsHidden()
         }
+        // The stepper mutates customMinutes without an onSubmit — the
+        // displayed URL would silently keep the previous expiry.
+        // Presigning is local crypto, so regenerating per tick is fine.
+        .onChange(of: customMinutes) { _, _ in
+            Task { await generate() }
+        }
     }
 
     @ViewBuilder
@@ -195,9 +202,14 @@ struct PresignedURLSheet: View {
     // MARK: - Actions
 
     private func generate() async {
-        guard !inFlight else { return }
+        // Generation token instead of a drop-on-reentry guard: the old
+        // `guard !inFlight` silently discarded a TTL change that
+        // arrived while a generation was in flight — the picker showed
+        // the new TTL while the URL still carried the old one.
+        generateGeneration += 1
+        let token = generateGeneration
         inFlight = true
-        defer { inFlight = false }
+        defer { if token == generateGeneration { inFlight = false } }
         errorMessage = nil
         generatedURL = nil
         expiryDate = nil
@@ -209,13 +221,16 @@ struct PresignedURLSheet: View {
                 key: object.key,
                 ttl: ttl
             )
+            guard token == generateGeneration else { return }
             generatedURL = url
             expiryDate = Date().addingTimeInterval(ttl)
             await record(status: .success, ttl: ttl, errorMessage: nil)
         } catch let error as BucketeerError {
+            guard token == generateGeneration else { return }
             errorMessage = error.errorDescription
             await record(status: .failure, ttl: ttl, errorMessage: error.errorDescription)
         } catch {
+            guard token == generateGeneration else { return }
             errorMessage = error.localizedDescription
             await record(status: .failure, ttl: ttl, errorMessage: error.localizedDescription)
         }

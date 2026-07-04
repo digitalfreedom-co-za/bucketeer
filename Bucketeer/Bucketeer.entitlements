@@ -19,6 +19,16 @@
     <key>com.apple.security.files.downloads.read-write</key>
     <true/>
 
+    <!-- App-scoped security bookmarks: the sync engine and the
+         watch-folder feature persist bookmarkData(options:
+         .withSecurityScope) for user-picked folders. Creating those
+         bookmarks in a signed sandboxed build REQUIRES this
+         entitlement — without it folder selection throws and sync
+         is dead in TestFlight/App Store builds (masked in
+         CODE_SIGNING_ALLOWED=NO debug builds). -->
+    <key>com.apple.security.files.bookmarks.app-scope</key>
+    <true/>
+
     <!-- App Group shared with the File Provider extension. Must be
          registered at developer.apple.com under the same identifier
          before TestFlight / App Store builds will accept it. Local

@@ -74,15 +74,27 @@ final class MountController {
 
     /// Tear down every mounted domain — used when the host app uninstalls
     /// (Phase 12) or the user clears all data via Settings.
+    ///
+    /// Removal failures are collected per domain instead of aborting
+    /// the loop — one stuck domain must not leave every subsequent
+    /// domain registered as a stale Finder Location.
     func unmountAll() async {
+        var firstError: Error?
         do {
             let domains = try await NSFileProviderManager.domains()
             for domain in domains {
-                try await NSFileProviderManager.remove(domain)
+                do {
+                    try await NSFileProviderManager.remove(domain)
+                } catch {
+                    firstError = firstError ?? error
+                }
             }
-            await refresh()
         } catch {
-            lastError = mapMountError(error)
+            firstError = firstError ?? error
+        }
+        await refresh()
+        if let firstError {
+            lastError = mapMountError(firstError)
         }
     }
 

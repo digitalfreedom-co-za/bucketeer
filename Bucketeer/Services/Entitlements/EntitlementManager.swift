@@ -224,7 +224,11 @@ final class EntitlementManager {
         guard transactionObserver == nil else { return }
         transactionObserver = Task { [weak self] in
             for await update in Transaction.updates {
-                if case .verified(let txn) = update {
+                // Finish only OUR product's transactions. Blindly
+                // finishing everything would consume a future
+                // consumable IAP before its value is credited.
+                if case .verified(let txn) = update,
+                   txn.productID == Self.proProductID {
                     await txn.finish()
                 }
                 await self?.refresh()

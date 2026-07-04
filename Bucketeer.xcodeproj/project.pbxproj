@@ -307,7 +307,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Bucketeer/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Bucketeer;
-				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = YES;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 DigitalFreedom — Berger & Rosenstock GbR";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -343,7 +343,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Bucketeer/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Bucketeer;
-				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = YES;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 DigitalFreedom — Berger & Rosenstock GbR";
 				LD_RUNPATH_SEARCH_PATHS = (

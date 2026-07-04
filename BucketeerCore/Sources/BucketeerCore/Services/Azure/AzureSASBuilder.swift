@@ -50,6 +50,14 @@ struct AzureSASBuilder: Sendable {
     /// Generate a read-only SAS URL for a single blob that expires
     /// `ttl` seconds from now. Caller is responsible for clamping the
     /// TTL to whatever upper bound the UI permits.
+    /// Clock-skew allowance: `signedStart` is backdated by this much so
+    /// a client clock that runs ahead of Azure's servers cannot produce
+    /// a SAS that is "not yet valid" — Microsoft recommends starting
+    /// SAS validity ~15 minutes in the past for exactly this reason.
+    /// The expiry is NOT padded; the user-chosen TTL stays the upper
+    /// bound of the share window.
+    static let clockSkewAllowance: TimeInterval = 10 * 60
+
     func presignedDownloadURL(
         baseURL: URL,
         container: String,
@@ -57,6 +65,8 @@ struct AzureSASBuilder: Sendable {
         ttl: TimeInterval,
         now: Date = Date()
     ) -> URL? {
+        let start = now.addingTimeInterval(-Self.clockSkewAllowance)
+        let startString = Self.iso8601(start)
         let expiry = now.addingTimeInterval(ttl)
         let expiryString = Self.iso8601(expiry)
 
@@ -66,7 +76,7 @@ struct AzureSASBuilder: Sendable {
         // Each line is terminated with `\n`, including empties.
         let stringToSign = [
             "r",                          // signedPermissions
-            "",                           // signedStart (omitted)
+            startString,                  // signedStart
             expiryString,                 // signedExpiry
             canonicalisedResource,        // canonicalizedResource
             "",                           // signedIdentifier
@@ -100,6 +110,7 @@ struct AzureSASBuilder: Sendable {
         // escaping in a query).
         components?.queryItems = [
             URLQueryItem(name: "sv",  value: Self.signingVersion),
+            URLQueryItem(name: "st",  value: startString),
             URLQueryItem(name: "sr",  value: "b"),
             URLQueryItem(name: "sp",  value: "r"),
             URLQueryItem(name: "se",  value: expiryString),

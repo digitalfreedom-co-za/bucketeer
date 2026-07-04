@@ -83,9 +83,29 @@ final class AccountListViewModel {
     func save(account: S3Account, credentials: AccountCredentials) async -> BucketeerError? {
         // Snapshot any existing credentials *before* the new save so
         // we can restore them if the SwiftData write fails on an edit.
-        let previousCredentials = try? await keychainStore.load(for: account.id)
+        // "No item stored" (authenticationFailed from errSecItemNotFound)
+        // legitimately means create; any OTHER Keychain failure must
+        // abort — treating a transient error as "create" would make a
+        // later rollback DELETE the user's real credentials, and the
+        // merge below would overwrite them with an empty secret.
+        let previousCredentials: AccountCredentials?
+        do {
+            previousCredentials = try await keychainStore.load(for: account.id)
+        } catch BucketeerError.authenticationFailed {
+            previousCredentials = nil
+        } catch let error as BucketeerError {
+            self.error = error
+            return error
+        } catch {
+            let wrapped = BucketeerError.unknown(message: error.localizedDescription)
+            self.error = wrapped
+            return wrapped
+        }
         let isEdit = previousCredentials != nil
-        let effective = await resolveCredentials(for: account.id, form: credentials)
+        let effective = Self.mergeCredentials(
+            existing: previousCredentials,
+            form: credentials
+        )
 
         do {
             try await keychainStore.save(effective, for: account.id)
@@ -219,7 +239,20 @@ final class AccountListViewModel {
         account: S3Account,
         credentials: AccountCredentials
     ) async -> BucketeerError? {
-        let effective = await resolveCredentials(for: account.id, form: credentials)
+        // Same not-found vs transient-error distinction as save():
+        // a Keychain hiccup must surface, not silently degrade the
+        // test into "use the blank form secret".
+        let existing: AccountCredentials?
+        do {
+            existing = try await keychainStore.load(for: account.id)
+        } catch BucketeerError.authenticationFailed {
+            existing = nil
+        } catch let error as BucketeerError {
+            return error
+        } catch {
+            return .unknown(message: error.localizedDescription)
+        }
+        let effective = Self.mergeCredentials(existing: existing, form: credentials)
         do {
             switch account.provider.family {
             case .s3:
@@ -241,21 +274,24 @@ final class AccountListViewModel {
         }
     }
 
-    /// Merge the form-supplied credentials over the Keychain copy. Any
+    /// Merge the form-supplied credentials over the stored copy. Any
     /// blank field falls back to the stored value, so users can edit
-    /// metadata without re-typing the secret. If there is no stored
-    /// entry (create mode), the form value is used verbatim.
-    private func resolveCredentials(
-        for accountID: UUID,
+    /// metadata without re-typing the secret. With no stored entry
+    /// (create mode), the form value is used verbatim.
+    ///
+    /// Pure function over the snapshot `save()` already loaded — the
+    /// old version re-read the Keychain with `try?`, so a transient
+    /// Keychain error silently degraded an edit into "use the blank
+    /// form secret" and overwrote valid credentials.
+    static func mergeCredentials(
+        existing: AccountCredentials?,
         form: AccountCredentials
-    ) async -> AccountCredentials {
-        if let existing = try? await keychainStore.load(for: accountID) {
-            return AccountCredentials(
-                accessKey: form.accessKey.isEmpty ? existing.accessKey : form.accessKey,
-                secretKey: form.secretKey.isEmpty ? existing.secretKey : form.secretKey,
-                sessionToken: form.sessionToken ?? existing.sessionToken
-            )
-        }
-        return form
+    ) -> AccountCredentials {
+        guard let existing else { return form }
+        return AccountCredentials(
+            accessKey: form.accessKey.isEmpty ? existing.accessKey : form.accessKey,
+            secretKey: form.secretKey.isEmpty ? existing.secretKey : form.secretKey,
+            sessionToken: form.sessionToken ?? existing.sessionToken
+        )
     }
 }

@@ -13,6 +13,67 @@ before that is internal phase work on the `development` branch.
 
 ## [Unreleased] — `development` branch
 
+### Line-by-line audit round 2 + Apple-guideline compliance
+Second full pass: every Swift file read completely across eight
+parallel review batches plus a dedicated App Store Review
+Guidelines audit; all findings verified before fixing, Codex
+counter-review on the changeset.
+
+**App Store compliance**
+- `com.apple.security.files.bookmarks.app-scope` entitlement added
+  — `.withSecurityScope` bookmark creation (sync + watch folders)
+  throws without it in signed builds; debug builds masked this.
+- Export compliance corrected: `ITSAppUsesNonExemptEncryption` is
+  now `YES` (client-side AES-256-GCM of user data is non-exempt);
+  `docs/EXPORT_COMPLIANCE.md` rewritten to the 5D992.c mass-market
+  self-classification incl. the annual BIS report duty the old doc
+  wrongly denied.
+- Paywall EULA/Privacy footer buttons were no-op stubs — now open
+  the About window on the right section (2.1 completeness).
+- Privacy manifest: PurchaseHistory collected-data entry removed
+  (Apple's StoreKit processing is not developer-collected data);
+  required-reason comments aligned with reality.
+- Restore-purchases errors surfaced in Settings (was `try?`).
+- VoiceOver labels for the image-only +/- buttons in the metadata
+  sheet, translated in all languages.
+
+**Correctness**
+- `restoreVersion` was completely broken: percent-encoding the
+  whole copy source turned `?versionId=` into a literal key lookup
+  — every versioned restore 404ed. Key and version ID are now
+  encoded separately.
+- `TrialBookkeeping` high-watermark defeats backward clock
+  rollbacks mid-trial (regression tests added).
+- `BandwidthLimiter` on `ContinuousClock` — wall-clock regressions
+  used to drive the token bucket negative and stall transfers.
+- `S3ClientFactory.shutdownAll` snapshots before awaiting so a
+  concurrent `client(for:)` can't leak an un-shut-down AWSClient.
+- `S3ResumableUploader` maps raw Soto errors to `BucketeerError`.
+- `SyncSchedule` rejects `interval<=0` (tight-loop guard);
+  `MultipartUploadCheckpoint` snapshots filter legacy rows.
+- `AzureSASBuilder` adds a backdated `signedStart` (clock skew).
+- File Provider: folder rename disabled (would orphan descendants
+  — capability removed + guarded), recursive delete now flushes in
+  rolling ≤900-key batches (extension memory watchdog), staging
+  file cleanup on post-download cancellation, `modifyItem`/HEAD
+  errors mapped to `NSFileProviderError`.
+- `MountController.unmountAll` continues past per-domain failures.
+- `Transaction.updates` observer finishes only our product ID.
+- Launch scavenger runs detached with a 1-hour age cutoff instead
+  of synchronous directory IO in the `@MainActor` init.
+
+**UI robustness**
+- Share / cross-account-copy sheets capture account+bucket at
+  presentation (blank-sheet crash window closed); presigned-URL
+  sheet regenerates on stepper changes and uses generation tokens
+  instead of dropping TTL changes; sync-job folder-picker errors
+  are shown; `clearTerminal` moved onto the `Transferring`
+  protocol; Keychain "not found" is distinguished from transient
+  errors in account save/test (an error no longer degrades an edit
+  into overwriting valid credentials); browser/activity view
+  models got stuck-spinner and stale-result guards; MarkdownView
+  discards non-web links (macOS error -50 insurance).
+
 ### Production-readiness review (full-app audit)
 Full review across BucketeerCore, the host app and the File Provider
 extension: four parallel review passes (correctness/concurrency,

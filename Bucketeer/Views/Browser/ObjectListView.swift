@@ -15,11 +15,29 @@ struct ObjectListView: View {
     @State private var showingNewFolderSheet: Bool = false
     @State private var renamingObject: S3Object?
     @State private var pendingDeletion: [S3Object] = []
-    @State private var shareTarget: S3Object?
+    /// Sheet payloads capture account + bucket AT PRESENTATION TIME —
+    /// reading `viewModel.account` live inside the sheet closure
+    /// renders a blank, undismissable sheet when a deep link or
+    /// account deletion clears the browser mid-presentation.
+    struct ShareTarget: Identifiable {
+        let id = UUID()
+        let account: S3Account
+        let bucket: String
+        let object: S3Object
+    }
+
+    struct CrossCopyTarget: Identifiable {
+        let id = UUID()
+        let account: S3Account
+        let bucket: String
+        let keys: [String]
+    }
+
+    @State private var shareTarget: ShareTarget?
     @State private var dashboardViewModel: BucketDashboardViewModel?
     @State private var versionsViewModel: ObjectVersionsViewModel?
     @State private var metadataViewModel: ObjectMetadataViewModel?
-    @State private var crossCopyTarget: [String]?
+    @State private var crossCopyTarget: CrossCopyTarget?
 
     var body: some View {
         Group {
@@ -114,16 +132,14 @@ struct ObjectListView: View {
                 await viewModel.rename(key: object.key, to: newName)
             }
         }
-        .sheet(item: $shareTarget) { object in
-            if let account = viewModel.account, let bucket = viewModel.bucket {
-                PresignedURLSheet(
-                    account: account,
-                    bucket: bucket,
-                    object: object,
-                    generator: container.s3Browser,
-                    activityLog: container.activityLog
-                )
-            }
+        .sheet(item: $shareTarget) { target in
+            PresignedURLSheet(
+                account: target.account,
+                bucket: target.bucket,
+                object: target.object,
+                generator: container.s3Browser,
+                activityLog: container.activityLog
+            )
         }
         .sheet(
             isPresented: Binding(
@@ -155,33 +171,24 @@ struct ObjectListView: View {
                 ObjectMetadataSheet(viewModel: metadataViewModel)
             }
         }
-        .sheet(
-            isPresented: Binding(
-                get: { crossCopyTarget != nil },
-                set: { if !$0 { crossCopyTarget = nil } }
+        .sheet(item: $crossCopyTarget) { target in
+            CrossAccountCopySheet(
+                sourceAccount: target.account,
+                sourceBucket: target.bucket,
+                keys: target.keys,
+                accounts: container.accountListViewModel.accounts,
+                onSubmit: { destAcc, destBucket, destPrefix, keepSource in
+                    await container.crossAccountCopyCoordinator.copy(
+                        sourceAccount: target.account,
+                        sourceBucket: target.bucket,
+                        keys: target.keys,
+                        destinationAccount: destAcc,
+                        destinationBucket: destBucket,
+                        destinationPrefix: destPrefix,
+                        keepSource: keepSource
+                    )
+                }
             )
-        ) {
-            if let keys = crossCopyTarget,
-               let account = viewModel.account,
-               let bucket = viewModel.bucket {
-                CrossAccountCopySheet(
-                    sourceAccount: account,
-                    sourceBucket: bucket,
-                    keys: keys,
-                    accounts: container.accountListViewModel.accounts,
-                    onSubmit: { destAcc, destBucket, destPrefix, keepSource in
-                        await container.crossAccountCopyCoordinator.copy(
-                            sourceAccount: account,
-                            sourceBucket: bucket,
-                            keys: keys,
-                            destinationAccount: destAcc,
-                            destinationBucket: destBucket,
-                            destinationPrefix: destPrefix,
-                            keepSource: keepSource
-                        )
-                    }
-                )
-            }
         }
         .confirmationDialog(
             confirmationTitle(),
@@ -380,7 +387,13 @@ struct ObjectListView: View {
                     Task { await downloadObject(object) }
                 }
                 Button("share.menu.getLink", systemImage: "link") {
-                    shareTarget = object
+                    if let account = viewModel.account, let bucket = viewModel.bucket {
+                        shareTarget = ShareTarget(
+                            account: account,
+                            bucket: bucket,
+                            object: object
+                        )
+                    }
                 }
                 // Phase 13.6 — version browser. Only meaningful on the
                 // S3 family; Azure surfaces a clear "not supported"
@@ -463,7 +476,12 @@ struct ObjectListView: View {
             )
             return
         }
-        crossCopyTarget = keys
+        guard let account = viewModel.account, let bucket = viewModel.bucket else { return }
+        crossCopyTarget = CrossCopyTarget(
+            account: account,
+            bucket: bucket,
+            keys: keys
+        )
     }
 
     // MARK: - Actions

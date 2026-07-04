@@ -22,25 +22,15 @@
           • BucketeerEncryptionKeys.store + Keychain — Phase 13.15 BYOK
 
         Apple processes purchase transactions for the Bucketeer Pro IAP
-        under their own privacy policy; the publisher receives only the
-        aggregated payout reports App Store Connect provides — which is
-        why PurchaseHistory is declared below.
+        under their own privacy policy. Per Apple's App Privacy
+        guidance the developer does NOT declare data Apple collects to
+        process StoreKit transactions — the app itself never sees
+        purchase history beyond the local entitlement check, so the
+        collected-data list is empty and the nutrition label reads
+        "Data Not Collected".
     -->
     <key>NSPrivacyCollectedDataTypes</key>
-    <array>
-        <dict>
-            <key>NSPrivacyCollectedDataType</key>
-            <string>NSPrivacyCollectedDataTypePurchaseHistory</string>
-            <key>NSPrivacyCollectedDataTypeLinked</key>
-            <true/>
-            <key>NSPrivacyCollectedDataTypeTracking</key>
-            <false/>
-            <key>NSPrivacyCollectedDataTypePurposes</key>
-            <array>
-                <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
-            </array>
-        </dict>
-    </array>
+    <array/>
 
     <!--
         Required-reason API declarations.
@@ -103,10 +93,11 @@
         </dict>
 
         <!--
-            DiskSpace: check available disk before downloading a large
-            object; display free space when managing the preview cache
-            or the trash cache (Phase 13.4 added the trash cache;
-            preview cache predates 13.x).
+            DiskSpace: defensive declaration for the statically linked
+            networking stack (swift-nio / async-http-client via Soto)
+            whose file-system probes the app cannot audit release-to-
+            release. E174.1/85F4.1 cover user-visible cache management
+            and write-failure avoidance.
         -->
         <dict>
             <key>NSPrivacyAccessedAPIType</key>
@@ -119,10 +110,12 @@
         </dict>
 
         <!--
-            SystemBootTime: measure transfer durations for live
-            progress estimates + bandwidth-limit token bucket
-            (Phase 13.2). Reason 35F9.1 covers measuring time
-            intervals within the app.
+            SystemBootTime: swift-nio (statically linked via Soto)
+            reads the monotonic clock (mach_absolute_time via
+            NIODeadline/DispatchTime) for connection timeouts; the app
+            itself measures transfer intervals with ContinuousClock.
+            Reason 35F9.1 covers measuring time intervals within the
+            app.
         -->
         <dict>
             <key>NSPrivacyAccessedAPIType</key>

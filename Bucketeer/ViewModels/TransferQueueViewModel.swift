@@ -69,11 +69,7 @@ final class TransferQueueViewModel {
     }
 
     func clearTerminal() async {
-        // Only meaningful when backed by `TransferManager` — protocol
-        // doesn't formally expose it, but we know the concrete type.
-        if let manager = transferManager as? TransferManager {
-            await manager.clearTerminal()
-        }
+        await transferManager.clearTerminal()
     }
 
     var activeCount: Int {

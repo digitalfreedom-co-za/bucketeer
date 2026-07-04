@@ -317,8 +317,12 @@ final class AppContainer {
             encryptionGate: bucketEncryptionGate
         )
         // Codex audit fix (medium #3) — wipe any plaintext staging
-        // files left over from a crashed round-trip copy.
-        CrossAccountCopyCoordinator.scavengeOrphans()
+        // files left over from a crashed round-trip copy. Detached:
+        // synchronous directory enumeration in a @MainActor init would
+        // block the first render frame on a slow volume.
+        Task.detached(priority: .utility) {
+            CrossAccountCopyCoordinator.scavengeOrphans()
+        }
 
         // Phase 13.15 — client-side encryption.
         self.encryptionContainer = encryptionContainer

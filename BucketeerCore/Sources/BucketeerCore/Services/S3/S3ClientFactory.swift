@@ -72,10 +72,16 @@ public actor S3ClientFactory {
     }
 
     public func shutdownAll() async {
-        for cached in cache.values {
+        // Snapshot + clear BEFORE the awaits: shutdown() suspends, and
+        // a concurrent client(for:) could insert a fresh entry during
+        // the loop — removeAll() at the end would then drop an
+        // un-shut-down AWSClient (Soto leak) and the values iterator
+        // would observe mutation mid-walk.
+        let snapshot = Array(cache.values)
+        cache.removeAll()
+        for cached in snapshot {
             try? await cached.awsClient.shutdown()
         }
-        cache.removeAll()
     }
 
     /// One-shot credential validation. Builds a throwaway `AWSClient`

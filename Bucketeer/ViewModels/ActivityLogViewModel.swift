@@ -41,6 +41,11 @@ final class ActivityLogViewModel {
 
     private let activityLog: any ActivityLogging
     private let accountStore: any AccountStoring
+    /// Reload generation — `.onChange`-driven reloads overlap when the
+    /// user types quickly; only the newest run may publish results or
+    /// clear the spinner, or an older run's rows land after (and
+    /// mismatch) the filter the user actually sees.
+    private var reloadGeneration = 0
 
     init(
         activityLog: any ActivityLogging,
@@ -53,21 +58,31 @@ final class ActivityLogViewModel {
     /// Re-issue the underlying query. Cheap enough to call on every
     /// filter change.
     func reload() async {
+        reloadGeneration += 1
+        let token = reloadGeneration
         isLoading = true
-        defer { isLoading = false }
+        defer {
+            if token == reloadGeneration { isLoading = false }
+        }
         do {
-            entries = try await activityLog.search(
+            let newEntries = try await activityLog.search(
                 text: searchText.isEmpty ? nil : searchText,
                 kinds: kindFilter.isEmpty ? nil : kindFilter,
                 accountID: accountFilter,
                 limit: Self.defaultLimit
             )
-            totalCount = try await activityLog.count()
-            accounts = try await accountStore.all()
+            let newTotal = try await activityLog.count()
+            let newAccounts = try await accountStore.all()
+            guard token == reloadGeneration else { return }
+            entries = newEntries
+            totalCount = newTotal
+            accounts = newAccounts
             error = nil
         } catch let bucketeerError as BucketeerError {
+            guard token == reloadGeneration else { return }
             error = bucketeerError
         } catch {
+            guard token == reloadGeneration else { return }
             self.error = .unknown(message: error.localizedDescription)
         }
     }

@@ -111,6 +111,7 @@ struct ObjectMetadataSheet: View {
                         Image(systemName: "minus.circle")
                     }
                     .buttonStyle(.borderless)
+                    .accessibilityLabel(Text("metadata.action.removeEntry"))
                 }
             }
             HStack {
@@ -125,6 +126,7 @@ struct ObjectMetadataSheet: View {
                 }
                 .buttonStyle(.borderless)
                 .disabled(!isValidMetadataKey(newMetadataKey))
+                .accessibilityLabel(Text("metadata.action.addEntry"))
             }
             Text("metadata.userMetadata.hint")
                 .font(.footnote)
@@ -153,6 +155,7 @@ struct ObjectMetadataSheet: View {
                         Image(systemName: "minus.circle")
                     }
                     .buttonStyle(.borderless)
+                    .accessibilityLabel(Text("metadata.action.removeEntry"))
                 }
             }
             HStack {
@@ -167,6 +170,7 @@ struct ObjectMetadataSheet: View {
                 }
                 .buttonStyle(.borderless)
                 .disabled(newTagKey.isEmpty || viewModel.metadata.tags.count >= 10)
+                .accessibilityLabel(Text("metadata.action.addEntry"))
             }
             Text("metadata.tags.hint")
                 .font(.footnote)

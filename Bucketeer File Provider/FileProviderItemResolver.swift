@@ -195,11 +195,20 @@ enum FileProviderItemResolver {
                 isFolder: true
             )
         }
-        let head = try await container.browser.head(
-            account: mountInfo.account,
-            bucket: mountInfo.bucket,
-            key: key
-        )
+        // The HEAD after a successful PUT crosses the network too —
+        // it must produce an NSFileProviderError like everything else
+        // or the system sees a foreign error domain after an upload it
+        // considers complete.
+        let head: S3Object
+        do {
+            head = try await container.browser.head(
+                account: mountInfo.account,
+                bucket: mountInfo.bucket,
+                key: key
+            )
+        } catch {
+            throw fileProviderError(error, fallback: .cannotSynchronize)
+        }
         return ResolvedItem(
             identifier: identifier(for: key),
             parent: template.parentItemIdentifier,
@@ -223,49 +232,64 @@ enum FileProviderItemResolver {
         guard let originalKey = key(from: item.itemIdentifier) else {
             throw mappedError(.noSuchItem)
         }
+        // Belt-and-braces behind the capabilities gate: renaming a
+        // folder prefix would need a recursive copy+delete of every
+        // descendant — moving only the marker orphans the children.
+        if originalKey.hasSuffix("/"),
+           changedFields.contains(.filename) || changedFields.contains(.parentItemIdentifier) {
+            throw mappedError(.cannotSynchronize)
+        }
         var currentKey = originalKey
-        // Rename = server-side copy + delete (mirrors the rename path
-        // in the host's BrowserViewModel).
-        if changedFields.contains(.filename) || changedFields.contains(.parentItemIdentifier) {
-            let parentKey = key(from: item.parentItemIdentifier) ?? ""
-            let newKey = parentKey + item.filename
-            if newKey != originalKey {
-                try await container.browser.copy(
-                    account: mountInfo.account,
-                    fromBucket: mountInfo.bucket,
-                    fromKey: originalKey,
-                    toBucket: mountInfo.bucket,
-                    toKey: newKey,
-                    metadata: nil
-                )
-                try await container.browser.delete(
+        // Every network call below must surface as an
+        // NSFileProviderError — createItem/deleteItem already wrap;
+        // an unmapped BucketeerError here would land in a foreign
+        // error domain and confuse the system's retry logic.
+        do {
+            // Rename = server-side copy + delete (mirrors the rename
+            // path in the host's BrowserViewModel).
+            if changedFields.contains(.filename) || changedFields.contains(.parentItemIdentifier) {
+                let parentKey = key(from: item.parentItemIdentifier) ?? ""
+                let newKey = parentKey + item.filename
+                if newKey != originalKey {
+                    try await container.browser.copy(
+                        account: mountInfo.account,
+                        fromBucket: mountInfo.bucket,
+                        fromKey: originalKey,
+                        toBucket: mountInfo.bucket,
+                        toKey: newKey,
+                        metadata: nil
+                    )
+                    try await container.browser.delete(
+                        account: mountInfo.account,
+                        bucket: mountInfo.bucket,
+                        keys: [originalKey]
+                    )
+                    currentKey = newKey
+                }
+            }
+            if changedFields.contains(.contents), let contents {
+                try await uploadFile(
+                    contents,
                     account: mountInfo.account,
                     bucket: mountInfo.bucket,
-                    keys: [originalKey]
+                    key: currentKey,
+                    container: container,
+                    progress: progress
                 )
-                currentKey = newKey
             }
-        }
-        if changedFields.contains(.contents), let contents {
-            try await uploadFile(
-                contents,
+            let head = try await container.browser.head(
                 account: mountInfo.account,
                 bucket: mountInfo.bucket,
-                key: currentKey,
-                container: container,
-                progress: progress
+                key: currentKey
             )
+            return ResolvedItem(
+                identifier: identifier(for: currentKey),
+                parent: parentIdentifier(for: currentKey),
+                object: head
+            )
+        } catch {
+            throw fileProviderError(error, fallback: .cannotSynchronize)
         }
-        let head = try await container.browser.head(
-            account: mountInfo.account,
-            bucket: mountInfo.bucket,
-            key: currentKey
-        )
-        return ResolvedItem(
-            identifier: identifier(for: currentKey),
-            parent: parentIdentifier(for: currentKey),
-            object: head
-        )
     }
 
     // MARK: - Delete
@@ -311,13 +335,21 @@ enum FileProviderItemResolver {
     /// in S3-safe batches. Uses the existing `S3Browsing.listObjects`
     /// continuation token; the S3 backend chunks 1000 keys per
     /// DeleteObjects request internally.
+    ///
+    /// Deletes in ROLLING batches as pages are enumerated — the
+    /// extension process runs under a tight memory watchdog, and
+    /// accumulating every key of a million-object prefix before the
+    /// first delete would get it killed. The top-level folder marker
+    /// is deleted LAST so a mid-walk failure leaves the tree visible
+    /// in Finder instead of orphaning the descendants.
     private static func deleteRecursively(
         prefix: String,
         account: S3Account,
         bucket: String,
         container: ExtensionContainer
     ) async throws {
-        var allKeys: [String] = [prefix]
+        let flushThreshold = 900
+        var batch: [String] = []
         var queue: [String] = [prefix]
         while let next = queue.first {
             queue.removeFirst()
@@ -334,16 +366,27 @@ enum FileProviderItemResolver {
                     if object.isFolder {
                         queue.append(object.key)
                     }
-                    allKeys.append(object.key)
+                    if object.key != prefix {
+                        batch.append(object.key)
+                    }
+                }
+                if batch.count >= flushThreshold {
+                    try await container.browser.delete(
+                        account: account,
+                        bucket: bucket,
+                        keys: batch
+                    )
+                    batch = []
                 }
                 token = page.continuationToken
                 if !page.hasMore { token = nil }
             } while token != nil
         }
+        batch.append(prefix)
         try await container.browser.delete(
             account: account,
             bucket: bucket,
-            keys: allKeys
+            keys: batch
         )
     }
 
@@ -533,7 +576,12 @@ final class ResolvedItem: NSObject, NSFileProviderItem {
             return [.allowsContentEnumerating, .allowsAddingSubItems]
         }
         if isFolder {
-            return [.allowsContentEnumerating, .allowsAddingSubItems, .allowsDeleting, .allowsRenaming]
+            // No .allowsRenaming: a folder is a virtual prefix — a
+            // rename would have to copy+delete every descendant.
+            // v1 doesn't implement that, and offering the action just
+            // to fail (or worse, move only the marker and orphan the
+            // children) is the worst outcome. Codex round-2 finding.
+            return [.allowsContentEnumerating, .allowsAddingSubItems, .allowsDeleting]
         }
         return [.allowsReading, .allowsWriting, .allowsDeleting, .allowsRenaming]
     }

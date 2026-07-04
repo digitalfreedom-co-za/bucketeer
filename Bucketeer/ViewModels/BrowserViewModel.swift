@@ -108,6 +108,10 @@ final class BrowserViewModel {
         searchText = ""
         selection = []
         error = nil
+        // Full state reset — an in-flight load is stale after the
+        // generation bump and its defer skips isLoading, so reset it
+        // here or the spinner sticks forever.
+        isLoading = false
     }
 
     func openAccount(_ account: S3Account) async {

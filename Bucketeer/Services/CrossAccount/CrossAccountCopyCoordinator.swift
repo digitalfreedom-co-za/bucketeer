@@ -253,7 +253,9 @@ final class CrossAccountCopyCoordinator {
     /// `AppContainer.init` on every launch so a crash mid-copy
     /// doesn't leave plaintext on disk indefinitely. Codex audit
     /// fix (medium #3).
-    static func scavengeOrphans() {
+    // nonisolated: pure FileManager work, called from a detached
+    // utility task at launch so it never blocks the main actor.
+    nonisolated static func scavengeOrphans() {
         let support = (try? FileManager.default.url(
             for: .applicationSupportDirectory,
             in: .userDomainMask,
@@ -263,10 +265,20 @@ final class CrossAccountCopyCoordinator {
         let stagingDir = support.appending(path: "CrossAccountStaging")
         guard let entries = try? FileManager.default.contentsOfDirectory(
             at: stagingDir,
-            includingPropertiesForKeys: nil
+            includingPropertiesForKeys: [.contentModificationDateKey]
         ) else { return }
+        // Only reap files from a PREVIOUS session: the scavenger runs
+        // detached at launch and must never race a round-trip copy the
+        // user started seconds ago. Crash leftovers are by definition
+        // older than the current process.
+        let cutoff = Date().addingTimeInterval(-3600)
         for url in entries where url.lastPathComponent.hasPrefix("bucketeer-roundtrip-") {
-            try? FileManager.default.removeItem(at: url)
+            let modified = (try? url.resourceValues(
+                forKeys: [.contentModificationDateKey]
+            ))?.contentModificationDate ?? .distantPast
+            if modified < cutoff {
+                try? FileManager.default.removeItem(at: url)
+            }
         }
     }
 

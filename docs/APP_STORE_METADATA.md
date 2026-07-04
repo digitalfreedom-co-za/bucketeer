@@ -158,12 +158,14 @@ the user's Mac and are never transmitted to the Publisher.
 
 ## Encryption
 
-`ITSAppUsesNonExemptEncryption = false` in Info.plist (already set).
-Bucketeer uses only platform-provided TLS + CryptoKit primitives
-(AES-GCM, HMAC-SHA256 for AWS Signature v4 / Azure Shared Key) that
-qualify for the standard export-compliance exemption. The new
-client-side encryption layer (Phase 13.15) uses CryptoKit's AES-GCM
-exclusively — no third-party crypto, no custom primitives.
+`ITSAppUsesNonExemptEncryption = YES` in Info.plist. The client-side
+encryption layer (Phase 13.15) performs general-purpose AES-256-GCM
+confidentiality encryption of user file contents — that is NON-exempt
+functionality, so the questionnaire answers are: uses encryption
+**Yes**, exempt **No**, proprietary algorithms **No**. Classification:
+ECCN 5D992.c mass-market, self-classified under 15 CFR §740.17(b)(1);
+the annual self-classification report to BIS is owed each February.
+Full reasoning + report format: `docs/EXPORT_COMPLIANCE.md`.
 
 ## In-App Purchases
 

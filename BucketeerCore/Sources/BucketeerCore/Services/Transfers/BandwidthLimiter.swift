@@ -36,7 +36,10 @@ import Foundation
 public actor BandwidthLimiter {
     private var bytesPerSecond: Int = 0
     private var tokens: Double = 0
-    private var lastRefill: Date = .now
+    /// Monotonic — wall-clock `Date` regresses on NTP corrections and
+    /// manual clock changes, which used to drive `tokens` negative and
+    /// stall transfers until real time caught up.
+    private var lastRefill: ContinuousClock.Instant = .now
 
     public init(bytesPerSecond: Int = 0) {
         let normalised = max(0, bytesPerSecond)
@@ -82,8 +85,13 @@ public actor BandwidthLimiter {
     // MARK: - Private
 
     private func refill() {
-        let now = Date()
-        let elapsed = now.timeIntervalSince(lastRefill)
+        let now = ContinuousClock.now
+        let duration = now - lastRefill
+        let elapsed = max(
+            0.0,
+            Double(duration.components.seconds)
+                + Double(duration.components.attoseconds) / 1e18
+        )
         let capacity = Double(bytesPerSecond)
         tokens = min(capacity, tokens + elapsed * Double(bytesPerSecond))
         lastRefill = now

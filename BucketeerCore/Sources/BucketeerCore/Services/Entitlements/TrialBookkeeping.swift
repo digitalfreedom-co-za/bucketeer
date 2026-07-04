@@ -50,6 +50,10 @@ public struct UserDefaultsTrialStore: TrialDefaults {
 public struct TrialBookkeeping: Sendable {
     public static let trialStartKey = "bucketeer.trial.start"
     public static let trialConsumedKey = "bucketeer.trial.consumed"
+    /// Highest clock reading ever observed — defeats backward clock
+    /// rollbacks mid-trial (setting the Mac's clock back at day 13
+    /// used to recover already-consumed days).
+    public static let trialHighWaterKey = "bucketeer.trial.highwater"
     public static let defaultTrialLengthSeconds: TimeInterval = 14 * 24 * 60 * 60
 
     public let store: any TrialDefaults
@@ -81,20 +85,29 @@ public struct TrialBookkeeping: Sendable {
     public func daysRemaining(now: Date = Date()) -> Int? {
         if store.bool(forKey: Self.trialConsumedKey) { return nil }
 
+        // High-watermark: never let the effective clock regress. A
+        // backward system-clock change mid-trial keeps the largest
+        // date ever seen, so elapsed time cannot shrink.
+        let watermark = store.date(forKey: Self.trialHighWaterKey)
+        let effectiveNow = max(now, watermark ?? now)
+        if watermark == nil || effectiveNow > watermark! {
+            store.setDate(effectiveNow, forKey: Self.trialHighWaterKey)
+        }
+
         // Clamp future start dates — flipping the system clock or
         // editing the plist to a date in the future used to extend
         // the trial. Treat anything in the future as "now" and rewrite
         // the persisted start so subsequent calls see a clean baseline.
         let rawStart = store.date(forKey: Self.trialStartKey)
         let start: Date
-        if let rawStart, rawStart <= now {
+        if let rawStart, rawStart <= effectiveNow {
             start = rawStart
         } else {
-            start = now
-            store.setDate(now, forKey: Self.trialStartKey)
+            start = effectiveNow
+            store.setDate(effectiveNow, forKey: Self.trialStartKey)
         }
 
-        let elapsed = now.timeIntervalSince(start)
+        let elapsed = effectiveNow.timeIntervalSince(start)
         let remaining = trialLengthSeconds - elapsed
         guard remaining > 0 else {
             store.setBool(true, forKey: Self.trialConsumedKey)

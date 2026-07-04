@@ -308,6 +308,10 @@ public protocol Transferring: Sendable {
 
     func cancel(id: UUID) async
 
+    /// Drop every task that has reached a terminal state (completed /
+    /// failed / cancelled) from the queue snapshot.
+    func clearTerminal() async
+
     /// Live snapshot stream of the current task list. Each yielded value
     /// is the complete state — consumers replace, not merge.
     var tasks: AsyncStream<[TransferTask]> { get }

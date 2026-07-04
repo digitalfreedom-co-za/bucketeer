@@ -55,6 +55,9 @@ struct SyncJobSheet: View {
     @State private var enabled: Bool = true
     @State private var hasHydrated: Bool = false
     @State private var saving: Bool = false
+    /// Folder-picker bookmark failure — without it a denied bookmark
+    /// silently reset the selection and the user saw nothing.
+    @State private var folderError: String?
 
     private enum ScheduleKind: String, CaseIterable {
         case manual, onLaunch, interval, onLocalChange
@@ -200,6 +203,11 @@ struct SyncJobSheet: View {
                         chooseFolder(into: bookmark, displayPath: displayPath)
                     }
                 }
+                if let folderError {
+                    Text(folderError)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
             }
         }
     }
@@ -302,9 +310,11 @@ struct SyncJobSheet: View {
             )
             bookmark.wrappedValue = data
             displayPath.wrappedValue = url.path(percentEncoded: false)
+            folderError = nil
         } catch {
             bookmark.wrappedValue = nil
             displayPath.wrappedValue = ""
+            folderError = error.localizedDescription
         }
     }
 

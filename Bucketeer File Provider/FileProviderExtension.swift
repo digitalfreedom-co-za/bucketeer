@@ -99,7 +99,14 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
                     container: container,
                     progress: progress
                 )
-                try Task.checkCancellation()
+                // Cancellation after a completed download must clean
+                // up the staging file — `try Task.checkCancellation()`
+                // used to throw past the result and orphan it in tmp.
+                if Task.isCancelled {
+                    try? FileManager.default.removeItem(at: result.url)
+                    completionHandler(nil, nil, FileProviderItemResolver.mappedError(.serverUnreachable))
+                    return
+                }
                 completionHandler(result.url, result.item, nil)
             } catch is CancellationError {
                 completionHandler(nil, nil, FileProviderItemResolver.mappedError(.serverUnreachable))

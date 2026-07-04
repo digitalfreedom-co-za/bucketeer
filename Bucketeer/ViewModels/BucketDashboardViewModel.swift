@@ -53,17 +53,17 @@ final class BucketDashboardViewModel {
         error = nil
         insightsError = nil
         loadTask = Task { [weak self] in
-            async let statsTask = Task<BucketStats?, Error> {
-                try await collector.collect(account: account, bucket: bucket)
-            }.value
+            // Plain `async let` (no inner Task wrappers): the children
+            // are structured, so cancelling `loadTask` when the sheet
+            // closes actually stops the bucket walk instead of letting
+            // it page on in the background.
+            async let statsTask = collector.collect(account: account, bucket: bucket)
             // Phase 13.9 — pull insights in parallel with the stats
             // walk so the dashboard reveals lifecycle / CORS / policy
             // info as soon as both come back. Insight failures are
             // captured separately so a missing-policy provider
             // doesn't blank out the stats panel.
-            async let insightsTask = Task<BucketInsights?, Error> {
-                try await browser.loadInsights(account: account, bucket: bucket)
-            }.value
+            async let insightsTask = browser.loadInsights(account: account, bucket: bucket)
             do {
                 let result = try await statsTask
                 if Task.isCancelled { return }

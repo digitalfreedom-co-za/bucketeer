@@ -150,4 +150,31 @@ struct TrialBookkeepingTests {
         // trial window, the consumed marker keeps the trial closed.
         #expect(book.daysRemaining(now: t0) == nil)
     }
+
+    // MARK: - Backward clock rollback
+
+    @Test("daysRemaining: backward clock rollback cannot recover consumed days")
+    func backwardRollbackClamped() {
+        let (book, _) = bookkeeping()
+        let t0 = Date(timeIntervalSince1970: 1_000_000)
+        book.start(now: t0)
+        // Day 13 observed — 1 day remaining.
+        let day13 = t0.addingTimeInterval(13 * 86_400)
+        #expect(book.daysRemaining(now: day13) == 1)
+        // User sets the clock back to day 5. The high-watermark keeps
+        // the effective clock at day 13 — still 1 day remaining, not 9.
+        let day5 = t0.addingTimeInterval(5 * 86_400)
+        #expect(book.daysRemaining(now: day5) == 1)
+    }
+
+    @Test("daysRemaining: rollback past expiry stays expired")
+    func rollbackAfterExpiryStaysExpired() {
+        let (book, _) = bookkeeping()
+        let t0 = Date(timeIntervalSince1970: 1_000_000)
+        book.start(now: t0)
+        _ = book.daysRemaining(now: t0.addingTimeInterval(15 * 86_400))
+        // Clock rolled back inside the window — consumed marker AND
+        // watermark both keep the trial closed.
+        #expect(book.daysRemaining(now: t0.addingTimeInterval(2 * 86_400)) == nil)
+    }
 }

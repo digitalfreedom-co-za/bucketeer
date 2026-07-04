@@ -8,6 +8,13 @@
 import AppKit
 import SwiftUI
 
+extension Notification.Name {
+    /// Posted (with an `AboutWindow.Section` object) to open the About
+    /// window at a specific tab — used by the paywall's EULA / Privacy
+    /// footer links.
+    static let showBucketeerAboutSection = Notification.Name("bucketeer.showAboutSection")
+}
+
 struct AboutWindow: View {
     @State private var selectedSection: Section = .about
 
@@ -55,6 +62,13 @@ struct AboutWindow: View {
             }
         }
         .frame(width: 760, height: 620)
+        .onReceive(
+            NotificationCenter.default.publisher(for: .showBucketeerAboutSection)
+        ) { note in
+            if let section = note.object as? Section {
+                selectedSection = section
+            }
+        }
     }
 
     // MARK: - Header

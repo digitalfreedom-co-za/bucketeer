@@ -262,6 +262,7 @@ final class BucketeerAppDelegate: NSObject, NSApplicationDelegate {
 /// the Pro tab that surfaces the entitlement state and the buy / restore
 /// affordances.
 private struct SettingsView: View {
+    @State private var restoreError: String?
     @Environment(AppContainer.self) private var container
     @State private var showingPaywall: Bool = false
 
@@ -430,7 +431,22 @@ private struct SettingsView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     Button("settings.pro.restore") {
-                        Task { try? await entitlement.restorePurchases() }
+                        Task {
+                            restoreError = nil
+                            do {
+                                try await entitlement.restorePurchases()
+                            } catch {
+                                // A silently-failing restore button is
+                                // indistinguishable from a broken one.
+                                restoreError = (error as? LocalizedError)?
+                                    .errorDescription ?? error.localizedDescription
+                            }
+                        }
+                    }
+                    if let restoreError {
+                        Text(restoreError)
+                            .font(.caption)
+                            .foregroundStyle(.red)
                     }
                 }
             }

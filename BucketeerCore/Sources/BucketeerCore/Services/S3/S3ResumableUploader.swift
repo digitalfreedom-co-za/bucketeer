@@ -55,6 +55,39 @@ public struct S3ResumableUploader: Sendable {
         fileSize: Int64,
         progress: @Sendable @escaping (Int64) async -> Void
     ) async throws {
+        // Service-layer contract: raw Soto errors from the multipart
+        // calls (createMultipartUpload, listParts, uploadPart,
+        // completeMultipartUpload) must not escape — translate them
+        // through the same mapper S3Service uses. Cancellation and
+        // already-mapped errors pass through untouched.
+        do {
+            try await performUpload(
+                account: account,
+                bucket: bucket,
+                key: key,
+                localURL: localURL,
+                contentType: contentType,
+                fileSize: fileSize,
+                progress: progress
+            )
+        } catch let error as BucketeerError {
+            throw error
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            throw S3Service.map(error, bucket: bucket, key: key)
+        }
+    }
+
+    private func performUpload(
+        account: S3Account,
+        bucket: String,
+        key: String,
+        localURL: URL,
+        contentType: String?,
+        fileSize: Int64,
+        progress: @Sendable @escaping (Int64) async -> Void
+    ) async throws {
         let s3 = try await factory.client(for: account)
         // 1. Find or create a checkpoint.
         var checkpoint = try await loadOrCreateCheckpoint(

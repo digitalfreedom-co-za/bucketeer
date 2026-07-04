@@ -66,7 +66,11 @@ public enum SyncSchedule: Codable, Hashable, Sendable {
         if rawValue == "onLaunch" { self = .onLaunch; return }
         if rawValue == "onLocalChange" { self = .onLocalChange; return }
         if rawValue.hasPrefix("interval="),
-           let seconds = Int(rawValue.dropFirst("interval=".count)) {
+           let seconds = Int(rawValue.dropFirst("interval=".count)),
+           seconds > 0 {
+            // Zero would spin the engine in a tight loop; negative
+            // wraps to "never" when converted to an unsigned delay.
+            // Corrupt rows fall through to nil like any unknown value.
             self = .interval(seconds: seconds); return
         }
         return nil

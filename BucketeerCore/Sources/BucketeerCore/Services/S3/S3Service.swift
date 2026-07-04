@@ -322,10 +322,22 @@ public struct S3Service: S3Browsing {
         versionId: String
     ) async throws {
         let s3 = try await factory.client(for: account)
-        let source = "\(bucket)/\(key)?versionId=\(versionId)"
-        let encodedSource = source.addingPercentEncoding(
+        // Encode key and version ID SEPARATELY. Percent-encoding the
+        // whole string turns the `?` into %3F and S3 then looks up a
+        // literal key named "key?versionId=…" — every versioned
+        // restore 404s. The `?versionId=` separator must stay literal
+        // per the x-amz-copy-source spec. Version IDs are opaque and
+        // may contain query-significant characters (`+`, `/`, `=` on
+        // some providers), so they get a strict query-value encoding.
+        let encodedKey = key.addingPercentEncoding(
             withAllowedCharacters: .urlPathAllowed
-        ) ?? source
+        ) ?? key
+        var queryValueAllowed = CharacterSet.alphanumerics
+        queryValueAllowed.insert(charactersIn: "-._~")
+        let encodedVersionId = versionId.addingPercentEncoding(
+            withAllowedCharacters: queryValueAllowed
+        ) ?? versionId
+        let encodedSource = "\(bucket)/\(encodedKey)?versionId=\(encodedVersionId)"
         do {
             _ = try await s3.copyObject(.init(
                 bucket: bucket,
@@ -552,7 +564,10 @@ public struct S3Service: S3Browsing {
     /// Map Soto errors into `BucketeerError`. Prefers Soto's typed S3
     /// error surface (`S3ErrorType`, `AWSResponseError`), falling back
     /// to a low-confidence string match only for legacy paths.
-    private static func map(_ error: Error, bucket: String? = nil, key: String? = nil) -> BucketeerError {
+    // Internal (not private): S3ResumableUploader shares the same
+    // Soto-error → BucketeerError translation so the service-layer
+    // contract holds on the multipart path too.
+    static func map(_ error: Error, bucket: String? = nil, key: String? = nil) -> BucketeerError {
         if let existing = error as? BucketeerError { return existing }
 
         if let s3Error = error as? S3ErrorType {
