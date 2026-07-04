@@ -98,11 +98,13 @@ Each workflow uses the `ci_scripts/` directory we ship in the repo
 - [ ] `git status` is clean on `development` before promoting
 
 ### 5. Compliance answers (App Store Connect questionnaire)
-- **Encryption**: `ITSAppUsesNonExemptEncryption = NO`. Rationale
-  documented in [`docs/EXPORT_COMPLIANCE.md`](EXPORT_COMPLIANCE.md)
-  — mass-market exemption under EAR 740.17(b)(1), only standard
-  Apple CryptoKit AES-GCM + SHA-256. No ERN / SNAP-R submission
-  required.
+- **Encryption**: `ITSAppUsesNonExemptEncryption = YES` — the
+  client-side AES-256-GCM encryption of user file contents is
+  non-exempt. Questionnaire: uses encryption **Yes**, exempt
+  **No**, proprietary algorithms **No**. Classification: ECCN
+  5D992.c mass-market, self-classified per 15 CFR §740.17(b)(1);
+  annual BIS self-classification report due each February. Full
+  reasoning: [`docs/EXPORT_COMPLIANCE.md`](EXPORT_COMPLIANCE.md).
 - **Content rights**: App owns all icon + screenshot assets;
   Bucketeer brand is publisher-owned. Source-Available License
   applies to source distribution only; binary distribution uses
