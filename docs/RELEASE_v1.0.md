@@ -74,17 +74,35 @@ credentials.
       (`boatcare`, `s3-browser`) flagged earlier in the session
 
 ### 2. App Store Connect setup
-- [ ] Create app record with bundle id `za.co.digitalfreedom.Bucketeer`
-- [ ] Register IAP `za.co.digitalfreedom.bucketeer.pro.lifetime` per
-      [`docs/APP_STORE_METADATA.md`](APP_STORE_METADATA.md)
+- [x] Create app record — **done 2026-07-05**: App ID `6787542659`,
+      bundle id `za.co.digitalfreedom.Bucketeer`, SKU `bucketeer-macos`,
+      primary language en-US. Store name is
+      **"Bucketeer – Object Storage"** — plain "Bucketeer" is already
+      taken by another App Store app (name-release request possible
+      but not filed).
+- [x] Register IAP — **done 2026-07-05**: `za.co.digitalfreedom.bucketeer.pro.lifetime`
+      (ASC id `6787543222`), non-consumable, Family Sharing on,
+      en-US + de-DE localizations, price 14.99 EUR (base territory
+      DEU), available in all 175 territories + future ones. State
+      `MISSING_METADATA` until the review screenshot is uploaded
+      (needs a paywall screenshot from a real build).
+- [ ] IAP review screenshot (after first TestFlight build)
 - [ ] Upload App Store description, keywords, support / marketing /
       privacy URLs (drafts in the same doc)
 - [ ] Upload 9-shot screenshot set per locale
 
 ### 3. Xcode Cloud workflows
-- [ ] Workflow A: `test` branch → Archive → upload to TestFlight Internal
-- [ ] Workflow B: `beta` branch → Archive → upload to TestFlight External
-- [ ] Workflow C: `main` branch → Archive → submit to App Store review
+- [ ] **One-time onboarding (manual, ~1 min):** Xcode → Integrate →
+      Create Workflow… → select "Bucketeer". Creates the ciProduct +
+      links the GitHub repo — the ASC API rejects CREATE on both
+      resources (verified), so this single step cannot be scripted.
+- [ ] Run `python3 scripts/setup_xcode_cloud_workflows.py` — creates
+      the four wiki workflows (01 Development Analyze, 02 test →
+      TestFlight Internal, 03 beta → TestFlight External, 04 main →
+      App Store) idempotently via the ASC API.
+- [ ] Assign TestFlight groups (Internal/External) to workflows 02/03
+      after their first archive — group assignment is not exposed in
+      the workflow API.
 
 Each workflow uses the `ci_scripts/` directory we ship in the repo
 (`ci_post_clone.sh`, `ci_pre_xcodebuild.sh`, `ci_post_xcodebuild.sh`).
