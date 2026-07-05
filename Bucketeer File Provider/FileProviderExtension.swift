@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import FileProvider
+@preconcurrency import FileProvider
 import BucketeerCore
 
 /// `NSFileProviderReplicatedExtension` is the modern (macOS 11+) hook
@@ -18,7 +18,7 @@ import BucketeerCore
 /// The identifier `"<accountID>::<bucket>"` is parsed by
 /// `ExtensionContainer.resolve(_:)` on every call so the right S3 /
 /// Azure account is targeted.
-final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
+final class FileProviderExtension: NSObject, @unchecked Sendable, NSFileProviderReplicatedExtension {
 
     let domain: NSFileProviderDomain
     let container: ExtensionContainer?
@@ -50,7 +50,9 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
         completionHandler: @escaping (NSFileProviderItem?, Error?) -> Void
     ) -> Progress {
         let progress = Progress(totalUnitCount: 1)
+        let ch = UncheckedSendable(value: completionHandler)
         let task = Task {
+            let completionHandler = ch.value
             guard let container = container else {
                 completionHandler(nil, self.containerError ?? Self.notProvisionedError())
                 return
@@ -87,7 +89,9 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
         completionHandler: @escaping (URL?, NSFileProviderItem?, Error?) -> Void
     ) -> Progress {
         let progress = Progress(totalUnitCount: 100)
+        let ch = UncheckedSendable(value: completionHandler)
         let task = Task {
+            let completionHandler = ch.value
             guard let container = container else {
                 completionHandler(nil, nil, self.containerError ?? Self.notProvisionedError())
                 return
@@ -129,7 +133,9 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
         completionHandler: @escaping (NSFileProviderItem?, NSFileProviderItemFields, Bool, Error?) -> Void
     ) -> Progress {
         let progress = Progress(totalUnitCount: 100)
+        let ch = UncheckedSendable(value: completionHandler)
         let task = Task {
+            let completionHandler = ch.value
             guard let container = container else {
                 completionHandler(nil, [], false, self.containerError ?? Self.notProvisionedError())
                 return
@@ -166,7 +172,9 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
         completionHandler: @escaping (NSFileProviderItem?, NSFileProviderItemFields, Bool, Error?) -> Void
     ) -> Progress {
         let progress = Progress(totalUnitCount: 100)
+        let ch = UncheckedSendable(value: completionHandler)
         let task = Task {
+            let completionHandler = ch.value
             guard let container = container else {
                 completionHandler(nil, [], false, self.containerError ?? Self.notProvisionedError())
                 return
@@ -202,7 +210,9 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
         completionHandler: @escaping (Error?) -> Void
     ) -> Progress {
         let progress = Progress(totalUnitCount: 1)
+        let ch = UncheckedSendable(value: completionHandler)
         let task = Task {
+            let completionHandler = ch.value
             guard let container = container else {
                 completionHandler(self.containerError ?? Self.notProvisionedError())
                 return
@@ -251,4 +261,12 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
             userInfo: [NSLocalizedDescriptionKey: "Bucketeer File Provider container not initialised. Verify the App Group entitlement and that the host app has been launched at least once."]
         )
     }
+}
+
+/// Launders a non-Sendable value across a Swift 6 `sending` closure
+/// boundary. Use only where the value is provably safe to transfer —
+/// NSFileProvider completion handler blocks are designed for cross-thread
+/// invocation, so the @unchecked conformance is warranted.
+private struct UncheckedSendable<T>: @unchecked Sendable {
+    let value: T
 }

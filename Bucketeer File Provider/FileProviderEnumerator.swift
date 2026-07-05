@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import FileProvider
+@preconcurrency import FileProvider
 import BucketeerCore
 
 /// Walks one prefix per call for the system enumerator. Pages through
@@ -24,7 +24,7 @@ import BucketeerCore
 ///   host signals the system via `NSFileProviderManager.signalEnumerator`
 ///   when a write through the host app should be reflected in Finder
 ///   (wired in Phase 9.5.1).
-final class FileProviderEnumerator: NSObject, NSFileProviderEnumerator {
+final class FileProviderEnumerator: NSObject, @unchecked Sendable, NSFileProviderEnumerator {
     let domain: NSFileProviderDomain
     let containerIdentifier: NSFileProviderItemIdentifier
     let extensionContainer: ExtensionContainer
@@ -59,7 +59,9 @@ final class FileProviderEnumerator: NSObject, NSFileProviderEnumerator {
         // A superseding enumeration must cancel the previous one, or
         // the old task could still touch its (now stale) observer.
         enumerationTask?.cancel()
+        let obs = UncheckedSendable(value: observer)
         enumerationTask = Task {
+            let observer = obs.value
             do {
                 guard let mountInfo = try await extensionContainer.resolve(domain.identifier.rawValue) else {
                     guard !Task.isCancelled else { return }
@@ -135,4 +137,12 @@ final class FileProviderEnumerator: NSObject, NSFileProviderEnumerator {
         }
         return String(data: page.rawValue, encoding: .utf8)
     }
+}
+
+/// Launders a non-Sendable value across a Swift 6 `sending` closure
+/// boundary. Use only where the value is provably safe to transfer —
+/// NSFileProvider observer and completion handler types are designed for
+/// cross-thread invocation, so the @unchecked conformance is warranted.
+private struct UncheckedSendable<T>: @unchecked Sendable {
+    let value: T
 }

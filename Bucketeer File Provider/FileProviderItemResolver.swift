@@ -484,7 +484,8 @@ enum FileProviderItemResolver {
     }
 
     static func fileProviderError(_ error: Error, fallback: NSFileProviderError.Code) -> Error {
-        if let nsError = error as? NSError, nsError.domain == NSFileProviderErrorDomain {
+        let nsError = error as NSError
+        if nsError.domain == NSFileProviderErrorDomain {
             return nsError
         }
         if let bucketeer = error as? BucketeerError {
