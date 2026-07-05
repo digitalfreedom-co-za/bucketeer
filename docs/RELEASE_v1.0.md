@@ -62,16 +62,29 @@ credentials.
 - [x] `bucketeer://` URL types — registered via
       `Bucketeer/Info.plist` + `INFOPLIST_FILE` in the project.
       See [`docs/DEEP_LINKS.md`](DEEP_LINKS.md) for the grammar.
-- [ ] Xcode project: add the File Provider Extension target per
-      [`PHASE_9_SETUP.md`](../PHASE_9_SETUP.md). (Not autonomously
-      doable — the pbxproj edit risks signing-mismatch failures
-      that only show up at archive time, so it stays a manual
-      Xcode step.)
-- [ ] developer.apple.com: register App Group
-      `group.za.co.digitalfreedom.bucketeer` and Keychain Sharing
-      group `za.co.digitalfreedom.bucketeer.shared`
-- [ ] developer.apple.com: clean up the now-dead App Groups
-      (`boatcare`, `s3-browser`) flagged earlier in the session
+- [x] Xcode project: File Provider Extension target — **done
+      2026-07-05** via `scripts/add_file_provider_target.rb` (see
+      [`PHASE_9_SETUP.md`](../PHASE_9_SETUP.md) Step 2). Unsigned build
+      passes and the `.appex` is embedded in the app bundle.
+- [x] Extension App ID `za.co.digitalfreedom.Bucketeer.FileProvider`
+      registered at developer.apple.com (bundleId `2J9JZ3862L`) with the
+      App Groups capability — **done via ASC API 2026-07-05**. Host App
+      ID already carries In-App-Purchase + App Groups.
+- [x] Keychain Sharing — **no portal work needed**. The entitlement
+      `$(AppIdentifierPrefix)za.co.digitalfreedom.bucketeer.shared` is
+      team-prefixed; team-prefixed keychain groups are allowed without a
+      registered identifier.
+- [ ] **BLOCKED (portal-only): create the App Group *identifier*
+      `group.za.co.digitalfreedom.bucketeer`** at developer.apple.com →
+      Identifiers → App Groups → `+`, then link it to BOTH the host and
+      the extension App IDs' App Groups capability. The App Store Connect
+      API has **no** app-group endpoint (`/v1/appGroups` → 404), so this
+      one step can only be done in the portal (or in Xcode's Signing &
+      Capabilities with automatic signing). Without it the signed archive
+      fails provisioning. If the group already exists from an earlier
+      setup, just confirm both App IDs are linked to it.
+- [ ] Optional: clean up the now-dead App Groups
+      (`boatcare`, `s3-browser`) flagged earlier in the session.
 
 ### 2. App Store Connect setup
 - [x] Create app record — **done 2026-07-05**: App ID `6787542659`,
@@ -92,14 +105,22 @@ credentials.
 - [ ] Upload 9-shot screenshot set per locale
 
 ### 3. Xcode Cloud workflows
-- [ ] **One-time onboarding (manual, ~1 min):** Xcode → Integrate →
-      Create Workflow… → select "Bucketeer". Creates the ciProduct +
-      links the GitHub repo — the ASC API rejects CREATE on both
-      resources (verified), so this single step cannot be scripted.
-- [ ] Run `python3 scripts/setup_xcode_cloud_workflows.py` — creates
-      the four wiki workflows (01 Development Analyze, 02 test →
+- [x] Onboarding + four wiki workflows — **done 2026-07-05**. The
+      ciProduct (`6AF79AFB-…`) is linked to the Bucketeer app + the
+      `bucketeer` GitHub repo, and `scripts/setup_xcode_cloud_workflows.py`
+      created the four workflows (01 Development Analyze, 02 test →
       TestFlight Internal, 03 beta → TestFlight External, 04 main →
-      App Store) idempotently via the ASC API.
+      App Store), all enabled with the correct branch/scheme/repo.
+- [ ] **BLOCKED (needs one build kicked from Xcode/ASC UI): SCM
+      indexing.** Xcode Cloud has **0 git references** for the
+      `bucketeer` repo, so pushes don't yet auto-trigger and the API
+      can't start a build (no git-reference id to target). Open the
+      Bucketeer project in Xcode → Report navigator → Cloud, or ASC →
+      Xcode Cloud → workflow "02. Testflight Build" → **Start Build**
+      once. That first run installs the GitHub push webhook + indexes
+      the branches; afterwards pushes to test/beta/main auto-trigger.
+      (Note: that first archive still fails until the App Group above
+      is registered.)
 - [ ] Assign TestFlight groups (Internal/External) to workflows 02/03
       after their first archive — group assignment is not exposed in
       the workflow API.
