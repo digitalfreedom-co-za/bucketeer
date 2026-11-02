@@ -48,34 +48,42 @@ The product lands at:
 
 ---
 
-## 3. Run the Core test suite
+## 3. Run the tests
 
-`BucketeerCore` is a local Swift package with an SPM test target. No
-Xcode test bundle required.
+Tests exist only where they pay for themselves: formulas, business
+rules and flows, plus off-screen renders of every screen. No blanket
+suites.
+
+### Core package
+
+`BucketeerCore` is a local Swift package with an SPM test target
+(Swift Testing: `import Testing`, `@Test`, `#expect`).
 
 ```bash
-cd BucketeerCore
-swift test
+swift test --package-path BucketeerCore               # all (~140 tests, ~3 s)
+swift test --package-path BucketeerCore --filter SyncPlanner
 ```
 
-Expected output: **84 tests in 8 suites, all green**, ~25 ms wall.
+### Host app (`BucketeerTests`)
 
-Suites:
+An XCTest bundle **without a test host**: it compiles the host sources
+(everything in `Bucketeer/` except `App/BucketeerApp.swift`) and the
+string catalog, so running it never launches Bucketeer.app.
 
-| Suite | Tests | What it covers |
-|---|---|---|
-| `AzureSharedKeySigner` | 10 | Azure Shared-Key HMAC-SHA256 signing |
-| `AzureRequestBuilder` | 9 | URL composition + block-blob XML |
-| `AzureListXMLParser` | 6 | container + blob XML parsing |
-| `S3ClientFactory.endpoint` | 12 | per-provider URL templates |
-| `S3Provider` | 11 | defaults + family routing |
-| `SyncPlanner` | 19 | diff plans, mirror deletes, local-folder paths |
-| `TrialBookkeeping` | 11 | trial bookkeeping incl. clamp + sticky marker |
-| `LocalFolderWriter.safeChildURL` | 6 | path-traversal guard |
+```bash
+xcodebuild -project Bucketeer.xcodeproj -scheme BucketeerTests \
+  -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO test
+# one suite:  -only-testing:BucketeerTests/SyncEngineSchedulingTests
+```
 
-Add new test files alongside the existing ones under
-`BucketeerCore/Tests/BucketeerCoreTests/`. Use Swift Testing
-(`import Testing`, `@Test`, `#expect`) — not XCTest.
+- `*RenderTests` render each screen and sheet in empty / populated /
+  error states into an off-screen window that is never shown, check the
+  key content with Vision OCR and write PNGs for a visual check.
+- `AppContainer(configuration:)` with `.inMemory` stores, an in-memory
+  Keychain (`InMemoryKeychain`) and object store (`InMemoryS3Browser`,
+  shared with the Core tests) keeps tests away from real data, the
+  Keychain and real accounts.
+- The target is created by `scripts/add_test_target.rb`.
 
 ---
 
