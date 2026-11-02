@@ -119,8 +119,8 @@ public actor OpenWithRoundTrip {
         let digest = try Self.digest(of: url)
         guard digest != session.digest else { return .unchanged }
 
-        let current = try await remote.currentETag(of: session.object).map(ETag.normalized)
-        if let base = session.etag, current == base,
+        let current = try await remote.currentETag(of: session.object)
+        if let base = session.etag, ETag.matches(base: base, current: current),
            try await remote.upload(url, to: session.object, ifMatch: base) == .uploaded {
             session.etag = try await remote.currentETag(of: session.object).map(ETag.normalized)
             session.digest = digest

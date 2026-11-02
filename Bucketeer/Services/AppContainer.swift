@@ -279,6 +279,9 @@ final class AppContainer {
         }
         let mountController = MountController(encryptionKeyStore: encryptionKeyStore)
         self.mountController = mountController
+        self.browserViewModel.onBucketRefresh = { [mountController] accountID, bucket in
+            await mountController.signalServerChanges(accountID: accountID, bucket: bucket)
+        }
         if startsBackgroundWork {
             Task { @MainActor [mountController] in
                 await mountController.refresh()

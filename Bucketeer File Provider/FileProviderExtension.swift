@@ -185,13 +185,14 @@ final class FileProviderExtension: NSObject, @unchecked Sendable, NSFileProvider
                 try container.refuseIfEncrypted(domain.identifier.rawValue)
                 let modified = try await FileProviderItemResolver.modifyItem(
                     item: item,
+                    baseVersion: version,
                     changedFields: changedFields,
                     contents: newContents,
                     in: domain,
                     container: container,
                     progress: progress
                 )
-                completionHandler(modified, [], false, nil)
+                completionHandler(modified.item, [], modified.shouldFetchContent, nil)
             } catch is CancellationError {
                 completionHandler(nil, [], false, Self.cancelledError)
             } catch {

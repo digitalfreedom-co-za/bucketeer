@@ -32,6 +32,17 @@ before that is internal phase work on the `development` branch.
   are removed when the editing app quits, when Bucketeer quits, and at
   launch. `OpenWithRoundTrip` (Core) holds the rules; new error case
   `BucketeerError.preconditionFailed`.
+- Finder mount: a save from Finder is uploaded only while the server
+  still has the version it was based on (HEAD compare of `baseVersion`
+  against the current ETag, then If-Match on the write). Otherwise the
+  edit goes up as a conflict copy, the item keeps the server version
+  (Finder downloads it again) and the working set is signalled.
+- Finder mount: `enumerateChanges` on the working set lists every
+  folder Finder has opened again, diffs it against the last listing
+  (`FinderChangeState` in Core, persisted per domain by the extension)
+  and reports updated and deleted items; folder enumerators answer
+  with `syncAnchorExpired` so the system lists them again. Refreshing
+  a mounted bucket in the browser signals the working set.
 
 ### Review round 4 (2026-11-02)
 **Data safety**

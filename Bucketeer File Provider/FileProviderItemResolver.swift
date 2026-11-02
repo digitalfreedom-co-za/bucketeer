@@ -222,14 +222,22 @@ enum FileProviderItemResolver {
 
     // MARK: - Modify
 
+    struct ModifyResult {
+        let item: NSFileProviderItem
+        /// True when the server kept its own version and the system must
+        /// download it again (the local edit went into a conflict copy).
+        let shouldFetchContent: Bool
+    }
+
     static func modifyItem(
         item: NSFileProviderItem,
+        baseVersion: NSFileProviderItemVersion,
         changedFields: NSFileProviderItemFields,
         contents: URL?,
         in domain: NSFileProviderDomain,
         container: ExtensionContainer,
         progress: Progress
-    ) async throws -> NSFileProviderItem {
+    ) async throws -> ModifyResult {
         guard let mountInfo = try await container.resolve(domain.identifier.rawValue) else {
             throw mappedError(.providerDomainNotFound)
         }
@@ -243,19 +251,39 @@ enum FileProviderItemResolver {
            changedFields.contains(.filename) || changedFields.contains(.parentItemIdentifier) {
             throw mappedError(.cannotSynchronize)
         }
+        let isMove = changedFields.contains(.filename) || changedFields.contains(.parentItemIdentifier)
         var currentKey = originalKey
         // Every network call below must surface as an
         // NSFileProviderError — createItem/deleteItem already wrap;
         // an unmapped BucketeerError here would land in a foreign
         // error domain and confuse the system's retry logic.
         do {
+            // Contents first, against the key the edit was based on.
+            if changedFields.contains(.contents), let contents {
+                let written = try await uploadIfUnchanged(
+                    contents,
+                    key: originalKey,
+                    baseVersion: baseVersion,
+                    mountInfo: mountInfo,
+                    container: container,
+                    progress: progress
+                )
+                if !written {
+                    return try await keepServerVersion(
+                        of: originalKey,
+                        conflictCopyOf: isMove ? try moveTarget(of: item) : originalKey,
+                        contents: contents,
+                        in: domain,
+                        mountInfo: mountInfo,
+                        container: container,
+                        progress: progress
+                    )
+                }
+            }
             // Rename = server-side copy + delete (mirrors the rename
             // path in the host's BrowserViewModel).
-            if changedFields.contains(.filename) || changedFields.contains(.parentItemIdentifier) {
-                guard let parentKey = key(from: item.parentItemIdentifier) else {
-                    throw mappedError(.noSuchItem)
-                }
-                let newKey = parentKey + item.filename
+            if isMove {
+                let newKey = try moveTarget(of: item)
                 if newKey != originalKey {
                     try await container.browser.copy(
                         account: mountInfo.account,
@@ -273,28 +301,110 @@ enum FileProviderItemResolver {
                     currentKey = newKey
                 }
             }
-            if changedFields.contains(.contents), let contents {
-                try await uploadFile(
-                    contents,
-                    account: mountInfo.account,
-                    bucket: mountInfo.bucket,
-                    key: currentKey,
-                    container: container,
-                    progress: progress
-                )
-            }
             let head = try await container.browser.head(
                 account: mountInfo.account,
                 bucket: mountInfo.bucket,
                 key: currentKey
             )
-            return ResolvedItem(
-                identifier: identifier(for: currentKey),
-                parent: parentIdentifier(for: currentKey),
-                object: head
+            return ModifyResult(
+                item: ResolvedItem(
+                    identifier: identifier(for: currentKey),
+                    parent: parentIdentifier(for: currentKey),
+                    object: head
+                ),
+                shouldFetchContent: false
             )
         } catch {
             throw fileProviderError(error, fallback: .cannotSynchronize)
+        }
+    }
+
+    private static func moveTarget(of item: NSFileProviderItem) throws -> String {
+        guard let parentKey = key(from: item.parentItemIdentifier) else {
+            throw mappedError(.noSuchItem)
+        }
+        return parentKey + item.filename
+    }
+
+    /// Uploads only while the server still has the version Finder's
+    /// edit was based on: a HEAD compare first (also catches providers
+    /// that ignore If-Match), then the write itself with If-Match.
+    /// Returns `false` when the server version differs or is gone.
+    private static func uploadIfUnchanged(
+        _ contents: URL,
+        key: String,
+        baseVersion: NSFileProviderItemVersion,
+        mountInfo: (account: S3Account, bucket: String),
+        container: ExtensionContainer,
+        progress: Progress
+    ) async throws -> Bool {
+        let base = String(data: baseVersion.contentVersion, encoding: .utf8)
+        let serverETag = try await currentETag(of: key, mountInfo: mountInfo, container: container)
+        guard ETag.matches(base: base, current: serverETag), let base else { return false }
+        do {
+            try await uploadFile(
+                contents,
+                account: mountInfo.account,
+                bucket: mountInfo.bucket,
+                key: key,
+                ifMatch: base,
+                container: container,
+                progress: progress
+            )
+            return true
+        } catch BucketeerError.preconditionFailed {
+            return false
+        }
+    }
+
+    /// Conflict: the edit goes up as `<name> (conflict <date>).<ext>`,
+    /// the item keeps the server's version (Finder downloads it again)
+    /// and the working set is signalled so the copy shows up. When the
+    /// server object was deleted, the item is reported as gone.
+    private static func keepServerVersion(
+        of key: String,
+        conflictCopyOf targetKey: String,
+        contents: URL,
+        in domain: NSFileProviderDomain,
+        mountInfo: (account: S3Account, bucket: String),
+        container: ExtensionContainer,
+        progress: Progress
+    ) async throws -> ModifyResult {
+        try await uploadFile(
+            contents,
+            account: mountInfo.account,
+            bucket: mountInfo.bucket,
+            key: ConflictCopyName.key(for: targetKey, date: Date()),
+            container: container,
+            progress: progress
+        )
+        try? await NSFileProviderManager(for: domain)?.signalEnumerator(for: .workingSet)
+        guard let head = try await currentHead(of: key, mountInfo: mountInfo, container: container) else {
+            throw mappedError(.noSuchItem)
+        }
+        return ModifyResult(
+            item: ResolvedItem(identifier: identifier(for: key), parent: parentIdentifier(for: key), object: head),
+            shouldFetchContent: true
+        )
+    }
+
+    private static func currentETag(
+        of key: String,
+        mountInfo: (account: S3Account, bucket: String),
+        container: ExtensionContainer
+    ) async throws -> String? {
+        try await currentHead(of: key, mountInfo: mountInfo, container: container)?.etag
+    }
+
+    private static func currentHead(
+        of key: String,
+        mountInfo: (account: S3Account, bucket: String),
+        container: ExtensionContainer
+    ) async throws -> S3Object? {
+        do {
+            return try await container.browser.head(account: mountInfo.account, bucket: mountInfo.bucket, key: key)
+        } catch BucketeerError.objectNotFound {
+            return nil
         }
     }
 
@@ -439,6 +549,7 @@ enum FileProviderItemResolver {
         account: S3Account,
         bucket: String,
         key: String,
+        ifMatch: String? = nil,
         container: ExtensionContainer,
         progress: Progress
     ) async throws {
@@ -450,6 +561,7 @@ enum FileProviderItemResolver {
                 blob: key,
                 localURL: url,
                 contentType: contentType(for: url),
+                ifMatch: ifMatch,
                 progress: { bytes, total in
                     Self.publish(progress: progress, bytes: bytes, total: total)
                 }
@@ -461,6 +573,7 @@ enum FileProviderItemResolver {
                 key: key,
                 localURL: url,
                 contentType: contentType(for: url),
+                ifMatch: ifMatch,
                 factory: container.clientFactory
             )
             let size = (try? url.resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0
