@@ -1,123 +1,83 @@
 # Open Source Notices
 
-*Third-party open-source software bundled inside Bucketeer for macOS,
-together with the copyright lines and license texts required for
-Apple's submission process and the upstream licenses themselves.*
+*Third-party open-source software included in Bucketeer for macOS.*
 
-**Application** — Bucketeer for macOS
-**Publisher** — DigitalFreedom · Berger & Rosenstock GbR
+**Application** — Bucketeer for macOS, including its Finder extension
+**Publisher** — DigitalFreedom, a brand of DigitalFreedom Global LLC
 **Contact** — hello@digitalfreedom.co.za
-**Last updated** — 24 May 2026
+**Last updated** — 2 November 2026
 
 ---
 
 ## 1. Scope
 
-Bucketeer integrates the following open-source libraries via Swift
-Package Manager. The pinned versions are recorded in
+Bucketeer includes the open-source libraries listed below through
+Swift Package Manager. The exact versions are pinned in
 `Bucketeer.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved`
-for the App Store build that this document accompanies.
+in the source repository. The versions given here match that file at
+the date above.
 
-Inclusion of these components does **not** extend redistribution
-rights to Bucketeer as a whole. The App's source code is published
-under the **Source-Available License**; the compiled binary is
-governed by the **End User License Agreement**. Your use of each
-upstream library is governed by the library's own license, reproduced
-below.
+These components keep their own licenses. Their inclusion does not
+change the terms for Bucketeer itself: the App is governed by the
+**End User License Agreement**, its source code by the
+**Source-Available License**. Nothing in either restricts the rights
+the open-source licenses grant.
 
 ---
 
 ## 2. Direct dependency
 
-### Soto (SotoS3)
+### Soto (SotoS3) 7.14.0
 
-- **Project** — `soto-project/soto`
-- **Repository** — `https://github.com/soto-project/soto`
-- **License** — Apache-2.0
-- **Copyright** — © 2017–2026 the Soto project authors
-- **Used for** — AWS S3 protocol client for every S3-compatible
-  provider (AWS, Civo, Cloudflare R2, Backblaze B2, Wasabi,
-  DigitalOcean Spaces, Storj, MinIO, and any custom S3 endpoint).
+- **Repository** — https://github.com/soto-project/soto
+- **License** — Apache License 2.0
+- **Copyright** — the Soto project authors
+- **Used for** — the S3 protocol client for every S3-compatible
+  provider
 
 ---
 
-## 3. Transitive dependencies
+## 3. Indirect dependencies
 
-All entries are licensed under the **Apache License 2.0** unless
-noted otherwise. Copyright lines reflect the upstream `LICENSE`
-header at the pinned version. Repository URLs are the canonical
-sources from which the linker pulls the binaries during the App
-Store build.
+All licensed under the **Apache License 2.0** unless stated otherwise.
 
-### 3.1 Apple Swift ecosystem
+| Component | Version | Repository | Copyright |
+|---|---|---|---|
+| SotoCore | 7.13.0 | https://github.com/soto-project/soto-core | the Soto project authors |
+| jmespath.swift | 1.0.3 | https://github.com/jmespath/jmespath.swift | 2021 Adam Fowler |
+| AsyncHTTPClient | 1.33.1 | https://github.com/swift-server/async-http-client | the AsyncHTTPClient project authors |
+| Swift Service Lifecycle | 2.11.0 | https://github.com/swift-server/swift-service-lifecycle | the Swift Service Lifecycle project authors |
+| SwiftNIO | 2.100.0 | https://github.com/apple/swift-nio | Apple Inc. and the SwiftNIO project authors |
+| SwiftNIO Extras | 1.34.1 | https://github.com/apple/swift-nio-extras | Apple Inc. and the SwiftNIO project authors |
+| SwiftNIO HTTP/2 | 1.44.0 | https://github.com/apple/swift-nio-http2 | Apple Inc. and the SwiftNIO project authors |
+| SwiftNIO SSL | 2.37.0 | https://github.com/apple/swift-nio-ssl | Apple Inc. and the SwiftNIO project authors |
+| SwiftNIO Transport Services | 1.28.0 | https://github.com/apple/swift-nio-transport-services | Apple Inc. and the SwiftNIO project authors |
+| Swift Crypto | 4.5.0 | https://github.com/apple/swift-crypto | Apple Inc. and the Swift Crypto project authors |
+| Swift Certificates | 1.19.1 | https://github.com/apple/swift-certificates | Apple Inc. and the swift-certificates project authors |
+| Swift ASN.1 | 1.7.0 | https://github.com/apple/swift-asn1 | Apple Inc. and the swift-asn1 project authors |
+| Swift Collections | 1.5.1 | https://github.com/apple/swift-collections | Apple Inc. and the Swift project authors |
+| Swift Algorithms | 1.2.1 | https://github.com/apple/swift-algorithms | Apple Inc. and the Swift project authors |
+| Swift Async Algorithms | 1.1.4 | https://github.com/apple/swift-async-algorithms | Apple Inc. and the Swift project authors |
+| Swift Atomics | 1.3.0 | https://github.com/apple/swift-atomics | Apple Inc. and the Swift project authors |
+| Swift Numerics | 1.1.1 | https://github.com/apple/swift-numerics | Apple Inc. and the Swift Numerics project authors |
+| Swift System | 1.6.4 | https://github.com/apple/swift-system | Apple Inc. and the Swift System project authors |
+| Swift HTTP Types | 1.5.1 | https://github.com/apple/swift-http-types | Apple Inc. and the Swift project authors |
+| Swift HTTP Structured Headers | 1.7.0 | https://github.com/apple/swift-http-structured-headers | Apple Inc. and the project authors |
+| Swift Log | 1.12.1 | https://github.com/apple/swift-log | Apple Inc. and the SwiftLog project authors |
+| Swift Metrics | 2.11.0 | https://github.com/apple/swift-metrics | Apple Inc. and the SwiftMetrics project authors |
+| Swift Distributed Tracing | 1.4.1 | https://github.com/apple/swift-distributed-tracing | Apple Inc. and the Swift Distributed Tracing project authors |
+| Swift Service Context | 1.3.0 | https://github.com/apple/swift-service-context | Apple Inc. and the Swift Service Context project authors |
+| Swift Configuration | 1.2.0 | https://github.com/apple/swift-configuration | Apple Inc. and the Swift Configuration project authors |
 
-- **SwiftNIO** — `https://github.com/apple/swift-nio` — © 2017–2026
-  Apple Inc. and the SwiftNIO project authors
-- **SwiftNIO Extras** — `https://github.com/apple/swift-nio-extras`
-  — © 2017–2026 Apple Inc. and the SwiftNIO project authors
-- **SwiftNIO SSL** — `https://github.com/apple/swift-nio-ssl` —
-  © 2017–2026 Apple Inc. and the SwiftNIO project authors
-- **SwiftNIO HTTP/2** — `https://github.com/apple/swift-nio-http2`
-  — © 2017–2026 Apple Inc. and the SwiftNIO project authors
-- **SwiftNIO Transport Services** —
-  `https://github.com/apple/swift-nio-transport-services` —
-  © 2017–2026 Apple Inc. and the SwiftNIO project authors
-- **SwiftCrypto** — `https://github.com/apple/swift-crypto` —
-  © 2019–2026 Apple Inc. and the SwiftCrypto project authors
-- **Swift Certificates** —
-  `https://github.com/apple/swift-certificates` — © 2022–2026 Apple
-  Inc. and the swift-certificates project authors
-- **Swift ASN.1** — `https://github.com/apple/swift-asn1` —
-  © 2022–2026 Apple Inc. and the swift-asn1 project authors
-- **Swift Collections** —
-  `https://github.com/apple/swift-collections` — © 2021–2026 Apple
-  Inc. and the Swift project authors
-- **Swift Algorithms** — `https://github.com/apple/swift-algorithms`
-  — © 2020–2026 Apple Inc. and the Swift project authors
-- **Swift Async Algorithms** —
-  `https://github.com/apple/swift-async-algorithms` — © 2022–2026
-  Apple Inc. and the Swift project authors
-- **Swift Atomics** — `https://github.com/apple/swift-atomics` —
-  © 2020–2026 Apple Inc. and the Swift project authors
-- **Swift Numerics** — `https://github.com/apple/swift-numerics` —
-  © 2019–2026 Apple Inc. and the Swift Numerics project authors
-- **Swift System** — `https://github.com/apple/swift-system` —
-  © 2020–2026 Apple Inc. and the Swift System project authors
-- **Swift HTTP Types** —
-  `https://github.com/apple/swift-http-types` — © 2023–2026 Apple
-  Inc. and the Swift project authors
-- **Swift HTTP Structured Headers** —
-  `https://github.com/apple/swift-http-structured-headers` —
-  © 2021–2026 Apple Inc. and the project authors
-- **Swift Log** — `https://github.com/apple/swift-log` — © 2018–2026
-  Apple Inc. and the SwiftLog project authors
-- **Swift Metrics** — `https://github.com/apple/swift-metrics` —
-  © 2018–2026 Apple Inc. and the SwiftMetrics project authors
-- **Swift Distributed Tracing** —
-  `https://github.com/apple/swift-distributed-tracing` — © 2020–2026
-  Apple Inc. and the Swift Distributed Tracing project authors
-- **Swift Service Context** —
-  `https://github.com/apple/swift-service-context` — © 2022–2026
-  Apple Inc. and the Swift Service Context project authors
-- **Swift Service Lifecycle** —
-  `https://github.com/swift-server/swift-service-lifecycle` —
-  © 2019–2026 the Swift Server project authors
-- **Swift Configuration** —
-  `https://github.com/apple/swift-configuration` — © 2024–2026
-  Apple Inc. and the Swift Configuration project authors
+### 3.1 BoringSSL
 
-### 3.2 Swift Server ecosystem
-
-- **AsyncHTTPClient** —
-  `https://github.com/swift-server/async-http-client` — © 2018–2026
-  the AsyncHTTPClient project authors
-
-### 3.3 Soto project
-
-- **SotoCore** — `https://github.com/soto-project/soto-core` —
-  © 2017–2026 the Soto project authors
-- **JMESPath (jmespath.swift)** — `https://github.com/adam-fowler/jmespath.swift`
-  — **MIT** — © 2022–2026 Adam Fowler
+SwiftNIO SSL and Swift Crypto contain a copy of **BoringSSL**
+(https://boringssl.googlesource.com/boringssl/). As stated in the
+SwiftNIO SSL `NOTICE.txt`, BoringSSL is licensed under a combination of
+the ISC license and the OpenSSL license; individual files carry the
+notice "Copyright The OpenSSL Project Authors" or "Copyright The
+BoringSSL Authors". The license text is available at
+https://boringssl.googlesource.com/boringssl/+/refs/heads/master/LICENSE.
 
 ---
 
@@ -125,80 +85,39 @@ Store build.
 
 ### 4.1 Apache License 2.0
 
-All components above (except `jmespath.swift`) are licensed under the
-**Apache License, Version 2.0**. Full text:
+Full text: https://www.apache.org/licenses/LICENSE-2.0
 
-`https://www.apache.org/licenses/LICENSE-2.0`
+- The copyright notices of each component are listed above.
+- The `NOTICE` files of the components are part of their source
+  repositories at the pinned versions.
+- Bucketeer uses the components unmodified.
 
-Key compliance points observed by this document (Apache 2.0 § 4):
+### 4.2 ISC license and OpenSSL license (BoringSSL)
 
-- Each component's copyright notice is reproduced above (§ 4(c)).
-- The `NOTICE` files of components that publish one are reproduced
-  verbatim in the in-app **About → Open Source** view (§ 4(d)).
-- No modifications to the upstream sources are bundled; the App
-  links pristine binaries built from the pinned versions in
-  `Package.resolved` (§ 4(b) — not triggered).
-- Source code is available at the repository URLs above (§ 4(a)).
-
-### 4.2 MIT License (jmespath.swift)
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and / or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-
-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN
-ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+See the BoringSSL `LICENSE` file linked in section 3.1, which contains
+both license texts in full.
 
 ---
 
-## 5. System frameworks
+## 5. Apple system frameworks
 
-In addition to the third-party packages above, Bucketeer relies on
-first-party Apple system frameworks (Foundation, SwiftUI, SwiftData,
-AppKit, FileProvider, StoreKit, LocalAuthentication, CryptoKit,
-UniformTypeIdentifiers, Quartz / Quick Look, CoreServices /
-FSEventStream). These are part of macOS and governed by the Apple
-Operating System Software License Agreement; no separate open-source
-notice applies to them.
-
----
-
-## 6. Source-code availability
-
-Source code for every Apache-2.0 and MIT component listed above is
-available at the repository URL specified for that component. The
-exact versions in the App Store build of Bucketeer are pinned in
-`Package.resolved` in the project repository:
-
-`https://github.com/digitalfreedom-co-za/bucketeer`
-
-For direct requests, contact: hello@digitalfreedom.co.za
+Bucketeer also uses frameworks that are part of macOS (among them
+Foundation, SwiftUI, SwiftData, AppKit, FileProvider, StoreKit,
+LocalAuthentication, CryptoKit, CryptoTokenKit, CoreSpotlight,
+AppIntents, UniformTypeIdentifiers and Quick Look). They are governed by
+the macOS software license agreement; no separate open-source notice
+applies.
 
 ---
 
-## 7. Updates
+## 6. Source code
 
-This document is regenerated whenever a dependency is added, removed,
-or upgraded across a major version. Patch-level upgrades follow the
-existing entries' license and copyright lines and do not require a
-notice update.
+The source code of every component is available at the repository
+listed for it. The source code of Bucketeer is published at
+https://github.com/digitalfreedom-co-za/bucketeer under the
+Source-Available License. Questions: hello@digitalfreedom.co.za
 
 ---
 
-© 2026 DigitalFreedom · Berger & Rosenstock GbR. The copyright in
-this document covers this notice file only; the open-source
-components listed herein remain subject to their respective upstream
-licenses.
+© 2026 DigitalFreedom Global LLC. This copyright covers this notice
+only; the listed components remain subject to their own licenses.

@@ -1,7 +1,8 @@
 # Code of Conduct
 
-Bucketeer is a small open project run by a single publisher
-(DigitalFreedom / Berger & Rosenstock GbR). We ask everyone who
+Bucketeer is a small source-available project run by a single
+publisher (DigitalFreedom, a brand of DigitalFreedom Global LLC). We
+ask everyone who
 interacts with the repository — through issues, pull requests,
 discussions, or any other channel — to follow a few simple rules.
 
@@ -32,7 +33,7 @@ project (issues, PRs, commits, discussions, social posts that
 
 ## Enforcement
 
-The publisher (currently Marcel R. G. Berger, hello@digitalfreedom.co.za)
+The publisher (DigitalFreedom Global LLC, hello@digitalfreedom.co.za)
 moderates this project. Enforcement actions are proportional:
 
 1. **Private nudge** — a maintainer asks you to adjust the tone
