@@ -203,7 +203,7 @@ final class AppContainer {
             entitlements: entitlementManager
         )
         self.activationController = AppActivationController()
-        let mountController = MountController()
+        let mountController = MountController(encryptionKeyStore: encryptionKeyStore)
         self.mountController = mountController
         Task { @MainActor [mountController] in
             await mountController.refresh()
@@ -322,7 +322,8 @@ final class AppContainer {
         self.encryptionKeysViewModel = EncryptionKeysViewModel(
             keyStore: encryptionKeyStore,
             accountStore: accountStore,
-            gate: bucketEncryptionGate
+            gate: bucketEncryptionGate,
+            mountController: mountController
         )
 
         // Phase 13.16 — hardware-key unlock.

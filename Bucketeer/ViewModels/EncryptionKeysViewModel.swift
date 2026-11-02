@@ -20,15 +20,18 @@ final class EncryptionKeysViewModel {
     private let keyStore: any EncryptionKeyStoring
     private let accountStore: any AccountStoring
     private let gate: BucketEncryptionGate
+    private let mountController: MountController
 
     init(
         keyStore: any EncryptionKeyStoring,
         accountStore: any AccountStoring,
-        gate: BucketEncryptionGate
+        gate: BucketEncryptionGate,
+        mountController: MountController
     ) {
         self.keyStore = keyStore
         self.accountStore = accountStore
         self.gate = gate
+        self.mountController = mountController
     }
 
     func reload() async {
@@ -43,7 +46,17 @@ final class EncryptionKeysViewModel {
         }
     }
 
+    /// Refuses buckets mounted in Finder: the File Provider extension
+    /// writes raw bytes, so Finder copies would stay unencrypted.
     func create(label: String, account: S3Account, bucket: String) async {
+        await mountController.refresh()
+        guard !mountController.isMounted(account: account, bucket: bucket) else {
+            error = .unknown(message: String(
+                localized: "encryption.error.bucketMounted",
+                defaultValue: "This bucket is mounted in Finder. Unmount it before turning on encryption, because files copied through Finder would not be encrypted."
+            ))
+            return
+        }
         do {
             _ = try await keyStore.create(label: label, accountID: account.id, bucket: bucket)
             await gate.invalidate(accountID: account.id, bucket: bucket)

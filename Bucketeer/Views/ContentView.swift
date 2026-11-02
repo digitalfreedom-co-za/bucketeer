@@ -53,6 +53,20 @@ struct ContentView: View {
         } message: { error in
             Text(error.errorDescription ?? "")
         }
+        .alert(
+            "browser.action.errorTitle",
+            isPresented: Binding(
+                get: { container.mountController.lastError != nil },
+                set: { if !$0 { container.mountController.lastError = nil } }
+            ),
+            presenting: container.mountController.lastError
+        ) { _ in
+            Button("action.ok", role: .cancel) {
+                container.mountController.lastError = nil
+            }
+        } message: { error in
+            Text(error.errorDescription ?? "")
+        }
     }
 
     @ViewBuilder
