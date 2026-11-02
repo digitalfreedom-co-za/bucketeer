@@ -51,13 +51,16 @@ public struct AzureBlobTransporter: Sendable {
 
     /// Upload `localURL` to the supplied blob coordinates. Routes between
     /// single-shot and multipart based on file size. `progress` receives
-    /// `(bytesTransferred, totalBytes)` snapshots.
+    /// `(bytesTransferred, totalBytes)` snapshots. With `ifMatch` the
+    /// write (Put Blob or Put Block List) only succeeds while the blob
+    /// still has that ETag; otherwise it throws `.preconditionFailed`.
     public func upload(
         account: S3Account,
         container: String,
         blob: String,
         localURL: URL,
         contentType: String?,
+        ifMatch: String? = nil,
         progress: @Sendable @escaping (Int64, Int64) async -> Void
     ) async throws {
         // An unknown size must not be treated as 0: the single-shot
@@ -78,7 +81,8 @@ public struct AzureBlobTransporter: Sendable {
                 blob: blob,
                 localURL: localURL,
                 fileSize: fileSize,
-                contentType: contentType
+                contentType: contentType,
+                ifMatch: ifMatch
             )
             await progress(fileSize, fileSize)
         } else {
@@ -90,6 +94,7 @@ public struct AzureBlobTransporter: Sendable {
                 localURL: localURL,
                 fileSize: fileSize,
                 contentType: contentType,
+                ifMatch: ifMatch,
                 progress: progress
             )
         }
@@ -102,7 +107,8 @@ public struct AzureBlobTransporter: Sendable {
         blob: String,
         localURL: URL,
         fileSize: Int64,
-        contentType: String?
+        contentType: String?,
+        ifMatch: String?
     ) async throws {
         let data: Data
         do {
@@ -117,6 +123,9 @@ public struct AzureBlobTransporter: Sendable {
         request.setValue(String(fileSize), forHTTPHeaderField: "Content-Length")
         if let contentType {
             request.setValue(contentType, forHTTPHeaderField: "Content-Type")
+        }
+        if let ifMatch {
+            request.setValue(ETag.quoted(ifMatch), forHTTPHeaderField: "If-Match")
         }
         request.httpBody = data
         signer.sign(&request)
@@ -143,6 +152,7 @@ public struct AzureBlobTransporter: Sendable {
         localURL: URL,
         fileSize: Int64,
         contentType: String?,
+        ifMatch: String?,
         progress: @Sendable @escaping (Int64, Int64) async -> Void
     ) async throws {
         let blockSize = Int64(Self.blockSize)
@@ -217,7 +227,8 @@ public struct AzureBlobTransporter: Sendable {
             container: container,
             blob: blob,
             blockIDs: blockIDs,
-            contentType: contentType
+            contentType: contentType,
+            ifMatch: ifMatch
         )
         await progress(fileSize, fileSize)
     }
@@ -256,7 +267,8 @@ public struct AzureBlobTransporter: Sendable {
         container: String,
         blob: String,
         blockIDs: [String],
-        contentType: String?
+        contentType: String?,
+        ifMatch: String?
     ) async throws {
         let body = AzureRequestBuilder.blockListXML(blockIDs: blockIDs)
         var request = URLRequest(
@@ -267,6 +279,11 @@ public struct AzureBlobTransporter: Sendable {
         request.setValue("application/xml", forHTTPHeaderField: "Content-Type")
         if let contentType {
             request.setValue(contentType, forHTTPHeaderField: "x-ms-blob-content-type")
+        }
+        // Staged blocks are invisible until this commit, so the
+        // precondition belongs here.
+        if let ifMatch {
+            request.setValue(ETag.quoted(ifMatch), forHTTPHeaderField: "If-Match")
         }
         request.httpBody = body
         signer.sign(&request)

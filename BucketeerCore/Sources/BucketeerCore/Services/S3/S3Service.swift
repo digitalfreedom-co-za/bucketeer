@@ -571,6 +571,19 @@ public struct S3Service: S3Browsing {
         return s
     }
 
+    /// True for an HTTP 412 answer to an If-Match write.
+    public static func isPreconditionFailure(_ error: Error) -> Bool {
+        if case .preconditionFailed = error as? BucketeerError { return true }
+        if let rawError = error as? AWSRawError {
+            return rawError.context.responseCode.code == 412
+        }
+        if let awsError = error as? AWSErrorType {
+            return awsError.context?.responseCode.code == 412
+                || awsError.errorCode == "PreconditionFailed"
+        }
+        return false
+    }
+
     /// Map Soto errors into `BucketeerError`. Prefers Soto's typed S3
     /// error surface (`S3ErrorType`, `AWSResponseError`), falling back
     /// to a low-confidence string match only for legacy paths.
@@ -581,6 +594,7 @@ public struct S3Service: S3Browsing {
         if let existing = error as? BucketeerError { return existing }
         if error is CancellationError { return .cancelled }
         if let urlError = error as? URLError, urlError.code == .cancelled { return .cancelled }
+        if isPreconditionFailure(error) { return .preconditionFailed(key: key ?? "?") }
 
         if let s3Error = error as? S3ErrorType {
             switch s3Error.errorCode {

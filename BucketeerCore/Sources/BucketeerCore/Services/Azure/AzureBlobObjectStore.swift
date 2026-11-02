@@ -802,6 +802,7 @@ public struct AzureBlobObjectStore: S3Browsing {
         }
         switch status {
         case 401, 403: return .authenticationFailed
+        case 412: return .preconditionFailed(key: key ?? "?")
         case 404:
             if let key { return .objectNotFound(key: key) }
             if let bucket { return .bucketNotFound(bucket) }
