@@ -279,17 +279,33 @@ final class EntitlementManager {
 
     /// Verified transactions for our products. Unverified ones never
     /// unlock anything.
+    ///
+    /// `currentEntitlements` leaves out refunded and revoked
+    /// transactions, so a revoked trial would look never claimed and
+    /// the trial card would come back. The trial's latest transaction
+    /// (`Transaction.latest(for:)`, which keeps refunded and revoked
+    /// ones; the trial is a single non-consumable) is read as well; the
+    /// resolver counts a revoked trial as used up and never grants
+    /// access from a revoked transaction.
     private func currentTransactions() async -> [StoreTransactionRecord] {
         var records: [StoreTransactionRecord] = []
-        for await result in Transaction.currentEntitlements {
+        var seen: Set<UInt64> = []
+        func add(_ result: VerificationResult<Transaction>) {
             guard case .verified(let txn) = result,
-                  Self.ownProductIDs.contains(txn.productID)
-            else { continue }
+                  Self.ownProductIDs.contains(txn.productID),
+                  seen.insert(txn.id).inserted
+            else { return }
             records.append(StoreTransactionRecord(
                 productID: txn.productID,
                 originalPurchaseDate: txn.originalPurchaseDate,
                 revocationDate: txn.revocationDate
             ))
+        }
+        for await result in Transaction.currentEntitlements {
+            add(result)
+        }
+        if let latestTrial = await Transaction.latest(for: ProductIDs.trial) {
+            add(latestTrial)
         }
         return records
     }
