@@ -1,0 +1,19 @@
+# Bucketeer SwiftFormat config — sanity gate, not a style
+# enforcer. The repo already converged on its own hand-written
+# conventions (variable-aligned columns, informal line lengths,
+# explicit multi-line lists); applying SwiftFormat's full ruleset
+# would mass-rewrite ~85% of the codebase for cosmetic-only
+# reasons.
+#
+# Instead we run a *deny everything by default, allow a tiny set
+# of objectively-correct rules* policy. Every rule listed here
+# catches a real bug a human reviewer would also flag. Add more
+# only after a coordinated cleanup pass for that specific rule
+# across the existing codebase.
+
+--swiftversion 6.0
+--indent 4
+--self init-only
+
+# Allow-list: only these rules fire.
+--rules linebreakAtEndOfFile,trailingSpace,duplicateImports,redundantBackticks,redundantBreak
