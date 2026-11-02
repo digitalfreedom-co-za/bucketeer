@@ -30,6 +30,13 @@ Il segreto è nascosto quando modifichi un account. Fai clic su **Rivela le cred
 - Tutti i trasferimenti compaiono in **Trasferimenti** nella barra laterale, con l'avanzamento e un pulsante per annullare.
 - In **Impostazioni → Trasferimenti** puoi limitare la larghezza di banda totale.
 
+## Aprire file in altre app
+
+- Fai doppio clic su un file, oppure clic destro e scegli **Apri**, per aprirlo nella sua app predefinita. **Apri con** elenca le altre app che possono aprirlo; con **Altro…** scegli qualsiasi app.
+- Bucketeer scarica il file in una cartella temporanea e lo tiene d'occhio. Poco dopo ogni salvataggio il file viene ricaricato tramite la normale coda dei trasferimenti, quindi vale anche la crittografia lato client.
+- Se l'oggetto è stato modificato o eliminato sul server dopo l'apertura, Bucketeer non lo sovrascrive. La tua versione viene caricata accanto come "nome (conflict data).ext" e Bucketeer mostra un messaggio.
+- La copia temporanea viene eliminata quando chiudi l'app in cui l'hai modificata, quando chiudi Bucketeer o al successivo avvio.
+
 ## Gestire gli oggetti
 
 - **Nuova cartella**: pulsante nella barra degli strumenti o **⇧⌘N**.
@@ -81,7 +88,7 @@ Bucketeer aggiunge azioni all'app Comandi rapidi: elencare i bucket, caricare un
 
 Queste funzioni richiedono Bucketeer Pro:
 
-- **Monta come unità**: fai clic con il tasto destro su un bucket e scegli **Monta come unità** per usarlo nel Finder come un disco. Richiede macOS 14.1 o versioni successive. Le unità montate compaiono in **Unità montate** nella barra laterale; fai clic con il tasto destro per **Smonta**. I bucket con crittografia lato client non possono essere montati.
+- **Monta come unità**: fai clic con il tasto destro su un bucket e scegli **Monta come unità** per usarlo nel Finder come un disco. Richiede macOS 14.1 o versioni successive. Le unità montate compaiono in **Unità montate** nella barra laterale; fai clic con il tasto destro per **Smonta**. I bucket con crittografia lato client non possono essere montati. Le modifiche fatte sul server compaiono nel Finder quando aggiorni il bucket in Bucketeer. Se un file che modifichi nel Finder è cambiato nel frattempo sul server, la tua versione viene salvata accanto come copia in conflitto.
 - **Job di sincronizzazione**: nella sezione **Sincronizzazione**, crea un job che copia, sposta o replica tra due bucket, tra account e provider, oppure tra una cartella locale e un bucket. Eseguilo manualmente, all'avvio, ogni N minuti o quando la cartella locale cambia.
 - **Cartelle sorvegliate**: **Nuova cartella sorvegliata…** carica in un bucket ogni nuovo file di una cartella locale.
 - **Copia in altro account…**: copia oggetti in un altro account o provider. Quando entrambe le parti lo consentono, la copia avviene lato server e i dati non passano dal tuo Mac.
@@ -93,7 +100,7 @@ Tutto il resto è disponibile nel livello gratuito.
 
 Bucketeer Pro è un acquisto in-app una tantum tramite l'App Store, senza abbonamento. Apri **Impostazioni → Pro** o una qualsiasi funzione Pro per vedere il prezzo nella tua valuta e acquistare.
 
-Se per la tua copia è offerta una prova, la schermata di acquisto e **Impostazioni → Pro** mostrano quanto dura. Al termine, Bucketeer continua nel livello gratuito e non viene addebitato nulla.
+Puoi provare Bucketeer Pro gratis per 14 giorni. Prima di iniziare, la pagina di acquisto mostra la durata della prova, cosa succede dopo e il prezzo di Pro a vita; poi fai clic su **Inizia la prova**. Alla fine della prova Bucketeer continua nella versione gratuita e non viene addebitato nulla. La prova si può avviare una volta per ID Apple, e il ripristino degli acquisti riporta una prova in corso anche su un altro Mac.
 
 - **Ripristina acquisto** riattiva Pro su un altro Mac o dopo una reinstallazione.
 - **Riscatta codice** (macOS 15 o versioni successive) apre il pannello di Apple per i codici promozionali.

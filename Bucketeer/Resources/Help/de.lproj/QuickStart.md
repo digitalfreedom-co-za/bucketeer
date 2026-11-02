@@ -30,6 +30,13 @@ Beim Bearbeiten eines Kontos ist das Secret verborgen. Klicke auf **Gespeicherte
 - Alle Übertragungen erscheinen unter **Übertragungen** in der Seitenleiste, mit Fortschritt und einer Taste zum Abbrechen.
 - Unter **Einstellungen → Übertragungen** kannst du die gesamte Bandbreite begrenzen.
 
+## Dateien in anderen Apps öffnen
+
+- Doppelklicke auf eine Datei oder wähle nach einem Rechtsklick **Öffnen**, um sie in ihrer Standard-App zu öffnen. **Öffnen mit** listet weitere Apps, die sie öffnen können; mit **Andere …** wählst du eine beliebige App.
+- Bucketeer lädt die Datei in einen temporären Ordner und beobachtet sie. Kurz nach jedem Sichern wird sie über die normale Übertragungsliste wieder hochgeladen, die clientseitige Verschlüsselung gilt also auch hier.
+- Wurde das Objekt nach dem Öffnen auf dem Server geändert oder gelöscht, überschreibt Bucketeer es nicht. Deine Version wird daneben als „Name (conflict Datum).Endung“ hochgeladen, und Bucketeer zeigt dir einen Hinweis.
+- Die temporäre Kopie wird gelöscht, wenn du die App beendest, in der du sie bearbeitet hast, wenn du Bucketeer beendest oder beim nächsten Start.
+
 ## Objekte verwalten
 
 - **Neuer Ordner**: Taste in der Symbolleiste oder **⇧⌘N**.
@@ -81,7 +88,7 @@ Bucketeer fügt der Kurzbefehle-App Aktionen hinzu: Buckets auflisten, eine Date
 
 Diese Funktionen brauchen Bucketeer Pro:
 
-- **Als Laufwerk einbinden**: Klicke mit der rechten Maustaste auf einen Bucket und wähle **Als Laufwerk einbinden**, um ihn im Finder wie eine Festplatte zu nutzen. Erfordert macOS 14.1 oder neuer. Eingebundene Laufwerke erscheinen unter **Eingehängte Laufwerke** in der Seitenleiste; mit einem Rechtsklick wählst du **Auswerfen**. Buckets mit clientseitiger Verschlüsselung können nicht eingebunden werden.
+- **Als Laufwerk einbinden**: Klicke mit der rechten Maustaste auf einen Bucket und wähle **Als Laufwerk einbinden**, um ihn im Finder wie eine Festplatte zu nutzen. Erfordert macOS 14.1 oder neuer. Eingebundene Laufwerke erscheinen unter **Eingehängte Laufwerke** in der Seitenleiste; mit einem Rechtsklick wählst du **Auswerfen**. Buckets mit clientseitiger Verschlüsselung können nicht eingebunden werden. Änderungen auf dem Server erscheinen im Finder, wenn du den Bucket in Bucketeer aktualisierst. Wurde eine Datei, die du im Finder bearbeitest, inzwischen auf dem Server geändert, wird deine Version daneben als Konfliktkopie gesichert.
 - **Sync-Jobs**: Erstelle im Bereich **Sync** einen Job, der zwischen zwei Buckets kopiert, verschiebt oder spiegelt, auch über Konten und Anbieter hinweg, oder zwischen einem lokalen Ordner und einem Bucket. Starte ihn von Hand, beim Programmstart, alle N Minuten oder wenn sich der lokale Ordner ändert.
 - **Beobachtete Ordner**: **Neuer beobachteter Ordner…** lädt jede neue Datei in einem lokalen Ordner in einen Bucket hoch.
 - **In anderes Konto kopieren…**: Kopiert Objekte in ein anderes Konto oder zu einem anderen Anbieter. Wenn beide Seiten es erlauben, läuft die Kopie serverseitig, und die Daten gehen nicht über deinen Mac.
@@ -89,11 +96,11 @@ Diese Funktionen brauchen Bucketeer Pro:
 
 Alles andere ist in der kostenlosen Stufe enthalten.
 
-## Bucketeer Pro, Testphase und Kauf
+## Bucketeer Pro, Probezeit und Kauf
 
 Bucketeer Pro ist ein einmaliger In-App-Kauf über den App Store, ohne Abo. Öffne **Einstellungen → Pro** oder eine beliebige Pro-Funktion, um den Preis in deiner Währung zu sehen und zu kaufen.
 
-Wenn für deine Kopie eine Testphase angeboten wird, zeigen die Kaufseite und **Einstellungen → Pro**, wie lange sie läuft. Wenn sie endet, läuft Bucketeer in der kostenlosen Stufe weiter, und es wird nichts berechnet.
+Du kannst Bucketeer Pro 14 Tage lang kostenlos testen. Vor dem Start zeigt die Kaufseite die Dauer der Probezeit, was danach passiert und den Preis von Pro für immer; dann klickst du auf **Probezeit starten**. Wenn die Probezeit endet, läuft Bucketeer in der kostenlosen Stufe weiter, und es wird nichts berechnet. Die Probezeit lässt sich einmal pro Apple-ID starten, und beim Wiederherstellen von Käufen kommt eine laufende Probezeit auch auf einem anderen Mac zurück.
 
 - **Kauf wiederherstellen** holt Pro auf einem anderen Mac oder nach einer Neuinstallation zurück.
 - **Code einlösen** (macOS 15 oder neuer) öffnet Apples Fenster für Angebotscodes.

@@ -30,6 +30,13 @@ Den hemmelige nøkkelen er skjult når du redigerer en konto. Klikk på **Vis la
 - Alle overføringer vises under **Overføringer** i sidepanelet med fremdrift og en avbryt-knapp.
 - Under **Innstillinger → Overføringer** kan du begrense den totale båndbredden.
 
+## Åpne filer i andre apper
+
+- Dobbeltklikk på en fil, eller høyreklikk og velg **Åpne**, for å åpne den i standardappen. **Åpne med** viser andre apper som kan åpne den; med **Annet …** kan du velge en hvilken som helst app.
+- Bucketeer laster ned filen til en midlertidig mappe og følger med på den. Kort etter hver lagring lastes filen opp igjen via den vanlige overføringskøen, så klientsidekryptering gjelder også her.
+- Hvis objektet ble endret eller slettet på serveren etter at du åpnet det, overskriver ikke Bucketeer det. Din versjon lastes opp ved siden av som «navn (conflict dato).filtype», og Bucketeer viser en melding.
+- Den midlertidige kopien slettes når du avslutter appen du redigerte i, når du avslutter Bucketeer, eller ved neste oppstart.
+
 ## Administrer objekter
 
 - **Ny mappe**: knappen i verktøylinjen eller **⇧⌘N**.
@@ -81,7 +88,7 @@ Bucketeer legger til handlinger i Snarveier-appen: vis buckets, last opp en fil,
 
 Disse funksjonene krever Bucketeer Pro:
 
-- **Monter som disk**: høyreklikk på en bucket og velg **Monter som disk** for å bruke den i Finder som en disk. Krever macOS 14.1 eller nyere. Monterte disker vises under **Monterte disker** i sidepanelet; høyreklikk for å **Avmonter**. Buckets med kryptering på klientsiden kan ikke monteres.
+- **Monter som disk**: høyreklikk på en bucket og velg **Monter som disk** for å bruke den i Finder som en disk. Krever macOS 14.1 eller nyere. Monterte disker vises under **Monterte disker** i sidepanelet; høyreklikk for å **Avmonter**. Buckets med kryptering på klientsiden kan ikke monteres. Endringer på serveren vises i Finder når du oppdaterer bucketen i Bucketeer. Hvis en fil du redigerer i Finder er endret på serveren i mellomtiden, lagres din versjon ved siden av som en konfliktkopi.
 - **Synkroniseringsjobber**: i delen **Synkronisering** oppretter du en jobb som kopierer, flytter eller speiler mellom to buckets, på tvers av kontoer og leverandører, eller mellom en lokal mappe og en bucket. Kjør den manuelt, ved oppstart, hvert N. minutt eller når den lokale mappen endres.
 - **Overvåkede mapper**: **Ny overvåket mappe…** laster opp hver nye fil i en lokal mappe til en bucket.
 - **Kopier til annen konto…**: kopierer objekter til en annen konto eller leverandør. Når begge sider tillater det, skjer kopieringen på serveren, og dataene går ikke gjennom Macen din.
@@ -93,7 +100,7 @@ Alt annet er tilgjengelig i Free-nivået.
 
 Bucketeer Pro er et engangskjøp i appen via App Store, uten abonnement. Åpne **Innstillinger → Pro** eller en Pro-funksjon for å se prisen i din valuta og kjøpe.
 
-Hvis det tilbys en prøveperiode for ditt eksemplar, viser betalingsvinduet og **Innstillinger → Pro** hvor lenge den varer. Når den er over, fortsetter Bucketeer på Free-nivået, og ingenting belastes.
+Du kan prøve Bucketeer Pro gratis i 14 dager. Før du starter, viser kjøpssiden hvor lang prøveperioden er, hva som skjer etterpå og prisen på Pro Livstid; klikk deretter på **Start prøveperiode**. Når prøveperioden er over, fortsetter Bucketeer i gratisversjonen, og ingenting belastes. Prøveperioden kan startes én gang per Apple-ID, og gjenoppretting av kjøp henter også tilbake en pågående prøveperiode på en annen Mac.
 
 - **Gjenopprett kjøp** gir deg Pro tilbake på en annen Mac eller etter en ny installasjon.
 - **Løs inn kode** (macOS 15 eller nyere) åpner Apples vindu for tilbudskoder.

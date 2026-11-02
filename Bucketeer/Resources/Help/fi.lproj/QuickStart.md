@@ -30,6 +30,13 @@ Salainen avain on piilotettu, kun muokkaat tiliä. Klikkaa **Näytä tallennetut
 - Kaikki siirrot näkyvät sivupalkin kohdassa **Siirrot** edistymisen ja peruutuspainikkeen kanssa.
 - Kohdassa **Asetukset → Siirrot** voit rajoittaa kokonaiskaistanleveyttä.
 
+## Tiedostojen avaaminen muissa apeissa
+
+- Kaksoisosoita tiedostoa tai osoita sitä oikealla ja valitse **Avaa**, niin se avautuu oletusapissa. **Avaa sovelluksella** näyttää muut apit, jotka voivat avata sen; **Muu…** antaa valita minkä tahansa apin.
+- Bucketeer lataa tiedoston väliaikaiseen kansioon ja seuraa sitä. Hetki jokaisen tallennuksen jälkeen tiedosto lähetetään takaisin tavallisen siirtojonon kautta, joten myös asiakaspuolen salaus on käytössä.
+- Jos objektia muutettiin tai se poistettiin palvelimelta avaamisen jälkeen, Bucketeer ei korvaa sitä. Versiosi lähetetään sen viereen nimellä ”nimi (conflict päivämäärä).pääte”, ja Bucketeer näyttää ilmoituksen.
+- Väliaikainen kopio poistetaan, kun lopetat apin, jossa muokkasit sitä, kun lopetat Bucketeerin tai seuraavalla käynnistyskerralla.
+
 ## Hallitse objekteja
 
 - **Uusi kansio**: työkalupalkin painike tai **⇧⌘N**.
@@ -81,7 +88,7 @@ Bucketeer lisää toimintoja Pikakomennot-appiin: bucketien luettelointi, tiedos
 
 Nämä ominaisuudet edellyttävät Bucketeer Prota:
 
-- **Liitä asemaksi**: klikkaa bucketia hiiren oikealla painikkeella ja valitse **Liitä asemaksi**, niin voit käyttää sitä Finderissa kuin levyä. Vaatii macOS 14.1:n tai uudemman. Liitetyt asemat näkyvät sivupalkin kohdassa **Liitetyt asemat**; klikkaa hiiren oikealla painikkeella ja valitse **Poista liitos**. Bucketeja, joissa on asiakaspuolen salaus, ei voi liittää.
+- **Liitä asemaksi**: klikkaa bucketia hiiren oikealla painikkeella ja valitse **Liitä asemaksi**, niin voit käyttää sitä Finderissa kuin levyä. Vaatii macOS 14.1:n tai uudemman. Liitetyt asemat näkyvät sivupalkin kohdassa **Liitetyt asemat**; klikkaa hiiren oikealla painikkeella ja valitse **Poista liitos**. Bucketeja, joissa on asiakaspuolen salaus, ei voi liittää. Palvelimella tehdyt muutokset näkyvät Finderissa, kun päivität bucketin Bucketeerissa. Jos Finderissa muokkaamaasi tiedostoa on sillä välin muutettu palvelimella, versiosi tallennetaan sen viereen ristiriitakopiona.
 - **Synkronointitehtävät**: luo osiossa **Synkronointi** tehtävä, joka kopioi, siirtää tai peilaa kahden bucketin välillä, tilien ja palveluntarjoajien välillä tai paikallisen kansion ja bucketin välillä. Suorita se käsin, käynnistyksen yhteydessä, N minuutin välein tai kun paikallinen kansio muuttuu.
 - **Valvotut kansiot**: **Uusi valvottu kansio…** lähettää jokaisen paikallisen kansion uuden tiedoston bucketiin.
 - **Kopioi toiselle tilille…**: kopioi objekteja toiselle tilille tai palveluntarjoajalle. Kun molemmat osapuolet sallivat sen, kopiointi tapahtuu palvelimella eikä data kulje Macisi kautta.
@@ -93,7 +100,7 @@ Kaikki muu on käytettävissä Free-tasolla.
 
 Bucketeer Pro on kertaluonteinen appin sisäinen osto App Storen kautta, ilman tilausta. Avaa **Asetukset → Pro** tai mikä tahansa Pro-ominaisuus nähdäksesi hinnan omassa valuutassasi ja ostaaksesi.
 
-Jos kopiollesi tarjotaan kokeilujaksoa, maksuikkuna ja **Asetukset → Pro** näyttävät, kuinka kauan se kestää. Kun se päättyy, Bucketeer jatkaa Free-tasolla eikä mitään veloiteta.
+Voit kokeilla Bucketeer Prota maksutta 14 päivää. Ennen aloittamista ostosivu näyttää kokeilun pituuden, mitä sen jälkeen tapahtuu ja elinikäisen Pron hinnan; valitse sitten **Aloita kokeilu**. Kun kokeilu päättyy, Bucketeer jatkaa ilmaisversiona eikä mitään veloiteta. Kokeilun voi aloittaa kerran Apple ID:tä kohden, ja ostojen palauttaminen tuo käynnissä olevan kokeilun takaisin myös toiseen Maciin.
 
 - **Palauta ostos** palauttaa Pron toisella Macilla tai uudelleenasennuksen jälkeen.
 - **Lunasta koodi** (macOS 15 tai uudempi) avaa Applen ikkunan tarjouskoodeille.

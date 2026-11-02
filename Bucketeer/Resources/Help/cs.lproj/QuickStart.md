@@ -30,6 +30,13 @@ Při úpravě účtu je tajný klíč skrytý. Klikněte na **Zobrazit uložené
 - Všechny přenosy se zobrazují v sekci **Přenosy** v postranním panelu s průběhem a tlačítkem pro zrušení.
 - V **Nastavení → Přenosy** můžete omezit celkovou šířku pásma.
 
+## Otevírání souborů v jiných aplikacích
+
+- Dvakrát klikněte na soubor nebo na něj klikněte pravým tlačítkem a zvolte **Otevřít**; otevře se ve výchozí aplikaci. **Otevřít v aplikaci** nabízí další aplikace, které ho umí otevřít; **Jiná…** umožní vybrat libovolnou aplikaci.
+- Bucketeer soubor stáhne do dočasné složky a sleduje ho. Chvíli po každém uložení se soubor nahraje zpět přes běžnou frontu přenosů, takže platí i šifrování na straně klienta.
+- Pokud se objekt po otevření na serveru změnil nebo byl smazán, Bucketeer ho nepřepíše. Vaše verze se nahraje vedle něj jako „název (conflict datum).přípona“ a Bucketeer zobrazí zprávu.
+- Dočasná kopie se smaže, když ukončíte aplikaci, ve které jste ji upravovali, když ukončíte Bucketeer, nebo při dalším spuštění.
+
 ## Správa objektů
 
 - **Nová složka**: tlačítko na panelu nástrojů nebo **⇧⌘N**.
@@ -81,7 +88,7 @@ Bucketeer přidává do aplikace Zkratky akce: výpis bucketů, nahrání soubor
 
 Tyto funkce vyžadují Bucketeer Pro:
 
-- **Připojit jako disk**: klikněte na bucket pravým tlačítkem a vyberte **Připojit jako disk**, abyste ho mohli používat ve Finderu jako disk. Vyžaduje macOS 14.1 nebo novější. Připojené disky se zobrazují v sekci **Připojené disky** v postranním panelu; kliknutím pravým tlačítkem je **Odpojit**. Buckety se šifrováním na straně klienta nelze připojit.
+- **Připojit jako disk**: klikněte na bucket pravým tlačítkem a vyberte **Připojit jako disk**, abyste ho mohli používat ve Finderu jako disk. Vyžaduje macOS 14.1 nebo novější. Připojené disky se zobrazují v sekci **Připojené disky** v postranním panelu; kliknutím pravým tlačítkem je **Odpojit**. Buckety se šifrováním na straně klienta nelze připojit. Změny na serveru se ve Finderu objeví, když bucket v Bucketeeru obnovíte. Pokud se soubor, který upravujete ve Finderu, mezitím na serveru změnil, vaše verze se uloží vedle něj jako konfliktní kopie.
 - **Synchronizační úlohy**: v sekci **Synchronizace** vytvořte úlohu, která kopíruje, přesouvá nebo zrcadlí mezi dvěma buckety, napříč účty a poskytovateli, nebo mezi místní složkou a bucketem. Spouštějte ji ručně, při spuštění aplikace, každých N minut nebo při změně místní složky.
 - **Sledované složky**: **Nová sledovaná složka…** nahraje každý nový soubor z místní složky do bucketu.
 - **Kopírovat do jiného účtu…**: zkopíruje objekty do jiného účtu nebo k jinému poskytovateli. Pokud to obě strany umožňují, kopie probíhá na straně serveru a data neprocházejí vaším Macem.
@@ -93,7 +100,7 @@ Vše ostatní je k dispozici v bezplatné verzi Free.
 
 Bucketeer Pro je jednorázový nákup v aplikaci přes App Store, bez předplatného. Otevřete **Nastavení → Pro** nebo kteroukoli funkci Pro, zobrazí se cena ve vaší měně a můžete nakoupit.
 
-Pokud je pro vaši kopii nabízena zkušební verze, nabídka nákupu a **Nastavení → Pro** ukazují, jak dlouho trvá. Po jejím skončení Bucketeer pokračuje v bezplatné verzi Free a nic se neúčtuje.
+Bucketeer Pro si můžete 14 dní zdarma vyzkoušet. Před spuštěním ukáže nabídka délku zkušební verze, co se stane potom a cenu Pro doživotně; pak klikněte na **Spustit zkušební verzi**. Po skončení zkušební verze Bucketeer pokračuje v bezplatné verzi a nic se neúčtuje. Zkušební verzi lze spustit jednou na Apple ID a obnovení nákupů vrátí běžící zkušební verzi i na jiném Macu.
 
 - **Obnovit nákup** obnoví Pro na jiném Macu nebo po přeinstalaci.
 - **Uplatnit kód** (macOS 15 nebo novější) otevře dialog Apple pro kódy nabídek.
