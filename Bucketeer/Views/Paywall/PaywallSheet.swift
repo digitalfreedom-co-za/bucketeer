@@ -108,11 +108,14 @@ struct PaywallSheet: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            Button("paywall.button.restore") {
-                Task { await restore() }
+            HStack(spacing: 16) {
+                Button("paywall.button.restore") {
+                    Task { await restore() }
+                }
+                .disabled(entitlement.purchaseInProgress)
+                RedeemCodeButton()
             }
             .buttonStyle(.borderless)
-            .disabled(entitlement.purchaseInProgress)
         }
         .padding(16)
         .frame(maxWidth: .infinity)

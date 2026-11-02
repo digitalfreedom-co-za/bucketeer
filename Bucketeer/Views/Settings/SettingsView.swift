@@ -194,6 +194,7 @@ struct SettingsView: View {
                             }
                         }
                     }
+                    RedeemCodeButton()
                     if let restoreError {
                         Text(restoreError)
                             .font(.caption)
