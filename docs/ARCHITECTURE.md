@@ -9,6 +9,43 @@ in [`CHANGELOG.md`](../CHANGELOG.md).
 
 ---
 
+## 0. Feature overview (user level)
+
+What a user can do in Bucketeer 1.0 and which tier it belongs to. Pro
+features are gated in code through `EntitlementManager.isUnlocked(_:)`
+(`mountDrive`, `syncEngine`, `s3ToS3Copy`, `menubarBackground`);
+everything else is in the Free tier.
+
+```mermaid
+flowchart LR
+    User(["User"])
+
+    subgraph Free["Free tier"]
+        Accounts["Accounts<br/>9 provider presets, Keychain credentials,<br/>Touch ID reveal"]
+        Browse["Browse<br/>buckets, folders, search,<br/>Quick Look preview"]
+        Transfer["Transfers<br/>upload, download, drag and drop,<br/>resumable multipart, bandwidth limit"]
+        Objects["Object actions<br/>rename, delete, new folder,<br/>versions, metadata and tags"]
+        Share["Presigned links<br/>S3 presign and Azure SAS"]
+        Insight["Bucket dashboard<br/>stats, cost estimate,<br/>lifecycle, CORS, policy viewer"]
+        Safety["Trash cache, activity log,<br/>auto-tag rules"]
+        CSE["Client-side encryption<br/>AES-256-GCM per bucket"]
+        System["Deep links, Shortcuts and Siri,<br/>Spotlight, hardware key preview"]
+    end
+
+    subgraph Pro["Bucketeer Pro"]
+        Mount["Mount as Drive<br/>File Provider, macOS 14.1+"]
+        Sync["Sync jobs and watch folders"]
+        Cross["Copy to other account<br/>server-side when possible"]
+        Menubar["Menu bar mode"]
+    end
+
+    User --> Free
+    User --> Pro
+    CSE -.->|"encrypted buckets refused"| Mount
+```
+
+---
+
 ## 1. Module composition
 
 Bucketeer ships as one Mac App Store binary made of three buildable
@@ -303,6 +340,40 @@ record sibling — they are either network-side reads
 in a different way (`SyncJob` is `Codable` to JSON in
 `SyncJobStore`).
 
+### 1.4 External entry points: `bucketeer://` and App Intents
+
+Deep links are parsed in Core (`BucketeerDeepLink`, pure, unit-tested)
+and routed in the host by `DeepLinkRouter`. URLs arrive through
+SwiftUI's `.onOpenURL` or, in menu bar mode where that can be
+bypassed, through the `kAEGetURL` Apple Event handler, which re-posts
+them as `bucketeerDeepLinkReceived`. A route token drops navigations
+that a newer link has overtaken. App Intents never touch the UI: they
+wait up to 5 s for `AppContainer.shared` through `AppIntentsBridge`
+and call the same services the view models use.
+
+```mermaid
+flowchart TD
+    URL["bucketeer:// URL<br/>Finder, browser, Copy Deep Link"]
+    URL --> OnOpen[".onOpenURL<br/>DeepLinkAwareContent"]
+    URL --> AE["kAEGetURL handler<br/>menu bar mode"]
+    AE --> DLNote["Notification<br/>bucketeerDeepLinkReceived"]
+    DLNote --> Router
+    OnOpen --> Parse["BucketeerDeepLink(url:)<br/>invalid URL ignored"]
+    Parse --> Router["DeepLinkRouter.handle<br/>activate app, bump route token"]
+    Router -->|"account, bucket, object"| Main["open main window<br/>AccountStore lookup<br/>stale token: stop<br/>BrowserViewModel navigates"]
+    Router -->|"syncJob"| SyncWin["open sync-job window"]
+    Router -->|"activity"| ActWin["open Activity Log window"]
+    Router -->|"trash"| TrashWin["open Trash window"]
+
+    Shortcut["Shortcuts or Siri"] --> Intents["ListBuckets, UploadFile,<br/>GeneratePresignedURL, RunSyncJob"]
+    Intents --> Bridge["AppIntentsBridge.container()<br/>polls AppContainer.shared, 5 s timeout"]
+    Bridge -->|"timeout"| IntentErr["BucketeerError: app not running"]
+    Bridge --> Services["s3Browser, transferManager,<br/>syncEngine, accountStore"]
+    Intents -->|"RunSyncJob"| ProGate{{"isUnlocked(.syncEngine)?"}}
+    ProGate -->|"no"| ProErr["intent fails with Pro hint"]
+    ProGate -->|"yes"| Services
+```
+
 ---
 
 ## 2. Sync routing — Phase 9.8 four-way matrix
@@ -433,6 +504,77 @@ sequenceDiagram
 | folder (`key.hasSuffix("/")`) | `[.allowsContentEnumerating, .allowsAddingSubItems, .allowsDeleting, .allowsRenaming]` |
 | file | `[.allowsReading, .allowsWriting, .allowsDeleting, .allowsRenaming]` |
 
+### 3.1 Mount and unmount, encrypted-bucket refusal
+
+`MountController` (host, `@MainActor`) owns the domain registry. The
+extension reads and writes raw bytes, so a bucket with a client-side
+encryption key must never be reachable through Finder. Three layers
+enforce that, each failing closed:
+
+1. **UI** — `BucketListView` shows a disabled "Mount as Drive (not
+   available for encrypted buckets)" entry.
+2. **Host** — `MountController.mount` re-checks the key store itself
+   and refuses when the lookup fails; it also reserves the bucket in
+   `bucketsInFlight`, so a concurrent "turn on encryption"
+   (`whileUnmounted`) cannot interleave.
+3. **Extension** — `ExtensionContainer.refuseIfEncrypted` checks
+   `EncryptedBuckets.json` in the App Group (written by
+   `EncryptionKeysViewModel.reload`) before every fetch, create and
+   modify; a missing or unreadable list counts as encrypted.
+
+```mermaid
+sequenceDiagram
+    participant UI as BucketListView
+    participant Ent as EntitlementManager
+    participant MC as MountController
+    participant Keys as EncryptionKeyStore
+    participant Reg as FileProviderDomainRegistry
+    participant Ext as File Provider extension
+    participant List as EncryptedBuckets.json
+
+    UI->>Ent: isUnlocked(.mountDrive)
+    alt locked
+        Ent-->>UI: false
+        UI->>UI: post showBucketeerPaywall
+    else unlocked
+        UI->>MC: mount(account, bucket)
+        MC->>MC: macOS 14.1+ check
+        MC->>MC: reserve bucket in bucketsInFlight
+        alt already reserved
+            MC-->>UI: lastError mount.error.busy
+        else reserved
+            MC->>Keys: key(accountID, bucket)
+            alt lookup throws
+                Keys-->>MC: error
+                MC-->>UI: lastError, nothing mounted
+            else key exists
+                Keys-->>MC: key
+                MC-->>UI: lastError mount.error.encryptedBucket
+            else no key
+                Keys-->>MC: nil
+                MC->>Reg: add(identifier, displayName)
+                MC->>Reg: identifiers()
+                Reg-->>MC: mountedDomains
+            end
+            MC->>MC: release reservation
+        end
+    end
+
+    Note over Ext, List: Defence in depth inside the extension
+    Ext->>List: contains(domainIdentifier)?
+    alt listed, missing or unreadable
+        List-->>Ext: true
+        Ext-->>Ext: NSFeatureUnsupportedError
+    else not listed
+        List-->>Ext: false
+        Ext->>Ext: fetch, create or modify proceeds
+    end
+
+    UI->>MC: unmount(account, bucket)
+    MC->>Reg: remove(identifier)
+    MC->>Reg: identifiers()
+```
+
 ---
 
 ## 4. Entitlement state machine (Phase B)
@@ -464,6 +606,60 @@ stateDiagram-v2
       mountDrive / syncEngine / s3ToS3Copy / menubarBackground
       Gated UI surfaces the PaywallSheet.
     end note
+```
+
+### 4.1 StoreKit purchase, restore and offer codes
+
+All three paths end in `EntitlementManager.refresh()`, which reads
+`Transaction.currentEntitlements` and then calls `onStateChange`;
+`AppContainer` uses that hook to switch off menu bar mode once Pro
+lapses. `Transaction.updates` is observed for the app's lifetime, so
+purchases completed outside the paywall (another device, Family
+Sharing, a redeemed code, Ask to Buy) unlock Pro without a restart.
+The trial length lives only in `TrialBookkeeping`.
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Pay as PaywallSheet or Settings Pro tab
+    participant Ent as EntitlementManager
+    participant SK as StoreKit 2
+    participant Apple as App Store
+
+    Note over Ent, SK: bootstrap - refresh, start Transaction.updates observer, load Product
+    User->>Pay: Buy
+    Pay->>Ent: purchasePro()
+    Ent->>SK: product.purchase()
+    SK->>Apple: purchase sheet
+    alt verified
+        SK-->>Ent: success(.verified(transaction))
+        Ent->>SK: transaction.finish()
+        Ent->>Ent: refresh() → state .pro
+    else unverified
+        SK-->>Ent: success(.unverified)
+        Ent-->>Pay: EntitlementError.unknown
+    else pending, Ask to Buy
+        SK-->>Ent: pending
+        Ent-->>Pay: EntitlementError.purchasePending
+    else cancelled
+        SK-->>Ent: userCancelled
+    end
+
+    User->>Pay: Restore Purchases
+    Pay->>Ent: restorePurchases()
+    Ent->>SK: AppStore.sync()
+    SK->>Apple: sign-in if needed
+    Ent->>Ent: refresh()
+
+    User->>Pay: Redeem Code, macOS 15+ only
+    Pay->>SK: offerCodeRedemption(isPresented:)
+    SK->>Apple: Apple redemption sheet
+    SK-->>Pay: completion .success
+    Pay->>Ent: refresh()
+
+    SK-->>Ent: Transaction.updates (any source)
+    Ent->>SK: finish own product's transaction only
+    Ent->>Ent: refresh()
 ```
 
 ---
@@ -502,6 +698,51 @@ sequenceDiagram
         end
     else Keychain fails
         VM-->>UI: BucketeerError
+    end
+```
+
+### 5.1 Touch ID reveal of stored credentials
+
+The edit sheet opens with empty secret fields. Stored values are only
+loaded after LocalAuthentication succeeds with
+`.deviceOwnerAuthentication` (Touch ID, or the Mac password as
+fallback). Any evaluation failure other than "this Mac has no password
+at all" keeps the secret hidden. Saving with untouched fields keeps
+the Keychain values (`AccountListViewModel.mergeCredentials`).
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant UI as AddEditAccountSheet
+    participant LA as LAContext
+    participant VM as AccountListViewModel
+    participant KC as KeychainStore
+
+    User->>UI: Reveal stored credentials
+    UI->>LA: canEvaluatePolicy(.deviceOwnerAuthentication)
+    alt policy available
+        UI->>LA: evaluatePolicy(reason)
+        LA->>User: Touch ID or password prompt
+        alt user, system or app cancel
+            LA-->>UI: cancel error
+            UI->>UI: stay hidden, no message
+        else other failure
+            LA-->>UI: error
+            UI->>UI: show error, stay hidden
+        else success
+            LA-->>UI: ok
+            UI->>VM: onLoadCredentials(account.id)
+            VM->>KC: load(for: account.id)
+            KC-->>VM: AccountCredentials or nil
+            VM-->>UI: credentials
+            UI->>UI: fill fields, secretsRevealed = true
+        end
+    else passcode not set
+        UI->>VM: onLoadCredentials(account.id)
+        VM->>KC: load(for: account.id)
+        KC-->>UI: credentials
+    else any other reason
+        UI->>UI: account.action.revealSecret.unavailable, stay hidden
     end
 ```
 
@@ -579,6 +820,43 @@ flowchart LR
     Upload["TransferManager upload completion<br/>(any path)"]
     Upload --> AutoTag["AutoTagCoordinator (13.8)<br/>observes .tasks stream<br/>evaluates rules → saveMetadata"]
     Upload --> Activity["ActivityLogStore (13.1)<br/>recordTerminal"]
+```
+
+### 6.2 Client-side encryption key lifecycle
+
+One AES-256 key per (account, bucket). Metadata lives in the host's
+`BucketeerEncryptionKeys.store` (SwiftData), the raw 32 bytes in the
+Keychain (`kSecAttrAccessibleWhenUnlocked`, not synchronizable). The
+key never leaves the Mac and cannot be exported; losing it makes the
+bucket's envelopes unreadable. There is no rotation in 1.0: creating
+a second key for the same bucket is refused.
+
+```mermaid
+stateDiagram-v2
+    [*] --> NoKey
+
+    NoKey --> Creating: Settings, Encryption, create
+    Creating --> NoKey: bucket mounted, busy or mount state unknown
+    Creating --> NoKey: Keychain or SwiftData write fails, Keychain entry rolled back
+    Creating --> Active: SymmetricKey 256 bit, Keychain then SwiftData
+
+    state Active {
+        [*] --> Idle
+        Idle --> InUse: TransferManager asks BucketEncryptionGate
+        InUse --> Idle: seal on upload, open on download
+        InUse --> Failed: lookup throws or key is not 32 bytes
+        Failed --> Idle: transfer fails visibly, no plaintext upload
+    }
+
+    note right of Active
+        gate cache invalidated on create and delete
+        EncryptedBuckets.json rewritten on every reload
+        mount refused while a key exists
+    end note
+
+    Active --> Deleting: user deletes key
+    Deleting --> NoKey: Keychain item first, then metadata
+    Deleting --> Active: Keychain delete fails, nothing removed
 ```
 
 ---
