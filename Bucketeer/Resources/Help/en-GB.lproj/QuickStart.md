@@ -30,6 +30,13 @@ The secret is hidden when you edit an account. Click **Reveal stored credentials
 - All transfers appear under **Transfers** in the sidebar with progress and a cancel button.
 - **Settings → Transfers** lets you cap the total bandwidth.
 
+## Open files in other apps
+
+- Double-click a file, or right-click it and choose **Open**, to open it in its default app. **Open With** lists the other apps that can open it; **Other…** lets you pick any app.
+- Bucketeer downloads the file into a temporary folder and watches it. A moment after each save, the file is uploaded back through the normal transfer queue, so client-side encryption applies.
+- If the object was changed or deleted on the server after you opened it, Bucketeer does not overwrite it. Your version is uploaded next to it as "name (conflict date).ext" and Bucketeer shows a message.
+- The temporary copy is deleted when you quit the app you edited it in, when you quit Bucketeer, or at the next launch.
+
 ## Manage objects
 
 - **New Folder**: toolbar button or **⇧⌘N**.
@@ -81,7 +88,7 @@ Bucketeer adds actions to the Shortcuts app: list buckets, upload a file, create
 
 These features need Bucketeer Pro:
 
-- **Mount as Drive**: right-click a bucket and choose **Mount as Drive** to use it in Finder like a disk. Requires macOS 14.1 or later. Mounted drives appear under **Mounted Drives** in the sidebar; right-click to **Unmount**. Buckets with client-side encryption cannot be mounted.
+- **Mount as Drive**: right-click a bucket and choose **Mount as Drive** to use it in Finder like a disk. Requires macOS 14.1 or later. Mounted drives appear under **Mounted Drives** in the sidebar; right-click to **Unmount**. Buckets with client-side encryption cannot be mounted. Changes made on the server appear in Finder when you refresh the bucket in Bucketeer. If a file you edit in Finder was changed on the server in the meantime, your version is saved next to it as a conflict copy.
 - **Sync jobs**: in the **Sync** section, create a job that copies, moves or mirrors between two buckets, across accounts and providers, or between a local folder and a bucket. Run it by hand, at launch, every N minutes, or when the local folder changes.
 - **Watch folders**: **New Watch Folder…** uploads every new file in a local folder to a bucket.
 - **Copy to other account…**: copies objects to another account or provider. When both sides allow it, the copy runs server-side and the data does not pass through your Mac.
@@ -93,7 +100,7 @@ Everything else is available in the Free tier.
 
 Bucketeer Pro is a one-time in-app purchase through the App Store, with no subscription. Open **Settings → Pro** or any Pro feature to see the price in your currency and buy.
 
-If a trial is offered for your copy, the paywall and **Settings → Pro** show how long it runs. When it ends, Bucketeer continues on the Free tier and nothing is charged.
+You can try Bucketeer Pro for 14 days at no cost. Before you start, the paywall shows the length of the trial, what happens afterwards and the price of Pro Lifetime; then click **Start trial**. When the trial ends, Bucketeer continues on the Free tier and nothing is charged. The trial can be started once per Apple ID, and restoring purchases also brings back a running trial on another Mac.
 
 - **Restore purchase** brings Pro back on another Mac or after reinstalling.
 - **Redeem Code** (macOS 15 or later) opens Apple's sheet for offer codes.

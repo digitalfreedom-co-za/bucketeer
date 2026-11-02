@@ -30,6 +30,13 @@ Podczas edycji konta klucz tajny jest ukryty. Kliknij **Pokaż zapisane poświad
 - Wszystkie transfery są widoczne w sekcji **Transfery** na pasku bocznym, z postępem i przyciskiem anulowania.
 - W **Ustawienia → Transfery** możesz ograniczyć łączną przepustowość.
 
+## Otwieranie plików w innych aplikacjach
+
+- Kliknij dwukrotnie plik albo kliknij go prawym przyciskiem i wybierz **Otwórz**, aby otworzyć go w domyślnej aplikacji. **Otwórz za pomocą** pokazuje inne aplikacje, które mogą go otworzyć; **Inna…** pozwala wybrać dowolną aplikację.
+- Bucketeer pobiera plik do folderu tymczasowego i go obserwuje. Chwilę po każdym zapisie plik jest ponownie wysyłany przez zwykłą kolejkę transferów, więc obowiązuje też szyfrowanie po stronie klienta.
+- Jeśli po otwarciu obiekt zmienił się na serwerze lub został usunięty, Bucketeer go nie nadpisze. Twoja wersja trafia obok jako „nazwa (conflict data).rozszerzenie”, a Bucketeer wyświetla komunikat.
+- Kopia tymczasowa jest usuwana, gdy zamkniesz aplikację, w której ją edytowano, gdy zamkniesz Bucketeer, lub przy następnym uruchomieniu.
+
 ## Zarządzanie obiektami
 
 - **Nowy folder**: przycisk na pasku narzędzi lub **⇧⌘N**.
@@ -81,7 +88,7 @@ Bucketeer dodaje akcje do aplikacji Skróty: wyświetlanie listy bucketów, wgry
 
 Te funkcje wymagają Bucketeer Pro:
 
-- **Zamontuj jako dysk**: kliknij bucket prawym przyciskiem i wybierz **Zamontuj jako dysk**, aby używać go w Finderze jak dysku. Wymaga systemu macOS 14.1 lub nowszego. Zamontowane dyski są widoczne w sekcji **Zamontowane dyski** na pasku bocznym; kliknij prawym przyciskiem, aby wybrać **Odmontuj**. Bucketów z szyfrowaniem po stronie klienta nie można zamontować.
+- **Zamontuj jako dysk**: kliknij bucket prawym przyciskiem i wybierz **Zamontuj jako dysk**, aby używać go w Finderze jak dysku. Wymaga systemu macOS 14.1 lub nowszego. Zamontowane dyski są widoczne w sekcji **Zamontowane dyski** na pasku bocznym; kliknij prawym przyciskiem, aby wybrać **Odmontuj**. Bucketów z szyfrowaniem po stronie klienta nie można zamontować. Zmiany na serwerze pojawiają się w Finderze po odświeżeniu bucketu w Bucketeer. Jeśli plik edytowany w Finderze zmienił się w międzyczasie na serwerze, Twoja wersja zostaje zapisana obok jako kopia konfliktu.
 - **Zadania synchronizacji**: w sekcji **Synchronizacja** utwórz zadanie, które kopiuje, przenosi lub tworzy kopię lustrzaną między dwoma bucketami, także między kontami i dostawcami, albo między lokalnym folderem a bucketem. Uruchamiaj je ręcznie, przy uruchomieniu aplikacji, co N minut lub gdy zmieni się lokalny folder.
 - **Foldery obserwowane**: **Nowy folder obserwowany…** wgrywa każdy nowy plik z lokalnego folderu do bucketu.
 - **Kopiuj na inne konto…**: kopiuje obiekty na inne konto lub do innego dostawcy. Jeśli obie strony na to pozwalają, kopiowanie odbywa się po stronie serwera, a dane nie przechodzą przez twojego Maca.
@@ -93,7 +100,7 @@ Wszystko inne jest dostępne w bezpłatnej wersji Free.
 
 Bucketeer Pro to jednorazowy zakup w aplikacji przez App Store, bez subskrypcji. Otwórz **Ustawienia → Pro** lub dowolną funkcję Pro, aby zobaczyć cenę w swojej walucie i dokonać zakupu.
 
-Jeśli dla twojej kopii oferowany jest okres próbny, ekran zakupu i **Ustawienia → Pro** pokazują, jak długo trwa. Po jego zakończeniu Bucketeer działa dalej w bezpłatnej wersji Free i nie są naliczane żadne opłaty.
+Bucketeer Pro możesz wypróbować bezpłatnie przez 14 dni. Przed rozpoczęciem strona zakupu pokazuje długość okresu próbnego, co dzieje się potem i cenę Pro na zawsze; następnie kliknij **Rozpocznij okres próbny**. Po zakończeniu okresu próbnego Bucketeer działa dalej w wersji bezpłatnej i nic nie jest pobierane. Okres próbny można rozpocząć raz na Apple ID, a przywrócenie zakupów przywraca trwający okres próbny także na innym Macu.
 
 - **Przywróć zakup** przywraca Pro na innym Macu lub po ponownej instalacji.
 - **Zrealizuj kod** (macOS 15 lub nowszy) otwiera okno Apple do realizacji kodów ofert.

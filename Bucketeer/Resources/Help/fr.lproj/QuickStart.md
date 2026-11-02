@@ -30,6 +30,13 @@ Le secret est masqué lorsque vous modifiez un compte. Cliquez sur **Révéler l
 - Tous les transferts apparaissent sous **Transferts** dans la barre latérale, avec leur progression et un bouton d’annulation.
 - **Réglages → Transferts** vous permet de limiter la bande passante totale.
 
+## Ouvrir des fichiers dans d'autres apps
+
+- Double-clique sur un fichier, ou fais un clic droit et choisis **Ouvrir**, pour l'ouvrir dans son app par défaut. **Ouvrir avec** liste les autres apps capables de l'ouvrir ; **Autre…** permet de choisir n'importe quelle app.
+- Bucketeer télécharge le fichier dans un dossier temporaire et le surveille. Peu après chaque enregistrement, le fichier est renvoyé via la file de transferts habituelle, donc le chiffrement côté client s'applique aussi.
+- Si l'objet a été modifié ou supprimé sur le serveur après son ouverture, Bucketeer ne l'écrase pas. Ta version est envoyée à côté sous le nom « nom (conflict date).ext » et Bucketeer affiche un message.
+- La copie temporaire est supprimée quand tu quittes l'app dans laquelle tu l'as modifiée, quand tu quittes Bucketeer ou au lancement suivant.
+
 ## Gérer les objets
 
 - **Nouveau dossier** : bouton de la barre d’outils ou **⇧⌘N**.
@@ -81,7 +88,7 @@ Bucketeer ajoute des actions à l’app Raccourcis : lister les buckets, télév
 
 Ces fonctionnalités nécessitent Bucketeer Pro :
 
-- **Monter comme volume** : faites un clic droit sur un bucket et choisissez **Monter comme volume** pour l’utiliser dans le Finder comme un disque. Nécessite macOS 14.1 ou ultérieur. Les volumes montés apparaissent sous **Volumes montés** dans la barre latérale ; faites un clic droit pour **Démonter**. Les buckets avec chiffrement côté client ne peuvent pas être montés.
+- **Monter comme volume** : faites un clic droit sur un bucket et choisissez **Monter comme volume** pour l’utiliser dans le Finder comme un disque. Nécessite macOS 14.1 ou ultérieur. Les volumes montés apparaissent sous **Volumes montés** dans la barre latérale ; faites un clic droit pour **Démonter**. Les buckets avec chiffrement côté client ne peuvent pas être montés. Les modifications faites sur le serveur apparaissent dans le Finder quand tu actualises le bucket dans Bucketeer. Si un fichier que tu modifies dans le Finder a changé entre-temps sur le serveur, ta version est enregistrée à côté comme copie en conflit.
 - **Tâches de synchronisation** : dans la section **Synchronisation**, créez une tâche qui copie, déplace ou met en miroir entre deux buckets, entre comptes et fournisseurs, ou entre un dossier local et un bucket. Lancez-la manuellement, au démarrage, toutes les N minutes ou lorsque le dossier local change.
 - **Dossiers surveillés** : **Nouveau dossier surveillé…** téléverse chaque nouveau fichier d’un dossier local vers un bucket.
 - **Copier vers un autre compte…** : copie des objets vers un autre compte ou fournisseur. Lorsque les deux côtés le permettent, la copie s’effectue côté serveur et les données ne passent pas par votre Mac.
@@ -93,7 +100,7 @@ Tout le reste est disponible dans la version gratuite.
 
 Bucketeer Pro est un achat intégré unique via l’App Store, sans abonnement. Ouvrez **Réglages → Pro** ou n’importe quelle fonctionnalité Pro pour voir le prix dans votre devise et acheter.
 
-Si un essai est proposé pour votre copie, l’écran d’achat et **Réglages → Pro** indiquent sa durée. À la fin de l’essai, Bucketeer continue dans la version gratuite et rien n’est facturé.
+Tu peux essayer Bucketeer Pro gratuitement pendant 14 jours. Avant de commencer, la page d'achat indique la durée de l'essai, ce qui se passe ensuite et le prix de Pro à vie ; clique ensuite sur **Démarrer l'essai**. À la fin de l'essai, Bucketeer continue en version gratuite et rien n'est facturé. L'essai peut être démarré une fois par identifiant Apple, et la restauration des achats rétablit aussi un essai en cours sur un autre Mac.
 
 - **Restaurer l'achat** rétablit Pro sur un autre Mac ou après une réinstallation.
 - **Utiliser un code** (macOS 15 ou ultérieur) ouvre la fenêtre d’Apple pour les codes d’offre.

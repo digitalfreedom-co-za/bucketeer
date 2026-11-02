@@ -25,6 +25,7 @@ flowchart LR
         Browse["Browse<br/>buckets, folders, search,<br/>Quick Look preview"]
         Transfer["Transfers<br/>upload, download, drag and drop,<br/>resumable multipart, bandwidth limit"]
         Objects["Object actions<br/>rename, delete, new folder,<br/>versions, metadata and tags"]
+        OpenWith["Open / Open With<br/>saves uploaded back,<br/>conflict copy on server change"]
         Share["Presigned links<br/>S3 presign and Azure SAS"]
         Insight["Bucket dashboard<br/>stats, cost estimate,<br/>lifecycle, CORS, policy viewer"]
         Safety["Trash cache, activity log,<br/>auto-tag rules"]
@@ -33,14 +34,18 @@ flowchart LR
     end
 
     subgraph Pro["Bucketeer Pro"]
-        Mount["Mount as Drive<br/>File Provider, macOS 14.1+"]
+        Mount["Mount as Drive<br/>File Provider, macOS 14.1+<br/>server changes, conflict copies"]
         Sync["Sync jobs and watch folders"]
         Cross["Copy to other account<br/>server-side when possible"]
         Menubar["Menu bar mode"]
     end
 
+    Trial(["14-day trial<br/>free IAP, once per Apple ID"])
+
     User --> Free
     User --> Pro
+    User --> Trial
+    Trial -.->|"unlocks for 14 days"| Pro
     CSE -.->|"encrypted buckets refused"| Mount
 ```
 
@@ -61,7 +66,8 @@ graph LR
         Storage["Persistence (all @ModelActor)<br/>KeychainStore · AccountStore · ActivityLogStore<br/>TrashStore · CheckpointStore · AutoTagRuleStore<br/>EncryptionKeyStore · SyncJobStore"]
         Sync["Sync helpers<br/>SyncPlanner (pure) · LocalFolderEnumerator<br/>LocalFolderWriter (incl. safeChildURL)<br/>LocalFolderWatcher (FSEvents)"]
         Routing["Routing<br/>ProviderRouter (S3Browsing facade)"]
-        Trial["Entitlements<br/>TrialBookkeeping (pure, DI store)"]
+        Trial["Entitlements<br/>ProAccessResolver (pure, transactions + now)"]
+        OpenWithCore["Open With + Finder changes<br/>OpenWithRoundTrip (actor) · ConflictCopyName<br/>FinderChangeState (pure) · ETag"]
         Crypto["Encryption (13.15)<br/>BucketeerEnvelope (AES-GCM + AAD)<br/>EncryptionError"]
         AutoTag["Auto-tagging (13.8)<br/>AutoTagRuleEvaluator (pure, glob+MIME)"]
         Stats["Stats (13.5)<br/>BucketStatsCollector · ProviderPricing"]
@@ -74,12 +80,12 @@ graph LR
         Container["AppContainer<br/>@MainActor @Observable composition root<br/>+ static .shared for App Intents"]
         ViewModels["ViewModels<br/>AccountList · Browser · TransferQueue · SyncJobList<br/>ActivityLog · Trash · BucketDashboard<br/>ObjectVersions · ObjectMetadata · AutoTagRules<br/>EncryptionKeys"]
         Views["SwiftUI Views<br/>Sidebar · Browser · Sync · Paywall · Menubar · About<br/>Activity · Trash · Settings (General · Transfers · Rules<br/>· Encryption · Security · Pro)"]
-        HostOnly["Host-only services<br/>EntitlementManager (StoreKit) · MountController<br/>DragDropCoordinator · TransferManager (actor)<br/>SyncEngine (actor) · SyncStatusBroker (multicast)<br/>PreviewCache · AppActivationController<br/>TrashCoordinator · BandwidthSettings · TrashSettings<br/>AutoTagCoordinator · DeepLinkRouter · CrossAccountCopyCoordinator<br/>SpotlightIndexer · SpotlightSettings · BucketEncryptionGate<br/>HardwareKeyAvailability · HardwareKeySettings"]
+        HostOnly["Host-only services<br/>EntitlementManager (StoreKit) · MountController<br/>DragDropCoordinator · TransferManager (actor)<br/>SyncEngine (actor) · SyncStatusBroker (multicast)<br/>PreviewCache · AppActivationController<br/>TrashCoordinator · BandwidthSettings · TrashSettings<br/>AutoTagCoordinator · DeepLinkRouter · CrossAccountCopyCoordinator<br/>SpotlightIndexer · SpotlightSettings · BucketEncryptionGate<br/>HardwareKeyAvailability · HardwareKeySettings<br/>OpenWithController · OpenWithTransferRemote · FileChangeWatcher"]
         AppIntents["App Intents (13.12)<br/>AccountEntity · AppIntentsBridge<br/>ListBucketsIntent · GeneratePresignedURLIntent<br/>UploadFileIntent · RunSyncJobIntent<br/>BucketeerShortcuts (AppShortcutsProvider)"]
     end
 
     subgraph FPExt["Bucketeer File Provider.appex<br/>(manual Xcode target — PHASE_9_SETUP.md)"]
-        FPCallbacks["NSFileProviderReplicatedExtension callbacks<br/>FileProviderExtension · FileProviderEnumerator<br/>FileProviderItemResolver · S3DirectFetch"]
+        FPCallbacks["NSFileProviderReplicatedExtension callbacks<br/>FileProviderExtension · FileProviderEnumerator<br/>FileProviderItemResolver · S3DirectFetch<br/>FinderChangeTracker (actor)"]
         FPContainer["ExtensionContainer (Sendable)"]
     end
 
@@ -99,9 +105,11 @@ graph LR
     HostOnly -- "uses" --> Stats
     HostOnly -- "uses" --> Bandwidth
     HostOnly -- "uses" --> DeepLink
-    HostOnly -- "TrialBookkeeping" --> Trial
+    HostOnly -- "ProAccessResolver" --> Trial
+    HostOnly -- "OpenWithRoundTrip" --> OpenWithCore
 
     FPCallbacks --> FPContainer
+    FPCallbacks -- "FinderChangeState, ConflictCopyName" --> OpenWithCore
     FPContainer --> Storage
     FPContainer --> S3Layer
     FPContainer --> AzureLayer
@@ -575,34 +583,112 @@ sequenceDiagram
     MC->>Reg: identifiers()
 ```
 
+### 3.2 Server changes and Finder save conflicts
+
+S3 and Azure have no change feed. `FinderChangeTracker` (extension
+actor, one JSON file per domain in the extension's Application
+Support) keeps a `FinderChangeState` (Core, pure): the sync anchor,
+every folder prefix Finder has enumerated, and the key → ETag map of
+the last listing. Each item's `contentVersion` is its ETag.
+
+- **Server → Finder:** refreshing a bucket in the browser calls
+  `BrowserViewModel.onBucketRefresh` → `MountController.signalServerChanges`
+  → `signalEnumerator(for: .workingSet)` on mounted domains only. The
+  working-set enumerator lists all tracked prefixes again, diffs them
+  against the stored map and reports `didUpdate` / `didDeleteItems`.
+  An unknown anchor answers `syncAnchorExpired`, so the system lists
+  everything again. Folder enumerators always answer
+  `syncAnchorExpired` to change requests.
+- **Finder → server:** `modifyItem` writes contents against the
+  original key first. A HEAD compares `baseVersion.contentVersion`
+  with the server ETag; only on a match is the write sent, with
+  If-Match. Mismatch, a missing object or HTTP 412 turn the edit into
+  a conflict copy next to the original; the item keeps the server
+  version and is fetched again.
+
+```mermaid
+sequenceDiagram
+    participant Host as Browser refresh (host)
+    participant MC as MountController
+    participant System as macOS FP system
+    participant Enum as Working-set enumerator
+    participant Tracker as FinderChangeTracker
+    participant Res as FileProviderItemResolver
+    participant Store as S3 / Azure
+
+    Host->>MC: signalServerChanges(account, bucket)
+    MC->>System: signalEnumerator(.workingSet), mounted domains only
+    System->>Enum: enumerateChanges(from: anchor)
+    Enum->>Tracker: changes(since: anchor)
+    alt anchor unknown or state lost
+        Tracker-->>Enum: syncAnchorExpired
+        Enum-->>System: finishEnumeratingWithError, system re-lists
+    else anchor matches
+        Tracker->>Store: list every tracked prefix
+        Tracker->>Tracker: FinderChangeState.advance → updated, deleted
+        Tracker-->>Enum: ListingDiff + new anchor
+        Enum-->>System: didUpdate, didDeleteItems, finishEnumeratingChanges
+    end
+
+    Note over System, Store: User saves a file in Finder
+    System->>Res: modifyItem(contents, baseVersion)
+    Res->>Store: HEAD original key
+    alt ETag equals baseVersion.contentVersion
+        Res->>Store: PUT with If-Match
+        alt accepted
+            Store-->>Res: new ETag
+            Res-->>System: item, shouldFetchContent false
+        else 412
+            Res->>Store: PUT "name (conflict date).ext"
+        end
+    else changed or deleted on server
+        Res->>Store: PUT "name (conflict date).ext"
+    end
+    Res->>System: signalEnumerator(.workingSet)
+    Res-->>System: server item, shouldFetchContent true<br/>(noSuchItem when the original is gone)
+```
+
 ---
 
 ## 4. Entitlement state machine (Phase B)
 
-`TrialBookkeeping` (Core, pure) drives the state; `EntitlementManager`
-(host, `@MainActor @Observable`) wraps it with the StoreKit lifecycle.
+Two non-consumable products: `pro.lifetime` (paid) and `pro.trial`
+(price Free). `ProAccessResolver` (Core, pure) maps the verified
+transactions of both plus the current time to `lifetime`,
+`trial(endsAt)`, `trialEnded` or `trialAvailable`; `EntitlementManager`
+(host, `@MainActor @Observable`) feeds it from
+`Transaction.currentEntitlements` with an injectable clock. Nothing
+about the trial is stored locally: the trial runs 14 days from the
+trial transaction's `originalPurchaseDate`, so Restore Purchases brings
+it back and deleting app data cannot restart it. The trial compares
+Apple's purchase date with the Mac's clock.
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Trial: first launch<br/>(trialStartKey written)
-    Trial --> Trial: daysRemaining() polled
-    Trial --> Free: 14 days elapsed<br/>(trialConsumedKey set, sticky)
-    Trial --> Pro: Transaction.currentEntitlements<br/>verified + unrevoked
-    Free --> Pro: purchasePro() → verified
-    Free --> Free: StoreKit .unverified<br/>throws EntitlementError.unknown
-    Pro --> Free: Apple revokes entitlement<br/>(refund / charge-back)
-    Pro --> Pro: refresh() polled
+    [*] --> TrialAvailable: no trial or lifetime transaction
+    TrialAvailable --> Trial: startTrial() → pro.trial verified
+    Trial --> Trial: refresh(), daysRemaining shown
+    Trial --> TrialEnded: now ≥ originalPurchaseDate + 14 d<br/>(expiry timer or app activation)
+    Trial --> TrialEnded: trial transaction revoked
+    TrialAvailable --> Pro: purchasePro() → verified
+    Trial --> Pro: purchasePro() → verified
+    TrialEnded --> Pro: purchasePro() → verified
+    Pro --> TrialEnded: lifetime revoked, trial used
+    Pro --> TrialAvailable: lifetime revoked, no trial
 
-    note right of Trial
-      Future-date clamp:
-      rawStart > now → use now,
-      rewrite persisted start.
-      Sticky consumed marker
-      survives plist deletion.
+    note right of Pro
+      An unrevoked lifetime transaction
+      always wins over any trial state.
     end note
 
-    note right of Free
-      isUnlocked(_:) returns false for
+    note right of TrialEnded
+      state .free, Start trial hidden.
+      Nothing is charged.
+    end note
+
+    note right of TrialAvailable
+      state .free, paywall offers Start trial.
+      In .free, isUnlocked(_:) returns false for
       mountDrive / syncEngine / s3ToS3Copy / menubarBackground
       Gated UI surfaces the PaywallSheet.
     end note
@@ -616,7 +702,10 @@ All three paths end in `EntitlementManager.refresh()`, which reads
 lapses. `Transaction.updates` is observed for the app's lifetime, so
 purchases completed outside the paywall (another device, Family
 Sharing, a redeemed code, Ask to Buy) unlock Pro without a restart.
-The trial length lives only in `TrialBookkeeping`.
+The trial length lives only in `ProAccessResolver`. The paywall shows
+the trial card only while `isTrialAvailable` is true and both products
+have loaded, because the card states the Pro Lifetime `displayPrice`
+before the trial starts.
 
 ```mermaid
 sequenceDiagram
@@ -626,7 +715,17 @@ sequenceDiagram
     participant SK as StoreKit 2
     participant Apple as App Store
 
-    Note over Ent, SK: bootstrap - refresh, start Transaction.updates observer, load Product
+    Note over Ent, SK: bootstrap - refresh, start Transaction.updates observer, load both products
+    Ent-->>Pay: isTrialAvailable, trialProduct, product.displayPrice
+    Pay->>User: 14 days, then Free tier, nothing charged, Pro Lifetime price
+    User->>Pay: Start trial
+    Pay->>Ent: startTrial()
+    Ent->>SK: trialProduct.purchase()
+    SK->>Apple: purchase sheet, price Free
+    SK-->>Ent: success(.verified(transaction))
+    Ent->>SK: transaction.finish()
+    Ent->>Ent: refresh() → state .trial, expiry timer at endsAt
+
     User->>Pay: Buy
     Pay->>Ent: purchasePro()
     Ent->>SK: product.purchase()
@@ -822,6 +921,59 @@ flowchart LR
     Upload --> Activity["ActivityLogStore (13.1)<br/>recordTerminal"]
 ```
 
+### 6.3 Open / Open With round-trip
+
+`OpenWithController` (host) downloads an object into a temp folder
+per launch and per file, opens it with `NSWorkspace`, and watches it
+with `FileChangeWatcher` (DispatchSource on file and folder, re-armed
+after atomic saves). Saves are debounced by 2 s and handed to
+`OpenWithRoundTrip` (Core actor), which serialises syncs per file and
+skips events whose SHA-256 digest did not change. Uploads go through
+`OpenWithTransferRemote` → `TransferManager.uploadIfUnchanged`, so the
+encryption gate applies. On S3 the conditional write is a single PUT
+with If-Match (5 GiB single-PUT cap); on Azure If-Match is sent on Put
+Blob and Put Block List.
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant List as ObjectListView
+    participant OWC as OpenWithController
+    participant RT as OpenWithRoundTrip
+    participant Remote as OpenWithTransferRemote
+    participant TM as TransferManager
+    participant App as Other app
+
+    User->>List: double-click, Open or Open With…
+    List->>OWC: open(object, application)
+    OWC->>Remote: HEAD → ETag
+    OWC->>TM: download into temp folder
+    OWC->>RT: register(localURL, object, etag)
+    OWC->>App: NSWorkspace.open
+    App-->>OWC: file saved (FileChangeWatcher)
+    OWC->>OWC: debounce 2 s
+    OWC->>RT: syncChanges(localURL)
+    alt digest unchanged
+        RT-->>OWC: unchanged
+    else HEAD ETag equals base
+        RT->>Remote: upload(ifMatch: base)
+        Remote->>TM: uploadIfUnchanged (encryption gate applies)
+        alt accepted
+            RT-->>OWC: uploaded, new base ETag
+        else 412
+            RT->>Remote: upload "name (conflict date).ext"
+            RT-->>OWC: conflict(copyKey)
+        end
+    else changed or deleted on server
+        RT->>Remote: upload "name (conflict date).ext"
+        RT-->>OWC: conflict(copyKey), later saves follow the copy
+    end
+    OWC-->>User: alert and Dock bounce on conflict or failure
+
+    App-->>OWC: app quits → unregister, temp folder removed
+    Note over OWC: Bucketeer quit flushes pending saves, then removes temp.<br/>Launch removes other launches' folders.
+```
+
 ### 6.2 Client-side encryption key lifecycle
 
 One AES-256 key per (account, bucket). Metadata lives in the host's
@@ -891,6 +1043,7 @@ flowchart LR
 
     subgraph AppStoreConnect["App Store Connect"]
         IAP["Non-Consumable IAP<br/>za.co.digitalfreedom.bucketeer.pro.lifetime<br/>€14.99 · Family Sharing"]
+        TrialIAP["Non-Consumable IAP<br/>za.co.digitalfreedom.bucketeer.pro.trial<br/>Free · no Family Sharing"]
     end
 
     AppID -.- AppGroup
@@ -908,6 +1061,7 @@ flowchart LR
     FPBin -->|reads| Keychain
 
     HostBin -->|StoreKit| IAP
+    HostBin -->|StoreKit| TrialIAP
 ```
 
 ---
@@ -925,7 +1079,9 @@ runs them in ~25 ms; no Xcode test target is required.
 | `S3ClientFactory.endpoint` | 12 | per-provider URL templates (AWS, Civo, R2, B2, Wasabi, DO, Storj, Azure default + sovereign, Custom) |
 | `S3Provider` | 11 | defaults, family routing, picker visibility flags, accountID requirements |
 | `SyncPlanner` | 19 | plan computation, prefix relocation, name+size vs name+ETag, mirror deletes respect globs, 5 local-folder cases |
-| `TrialBookkeeping` | 11 | trial start, expiry, sticky consumed marker, future-date clamp, custom length |
+| `ProAccessResolver` | 11 | lifetime wins, trial window from originalPurchaseDate, expiry boundary, revoked trial and lifetime, earliest trial, unknown products, days remaining |
+| `OpenWithRoundTrip` + `ConflictCopyName` | 14 | no-op saves skipped, If-Match upload, next save on own ETag, 412 / changed / deleted → conflict copy, saves follow the copy, unregistered files, quoted ETags, copy-name dot rules |
+| `FinderChangeState` + `ETag.matches` | 8 | updated / deleted diff, quoted ETags, anchor, tracked prefixes, vanished folders pruned, unknown base or missing object never matches |
 | `LocalFolderWriter.safeChildURL` | 6 | empty / absolute / `..` / `.` / legitimate paths |
 | `BandwidthLimiter` (13.2) | 5 | unlimited fast-path, sub-burst, deficit-sleep loop, mid-flight toggle, `currentLimit` |
 | `BucketStatsCollector` + `ProviderPricing` (13.5) | 6 | top-N maintenance, every provider rate, AWS GB precision, zero bytes |
@@ -933,10 +1089,10 @@ runs them in ~25 ms; no Xcode test target is required.
 | `BucketeerDeepLink` (13.11) | 9+4 | grammar round-trip per case, prefix variants, bad UUID, missing bucket, case-insensitive scheme, percent-encoded key, query string ignored |
 | `BucketeerEnvelope` (13.15 + audit fix) | 9 | round-trip, header layout, wrong-key auth fail, garbage reject, prefix detection, tamper detection, **empty plaintext** (audit low #1), **version tamper** + **reserved tamper** (audit medium #1) |
 | `TrashedItem.displayName` | 4 | multi-segment, single-segment, empty, trailing-slash folder-style |
-| **Total** | **135** | |
+| **Total, all Core suites incl. those not listed** | **164** | test functions as of 2026-11-02 |
 
 Pure logic that lived in host classes was extracted to Core in three
-waves (SyncPlanner, TrialBookkeeping, LocalFolderWriter) and then
+waves (SyncPlanner, trial rules, LocalFolderWriter) and then
 incrementally per 13.x phase whenever the work was deterministic
 (envelope, evaluator, fingerprint, parser). Core tests run in ~3 s
 end-to-end; no Xcode test target is required.
@@ -955,7 +1111,9 @@ end-to-end; no Xcode test target is required.
 | Sync routing (4 paths) | `Bucketeer/Services/Sync/SyncEngine.swift` |
 | Sync planning (pure) | `BucketeerCore/Sources/BucketeerCore/Services/Sync/SyncPlanner.swift` |
 | Path-traversal guard | `BucketeerCore/Sources/BucketeerCore/Services/Sync/LocalFolderEnumerator.swift` (`LocalFolderWriter.safeChildURL`) |
-| Trial logic | `BucketeerCore/Sources/BucketeerCore/Services/Entitlements/TrialBookkeeping.swift` |
+| Trial and Pro access rules | `BucketeerCore/Sources/BucketeerCore/Services/Entitlements/ProAccessResolver.swift` + `Bucketeer/Services/Entitlements/EntitlementManager.swift` |
+| Open With round-trip | `BucketeerCore/.../Services/OpenWith/OpenWithRoundTrip.swift` + `ConflictCopyName.swift` + `Bucketeer/Services/OpenWith/*.swift` |
+| Finder change tracking and save conflicts | `BucketeerCore/.../Services/OpenWith/FinderChangeState.swift` + `Bucketeer File Provider/FinderChangeTracker.swift` + `FileProviderItemResolver.swift` (`modifyItem`) |
 | File Provider host coordinator | `Bucketeer/Services/MountController.swift` |
 | File Provider extension | `Bucketeer File Provider/*` |
 | Per-phase changelog | `CHANGELOG.md` |

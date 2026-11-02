@@ -30,6 +30,13 @@ Fiók szerkesztésekor a titkos kulcs rejtve van. Kattints a **Mentett hitelesí
 - Minden átvitel megjelenik az oldalsáv **Átvitelek** részében a folyamat állapotával és egy megszakítás gombbal.
 - A **Beállítások → Átvitelek** alatt korlátozhatod a teljes sávszélességet.
 
+## Fájlok megnyitása más appokban
+
+- Kattints duplán egy fájlra, vagy kattints rá jobb gombbal, és válaszd a **Megnyitás** lehetőséget, hogy az alapértelmezett appban nyíljon meg. A **Megnyitás ezzel** további appokat sorol fel, amelyek meg tudják nyitni; az **Egyéb…** bármely app kiválasztását engedi.
+- A Bucketeer letölti a fájlt egy ideiglenes mappába, és figyeli. Minden mentés után nem sokkal a fájl a szokásos átviteli soron át visszakerül a szerverre, így a kliensoldali titkosítás is érvényes.
+- Ha az objektum a megnyitás után megváltozott vagy törölték a szerveren, a Bucketeer nem írja felül. A te verziód mellé kerül fel „név (conflict dátum).kiterjesztés” néven, és a Bucketeer üzenetet jelenít meg.
+- Az ideiglenes másolat törlődik, amikor kilépsz abból az appból, amelyben szerkesztetted, amikor kilépsz a Bucketeerből, vagy a következő indításkor.
+
 ## Objektumok kezelése
 
 - **Új mappa**: az eszközsor gombja vagy **⇧⌘N**.
@@ -81,7 +88,7 @@ A Bucketeer műveleteket ad a Parancsok apphoz: bucketek listázása, fájl felt
 
 Ezekhez a funkciókhoz Bucketeer Pro szükséges:
 
-- **Csatolás meghajtóként**: kattints jobb gombbal egy bucketre, és válaszd a **Csatolás meghajtóként** lehetőséget, hogy a Finderben lemezként használd. macOS 14.1 vagy újabb szükséges. A csatolt meghajtók az oldalsáv **Csatolt meghajtók** részében jelennek meg; jobb gombbal kattintva válaszd a **Leválasztás** lehetőséget. Az ügyféloldali titkosítással rendelkező bucketek nem csatolhatók.
+- **Csatolás meghajtóként**: kattints jobb gombbal egy bucketre, és válaszd a **Csatolás meghajtóként** lehetőséget, hogy a Finderben lemezként használd. macOS 14.1 vagy újabb szükséges. A csatolt meghajtók az oldalsáv **Csatolt meghajtók** részében jelennek meg; jobb gombbal kattintva válaszd a **Leválasztás** lehetőséget. Az ügyféloldali titkosítással rendelkező bucketek nem csatolhatók. A szerveren végzett módosítások akkor jelennek meg a Finderben, amikor frissíted a bucketet a Bucketeerben. Ha egy Finderben szerkesztett fájl közben megváltozott a szerveren, a te verziód mellé kerül ütközési másolatként.
 - **Szinkronizálási feladatok**: a **Szinkronizálás** részben olyan feladatot hozhatsz létre, amely két bucket között másol, áthelyez vagy tükröz, fiókok és szolgáltatók között is, vagy egy helyi mappa és egy bucket között. Futtathatod kézzel, indításkor, N percenként vagy amikor a helyi mappa megváltozik.
 - **Figyelt mappák**: az **Új figyelt mappa…** egy helyi mappa minden új fájlját feltölti egy bucketbe.
 - **Másolás másik fiókba…**: objektumokat másol egy másik fiókba vagy szolgáltatóhoz. Ha mindkét oldal engedi, a másolás szerveroldalon fut, és az adatok nem haladnak át a Maceden.
@@ -93,7 +100,7 @@ Minden más elérhető a Free csomagban.
 
 A Bucketeer Pro egyszeri, alkalmazáson belüli vásárlás az App Store-on keresztül, előfizetés nélkül. Nyisd meg a **Beállítások → Pro** lapot vagy bármelyik Pro funkciót, hogy lásd az árat a saját pénznemedben, és megvásárold.
 
-Ha a példányodhoz próbaidőszak érhető el, a vásárlási ablak és a **Beállítások → Pro** megmutatja, meddig tart. Amikor lejár, a Bucketeer a Free csomaggal működik tovább, és semmit nem számolunk fel.
+A Bucketeer Pro 14 napig ingyen kipróbálható. Indítás előtt a vásárlási oldal mutatja a próbaidőszak hosszát, azt, hogy mi történik utána, és a Pro örök licenc árát; ezután kattints a **Próbaidőszak indítása** gombra. A próbaidőszak végén a Bucketeer az ingyenes verzióval működik tovább, és semmit sem kell fizetni. A próbaidőszak Apple ID-nként egyszer indítható, a vásárlások visszaállítása pedig egy futó próbaidőszakot egy másik Macen is visszahoz.
 
 - A **Vásárlás visszaállítása** egy másik Macen vagy újratelepítés után visszaadja a Pro funkciókat.
 - A **Kód beváltása** (macOS 15 vagy újabb) megnyitja az Apple ajánlati kódokhoz tartozó ablakát.

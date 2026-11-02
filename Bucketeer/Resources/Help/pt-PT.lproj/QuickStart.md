@@ -30,6 +30,13 @@ O segredo fica oculto quando edita uma conta. Clique em **Revelar credenciais gu
 - Todas as transferências aparecem em **Transferências** na barra lateral, com o progresso e um botão para cancelar.
 - Em **Definições → Transferências** pode limitar a largura de banda total.
 
+## Abrir ficheiros noutras apps
+
+- Faça duplo clique num ficheiro, ou clique com o botão direito e escolha **Abrir**, para o abrir na app predefinida. **Abrir com** mostra outras apps que o conseguem abrir; **Outra…** permite escolher qualquer app.
+- O Bucketeer descarrega o ficheiro para uma pasta temporária e acompanha-o. Pouco depois de cada gravação, o ficheiro é carregado de novo pela fila de transferências normal, por isso a encriptação do lado do cliente também se aplica.
+- Se o objeto foi alterado ou apagado no servidor depois de o abrir, o Bucketeer não o substitui. A sua versão é carregada ao lado como "nome (conflict data).ext" e o Bucketeer mostra uma mensagem.
+- A cópia temporária é apagada quando sai da app em que a editou, quando sai do Bucketeer ou no arranque seguinte.
+
 ## Gerir objetos
 
 - **Nova pasta**: botão da barra de ferramentas ou **⇧⌘N**.
@@ -81,7 +88,7 @@ O Bucketeer acrescenta ações à aplicação Atalhos: listar buckets, carregar 
 
 Estas funcionalidades precisam do Bucketeer Pro:
 
-- **Montar como disco**: clique com o botão direito num bucket e escolha **Montar como disco** para o usar no Finder como um disco. Requer macOS 14.1 ou posterior. Os discos montados aparecem em **Discos montados** na barra lateral; clique com o botão direito para **Desmontar**. Os buckets com encriptação do lado do cliente não podem ser montados.
+- **Montar como disco**: clique com o botão direito num bucket e escolha **Montar como disco** para o usar no Finder como um disco. Requer macOS 14.1 ou posterior. Os discos montados aparecem em **Discos montados** na barra lateral; clique com o botão direito para **Desmontar**. Os buckets com encriptação do lado do cliente não podem ser montados. As alterações feitas no servidor aparecem no Finder quando atualiza o bucket no Bucketeer. Se um ficheiro que está a editar no Finder foi entretanto alterado no servidor, a sua versão é guardada ao lado como cópia em conflito.
 - **Tarefas de sincronização**: na secção **Sincronização**, crie uma tarefa que copia, move ou espelha entre dois buckets, entre contas e fornecedores, ou entre uma pasta local e um bucket. Execute-a manualmente, ao iniciar, a cada N minutos ou quando a pasta local mudar.
 - **Pastas vigiadas**: **Nova pasta vigiada…** carrega para um bucket cada ficheiro novo de uma pasta local.
 - **Copiar para outra conta…**: copia objetos para outra conta ou outro fornecedor. Quando ambos os lados o permitem, a cópia é feita do lado do servidor e os dados não passam pelo seu Mac.
@@ -93,7 +100,7 @@ Tudo o resto está disponível no nível gratuito.
 
 O Bucketeer Pro é uma compra única dentro da aplicação, feita através da App Store, sem subscrição. Abra **Definições → Pro** ou qualquer funcionalidade Pro para ver o preço na sua moeda e comprar.
 
-Se for oferecido um período experimental para a sua cópia, o ecrã de compra e **Definições → Pro** mostram quanto tempo dura. Quando termina, o Bucketeer continua no nível gratuito e nada é cobrado.
+Pode experimentar o Bucketeer Pro gratuitamente durante 14 dias. Antes de começar, a página de compra mostra a duração do período experimental, o que acontece depois e o preço do Pro Vitalício; depois clique em **Iniciar período experimental**. Quando o período experimental termina, o Bucketeer continua na versão gratuita e nada é cobrado. O período experimental pode ser iniciado uma vez por ID Apple, e restaurar compras também recupera um período experimental em curso noutro Mac.
 
 - **Restaurar compra** reativa o Pro noutro Mac ou depois de reinstalar.
 - **Resgatar código** (macOS 15 ou posterior) abre a folha da Apple para códigos de oferta.

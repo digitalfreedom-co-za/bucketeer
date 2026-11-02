@@ -44,6 +44,9 @@ for the development history.
 - **Resumable transfers**: an interrupted upload continues where it stopped
 - **Bandwidth limit** for all transfers
 - **Object actions**: new folder, rename, delete, download
+- **Open / Open With**: edit an object in any Mac app; every save is
+  uploaded back, and a change on the server in the meantime leads to a
+  conflict copy instead of an overwrite
 - **Presigned links**: S3 presigned URLs and Azure SAS links, signed
   locally with an expiry you choose
 
@@ -77,8 +80,10 @@ for the development history.
 ### Bucketeer Pro
 
 - **Mount as Drive**: use a bucket or container in Finder through the
-  File Provider extension (macOS 14.1 or later). Buckets with
-  client-side encryption cannot be mounted in this version.
+  File Provider extension (macOS 14.1 or later). Server-side changes
+  reach Finder when you refresh the bucket; a Finder save over a newer
+  server version becomes a conflict copy. Buckets with client-side
+  encryption cannot be mounted in this version.
 - **Sync jobs**: copy, move or mirror between buckets, across accounts
   and providers (S3 ↔ Azure included), or between a local folder and a
   bucket; run by hand, at launch, on a schedule or when the local folder
@@ -107,6 +112,7 @@ Details in the [Privacy Policy](Bucketeer/Resources/Legal/PRIVACY_POLICY.md).
 | Browse, Quick Look, search | ✅ | ✅ |
 | Upload, download, drag and drop, resumable transfers, bandwidth limit | ✅ | ✅ |
 | Rename, delete, new folder, presigned links | ✅ | ✅ |
+| Open / Open With with upload of saves and conflict copies | ✅ | ✅ |
 | Dashboard, versions, metadata and tags, lifecycle / policy / CORS viewer | ✅ | ✅ |
 | Trash, activity log, auto-tagging rules | ✅ | ✅ |
 | Client-side encryption | ✅ | ✅ |
@@ -120,9 +126,11 @@ Bucketeer Pro is a single one-time in-app purchase through the App Store,
 with no subscription. The App Store shows the price in your currency.
 
 <!-- Trial wording: the only place in this README that describes the trial. -->
-**Trial:** a time-limited trial of Bucketeer Pro may be offered. Its
-length is shown in the app before it starts; when it ends, Bucketeer
-continues on the Free tier and nothing is charged.
+**Trial:** Bucketeer Pro can be tried for 14 days at no cost, once per
+Apple ID. The trial is a free in-app purchase, so Restore Purchases
+brings it back on another Mac. Before it starts, the app shows the
+trial length, that Bucketeer returns to the Free tier afterwards
+without any charge, and the Pro Lifetime price.
 
 ---
 
@@ -130,7 +138,7 @@ continues on the Free tier and nothing is charged.
 
 | Doc | Purpose |
 |---|---|
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Architecture reference with 18 Mermaid diagrams: user-level feature overview, module composition, deep-link and App Intents routing, sync routing, sandbox lifecycle, File Provider sequence, mount and unmount with the encrypted-bucket refusal, entitlement state machine, StoreKit purchase / restore / offer codes, account save flow, Touch ID secret reveal, multipart transfer flow, encryption key lifecycle, provisioning topology |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Architecture reference with 20 Mermaid diagrams: user-level feature overview, module composition, deep-link and App Intents routing, sync routing, sandbox lifecycle, File Provider sequence, mount and unmount with the encrypted-bucket refusal, Finder server changes and save conflicts, trial and entitlement state machine, StoreKit trial / purchase / restore / offer codes, account save flow, Touch ID secret reveal, multipart transfer flow, Open With round-trip, encryption key lifecycle, provisioning topology |
 | [`docs/DEVELOPER_SETUP.md`](docs/DEVELOPER_SETUP.md) | Clone, build and test |
 | [`PHASE_9_SETUP.md`](PHASE_9_SETUP.md) | One-time setup for the File Provider extension identifiers |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Branch model, coding standards, review process |
