@@ -37,7 +37,7 @@ before that is internal phase work on the `development` branch.
 ### Line-by-line audit round 2 + Apple-guideline compliance
 Second full pass: every Swift file read completely across eight
 parallel review batches plus a dedicated App Store Review
-Guidelines audit; all findings verified before fixing, Codex
+Guidelines audit; all findings verified before fixing, independent
 counter-review on the changeset.
 
 **App Store compliance**
@@ -171,7 +171,7 @@ finding verified against the code before fixing.
 Captures everything between the v1.0 feature freeze (end of
 Phase 13.16) and the development → main draft PR.
 
-**Codex audits**: four rounds across the 13.x delta, 41 findings
+**External audits**: four rounds across the 13.x delta, 41 findings
 addressed total.
 
 - Round 1 (security-critical): 3 high, 3 medium, 2 low. CSE
@@ -673,7 +673,7 @@ TestFlight step that can't be automated, plus v1.1 follow-ups.
 - 8 localised strings × 10 languages.
 - 5 new `SyncPlanner` tests cover local-folder paths.
 
-### Codex review #2 + fixes (commit `79620a0`)
+### External review #2 + fixes (commit `79620a0`)
 Method-by-method review of Phase 9.5–9.8 + the audit fixes. 10
 findings, 9 addressed:
 - **Blocker (path traversal):** `LocalFolderWriter.safeChildURL`
@@ -704,7 +704,7 @@ findings, 9 addressed:
 - `TrialBookkeeping` extracted from host `EntitlementManager` into
   `BucketeerCore` with a `TrialDefaults` storage seam.
 - 11 regression tests covering the future-date clamp + consumed
-  marker (Codex deep-audit medium #8 mitigation).
+  marker (deep-audit medium #8 mitigation).
 
 ### Phase 9.6 — Core test target (commit `2a5413c`)
 - `BucketeerCore/Tests/BucketeerCoreTests/` with Swift Testing,
@@ -719,14 +719,14 @@ findings, 9 addressed:
 - `Bucketeer File Provider/` rewritten to do live S3 / Azure traffic
   via `ExtensionContainer` (Sendable composition root) and
   `FileProviderItemResolver` with synthetic folder handling.
-- Codex review #1 findings 1, 3, 4, 5 addressed (`any` existentials,
+- External review #1 findings 1, 3, 4, 5 addressed (`any` existentials,
   synthetic folder items, stable sync anchor, visibility tightened).
 - Dead-code pass: 15 unused `import BucketeerCore` removed,
   `CredentialCacheInvalidating` protocol + extensions deleted,
   `EntitlementManager.shutdown()` deleted, umbrella file deleted.
 
-### Codex deep-audit (commit `05fa218`)
-First Codex review across the entire spec-phase delta. 15 findings:
+### Deep audit (commit `05fa218`)
+First external review across the entire spec-phase delta. 15 findings:
 3 blockers + 5 high + 6 medium + 1 low — all addressed in the same
 commit. See the commit body for details.
 

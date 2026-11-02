@@ -131,7 +131,7 @@ struct AzureRequestBuilder: Sendable {
     }
 
     /// `PUT /{container}/{blob}?comp=properties` — Set Blob
-    /// Properties. Phase 14 / Codex R3 (high #2): the previous
+    /// Properties. The previous
     /// metadata save path silently dropped Content-Type,
     /// Cache-Control, Content-Disposition, Content-Encoding —
     /// every Azure HTTP-section edit was a no-op. Set Properties
@@ -213,7 +213,7 @@ struct AzureRequestBuilder: Sendable {
     /// Minimal XML escape for the values that go into Set Blob Tags.
     /// Azure tag keys are alphanumeric + a small set, but values can
     /// contain spaces and a wider charset — escape the structural
-    /// characters defensively. Codex R3 (low): also strip every
+    /// characters defensively. Also strip every
     /// XML-1.0-illegal control scalar so a value with a stray
     /// `\u{0001}` doesn't produce a body Azure rejects.
     static func xmlEscape(_ value: String) -> String {
@@ -240,8 +240,8 @@ struct AzureRequestBuilder: Sendable {
             .replacingOccurrences(of: "'", with: "&apos;")
     }
 
-    /// Sanitise an HTTP header value before it gets sent. Phase 14
-    /// / Codex R3 (medium #1): metadata + tag values that came back
+    /// Sanitise an HTTP header value before it gets sent. Phase 14:
+    /// metadata + tag values that came back
     /// from an untrusted Azure response are echoed into outbound
     /// request headers on save; without stripping CR/LF a hostile
     /// header value could fold a second header onto the request.

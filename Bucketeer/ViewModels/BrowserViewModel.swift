@@ -66,11 +66,6 @@ final class BrowserViewModel {
         self.activityLog = activityLog
     }
 
-    /// Public accessor so the share sheet (and other future direct
-    /// callers) can append to the audit log without us threading
-    /// `activityLog` through three layers of constructors.
-    var auditLog: (any ActivityLogging)? { activityLog }
-
     // MARK: - Derived
 
     var filteredObjects: [S3Object] {
@@ -235,6 +230,15 @@ final class BrowserViewModel {
         isPerformingAction = true
         defer { isPerformingAction = false }
         do {
+            // Rename is copy + delete; the copy would silently replace an
+            // existing object (without a trash capture) under the new name.
+            if try await objectExists(account: account, bucket: bucket, key: newKey) {
+                actionError = .unknown(message: String(
+                    localized: "browser.action.rename.exists",
+                    defaultValue: "An object with that name already exists in this folder."
+                ))
+                return
+            }
             try await s3Browser.copy(
                 account: account,
                 fromBucket: bucket,
@@ -259,6 +263,15 @@ final class BrowserViewModel {
         } catch {
             actionError = .unknown(message: error.localizedDescription)
             await record(.copy, status: .failure, key: key, errorMessage: error.localizedDescription)
+        }
+    }
+
+    private func objectExists(account: S3Account, bucket: String, key: String) async throws -> Bool {
+        do {
+            _ = try await s3Browser.head(account: account, bucket: bucket, key: key)
+            return true
+        } catch BucketeerError.objectNotFound {
+            return false
         }
     }
 
@@ -351,7 +364,7 @@ final class BrowserViewModel {
     private func loadBuckets(token: UInt64) async {
         guard let account else { return }
         isLoading = true
-        // Codex medium #12: clear isLoading on every exit path,
+        // Clear isLoading on every exit path,
         // including the stale-token short-circuits. Without this the
         // spinner stuck in the UI after rapid account switches.
         defer { if !isStale(token) { isLoading = false } }
@@ -380,7 +393,7 @@ final class BrowserViewModel {
             hasMore = false
         }
         isLoading = true
-        // Codex medium #12: defer-based isLoading clearing so the
+        // Defer-based isLoading clearing so the
         // spinner stops on every exit path, including the stale-token
         // returns that previously short-circuited before the final
         // `isLoading = false`.

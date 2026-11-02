@@ -10,7 +10,7 @@ import Foundation
 /// Pure trial-state computation lifted out of the host's
 /// `EntitlementManager`. Keeps the StoreKit-tied behaviour in the host
 /// and lets us regression-test the future-date clamp + consumed marker
-/// (Codex review #8 mitigation) without standing up an Observable
+///  without standing up an Observable
 /// model in a UI test target.
 ///
 /// Storage is abstracted via `TrialDefaults` so tests can swap in an

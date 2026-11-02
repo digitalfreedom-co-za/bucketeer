@@ -24,17 +24,6 @@ struct AzureSASBuilder: Sendable {
 
     static let signingVersion = "2021-12-02"
 
-    /// Service-SAS query parameters, ready to be appended to the blob
-    /// URL. Names are the short form Azure expects (`sv`, `sp`, etc.).
-    struct QueryParameters: Sendable {
-        let signedVersion: String
-        let signedResource: String     // "b" for blob
-        let signedPermissions: String  // "r" for read
-        let signedExpiry: String       // ISO-8601, UTC
-        let signedProtocol: String     // "https"
-        let signature: String          // base64 HMAC-SHA256
-    }
-
     let accountName: String
     let accountKeyData: Data
 

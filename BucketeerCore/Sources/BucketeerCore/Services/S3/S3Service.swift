@@ -104,7 +104,7 @@ public struct S3Service: S3Browsing {
 
     /// S3 caps `DeleteObjects` at 1000 keys per request (per API spec).
     /// Chunk recursive deletes / large multi-selects accordingly —
-    /// Codex high #6: without batching the operation would fail
+    /// Without batching the operation would fail
     /// outright instead of completing in slices.
     private static let deleteObjectsBatchSize = 1000
 
@@ -216,13 +216,11 @@ public struct S3Service: S3Browsing {
         ttl: TimeInterval
     ) async throws -> URL {
         let s3 = try await factory.client(for: account)
-        let endpoint = S3ClientFactory.endpoint(for: account)
-        let encodedKey = key.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? key
-        // Path-style and virtual-host both work — we always go
-        // path-style here because the signed URL is independent from
-        // the account's runtime addressing mode and `endpoint` is
-        // already the right base.
-        let url = endpoint.appending(path: "\(bucket)/\(encodedKey)")
+        let url = Self.presignTargetURL(
+            endpoint: S3ClientFactory.endpoint(for: account),
+            bucket: bucket,
+            key: key
+        )
         let clamped = max(60, min(ttl, 7 * 24 * 60 * 60))
         let expires = TimeAmount.seconds(Int64(clamped))
         do {
@@ -234,6 +232,15 @@ public struct S3Service: S3Browsing {
         } catch {
             throw Self.map(error)
         }
+    }
+
+    /// Path-style object URL for signing. Path-style and virtual-host
+    /// both work; the signed URL is independent from the account's
+    /// runtime addressing mode and `endpoint` is already the right base.
+    /// `appending(path:)` percent-encodes the raw key itself — encoding
+    /// it beforehand produced `%2520` for a space.
+    static func presignTargetURL(endpoint: URL, bucket: String, key: String) -> URL {
+        endpoint.appending(path: "\(bucket)/\(key)")
     }
 
     // MARK: - Versioning (Phase 13.6)
@@ -429,7 +436,10 @@ public struct S3Service: S3Browsing {
                 copySource: encodedSource,
                 key: key,
                 metadata: userMetadata,
-                metadataDirective: .replace
+                metadataDirective: .replace,
+                // A copy onto itself defaults to STANDARD; keep the
+                // object's class so editing metadata does not move it.
+                storageClass: metadata.storageClass.flatMap(S3.StorageClass.init(rawValue:))
             ))
         } catch {
             throw Self.map(error, bucket: bucket, key: key)
@@ -569,6 +579,8 @@ public struct S3Service: S3Browsing {
     // contract holds on the multipart path too.
     static func map(_ error: Error, bucket: String? = nil, key: String? = nil) -> BucketeerError {
         if let existing = error as? BucketeerError { return existing }
+        if error is CancellationError { return .cancelled }
+        if let urlError = error as? URLError, urlError.code == .cancelled { return .cancelled }
 
         if let s3Error = error as? S3ErrorType {
             switch s3Error.errorCode {

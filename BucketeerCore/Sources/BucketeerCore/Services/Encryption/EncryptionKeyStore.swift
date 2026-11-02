@@ -88,7 +88,7 @@ public actor EncryptionKeyStore: EncryptionKeyStoring {
 
     public func keyMaterial(id: UUID) async throws -> Data {
         let bytes = try readKeychain(id: id)
-        // Codex audit fix (medium #2): every key in this store is an
+        // Every key in this store is an
         // AES-256 symmetric key — anything that isn't 32 bytes is a
         // corrupted / tampered Keychain item and must not be handed
         // to CryptoKit, which would silently key under it.
@@ -101,7 +101,7 @@ public actor EncryptionKeyStore: EncryptionKeyStoring {
     }
 
     public func delete(id: UUID) async throws {
-        // Codex audit fix (low #2): delete the Keychain bytes
+        // Delete the Keychain bytes
         // *before* the SwiftData metadata. A Keychain failure here
         // throws; we never end up with raw key material on disk that
         // has no visible record pointing at it. Metadata-without-

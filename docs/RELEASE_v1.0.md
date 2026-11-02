@@ -23,7 +23,7 @@ Everything on `development` at the v1.0 cut. That's:
   lifecycle viewer, resumable uploads, deep links, App Intents,
   Spotlight, cross-account copy, client-side encryption, hardware
   key preview).
-- Two Codex audit rounds — every blocker / high / medium / low
+- Two external audit rounds — every blocker / high / medium / low
   finding addressed.
 - Azure parity for object versions (snapshots), metadata + tags.
 

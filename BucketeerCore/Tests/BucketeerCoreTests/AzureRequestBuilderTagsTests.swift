@@ -9,14 +9,14 @@ import Foundation
 import Testing
 @testable import BucketeerCore
 
-/// Phase 14 / Codex R3 + R5 coverage for the Azure-parity helpers
+/// Phase 14 coverage for the Azure-parity helpers
 /// in `AzureRequestBuilder`: XML escaping, control-scalar stripping,
 /// HTTP-token validation, header-value sanitisation, and the
 /// Azure-specific metadata name + value validators.
 @Suite("AzureRequestBuilder helpers")
 struct AzureRequestBuilderTagsTests {
 
-    // MARK: - Azure metadata validators (Codex R5)
+    // MARK: - Azure metadata validators
 
     @Test("Azure metadata name accepts C#-identifier-style names")
     func azureMetaNameAcceptsIdentifiers() {
@@ -53,7 +53,7 @@ struct AzureRequestBuilderTagsTests {
         #expect(escaped == "a &amp; b &lt; c &gt; d &quot; e &apos; f")
     }
 
-    @Test("xmlEscape strips XML 1.0 illegal control scalars (Codex R3 low)")
+    @Test("xmlEscape strips XML 1.0 illegal control scalars")
     func xmlEscapeStripsControlChars() {
         // \u{0001} and \u{0008} are forbidden in XML 1.0. \u{0009}
         // (tab), \u{000A} (LF), \u{000D} (CR) are allowed.

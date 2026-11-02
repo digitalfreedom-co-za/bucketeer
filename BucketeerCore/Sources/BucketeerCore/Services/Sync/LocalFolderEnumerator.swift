@@ -22,7 +22,7 @@ public enum LocalFolderEnumerator {
 
     /// Recursively enumerate every regular file under `root`. Caller is
     /// responsible for security-scoped resource access (start/stop)
-    /// around this call. Codex high #4: periodically checks
+    /// around this call. Periodically checks
     /// `Task.checkCancellation()` so a user-initiated sync cancel
     /// during a large folder walk actually stops promptly instead of
     /// running to completion and only honouring the cancel afterwards.
@@ -34,12 +34,24 @@ public enum LocalFolderEnumerator {
             .fileSizeKey,
             .contentModificationDateKey
         ]
+        // A missing, unmounted or unreadable folder must fail the run,
+        // not enumerate as empty: the planner would otherwise schedule a
+        // mirror delete for every destination key.
+        var isDirectory: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: root.path, isDirectory: &isDirectory),
+              isDirectory.boolValue
+        else { throw unavailableError }
+        var walkFailed = false
         guard let walker = FileManager.default.enumerator(
             at: root,
             includingPropertiesForKeys: Array(keys),
-            options: [.skipsHiddenFiles, .producesRelativePathURLs]
+            options: [.skipsHiddenFiles, .producesRelativePathURLs],
+            errorHandler: { _, _ in
+                walkFailed = true
+                return false
+            }
         ) else {
-            return []
+            throw unavailableError
         }
         var counter = 0
         for case let url as URL in walker {
@@ -67,7 +79,15 @@ public enum LocalFolderEnumerator {
                 isFolder: false
             ))
         }
+        if walkFailed { throw unavailableError }
         return results
+    }
+
+    private static var unavailableError: BucketeerError {
+        .unknown(message: String(
+            localized: "sync.error.localFolderUnavailable",
+            defaultValue: "The local folder is missing or could not be read completely, so the sync job stopped before changing anything."
+        ))
     }
 
     /// Resolve a security-scoped bookmark back to a URL. Caller must
@@ -96,11 +116,11 @@ public enum LocalFolderWriter {
     /// Copy an already-downloaded file to the target relative path.
     /// Used by `SyncEngine` when the source has produced a staging
     /// file (e.g. from the TransferManager download path) and we need
-    /// to move it into place. Atomic — Codex #8 mitigation — uses
+    /// to move it into place. Atomic — uses
     /// `replaceItemAt` so a failed move never leaves the destination
     /// in an inconsistent state. Path-traversal guarded via
     /// `safeChildURL` so a malicious S3 key cannot escape the chosen
-    /// sync root (Codex blocker #1 mitigation).
+    /// sync root.
     public static func install(
         from temp: URL,
         relativeKey: String,
@@ -139,7 +159,7 @@ public enum LocalFolderWriter {
         try FileManager.default.removeItem(at: target)
     }
 
-    /// Codex blocker #1: confine every write/delete to paths whose
+    /// Confine every write/delete to paths whose
     /// resolved form lives inside `root`. Rejects absolute paths,
     /// `.`/`..` components, and the empty string. Both `root` and the
     /// resolved destination are `standardized` (symlinks resolved,

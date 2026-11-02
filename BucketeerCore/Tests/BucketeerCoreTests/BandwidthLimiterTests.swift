@@ -80,14 +80,4 @@ struct BandwidthLimiterTests {
         await waiter.value
         #expect(ContinuousClock.now - start < .seconds(3))
     }
-
-    @Test("currentLimit reflects the most recent setLimit call")
-    func currentLimitReflectsSetter() async {
-        let limiter = BandwidthLimiter(bytesPerSecond: 2_048)
-        var snapshot = await limiter.currentLimit
-        #expect(snapshot == 2_048)
-        await limiter.setLimit(bytesPerSecond: 4_096)
-        snapshot = await limiter.currentLimit
-        #expect(snapshot == 4_096)
-    }
 }

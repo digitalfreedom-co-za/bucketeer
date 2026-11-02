@@ -24,7 +24,7 @@ struct AppIntentsBridge: Sendable {
     /// elapses. Default 5 s — enough for cold-launch on a healthy
     /// Mac, short enough that a wedged App still returns an error.
     ///
-    /// Codex audit R2 (low): use the monotonic `ContinuousClock`
+    /// Use the monotonic `ContinuousClock`
     /// instead of wall-clock `Date` arithmetic so system-clock
     /// changes (NTP sync, manual user adjustment) can't shorten or
     /// extend the wait window.
@@ -64,7 +64,7 @@ struct AppIntentsBridge: Sendable {
     }
 
     /// Snapshot of every configured sync job for the Shortcuts
-    /// picker. Codex R2 (low) follow-up so `RunSyncJobIntent`
+    /// picker, so `RunSyncJobIntent`
     /// matches by stable ID rather than collision-prone name.
     func syncJobs() async throws -> [SyncJobEntity] {
         let container = try await container()

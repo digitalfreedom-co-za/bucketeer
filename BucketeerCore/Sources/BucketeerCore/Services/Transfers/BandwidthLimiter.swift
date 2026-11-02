@@ -57,8 +57,6 @@ public actor BandwidthLimiter {
         self.lastRefill = .now
     }
 
-    public var currentLimit: Int { bytesPerSecond }
-
     /// Charge the bucket for `bytes`. Returns immediately when the
     /// limiter is disabled. Otherwise sleeps until the token bucket
     /// has enough capacity to cover all the requested bytes, draining

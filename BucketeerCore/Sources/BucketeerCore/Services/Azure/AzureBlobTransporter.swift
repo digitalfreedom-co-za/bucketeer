@@ -60,8 +60,12 @@ public struct AzureBlobTransporter: Sendable {
         contentType: String?,
         progress: @Sendable @escaping (Int64, Int64) async -> Void
     ) async throws {
-        let size = (try? localURL.resourceValues(forKeys: [.fileSizeKey]))?.fileSize
-        let fileSize = Int64(size ?? 0)
+        // An unknown size must not be treated as 0: the single-shot
+        // path would PUT an empty blob for a non-empty file.
+        guard let size = try? localURL.resourceValues(forKeys: [.fileSizeKey]).fileSize else {
+            throw BucketeerError.sandboxAccessDenied(localURL)
+        }
+        let fileSize = Int64(size)
 
         let signer = try await credentialsCache.signer(for: account)
         let builder = AzureRequestBuilder(account: account)
@@ -117,7 +121,7 @@ public struct AzureBlobTransporter: Sendable {
         request.httpBody = data
         signer.sign(&request)
 
-        let (responseData, response) = try await session.data(for: request)
+        let (responseData, response) = try await session.azureData(for: request)
         // Phase 13.2 — post-charge the limiter once the bytes have hit
         // the wire so the next call back-pressures correctly.
         await limiter?.consume(bytes: data.count)
@@ -166,7 +170,13 @@ public struct AzureBlobTransporter: Sendable {
                 let offset = Int64(index) * blockSize
                 let chunkSize = min(blockSize, fileSize - offset)
                 try handle.seek(toOffset: UInt64(offset))
-                guard let chunk = try handle.read(upToCount: Int(chunkSize)) else { return }
+                // A short read would commit a block list that references
+                // a block that was never staged.
+                guard let chunk = try handle.read(upToCount: Int(chunkSize)),
+                      chunk.count == Int(chunkSize)
+                else {
+                    throw BucketeerError.sandboxAccessDenied(localURL)
+                }
                 let blockID = blockIDs[index]
 
                 group.addTask { [session, limiter] in
@@ -229,7 +239,7 @@ public struct AzureBlobTransporter: Sendable {
         request.httpBody = data
         signer.sign(&request)
 
-        let (responseData, response) = try await session.data(for: request)
+        let (responseData, response) = try await session.azureData(for: request)
         guard let http = response as? HTTPURLResponse else {
             throw BucketeerError.unknown(message: "Azure Put Block returned a non-HTTP response.")
         }
@@ -261,7 +271,7 @@ public struct AzureBlobTransporter: Sendable {
         request.httpBody = body
         signer.sign(&request)
 
-        let (responseData, response) = try await session.data(for: request)
+        let (responseData, response) = try await session.azureData(for: request)
         guard let http = response as? HTTPURLResponse else {
             throw BucketeerError.unknown(message: "Azure Put Block List returned a non-HTTP response.")
         }
@@ -293,7 +303,7 @@ public struct AzureBlobTransporter: Sendable {
         )
         headRequest.httpMethod = "HEAD"
         signer.sign(&headRequest)
-        let (_, headResponse) = try await session.data(for: headRequest)
+        let (_, headResponse) = try await session.azureData(for: headRequest)
         guard let headHTTP = headResponse as? HTTPURLResponse else {
             throw BucketeerError.unknown(message: "Azure HEAD returned a non-HTTP response.")
         }
@@ -352,7 +362,7 @@ public struct AzureBlobTransporter: Sendable {
         request.httpMethod = "GET"
         signer.sign(&request)
 
-        let (data, response) = try await session.data(for: request)
+        let (data, response) = try await session.azureData(for: request)
         guard let http = response as? HTTPURLResponse else {
             throw BucketeerError.unknown(message: "Azure GET returned a non-HTTP response.")
         }
@@ -448,7 +458,7 @@ public struct AzureBlobTransporter: Sendable {
         request.setValue("bytes=\(offset)-\(endInclusive)", forHTTPHeaderField: "Range")
         signer.sign(&request)
 
-        let (data, response) = try await session.data(for: request)
+        let (data, response) = try await session.azureData(for: request)
         guard let http = response as? HTTPURLResponse else {
             throw BucketeerError.unknown(message: "Azure ranged GET returned a non-HTTP response.")
         }
@@ -457,7 +467,7 @@ public struct AzureBlobTransporter: Sendable {
         ) {
             throw mapped
         }
-        // Codex review #5: a proxy or misbehaving server that ignores
+        // A proxy or misbehaving server that ignores
         // the Range header returns 200 with the full body — writing
         // that into our chunk slot would scramble the file. Demand
         // 206 (Partial Content) and verify the response is exactly
@@ -475,7 +485,7 @@ public struct AzureBlobTransporter: Sendable {
                 message: "Azure ranged GET returned \(data.count) bytes; expected \(length)."
             )
         }
-        // Codex review #4: write failures now propagate so a disk-full
+        // Write failures now propagate so a disk-full
         // or permission error fails the task group instead of leaving
         // a corrupt partial file marked complete.
         try await writer.write(data, at: offset)
@@ -517,7 +527,7 @@ private actor DownloadWriter {
         self.callback = callback
     }
 
-    /// Codex review #4: write failures now propagate to the caller so a
+    /// Write failures now propagate to the caller so a
     /// disk-full, permission, or invalid-handle error fails the outer
     /// throwing task group immediately instead of leaving a corrupt
     /// partial file marked complete.

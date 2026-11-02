@@ -86,7 +86,7 @@ struct TrialBookkeepingTests {
         #expect(store.bool(forKey: TrialBookkeeping.trialConsumedKey) == true)
     }
 
-    @Test("Consumed marker survives deleting the trial-start key — Codex review #8 mitigation")
+    @Test("Consumed marker survives deleting the trial-start key")
     func consumedMarkerSurvivesStartDeletion() {
         let (book, store) = bookkeeping()
         // Simulate trial expiry, then user deletes the start key
@@ -101,7 +101,7 @@ struct TrialBookkeepingTests {
 
     // MARK: - Future-date clamp
 
-    @Test("Future trial-start dates are clamped to now — Codex review #8 mitigation")
+    @Test("Future trial-start dates are clamped to now")
     func futureStartIsClamped() {
         let (book, store) = bookkeeping()
         let now = Date(timeIntervalSince1970: 1_000_000)

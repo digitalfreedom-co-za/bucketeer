@@ -260,6 +260,13 @@ struct SyncJobSheet: View {
                     .foregroundStyle(.secondary)
             }
         }
+        // "On local change" needs a local source; switching the source
+        // away must not save a job with a schedule it cannot run.
+        .onChange(of: sourceKind) { _, newKind in
+            if newKind != .localFolder, scheduleKind == .onLocalChange {
+                scheduleKind = .manual
+            }
+        }
     }
 
     /// Either side picked as local — used to surface the ETag-not-

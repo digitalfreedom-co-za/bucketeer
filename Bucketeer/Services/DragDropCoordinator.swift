@@ -29,14 +29,17 @@ final class DragDropCoordinator {
     private let transferQueue: TransferQueueViewModel
     private let accountStore: any AccountStoring
     private let entitlements: EntitlementManager
+    private let encryptionGate: BucketEncryptionGate?
 
     init(
         s3Browser: any S3Browsing,
         transferManager: TransferManager,
         transferQueue: TransferQueueViewModel,
         accountStore: any AccountStoring,
-        entitlements: EntitlementManager
+        entitlements: EntitlementManager,
+        encryptionGate: BucketEncryptionGate?
     ) {
+        self.encryptionGate = encryptionGate
         self.s3Browser = s3Browser
         self.transferManager = transferManager
         self.transferQueue = transferQueue
@@ -92,7 +95,7 @@ final class DragDropCoordinator {
         destinationPrefix: String
     ) async {
         // Folder drops require recursive enumeration of the source
-        // prefix — out of scope for v1 (Codex review #9). Drop on the
+        // prefix — out of scope for v1. Drop on the
         // floor so the user does not get half-folder copies or a
         // misleading single-key copy of `foo/`.
         if ref.isFolder { return }
@@ -110,7 +113,7 @@ final class DragDropCoordinator {
         }
         guard let sourceAccount else { return }
         // Compute the destination key first so the self-drop comparison
-        // is exact (Codex review #9 — comparing parent prefixes only
+        // is exact (comparing parent prefixes only
         // missed the case where dragging a row back onto its own row
         // produced a no-op copy that still surfaced as a queue entry).
         let destinationKey = destinationPrefix + ref.displayName
@@ -132,7 +135,13 @@ final class DragDropCoordinator {
             return
         }
 
-        if sourceAccount.id == destinationAccount.id {
+        let encryptionAllowsServerCopy = await encryptionGate?.allowsServerSideCopy(
+            sourceAccountID: sourceAccount.id,
+            sourceBucket: ref.bucket,
+            destinationAccountID: destinationAccount.id,
+            destinationBucket: destinationBucket
+        ) ?? true
+        if sourceAccount.id == destinationAccount.id, encryptionAllowsServerCopy {
             // Server-side copy within one account.
             do {
                 try await s3Browser.copy(
@@ -183,8 +192,7 @@ final class DragDropCoordinator {
             key: ref.key,
             localURL: staging
         )
-        // Use the actor's per-ID waiter (added in the Codex review
-        // response) instead of polling the public snapshot stream —
+        // Use the actor's per-ID waiter instead of polling the public snapshot stream —
         // the stream version has a known race where a fast transfer
         // completes before we ever see it.
         let downloadResult = await transferManager.awaitCompletion(id: downloadID)

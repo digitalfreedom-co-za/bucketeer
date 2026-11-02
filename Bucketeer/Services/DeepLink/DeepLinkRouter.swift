@@ -24,8 +24,7 @@ import BucketeerCore
 final class DeepLinkRouter {
     private let browser: BrowserViewModel
     private let accountStore: any AccountStoring
-    /// Monotonically increasing route token — Codex audit R2
-    /// (medium): when the user pastes several `bucketeer://` URLs
+    /// Monotonically increasing route token: when the user pastes several `bucketeer://` URLs
     /// rapidly, each spawns an async load. Without a token, the
     /// loads can resolve out of order and leave the browser on a
     /// stale destination. Every async navigation checks its
@@ -89,10 +88,13 @@ final class DeepLinkRouter {
     ) async {
         do {
             let accounts = try await accountStore.all()
-            // Codex audit R2 (medium): bail if a newer handle()
+            // Bail if a newer handle()
             // bumped the token while we were awaiting accountStore.
             guard token == routeToken else { return }
             guard let account = accounts.first(where: { $0.id == accountID }) else { return }
+            // Full reset first: a selection left over from the previous
+            // bucket must not be applied to keys of the new one.
+            browser.clear()
             browser.account = account
             browser.bucket = bucket
             browser.prefix = prefix

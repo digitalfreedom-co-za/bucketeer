@@ -106,6 +106,7 @@ struct WatchFolderSheet: View {
         panel.prompt = String(localized: "watchFolder.action.chooseFolder",
                               defaultValue: "Choose Folder")
         if panel.runModal() == .OK, let url = panel.url {
+            errorMessage = nil
             do {
                 let bookmark = try url.bookmarkData(
                     options: [.withSecurityScope],

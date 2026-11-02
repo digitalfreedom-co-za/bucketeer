@@ -40,7 +40,7 @@ public actor ActivityLogStore: ActivityLogging {
         accountID: UUID?,
         limit: Int
     ) async throws -> [ActivityEntry] {
-        // Codex audit R2 (medium): clamp before the over-fetch
+        // Clamp before the over-fetch
         // multiplication so a giant caller limit can't overflow Int
         // into a trap and a negative limit can't reach `prefix`.
         let safeLimit = max(0, min(limit, Int.max / 4))

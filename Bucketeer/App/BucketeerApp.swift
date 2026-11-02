@@ -28,7 +28,7 @@ struct BucketeerApp: App {
         // SwiftUI state directly.
         AppContainer.shared = container
         // Inject the activation controller into the **adaptor-managed**
-        // delegate instance, not a separate singleton. Codex high #5:
+        // delegate instance, not a separate singleton.
         // the adaptor creates a fresh BucketeerAppDelegate at launch;
         // assigning to a `static let shared` left the live delegate
         // with `activationController == nil`, so menubar mode never
@@ -159,7 +159,7 @@ private struct AppCommands: Commands {
         // The default New File / New Window items are noise for an
         // object-storage browser. Drop them entirely; the "+ Add account"
         // affordance lives in the sidebar where it has the context to
-        // do something useful. Codex low #15: a stubbed no-op menu item
+        // do something useful. A stubbed no-op menu item
         // is shipped dead code.
         CommandGroup(replacing: .newItem) {}
 

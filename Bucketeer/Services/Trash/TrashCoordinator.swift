@@ -130,7 +130,7 @@ final class TrashCoordinator {
     ) async {
         let fileName = id.uuidString + ".bin"
         let destURL = cacheRootURL.appendingPathComponent(fileName)
-        // Codex audit fix (high #2): the trash cache must keep the
+        // The trash cache must keep the
         // raw bytes as the object exists on the provider — for an
         // encrypted bucket that's the Bucketeer envelope, not
         // plaintext. Without `bypassDecryption: true`, the local
@@ -153,14 +153,9 @@ final class TrashCoordinator {
         }
     }
 
-    /// Re-upload the cached payload to a destination chosen by the
-    /// caller. Returns `nil` on success, an error message otherwise.
-    func restore(
-        item: TrashedItem,
-        toBucket: String? = nil,
-        toKey: String? = nil,
-        account: S3Account
-    ) async -> String? {
+    /// Re-upload the cached payload to its original location. Returns
+    /// `nil` on success, an error message otherwise.
+    func restore(item: TrashedItem, account: S3Account) async -> String? {
         guard let cachedName = item.cachedFileName,
               item.cacheStatus == .cached else {
             return String(
@@ -175,14 +170,15 @@ final class TrashCoordinator {
                 defaultValue: "The cached file is gone from disk."
             )
         }
-        let destinationBucket = toBucket ?? item.bucket
-        let destinationKey = toKey ?? item.key
+        // The capture keeps an encrypted object's envelope as-is; sealing
+        // it again on upload would leave the restored object unreadable.
         let id = await transferManager.enqueueUpload(
             account: account,
-            bucket: destinationBucket,
-            key: destinationKey,
+            bucket: item.bucket,
+            key: item.key,
             localURL: fileURL,
-            contentType: item.contentType
+            contentType: item.contentType,
+            bypassEncryption: BucketeerEnvelope.fileLooksEncrypted(at: fileURL)
         )
         let state = await transferManager.awaitCompletion(id: id)
         switch state {

@@ -79,7 +79,7 @@ final class AppContainer {
     let bucketEncryptionGate: BucketEncryptionGate
     /// Phase 13.16 — hardware-key (CryptoTokenKit) unlock toggle.
     let hardwareKeySettings: HardwareKeySettings
-    /// Phase 14 / Codex R4 (high): multicast broker around the
+    /// Multicast broker around the
     /// single `SyncEngine.statuses` AsyncStream so the sync list
     /// view model and the new sync-job detail window can both
     /// observe without racing for events.
@@ -105,7 +105,7 @@ final class AppContainer {
             modelContainer: encryptionContainer
         )
         let bucketEncryptionGate = BucketEncryptionGate(keyStore: encryptionKeyStore)
-        // Codex blocker #3: write to the shared keychain access group
+        // Write to the shared keychain access group
         // so the File Provider extension (which reads from the same
         // group) can load credentials. Production-signed builds need
         // the entitlement provisioned at developer.apple.com — local
@@ -200,7 +200,8 @@ final class AppContainer {
             transferManager: transferManager,
             transferQueue: self.transferQueueViewModel,
             accountStore: accountStore,
-            entitlements: entitlementManager
+            entitlements: entitlementManager,
+            encryptionGate: bucketEncryptionGate
         )
         let activationController = AppActivationController()
         self.activationController = activationController
@@ -225,6 +226,7 @@ final class AppContainer {
             browser: router,
             transferManager: transferManager,
             activityLog: activityLog,
+            encryptionGate: bucketEncryptionGate,
             isAuthorized: { [entitlementManager] in
                 await entitlementManager.isUnlockedAfterLaunchCheck(.syncEngine)
             }
@@ -309,15 +311,15 @@ final class AppContainer {
         self.accountListViewModel.spotlightIndexer = spotlightIndexer
 
         // Phase 13.14 — cross-account copy / move. Encryption gate
-        // wired in after Codex audit (high #1) so server-side copy
-        // is automatically disabled on encrypted buckets.
+        // The encryption gate disables server-side copy on encrypted
+        // buckets.
         self.crossAccountCopyCoordinator = CrossAccountCopyCoordinator(
             browser: router,
             transferManager: transferManager,
             activityLog: activityLog,
             encryptionGate: bucketEncryptionGate
         )
-        // Codex audit fix (medium #3) — wipe any plaintext staging
+        // Wipe any plaintext staging
         // files left over from a crashed round-trip copy. Detached:
         // synchronous directory enumeration in a @MainActor init would
         // block the first render frame on a slow volume.

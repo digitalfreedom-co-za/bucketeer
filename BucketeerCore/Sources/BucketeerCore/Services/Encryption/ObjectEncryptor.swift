@@ -36,7 +36,7 @@ public enum BucketeerEnvelope {
     /// Encrypt `plaintext` under `key` and wrap with the Bucketeer
     /// envelope header.
     ///
-    /// Codex audit fix (medium #1): the envelope header (magic +
+    /// The envelope header (magic +
     /// version + reserved) is passed to AES-GCM as *additional
     /// authenticated data* so any tamper with the version byte or
     /// the reserved bits flips the tag check on open. Without this,
@@ -66,7 +66,7 @@ public enum BucketeerEnvelope {
     /// check fails (wrong key, tampered ciphertext, or tampered
     /// header).
     public static func open(envelope: Data, key: SymmetricKey) throws -> Data {
-        // Codex audit fix (low #1): zero-byte plaintexts produce a
+        // Zero-byte plaintexts produce a
         // valid envelope of exactly `headerSize + nonceSize + 16`.
         // The previous strict `>` guard rejected that legitimate
         // case as malformed.
@@ -80,7 +80,7 @@ public enum BucketeerEnvelope {
 
         // Reconstruct the exact bytes we passed as AAD at seal time.
         // Any tamper with the reserved bytes flips the tag check
-        // below — Codex audit fix (medium #1).
+        // below.
         let headerData = envelope.prefix(headerSize)
 
         let nonceStart = envelope.startIndex + headerSize
@@ -119,6 +119,14 @@ public enum BucketeerEnvelope {
     public static func looksEncrypted(_ data: Data) -> Bool {
         guard data.count >= headerSize else { return false }
         return Array(data.prefix(magic.count)) == magic
+    }
+
+    /// `looksEncrypted` for a file on disk; reads only the header.
+    public static func fileLooksEncrypted(at url: URL) -> Bool {
+        guard let handle = try? FileHandle(forReadingFrom: url) else { return false }
+        defer { try? handle.close() }
+        let header = (try? handle.read(upToCount: headerSize)) ?? Data()
+        return looksEncrypted(header)
     }
 }
 

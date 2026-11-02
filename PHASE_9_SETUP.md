@@ -98,6 +98,6 @@ not yet provisioned — go back to Step 1.
   `AppEnvironment.keychainAccessGroup` with a one-shot migration of
   existing entries — currently the host writes to the private namespace
   so the extension only sees credentials added *after* a provisioned
-  build. Tracked as Codex review #10 follow-up.
+  build.
 - Flat-listing primitive on `S3Browsing` to skip the per-prefix recursion
   in the sync engine and the file provider walk for huge buckets

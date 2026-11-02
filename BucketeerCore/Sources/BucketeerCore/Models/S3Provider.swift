@@ -181,16 +181,6 @@ public enum S3Provider: String, Codable, CaseIterable, Sendable {
 
     // MARK: - Localised terminology
 
-    /// String-catalog key for the sidebar / list section header. Azure
-    /// terminology is "container", every S3-compatible provider uses
-    /// "bucket".
-    public var bucketTerminologyKey: String {
-        switch family {
-        case .azureBlob: return "term.container"
-        case .s3:        return "term.bucket"
-        }
-    }
-
     /// String-catalog key for the accountID field label. Cloudflare R2
     /// uses "Cloudflare account ID"; Azure uses "Storage account name".
     public var accountIDFieldLabelKey: String {

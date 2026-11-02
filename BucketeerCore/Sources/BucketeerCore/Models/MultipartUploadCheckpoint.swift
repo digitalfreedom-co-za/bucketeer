@@ -36,7 +36,7 @@ public struct MultipartUploadCheckpoint: Identifiable, Hashable, Sendable {
     public let createdAt: Date
     public var lastTouchedAt: Date
     /// File-identity fingerprint at the moment the upload started —
-    /// Codex audit fix (high #3). Without this, a different file
+    /// Without this, a different file
     /// with the same path + size as a stale checkpoint would have
     /// its first parts assembled from the *previous* file's
     /// already-uploaded chunks. Format is opaque to callers; see
@@ -76,7 +76,7 @@ public struct MultipartUploadCheckpoint: Identifiable, Hashable, Sendable {
     }
 
     /// Cheap identity blob for a local file — nanosecond-precision
-    /// mtime + inode + size. Codex R3 (medium) bumped this from
+    /// mtime + inode + size, up from
     /// the previous second-precision mtime so a same-path
     /// same-size replacement within one second still flips the
     /// fingerprint. We avoid full-content hashing because

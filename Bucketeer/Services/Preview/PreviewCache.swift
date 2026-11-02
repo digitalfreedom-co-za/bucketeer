@@ -105,6 +105,9 @@ actor PreviewCache {
             key: object.key,
             etag: object.etag
         )
+        if let pending = inflight[hash] {
+            return try await pending.value
+        }
         if let cached = cachedURL(
             account: account,
             bucket: bucket,
@@ -113,19 +116,24 @@ actor PreviewCache {
         ) {
             return cached
         }
-        if let pending = inflight[hash] {
-            return try await pending.value
-        }
         let url = fileURL(for: hash)
         let downloader = self.downloader
         let task = Task { () throws -> URL in
-            try? FileManager.default.removeItem(at: url)
+            // Download beside the final path and move on success: a
+            // file at `url` is treated as a complete cache hit, so a
+            // half-written or crashed download must never sit there.
+            let partial = url.appendingPathExtension("part")
+            try? FileManager.default.removeItem(at: partial)
+            defer { try? FileManager.default.removeItem(at: partial) }
             try await downloader.fetch(
                 account: account,
                 bucket: bucket,
                 key: object.key,
-                to: url
+                to: partial
             )
+            try Self.rejectEncryptedPayload(at: partial)
+            try? FileManager.default.removeItem(at: url)
+            try FileManager.default.moveItem(at: partial, to: url)
             return url
         }
         inflight[hash] = task
@@ -144,35 +152,15 @@ actor PreviewCache {
         }
     }
 
-    /// Forget an object — used when the underlying object is renamed or
-    /// deleted and the cached preview is no longer valid.
-    func evict(account: S3Account, bucket: String, key: String, etag: String) {
-        let hash = Self.hash(accountID: account.id, bucket: bucket, key: key, etag: etag)
-        if let entry = entries.removeValue(forKey: hash) {
-            try? FileManager.default.removeItem(at: entry.url)
-        }
-    }
-
-    /// Empty the cache. Codex review #7 — the previous implementation
-    /// only walked the in-memory index, missing files written by a
-    /// previous app run before the user requested any preview this
-    /// session. Codex review #14 — cancel + drain in-flight downloads
-    /// first so a fetch that lands after the dir wipe cannot repopulate
-    /// the cache and defeat the "Clear Cache" intent.
-    func clearAll() async {
-        for (_, task) in inflight {
-            task.cancel()
-        }
-        for (_, task) in inflight {
-            _ = try? await task.value
-        }
-        inflight.removeAll()
-        try? FileManager.default.removeItem(at: root)
-        try? FileManager.default.createDirectory(
-            at: root,
-            withIntermediateDirectories: true
-        )
-        entries.removeAll()
+    /// Previews never decrypt: the cache lives on disk, and plaintext
+    /// copies of encrypted objects must not outlive the transfer that
+    /// asked for them (same rule as the trash cache).
+    private static func rejectEncryptedPayload(at url: URL) throws {
+        guard BucketeerEnvelope.fileLooksEncrypted(at: url) else { return }
+        throw BucketeerError.unknown(message: String(
+            localized: "preview.error.encrypted",
+            defaultValue: "Previews aren't available for encrypted objects. Download the object to open it."
+        ))
     }
 
     // MARK: - LRU

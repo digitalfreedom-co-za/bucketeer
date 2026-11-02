@@ -422,7 +422,7 @@ sequenceDiagram
     Note over Finder, Ext: Delete folder = recursive list + chunked DeleteObjects<br/>(safeChildURL guards on local destinations)
 ```
 
-**Capability rules per item type** (Codex medium #10 fix):
+**Capability rules per item type**:
 
 | Item | Capabilities |
 |---|---|
@@ -467,7 +467,7 @@ stateDiagram-v2
 
 ## 5. Account add / edit transactional flow
 
-Saves Keychain first, then SwiftData. Codex high #7 ensures rollback
+Saves Keychain first, then SwiftData. Rollback
 distinguishes edit (restore previous credentials) from create
 (delete the new orphan).
 
@@ -510,7 +510,7 @@ sequenceDiagram
 concurrency, the snapshot stream the UI consumes, and the per-ID
 `awaitCompletion(id:)` API the sync engine + drag-drop coordinator
 suspend on. Cancellation routes through `setState` so waiters get
-resumed (Codex blocker #2 fix). The 13.x block layered three
+resumed. The 13.x block layered three
 optional transforms on top: bandwidth throttling, transparent
 client-side encryption, and resumable multipart uploads.
 
@@ -555,7 +555,7 @@ Three host services hang off the same TransferManager + activity-log
 bus. None of them ever bypass the encryption gate or the bandwidth
 limiter unless they explicitly opt in (e.g. trash capture sets
 `bypassDecryption: true` so the local cache holds the raw envelope
-instead of plaintext — Codex audit fix high #2).
+instead of plaintext).
 
 ```mermaid
 flowchart LR
