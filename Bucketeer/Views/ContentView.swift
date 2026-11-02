@@ -67,6 +67,20 @@ struct ContentView: View {
         } message: { error in
             Text(error.errorDescription ?? "")
         }
+        .alert(
+            container.openWithController.notice?.title ?? "",
+            isPresented: Binding(
+                get: { container.openWithController.notice != nil },
+                set: { if !$0 { container.openWithController.notice = nil } }
+            ),
+            presenting: container.openWithController.notice
+        ) { _ in
+            Button("action.ok", role: .cancel) {
+                container.openWithController.notice = nil
+            }
+        } message: { notice in
+            Text(notice.message)
+        }
     }
 
     @ViewBuilder

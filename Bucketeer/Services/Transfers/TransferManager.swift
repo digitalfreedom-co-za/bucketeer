@@ -46,6 +46,16 @@ actor TransferManager: Transferring {
         /// Set on the trash restore of a cached envelope: the bytes are
         /// already sealed and must not be sealed a second time.
         var bypassEncryption: Bool = false
+        /// Unquoted ETag the object must still have for the upload to
+        /// replace it (Open With round-trip). `nil` = unconditional.
+        var ifMatch: String? = nil
+    }
+
+    enum ConditionalUploadOutcome: Equatable, Sendable {
+        case uploaded
+        case preconditionFailed
+        case failed(message: String)
+        case cancelled
     }
 
     private let factory: S3ClientFactory
@@ -86,6 +96,9 @@ actor TransferManager: Transferring {
     /// Terminal-state cache for waiters that arrive after a transfer
     /// completed. Cleared when the task is removed via `clearTerminal`.
     private var terminalCache: [UUID: TransferState] = [:]
+    /// Conditional uploads the server refused with 412. Read once by
+    /// `uploadIfUnchanged` and then dropped.
+    private var preconditionRefused: Set<UUID> = []
 
     init(
         factory: S3ClientFactory,
@@ -142,7 +155,8 @@ actor TransferManager: Transferring {
         key: String,
         localURL: URL,
         contentType: String?,
-        bypassEncryption: Bool
+        bypassEncryption: Bool,
+        ifMatch: String? = nil
     ) async -> UUID {
         let id = UUID()
         let size = (try? localURL.resourceValues(forKeys: [.fileSizeKey]))?.fileSize
@@ -162,12 +176,45 @@ actor TransferManager: Transferring {
             task: task,
             contentType: contentType,
             fileSize: fileSize,
-            bypassEncryption: bypassEncryption
+            bypassEncryption: bypassEncryption,
+            ifMatch: ifMatch
         )
         order.append(id)
         publish()
         pump()
         return id
+    }
+
+    /// Uploads through the normal queue (so encryption applies and the
+    /// transfer shows up in the list), but replaces the object only
+    /// while its ETag still equals `ifMatch`. Waits for the result.
+    func uploadIfUnchanged(
+        account: S3Account,
+        bucket: String,
+        key: String,
+        localURL: URL,
+        contentType: String?,
+        ifMatch: String
+    ) async -> ConditionalUploadOutcome {
+        let id = await enqueueUpload(
+            account: account,
+            bucket: bucket,
+            key: key,
+            localURL: localURL,
+            contentType: contentType,
+            bypassEncryption: false,
+            ifMatch: ifMatch
+        )
+        let state = await awaitCompletion(id: id)
+        let refused = preconditionRefused.remove(id) != nil
+        switch state {
+        case .completed:
+            return .uploaded
+        case .failed(let message):
+            return refused ? .preconditionFailed : .failed(message: message)
+        default:
+            return .cancelled
+        }
     }
 
     @discardableResult
@@ -365,7 +412,8 @@ actor TransferManager: Transferring {
                         startedAt: item.task.startedAt
                     ),
                     contentType: item.contentType,
-                    fileSize: Int64(envelope.count)
+                    fileSize: Int64(envelope.count),
+                    ifMatch: item.ifMatch
                 )
                 encryptionCleanup = temp
             } catch {
@@ -393,12 +441,24 @@ actor TransferManager: Transferring {
         }
 
         do {
-            // Phase 13.10 — files large enough that an interruption
-            // costs noticeable bandwidth go through the resumable
-            // path (sequential parts + checkpoint after each).
-            // Smaller multiparts keep Soto's parallel helper.
-            if item.fileSize >= S3ResumableUploader.resumableThreshold,
+            if let ifMatch = item.ifMatch {
+                // One PUT carries the precondition; Soto's multipart
+                // helpers cannot attach If-Match to the completion.
+                let data = try Data(contentsOf: item.task.localURL, options: .mappedIfSafe)
+                _ = try await s3.putObject(.init(
+                    body: AWSHTTPBody(buffer: ByteBuffer(bytes: data)),
+                    bucket: item.task.bucket,
+                    contentType: item.contentType,
+                    ifMatch: ETag.quoted(ifMatch),
+                    key: item.task.key
+                ))
+                await limiter?.consume(bytes: data.count)
+            } else if item.fileSize >= S3ResumableUploader.resumableThreshold,
                let resumableUploader {
+                // Phase 13.10 — files large enough that an interruption
+                // costs noticeable bandwidth go through the resumable
+                // path (sequential parts + checkpoint after each).
+                // Smaller multiparts keep Soto's parallel helper.
                 let total = item.fileSize
                 try await resumableUploader.upload(
                     account: item.account,
@@ -453,6 +513,8 @@ actor TransferManager: Transferring {
             setState(id: id, state: .completed)
         } catch is CancellationError {
             setState(id: id, state: .cancelled)
+        } catch let error where S3Service.isPreconditionFailure(error) {
+            markPreconditionRefused(item: item)
         } catch {
             if Task.isCancelled {
                 setState(id: id, state: .cancelled)
@@ -460,6 +522,14 @@ actor TransferManager: Transferring {
                 setState(id: id, state: .failed(message: errorMessage(error)))
             }
         }
+    }
+
+    private func markPreconditionRefused(item: QueuedItem) {
+        preconditionRefused.insert(item.task.id)
+        setState(
+            id: item.task.id,
+            state: .failed(message: errorMessage(BucketeerError.preconditionFailed(key: item.task.key)))
+        )
     }
 
     // MARK: - Download
@@ -593,6 +663,7 @@ actor TransferManager: Transferring {
                 blob: item.task.key,
                 localURL: item.task.localURL,
                 contentType: item.contentType,
+                ifMatch: item.ifMatch,
                 progress: { @Sendable [weak self] bytes, totalBytes in
                     await self?.setState(
                         id: id,
@@ -606,6 +677,8 @@ actor TransferManager: Transferring {
             setState(id: id, state: .completed)
         } catch is CancellationError {
             setState(id: id, state: .cancelled)
+        } catch BucketeerError.preconditionFailed {
+            markPreconditionRefused(item: item)
         } catch {
             if Task.isCancelled {
                 setState(id: id, state: .cancelled)

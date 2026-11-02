@@ -76,6 +76,7 @@ final class AppContainer {
     let transferManager: TransferManager
     let previewCache: PreviewCache
     let dragDropCoordinator: DragDropCoordinator
+    let openWithController: OpenWithController
     let activationController: AppActivationController
     let mountController: MountController
     let entitlementManager: EntitlementManager
@@ -259,6 +260,15 @@ final class AppContainer {
             entitlements: entitlementManager,
             encryptionGate: bucketEncryptionGate
         )
+        let openWithController = OpenWithController(
+            browser: router,
+            transferManager: transferManager,
+            accountStore: accountStore
+        )
+        self.openWithController = openWithController
+        if startsBackgroundWork {
+            openWithController.removeLeftovers()
+        }
         let activationController = AppActivationController()
         self.activationController = activationController
         // A persisted menubar mode must not outlive the entitlement.

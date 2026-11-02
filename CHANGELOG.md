@@ -21,6 +21,17 @@ before that is internal phase work on the `development` branch.
   the trial length, the fallback to the free tier and the Pro Lifetime
   price before "Start trial"; the button is hidden once the trial was
   used. `ProAccessResolver` (Core) replaces `TrialBookkeeping`.
+- Open / Open With in the browser (double-click, context menu with an
+  app list and "Other…"). The object is downloaded into a temp folder
+  of the current launch and opened; saves are uploaded back after a
+  2-second pause through the transfer queue, so encryption applies.
+  The upload carries If-Match on the ETag the download was based on
+  (S3 single PUT, Azure Put Blob / Put Block List). If the object
+  changed or was deleted on the server, the save goes up as
+  `<name> (conflict <date>).<ext>` and an alert says so. Temp files
+  are removed when the editing app quits, when Bucketeer quits, and at
+  launch. `OpenWithRoundTrip` (Core) holds the rules; new error case
+  `BucketeerError.preconditionFailed`.
 
 ### Review round 4 (2026-11-02)
 **Data safety**

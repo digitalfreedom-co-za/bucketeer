@@ -244,6 +244,19 @@ final class BucketeerAppDelegate: NSObject, NSApplicationDelegate {
         !(activationController?.menubarMode ?? false)
     }
 
+    /// Files opened with another app may still have a save waiting to
+    /// be uploaded; finish that and remove the temp copies first.
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        guard let openWith = AppContainer.shared?.openWithController, openWith.hasOpenFiles else {
+            return .terminateNow
+        }
+        Task {
+            await openWith.flushAndRemoveAll()
+            sender.reply(toApplicationShouldTerminate: true)
+        }
+        return .terminateLater
+    }
+
     /// Re-open the main window when the user clicks the (now-absent)
     /// Dock icon in regular mode or selects the app from the App
     /// Switcher with no windows open.
