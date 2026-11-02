@@ -10,20 +10,24 @@ import AppKit
 import StoreKit
 import BucketeerCore
 
-/// Single source of truth for what the user can do. Combines the
-/// persisted trial timer with StoreKit's entitlement snapshot to
-/// produce one of three observable states — `.trial(daysRemaining:)`,
+/// Single source of truth for what the user can do. Reads the verified
+/// StoreKit entitlements and lets Core's `ProAccessResolver` turn them
+/// into one of three observable states — `.trial(daysRemaining:)`,
 /// `.free` and `.pro`.
+///
+/// The trial is the free non-consumable `ProductIDs.trial`. It runs
+/// for 14 days from that transaction's original purchase date; nothing
+/// about it is stored locally, so Restore Purchases brings it back on
+/// a new Mac and deleting app data cannot restart it.
 ///
 /// The Pro pillars (mount, sync, cross-account copy, menubar) check
 /// `isUnlocked(_:)` before doing real work; when locked they instead
 /// present the paywall sheet.
 ///
-/// **Provisioning:** the App Store Connect IAP product
-/// `za.co.digitalfreedom.bucketeer.pro.lifetime` must exist (non-
-/// consumable, single tier ~ €14.99, Family Sharing on). Local Debug
-/// builds resolve it from `Bucketeer.storekit` via the scheme's
-/// StoreKit configuration.
+/// **Provisioning:** both IAP products must exist in App Store Connect
+/// (lifetime: non-consumable, Family Sharing on; trial: non-consumable,
+/// price Free, Family Sharing off). Local Debug builds resolve them
+/// from `Bucketeer.storekit` via the scheme's StoreKit configuration.
 @MainActor
 @Observable
 final class EntitlementManager {
@@ -73,43 +77,43 @@ final class EntitlementManager {
         }
     }
 
-    static let proProductID = "za.co.digitalfreedom.bucketeer.pro.lifetime"
-
-    /// Pure trial-state computation lives in Core's `TrialBookkeeping`
-    /// so it can be regression-tested without StoreKit (future-date
-    /// clamp + sticky consumed marker).
-    private let trial = TrialBookkeeping()
+    private static let ownProductIDs: Set<String> = [ProductIDs.lifetime, ProductIDs.trial]
 
     private(set) var state: State = .free
-    /// Resolved StoreKit product once `.products(for:)` returns. Nil
+    /// True while the user has never claimed the trial. The paywall
+    /// only offers "Start trial" in that case.
+    private(set) var isTrialAvailable: Bool = false
+    /// Resolved StoreKit products once `.products(for:)` returns. Nil
     /// while loading or if App Store Connect doesn't recognise the ID
     /// yet (TestFlight pre-provisioning).
     private(set) var product: Product?
+    private(set) var trialProduct: Product?
     /// True while a purchase or restore is in flight.
     private(set) var purchaseInProgress: Bool = false
 
+    private let now: @Sendable () -> Date
     private var transactionObserver: Task<Void, Never>?
     private var activationObserver: Task<Void, Never>?
     /// Re-derives the state the moment a running trial ends, so an app
     /// left open across the expiry does not keep Pro unlocked.
     private var trialExpiryTimer: Task<Void, Never>?
-    /// The launch-time state derivation. Local only (trial store plus
-    /// StoreKit's on-device entitlements), so it does not wait for the
-    /// product request.
+    /// The launch-time state derivation. Uses StoreKit's on-device
+    /// entitlements only, so it does not wait for the product request.
     private var initialRefresh: Task<Void, Never>?
 
     /// Called after every refresh. `AppContainer` uses it to switch
     /// off Pro-only modes once the entitlement lapses.
     var onStateChange: ((State) -> Void)?
 
-    /// `fixedState` pins the state for tests and previews: no trial
-    /// bookkeeping, no StoreKit. `nil` (the app) derives it.
-    init(fixedState: State? = nil) {
+    /// `fixedState` pins the state for tests and previews: no StoreKit.
+    /// `nil` (the app) derives it. `now` is the clock the trial expiry
+    /// is measured against.
+    init(fixedState: State? = nil, now: @escaping @Sendable () -> Date = Date.init) {
+        self.now = now
         if let fixedState {
             state = fixedState
             return
         }
-        ensureTrialStarted()
         initialRefresh = Task { [weak self] in await self?.refresh() }
     }
 
@@ -121,7 +125,7 @@ final class EntitlementManager {
         await initialRefresh?.value
         startTransactionObserver()
         startActivationObserver()
-        await loadProduct()
+        await loadProducts()
     }
 
     /// `isUnlocked(_:)` for background work started at launch (on-launch
@@ -154,23 +158,57 @@ final class EntitlementManager {
         }
     }
 
-    /// Re-derive `state` from the persisted trial start and the live
-    /// StoreKit entitlements.
+    /// Re-derive `state` from the live StoreKit entitlements.
     func refresh() async {
         trialExpiryTimer?.cancel()
         trialExpiryTimer = nil
-        if await hasActiveProEntitlement() {
+        let reading = now()
+        switch ProAccessResolver.resolve(await currentTransactions(), now: reading) {
+        case .lifetime:
             state = .pro
-        } else if let seconds = trial.secondsRemaining() {
-            state = .trial(daysRemaining: Int(ceil(seconds / 86_400)))
-            scheduleTrialExpiryRefresh(after: seconds)
-        } else {
+            isTrialAvailable = false
+        case .trial(let endsAt):
+            state = .trial(daysRemaining: ProAccessResolver.daysRemaining(until: endsAt, now: reading))
+            isTrialAvailable = false
+            scheduleTrialExpiryRefresh(after: endsAt.timeIntervalSince(reading))
+        case .trialEnded:
             state = .free
+            isTrialAvailable = false
+        case .trialAvailable:
+            state = .free
+            isTrialAvailable = true
         }
         onStateChange?(state)
     }
 
     func purchasePro() async throws {
+        try await purchase(product)
+    }
+
+    /// Claims the free trial product. The trial clock starts with this
+    /// transaction's purchase date.
+    func startTrial() async throws {
+        try await purchase(trialProduct)
+    }
+
+    func restorePurchases() async throws {
+        purchaseInProgress = true
+        defer { purchaseInProgress = false }
+        do {
+            try await AppStore.sync()
+            await refresh()
+        } catch StoreKitError.userCancelled {
+            // Dismissing the App Store sign-in prompt is a choice, not
+            // a failure — mirror purchase()'s silent .userCancelled.
+            return
+        } catch {
+            throw EntitlementError.unknown(error.localizedDescription)
+        }
+    }
+
+    // MARK: - Purchase
+
+    private func purchase(_ product: Product?) async throws {
         guard let product else {
             throw EntitlementError.productUnavailable
         }
@@ -185,11 +223,8 @@ final class EntitlementManager {
                     await transaction.finish()
                     await refresh()
                 case .unverified(_, let verificationError):
-                    // An unverified purchase result
-                    // used to be silently swallowed, leaving the user
-                    // with no feedback and the entitlement state
-                    // unchanged. Surface it as an actionable error so
-                    // the paywall can show what happened.
+                    // Surface it instead of swallowing it, so the
+                    // paywall can show what happened.
                     throw EntitlementError.unknown(
                         verificationError.localizedDescription
                     )
@@ -208,30 +243,11 @@ final class EntitlementManager {
         }
     }
 
-    func restorePurchases() async throws {
-        purchaseInProgress = true
-        defer { purchaseInProgress = false }
-        do {
-            try await AppStore.sync()
-            await refresh()
-        } catch StoreKitError.userCancelled {
-            // Dismissing the App Store sign-in prompt is a choice, not
-            // a failure — mirror purchasePro()'s silent .userCancelled.
-            return
-        } catch {
-            throw EntitlementError.unknown(error.localizedDescription)
-        }
-    }
-
-    // MARK: - Trial
-
-    private func ensureTrialStarted() {
-        trial.start()
-    }
+    // MARK: - Trial expiry
 
     private func scheduleTrialExpiryRefresh(after seconds: TimeInterval) {
         trialExpiryTimer = Task { [weak self] in
-            try? await Task.sleep(for: .seconds(seconds))
+            try? await Task.sleep(for: .seconds(max(seconds, 0)))
             guard !Task.isCancelled else { return }
             await self?.refresh()
         }
@@ -250,35 +266,43 @@ final class EntitlementManager {
 
     // MARK: - StoreKit
 
-    private func loadProduct() async {
+    private func loadProducts() async {
         do {
-            let products = try await Product.products(for: [Self.proProductID])
-            self.product = products.first
+            let products = try await Product.products(for: Self.ownProductIDs)
+            product = products.first { $0.id == ProductIDs.lifetime }
+            trialProduct = products.first { $0.id == ProductIDs.trial }
         } catch {
-            self.product = nil
+            product = nil
+            trialProduct = nil
         }
     }
 
-    private func hasActiveProEntitlement() async -> Bool {
+    /// Verified transactions for our products. Unverified ones never
+    /// unlock anything.
+    private func currentTransactions() async -> [StoreTransactionRecord] {
+        var records: [StoreTransactionRecord] = []
         for await result in Transaction.currentEntitlements {
-            if case .verified(let txn) = result,
-               txn.productID == Self.proProductID,
-               txn.revocationDate == nil {
-                return true
-            }
+            guard case .verified(let txn) = result,
+                  Self.ownProductIDs.contains(txn.productID)
+            else { continue }
+            records.append(StoreTransactionRecord(
+                productID: txn.productID,
+                originalPurchaseDate: txn.originalPurchaseDate,
+                revocationDate: txn.revocationDate
+            ))
         }
-        return false
+        return records
     }
 
     private func startTransactionObserver() {
         guard transactionObserver == nil else { return }
         transactionObserver = Task { [weak self] in
             for await update in Transaction.updates {
-                // Finish only OUR product's transactions. Blindly
+                // Finish only OUR products' transactions. Blindly
                 // finishing everything would consume a future
                 // consumable IAP before its value is credited.
                 if case .verified(let txn) = update,
-                   txn.productID == Self.proProductID {
+                   Self.ownProductIDs.contains(txn.productID) {
                     await txn.finish()
                 }
                 await self?.refresh()

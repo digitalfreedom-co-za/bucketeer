@@ -13,6 +13,15 @@ before that is internal phase work on the `development` branch.
 
 ## [Unreleased] — `development` branch
 
+### Trial, Open With and Finder conflicts (2026-11-02)
+- The Pro trial is a free non-consumable IAP
+  (`za.co.digitalfreedom.bucketeer.pro.trial`). It runs 14 days from
+  the trial transaction's original purchase date; nothing is stored in
+  `UserDefaults`, and Restore Purchases restores it. The paywall shows
+  the trial length, the fallback to the free tier and the Pro Lifetime
+  price before "Start trial"; the button is hidden once the trial was
+  used. `ProAccessResolver` (Core) replaces `TrialBookkeeping`.
+
 ### Review round 4 (2026-11-02)
 **Data safety**
 - Host and File Provider extension open the shared SwiftData store with

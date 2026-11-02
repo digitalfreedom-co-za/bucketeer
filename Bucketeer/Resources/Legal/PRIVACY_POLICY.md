@@ -56,7 +56,7 @@ None of the following is sent to the provider.
 | Trash (metadata of objects you deleted in Bucketeer and, up to a size limit you set, a local copy of their content) | Local database and cache folder in the App's own container | Let you restore objects you deleted. Entries are removed after the retention period you set (default 30 days) |
 | Auto-tag rules, resumable-upload checkpoints | Local databases in the App's own container | Apply your tagging rules; resume interrupted uploads |
 | Encryption keys (only if you enable client-side encryption for a bucket) | Key material in the macOS Keychain, key labels in a local database | Encrypt and decrypt objects on your Mac (see section 6) |
-| Settings (bandwidth limit, trash and Spotlight settings, menubar mode, hardware-key preview, trial status) | The App's local preferences | Remember your choices; determine whether the trial is active |
+| Settings (bandwidth limit, trash and Spotlight settings, menubar mode, hardware-key preview) | The App's local preferences | Remember your choices |
 | Preview cache | Temporary folder of the App, limited to 2 GiB | Show previews without downloading again |
 | Downloaded files | The location you choose | Your files, under your control |
 | Finder mount staging files (only for mounted buckets) | System-managed File Provider storage | Required by macOS to show a bucket in Finder |
@@ -73,7 +73,7 @@ Keychain Access.
 | Connection | When | What is sent | Recipient |
 |---|---|---|---|
 | Your storage endpoints (AWS S3, Cloudflare R2, Backblaze B2, Wasabi, DigitalOcean Spaces, Civo, Storj, MinIO, a custom S3 endpoint, Azure Blob Storage) | When you browse, transfer, sync, mount or change settings of a bucket | Standard S3 or Azure requests signed on your Mac, including object names, metadata and file content you upload; the endpoint also sees your IP address | The storage provider you chose, under your own contract with that provider |
-| Apple App Store (StoreKit) | When you open the paywall, buy or restore Bucketeer Pro, and when Apple reports a transaction | Apple's own purchase data; the App only reads whether Bucketeer Pro is active | Apple, as an independent controller |
+| Apple App Store (StoreKit) | When you open the paywall, start the trial, buy or restore Bucketeer Pro, and when Apple reports a transaction | Apple's own purchase data; the App only reads whether Bucketeer Pro or the trial is active and when the trial started | Apple, as an independent controller |
 | Links you open (website, support form, GitHub, Apple refund page) | Only when you click them | Request from your browser | The operator of that page |
 
 The App sends no data to the provider. Requests to your storage

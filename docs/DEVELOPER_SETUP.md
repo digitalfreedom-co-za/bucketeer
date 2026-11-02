@@ -164,19 +164,22 @@ file when you want to bring the mount feature to life.
 
 ## 8. StoreKit testing
 
-Phase B paywall uses StoreKit 2. The Mac App Store IAP product
-`za.co.digitalfreedom.bucketeer.pro.lifetime` must exist in App Store
-Connect before TestFlight or production builds will see it.
+The paywall uses StoreKit 2 with two non-consumable IAP products, both
+of which must exist in App Store Connect before TestFlight or
+production builds will see them:
+
+- `za.co.digitalfreedom.bucketeer.pro.lifetime` (paid, Family Sharing on)
+- `za.co.digitalfreedom.bucketeer.pro.trial` (price Free, Family Sharing off)
 
 Local testing uses `Bucketeer/Bucketeer.storekit`, which the scheme
 references (Xcode → Edit Scheme → Run → Options → StoreKit
 Configuration). Reset the local entitlement via Xcode → Debug →
 StoreKit → Manage Transactions during runs.
 
-The 14-day trial timer persists in `UserDefaults` with keys
-`bucketeer.trial.start` and `bucketeer.trial.consumed`. To restart a
-trial during development, delete both — the consumed-marker is
-specifically sticky in production to block the trial-reset bypass.
+The trial is not stored locally. It runs for 14 days from the trial
+transaction's original purchase date (`ProAccessResolver` in Core). To
+test it again, delete the trial transaction in Manage Transactions; to
+test the expiry, change the transaction's purchase date there.
 
 ---
 
