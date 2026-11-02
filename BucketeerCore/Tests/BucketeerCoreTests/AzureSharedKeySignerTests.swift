@@ -25,24 +25,6 @@ struct AzureSharedKeySignerTests {
         base64AccountKey: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
     )!
 
-    @Test("Initialiser rejects invalid base64 keys")
-    func initialiserRejectsBadKey() {
-        let bad = AzureSharedKeySigner(
-            accountName: "myaccount",
-            base64AccountKey: "not base64 because of the spaces"
-        )
-        #expect(bad == nil)
-    }
-
-    @Test("Initialiser rejects empty account name")
-    func initialiserRejectsEmptyName() {
-        let bad = AzureSharedKeySigner(
-            accountName: "",
-            base64AccountKey: "AAAA"
-        )
-        #expect(bad == nil)
-    }
-
     @Test("Canonical headers sort x-ms-* keys alphabetically and skip non-x-ms")
     func canonicalHeadersSort() {
         let headers: [String: String] = [

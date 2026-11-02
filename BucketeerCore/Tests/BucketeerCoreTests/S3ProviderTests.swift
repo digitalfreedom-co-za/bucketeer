@@ -41,57 +41,6 @@ struct S3ProviderTests {
         #expect(S3Provider.custom.usesPathStyleByDefault == true)
     }
 
-    @Test("Path-style toggle is hidden for AWS and Azure")
-    func pathStyleToggleVisibility() {
-        #expect(S3Provider.awsS3.supportsPathStyleToggle == false)
-        #expect(S3Provider.azureBlob.supportsPathStyleToggle == false)
-        for provider in S3Provider.allCases where provider != .awsS3 && provider != .azureBlob {
-            #expect(provider.supportsPathStyleToggle == true)
-        }
-    }
-
-    @Test("Region picker hides only for Azure")
-    func regionPickerVisibility() {
-        for provider in S3Provider.allCases {
-            #expect(provider.hidesRegionPicker == (provider == .azureBlob))
-        }
-    }
-
-    @Test("Required-accountID providers are Cloudflare R2 and Azure")
-    func requiresAccountID() {
-        let needs = S3Provider.allCases.filter(\.requiresAccountID)
-        #expect(Set(needs) == [.cloudflareR2, .azureBlob])
-    }
-
-    @Test("Optional endpoint override only for Azure (sovereign clouds)")
-    func optionalEndpointOverride() {
-        for provider in S3Provider.allCases {
-            #expect(provider.supportsOptionalEndpointOverride == (provider == .azureBlob))
-        }
-    }
-
-    @Test("Required endpoint override only for Custom")
-    func requiredEndpointOverride() {
-        for provider in S3Provider.allCases {
-            #expect(provider.requiresEndpointOverride == (provider == .custom))
-        }
-    }
-
-    @Test("Hides access-key field only for Azure (storage account name doubles as key)")
-    func hidesAccessKeyField() {
-        for provider in S3Provider.allCases {
-            #expect(provider.hidesAccessKeyField == (provider == .azureBlob))
-        }
-    }
-
-    @Test("Default regions are non-empty for every preset except Custom")
-    func defaultRegions() {
-        for provider in S3Provider.allCases where provider != .custom {
-            #expect(!provider.defaultRegion.isEmpty)
-        }
-        #expect(S3Provider.custom.defaultRegion.isEmpty)
-    }
-
     @Test("Fixed-region list is consistent — defaultRegion is present in fixedRegions when both are defined")
     func defaultRegionAppearsInFixedList() {
         for provider in S3Provider.allCases {

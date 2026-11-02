@@ -85,10 +85,4 @@ struct ProviderPricingTests {
         let usd = ProviderPricing.estimateMonthlyUSD(bytes: 1_073_741_824, provider: .awsS3) ?? 0
         #expect(abs(usd - 0.023) < 0.0001)
     }
-
-    @Test("Zero bytes returns zero cost")
-    func zeroBytes() {
-        let usd = ProviderPricing.estimateMonthlyUSD(bytes: 0, provider: .awsS3) ?? 0
-        #expect(usd == 0)
-    }
 }

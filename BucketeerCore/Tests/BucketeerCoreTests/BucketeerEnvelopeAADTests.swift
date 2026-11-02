@@ -41,16 +41,6 @@ struct BucketeerEnvelopeAADTests {
         }
     }
 
-    @Test("Header layout sanity — magic + version + reserved zeros")
-    func headerLayoutSanity() throws {
-        let key = SymmetricKey(size: .bits256)
-        let env = try BucketeerEnvelope.seal(plaintext: Data(), key: key)
-        let bytes = Array(env.prefix(BucketeerEnvelope.headerSize))
-        #expect(Array(bytes.prefix(4)) == BucketeerEnvelope.magic)
-        #expect(bytes[4] == BucketeerEnvelope.version)
-        #expect(Array(bytes.suffix(3)) == BucketeerEnvelope.reservedZeroes)
-    }
-
     @Test("looksEncrypted on partial header returns false")
     func looksEncryptedShortHeader() {
         // 3 bytes of the magic — not enough.

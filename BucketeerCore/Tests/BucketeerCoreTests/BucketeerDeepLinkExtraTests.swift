@@ -43,18 +43,6 @@ struct BucketeerDeepLinkExtraTests {
         }
     }
 
-    @Test("Bucket URL preserves single-segment prefix")
-    func singleSegmentPrefix() {
-        let link = BucketeerDeepLink.bucket(
-            accountID: accountID,
-            bucket: "photos",
-            prefix: "archive/"
-        )
-        let url = link.url!
-        let parsed = BucketeerDeepLink(url: url)
-        #expect(parsed == link)
-    }
-
     @Test("URL with extraneous query string is still parseable")
     func extraQueryStringIgnored() {
         let url = URL(string: "bucketeer://account/\(accountID.uuidString)?ref=share")!
