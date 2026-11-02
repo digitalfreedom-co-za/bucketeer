@@ -64,10 +64,15 @@ public actor BandwidthLimiter {
     /// has enough capacity to cover all the requested bytes, draining
     /// available tokens on each iteration so large requests (bigger
     /// than the bucket capacity) converge correctly.
+    ///
+    /// The limit and cancellation are re-checked after every sleep:
+    /// `setLimit(0)` can run on the actor while a charge is waiting,
+    /// and a cancelled transfer must not keep paying off its debt.
+    /// Cancellation returns early instead of throwing — the caller's
+    /// next network await observes it.
     public func consume(bytes: Int) async {
-        guard bytesPerSecond > 0, bytes > 0 else { return }
         var remaining = Double(bytes)
-        while remaining > 0 {
+        while remaining > 0, bytesPerSecond > 0, !Task.isCancelled {
             refill()
             if tokens >= remaining {
                 tokens -= remaining
@@ -78,7 +83,7 @@ public actor BandwidthLimiter {
             remaining -= tokens
             tokens = 0
             let sleepSeconds = min(remaining / Double(bytesPerSecond), 1.0)
-            try? await Task.sleep(nanoseconds: UInt64(max(0.001, sleepSeconds) * 1_000_000_000))
+            try? await Task.sleep(for: .seconds(max(0.001, sleepSeconds)))
         }
     }
 
