@@ -436,7 +436,10 @@ public struct S3Service: S3Browsing {
                 copySource: encodedSource,
                 key: key,
                 metadata: userMetadata,
-                metadataDirective: .replace
+                metadataDirective: .replace,
+                // A copy onto itself defaults to STANDARD; keep the
+                // object's class so editing metadata does not move it.
+                storageClass: metadata.storageClass.flatMap(S3.StorageClass.init(rawValue:))
             ))
         } catch {
             throw Self.map(error, bucket: bucket, key: key)
