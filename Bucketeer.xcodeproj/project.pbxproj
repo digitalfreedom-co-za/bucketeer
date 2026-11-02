@@ -12,6 +12,7 @@
 		15C2BFE8FD78B59DAE93A7BA /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A7D24961DE4AB33C27D9AFE /* Cocoa.framework */; };
 		48722717BC366A24184B3820 /* S3DirectFetch.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA0CE48458241096873407A7 /* S3DirectFetch.swift */; };
 		49F0520C34321841749C8EE9 /* Bucketeer File Provider.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4225AB9B545123E428D2F397 /* Bucketeer File Provider.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		6D8546F79FFFCB15C28887E5 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 241487FA4B5FD959C2DC8EC9 /* PrivacyInfo.xcprivacy */; };
 		AC733F81096D0A392D46B674 /* SotoS3 in Frameworks */ = {isa = PBXBuildFile; productRef = 4C4D57285C892C019C5308CF /* SotoS3 */; };
 		BE677D84C4C452E748E6C331 /* FileProviderExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E727AAFD746C6DAF7F9BE9 /* FileProviderExtension.swift */; };
 		CF50705B01000000A0000001 /* SotoS3 in Frameworks */ = {isa = PBXBuildFile; productRef = CF50705B01000000A0000002 /* SotoS3 */; };
@@ -46,6 +47,7 @@
 
 /* Begin PBXFileReference section */
 		126DCFB84C5369747D5A2364 /* ExtensionContainer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExtensionContainer.swift; path = ExtensionContainer.swift; sourceTree = "<group>"; };
+		241487FA4B5FD959C2DC8EC9 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		4225AB9B545123E428D2F397 /* Bucketeer File Provider.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Bucketeer File Provider.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9A7D24961DE4AB33C27D9AFE /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
 		C4E727AAFD746C6DAF7F9BE9 /* FileProviderExtension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FileProviderExtension.swift; path = FileProviderExtension.swift; sourceTree = "<group>"; };
@@ -115,6 +117,7 @@
 				C4E727AAFD746C6DAF7F9BE9 /* FileProviderExtension.swift */,
 				D403121BCBAD37A574715302 /* FileProviderItemResolver.swift */,
 				EA0CE48458241096873407A7 /* S3DirectFetch.swift */,
+				241487FA4B5FD959C2DC8EC9 /* PrivacyInfo.xcprivacy */,
 			);
 			name = "Bucketeer File Provider";
 			path = "Bucketeer File Provider";
@@ -267,6 +270,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6D8546F79FFFCB15C28887E5 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -311,6 +315,7 @@
 				CODE_SIGNING_ALLOWED = "$(CODE_SIGNING_ALLOWED)";
 				CODE_SIGN_ENTITLEMENTS = "Bucketeer File Provider/BucketeerFileProvider.entitlements";
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7TSZJCJY88;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -320,7 +325,6 @@
 					"@executable_path/../../../../Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				CURRENT_PROJECT_VERSION = 1;
 				MACOSX_DEPLOYMENT_TARGET = 14.1;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = za.co.digitalfreedom.Bucketeer.FileProvider;
@@ -339,6 +343,7 @@
 				CODE_SIGNING_ALLOWED = "$(CODE_SIGNING_ALLOWED)";
 				CODE_SIGN_ENTITLEMENTS = "Bucketeer File Provider/BucketeerFileProvider.entitlements";
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7TSZJCJY88;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -348,7 +353,6 @@
 					"@executable_path/../../../../Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				CURRENT_PROJECT_VERSION = 1;
 				MACOSX_DEPLOYMENT_TARGET = 14.1;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = za.co.digitalfreedom.Bucketeer.FileProvider;

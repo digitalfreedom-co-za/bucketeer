@@ -26,8 +26,9 @@ Mac App Store.
   mirror with optional scheduling *(roadmap Phase 10)*
 - **Multipart upload and download**, parallel transfers, live progress
 - **Touch ID / password gate** for revealing stored secrets
-- **Localised in 10 languages** — English, German, Spanish, French,
-  Italian, Japanese, Korean, Dutch, Polish, Brazilian Portuguese
+- **Localised in 20 locales** — English (US and UK), Czech, Danish, Dutch, Finnish, French,
+  German, Greek, Hungarian, Italian, Japanese, Korean, Norwegian, Polish,
+  Portuguese (Brazil and Portugal), Russian, Spanish, Swedish
 - **Privacy by design** — credentials live in your macOS Keychain,
   nothing leaves your Mac apart from the object-storage traffic you
   configure
@@ -153,7 +154,7 @@ Bucketeer/                          ← host app target
   Resources/
     Legal/                          EULA, Privacy, Impressum, License, OSS notices
     Help/                           QuickStart.md
-    Localizable.xcstrings           10-language string catalog
+    Localizable.xcstrings           20-locale string catalog
     PrivacyInfo.xcprivacy
   <lang>.lproj/InfoPlist.strings    per-language CFBundleDisplayName
 Bucketeer File Provider/            .appex (Phase 9)

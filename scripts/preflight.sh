@@ -42,10 +42,17 @@ else
   yellow "AppIcon.appiconset missing"
 fi
 
-# 3. Entitlements files exist
-for plist in Bucketeer/Bucketeer.entitlements; do
+# 3. Entitlements files and privacy manifests exist for host + extension
+for plist in \
+  "Bucketeer/Bucketeer.entitlements" \
+  "Bucketeer File Provider/BucketeerFileProvider.entitlements" \
+  "Bucketeer/Resources/PrivacyInfo.xcprivacy" \
+  "Bucketeer File Provider/PrivacyInfo.xcprivacy"; do
   if [ ! -f "$REPO_ROOT/$plist" ]; then
-    red "Missing entitlements file: $plist"
+    red "Missing file: $plist"
+    status=1
+  elif ! plutil -lint "$REPO_ROOT/$plist" >/dev/null 2>&1; then
+    red "Invalid plist: $plist"
     status=1
   fi
 done

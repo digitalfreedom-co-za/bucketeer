@@ -27,7 +27,7 @@ Everything on `development` at the v1.0 cut. That's:
   finding addressed.
 - Azure parity for object versions (snapshots), metadata + tags.
 
-**Build state**: 135 BucketeerCore tests passing, host app builds
+**Build state**: 156 BucketeerCore tests passing, host app builds
 clean against macOS 14 deployment target on Xcode 16.
 
 ---
@@ -41,10 +41,10 @@ development → test → beta → main
 
 | Branch | Purpose | CI trigger |
 |---|---|---|
-| `development` | active integration | GitHub Actions (test + unsigned build) |
-| `test` | Xcode Cloud signed test build | Xcode Cloud workflow `test → Archive` |
-| `beta` | TestFlight external | Xcode Cloud workflow `beta → Archive → TestFlight Internal` |
-| `main` | App Store production | Xcode Cloud workflow `main → Archive → TestFlight External → App Store` |
+| `development` | active integration | GitHub Actions (test + unsigned build) + Xcode Cloud `01. Development Build` (Analyze) |
+| `test` | TestFlight internal | Xcode Cloud `02. Testflight Build` (Archive → TestFlight Internal) |
+| `beta` | TestFlight external | Xcode Cloud `03. Beta Release` (Archive → TestFlight External) |
+| `main` | App Store production | Xcode Cloud `04. Release Build` (Archive → App Store Connect; review submission manual) |
 
 GitHub Actions live in `.github/workflows/ci.yml` and do **no
 signing** — they only catch broken tests / broken Debug builds.
