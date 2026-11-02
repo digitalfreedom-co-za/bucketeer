@@ -35,7 +35,7 @@ Het geheim is verborgen als je een account wijzigt. Klik op **Toon opgeslagen re
 - Dubbelklik op een bestand, of klik met de rechtermuisknop en kies **Open**, om het in de standaardapp te openen. **Open met** toont andere apps die het kunnen openen; met **Andere…** kies je elke gewenste app.
 - Bucketeer downloadt het bestand naar een tijdelijke map en houdt het in de gaten. Kort na elke bewaring wordt het bestand via de gewone overdrachtswachtrij opnieuw geüpload, dus versleuteling aan de clientzijde geldt ook hier.
 - Als het object na het openen op de server is gewijzigd of verwijderd, overschrijft Bucketeer het niet. Jouw versie wordt ernaast geüpload als 'naam (conflict datum).ext' en Bucketeer toont een melding.
-- De tijdelijke kopie wordt verwijderd als je de app stopt waarin je hem bewerkte, als je Bucketeer stopt of bij de volgende start.
+- De tijdelijke kopie wordt verwijderd zodra de server je laatste bewaarde versie heeft. Kon een versie niet worden geüpload (bijvoorbeeld zonder verbinding), dan bewaart Bucketeer het bestand op deze Mac en biedt **Opnieuw uploaden**, **Bewaar een kopie…** of **Wijziging weggooien** aan, ook bij de volgende start, bijvoorbeeld na een crash.
 
 ## Objecten beheren
 

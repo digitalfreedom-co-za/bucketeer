@@ -35,7 +35,7 @@ Beim Bearbeiten eines Kontos ist das Secret verborgen. Klicke auf **Gespeicherte
 - Doppelklicke auf eine Datei oder wähle nach einem Rechtsklick **Öffnen**, um sie in ihrer Standard-App zu öffnen. **Öffnen mit** listet weitere Apps, die sie öffnen können; mit **Andere …** wählst du eine beliebige App.
 - Bucketeer lädt die Datei in einen temporären Ordner und beobachtet sie. Kurz nach jedem Sichern wird sie über die normale Übertragungsliste wieder hochgeladen, die clientseitige Verschlüsselung gilt also auch hier.
 - Wurde das Objekt nach dem Öffnen auf dem Server geändert oder gelöscht, überschreibt Bucketeer es nicht. Deine Version wird daneben als „Name (conflict Datum).Endung“ hochgeladen, und Bucketeer zeigt dir einen Hinweis.
-- Die temporäre Kopie wird gelöscht, wenn du die App beendest, in der du sie bearbeitet hast, wenn du Bucketeer beendest oder beim nächsten Start.
+- Die temporäre Kopie wird gelöscht, sobald der Server deine letzte Sicherung hat. Konnte eine Sicherung nicht hochgeladen werden (etwa ohne Verbindung), behält Bucketeer die Datei auf diesem Mac und bietet dir **Erneut hochladen**, **Kopie sichern …** oder **Änderung verwerfen** an — auch beim nächsten Start, etwa nach einem Absturz.
 
 ## Objekte verwalten
 

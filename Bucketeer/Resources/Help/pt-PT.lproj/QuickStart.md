@@ -35,7 +35,7 @@ O segredo fica oculto quando edita uma conta. Clique em **Revelar credenciais gu
 - Faça duplo clique num ficheiro, ou clique com o botão direito e escolha **Abrir**, para o abrir na app predefinida. **Abrir com** mostra outras apps que o conseguem abrir; **Outra…** permite escolher qualquer app.
 - O Bucketeer descarrega o ficheiro para uma pasta temporária e acompanha-o. Pouco depois de cada gravação, o ficheiro é carregado de novo pela fila de transferências normal, por isso a encriptação do lado do cliente também se aplica.
 - Se o objeto foi alterado ou apagado no servidor depois de o abrir, o Bucketeer não o substitui. A sua versão é carregada ao lado como "nome (conflict data).ext" e o Bucketeer mostra uma mensagem.
-- A cópia temporária é apagada quando sai da app em que a editou, quando sai do Bucketeer ou no arranque seguinte.
+- A cópia temporária é apagada assim que o servidor tem a sua última gravação. Se uma gravação não pôde ser carregada (por exemplo, sem ligação), o Bucketeer mantém o ficheiro neste Mac e propõe **Carregar novamente**, **Guardar uma cópia…** ou **Descartar alteração**, também no arranque seguinte, por exemplo após uma falha.
 
 ## Gerir objetos
 

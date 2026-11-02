@@ -8,7 +8,7 @@
 import Foundation
 import CryptoKit
 
-public struct RemoteObjectRef: Sendable, Hashable {
+public struct RemoteObjectRef: Sendable, Hashable, Codable {
     public let accountID: UUID
     public let bucket: String
     public let key: String
@@ -57,10 +57,23 @@ public enum RoundTripOutcome: Sendable, Equatable {
     case conflict(copyKey: String)
 }
 
+/// How closing an opened file ended.
+public struct OpenWithCloseResult: Sendable {
+    /// The final sync; a failure is the reason the file was kept.
+    public let sync: Result<RoundTripOutcome, any Error>
+    /// Set when the file did not provably reach the server and was
+    /// moved to recovery instead of being deleted.
+    public let retained: OpenWithRecoveryEntry?
+}
+
 /// Brings edits of a downloaded object back to the server without ever
 /// overwriting a newer server version. Each opened file remembers the
 /// ETag it was based on; a save is uploaded with If-Match on that ETag,
 /// and anything else (changed, deleted, 412) becomes a conflict copy.
+///
+/// With a workspace, every file's manifest is kept current, and closing
+/// deletes a file only when its bytes are exactly the version the
+/// server acknowledged; anything else moves to recovery.
 public actor OpenWithRoundTrip {
     private struct Session {
         var object: RemoteObjectRef
@@ -70,6 +83,7 @@ public actor OpenWithRoundTrip {
     }
 
     private let remote: any OpenWithRemote
+    private let workspace: OpenWithWorkspace?
     private let now: @Sendable () -> Date
     private let timeZone: TimeZone
     private let tag: @Sendable () -> String
@@ -80,11 +94,13 @@ public actor OpenWithRoundTrip {
 
     public init(
         remote: any OpenWithRemote,
+        workspace: OpenWithWorkspace? = nil,
         now: @escaping @Sendable () -> Date = Date.init,
         timeZone: TimeZone = .current,
         tag: @escaping @Sendable () -> String = ConflictCopyName.randomTag
     ) {
         self.remote = remote
+        self.workspace = workspace
         self.now = now
         self.timeZone = timeZone
         self.tag = tag
@@ -93,11 +109,14 @@ public actor OpenWithRoundTrip {
     /// Starts tracking a freshly downloaded file. `etag` is the ETag the
     /// download was based on.
     public func register(localURL: URL, object: RemoteObjectRef, etag: String?) throws {
-        sessions[localURL.standardizedFileURL] = Session(
+        let url = localURL.standardizedFileURL
+        let session = Session(
             object: object,
             etag: etag.map(ETag.normalized),
-            digest: try Self.digest(of: localURL)
+            digest: try Self.digest(of: url)
         )
+        sessions[url] = session
+        try workspace?.writeManifest(manifest(of: session, at: url), for: url)
     }
 
     public func unregister(localURL: URL) {
@@ -159,11 +178,66 @@ public actor OpenWithRoundTrip {
         return .conflict(copyKey: copy.key)
     }
 
+    /// Final sync of a file whose editing app quit (or before Bucketeer
+    /// quits), then stops tracking it. The file is deleted only when the
+    /// sync succeeded and the bytes on disk still equal what the server
+    /// acknowledged; otherwise it moves to recovery.
+    public func close(_ localURL: URL) async -> OpenWithCloseResult {
+        let url = localURL.standardizedFileURL
+        guard FileManager.default.fileExists(atPath: url.path) else {
+            unregister(localURL: url)
+            workspace?.remove(url)
+            return OpenWithCloseResult(sync: .success(.unchanged), retained: nil)
+        }
+        let sync: Result<RoundTripOutcome, any Error>
+        do {
+            sync = .success(try await syncChanges(at: url))
+        } catch {
+            sync = .failure(error)
+        }
+        let acknowledged = sessions[url]?.digest
+        let clean = (try? sync.get()) != nil && acknowledged != nil && acknowledged == (try? Self.digest(of: url))
+        unregister(localURL: url)
+        guard let workspace else {
+            return OpenWithCloseResult(sync: sync, retained: nil)
+        }
+        if clean {
+            workspace.remove(url)
+            return OpenWithCloseResult(sync: sync, retained: nil)
+        }
+        return OpenWithCloseResult(sync: sync, retained: workspace.retain(url))
+    }
+
+    /// Uploads a kept edit again, against the server version it was
+    /// based on (so a newer server version still yields a conflict
+    /// copy). Stays in recovery if that fails again.
+    public func retry(_ entry: OpenWithRecoveryEntry) async -> OpenWithCloseResult {
+        let url = entry.fileURL.standardizedFileURL
+        sessions[url] = Session(
+            object: entry.manifest.object,
+            etag: entry.manifest.etag,
+            digest: entry.manifest.digest
+        )
+        return await close(url)
+    }
+
     /// Keeps the result only while the file is still tracked; a file
     /// closed during the upload stays closed.
     private func store(_ session: Session, for url: URL) {
         guard sessions[url] != nil else { return }
         sessions[url] = session
+        // A stale manifest only costs a needless recovery prompt after
+        // a crash, never data, so a failed write is not an error here.
+        try? workspace?.writeManifest(manifest(of: session, at: url), for: url)
+    }
+
+    private func manifest(of session: Session, at url: URL) -> OpenWithManifest {
+        OpenWithManifest(
+            object: session.object,
+            fileName: url.lastPathComponent,
+            etag: session.etag,
+            digest: session.digest
+        )
     }
 
     private static func digest(of url: URL) throws -> Data {

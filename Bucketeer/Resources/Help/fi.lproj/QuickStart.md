@@ -35,7 +35,7 @@ Salainen avain on piilotettu, kun muokkaat tiliä. Klikkaa **Näytä tallennetut
 - Kaksoisosoita tiedostoa tai osoita sitä oikealla ja valitse **Avaa**, niin se avautuu oletusapissa. **Avaa sovelluksella** näyttää muut apit, jotka voivat avata sen; **Muu…** antaa valita minkä tahansa apin.
 - Bucketeer lataa tiedoston väliaikaiseen kansioon ja seuraa sitä. Hetki jokaisen tallennuksen jälkeen tiedosto lähetetään takaisin tavallisen siirtojonon kautta, joten myös asiakaspuolen salaus on käytössä.
 - Jos objektia muutettiin tai se poistettiin palvelimelta avaamisen jälkeen, Bucketeer ei korvaa sitä. Versiosi lähetetään sen viereen nimellä ”nimi (conflict päivämäärä).pääte”, ja Bucketeer näyttää ilmoituksen.
-- Väliaikainen kopio poistetaan, kun lopetat apin, jossa muokkasit sitä, kun lopetat Bucketeerin tai seuraavalla käynnistyskerralla.
+- Väliaikainen kopio poistetaan, kun palvelimella on viimeisin tallennuksesi. Jos tallennusta ei voitu lähettää (esimerkiksi ilman yhteyttä), Bucketeer säilyttää tiedoston tässä Macissa ja tarjoaa vaihtoehdot **Lähetä uudelleen**, **Tallenna kopio…** tai **Hylkää muutos** – myös seuraavalla käynnistyskerralla, esimerkiksi kaatumisen jälkeen.
 
 ## Hallitse objekteja
 

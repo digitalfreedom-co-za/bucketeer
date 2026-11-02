@@ -35,7 +35,7 @@ Den hemmelige nøkkelen er skjult når du redigerer en konto. Klikk på **Vis la
 - Dobbeltklikk på en fil, eller høyreklikk og velg **Åpne**, for å åpne den i standardappen. **Åpne med** viser andre apper som kan åpne den; med **Annet …** kan du velge en hvilken som helst app.
 - Bucketeer laster ned filen til en midlertidig mappe og følger med på den. Kort etter hver lagring lastes filen opp igjen via den vanlige overføringskøen, så klientsidekryptering gjelder også her.
 - Hvis objektet ble endret eller slettet på serveren etter at du åpnet det, overskriver ikke Bucketeer det. Din versjon lastes opp ved siden av som «navn (conflict dato).filtype», og Bucketeer viser en melding.
-- Den midlertidige kopien slettes når du avslutter appen du redigerte i, når du avslutter Bucketeer, eller ved neste oppstart.
+- Den midlertidige kopien slettes så snart serveren har den siste lagringen din. Hvis en lagring ikke kunne lastes opp (for eksempel uten nett), beholder Bucketeer filen på denne Macen og tilbyr **Last opp igjen**, **Arkiver en kopi …** eller **Forkast endringen** – også ved neste oppstart, for eksempel etter et krasj.
 
 ## Administrer objekter
 

@@ -58,7 +58,8 @@ None of the following is sent to the provider.
 | Encryption keys (only if you enable client-side encryption for a bucket) | Key material in the macOS Keychain, key labels in a local database | Encrypt and decrypt objects on your Mac (see section 6) |
 | Settings (bandwidth limit, trash and Spotlight settings, menubar mode, hardware-key preview) | The App's local preferences | Remember your choices |
 | Preview cache | Temporary folder of the App, limited to 2 GiB | Show previews without downloading again |
-| Files you open with another app (Open / Open With) | Temporary folder of the App | Let the other app edit the file and upload your saves; deleted when that app quits, when Bucketeer quits, or at the next launch |
+| Files you open with another app (Open / Open With) | Temporary folder of the App | Let the other app edit the file and upload your saves; deleted once the storage provider has your last save |
+| Edits that could not be uploaded (Open / Open With) | Application Support folder of the App | Keep your unsaved work after a failed upload or a crash; kept until you upload, export or discard it in the App |
 | Downloaded files | The location you choose | Your files, under your control |
 | Finder mount staging files (only for mounted buckets) | System-managed File Provider storage | Required by macOS to show a bucket in Finder |
 | Last listing of the folders you opened in Finder (object names and ETags, only for mounted buckets) | The Finder extension's own container | Show changes made on the server in Finder |

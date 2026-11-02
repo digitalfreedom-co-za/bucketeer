@@ -35,7 +35,7 @@ Při úpravě účtu je tajný klíč skrytý. Klikněte na **Zobrazit uložené
 - Dvakrát klikněte na soubor nebo na něj klikněte pravým tlačítkem a zvolte **Otevřít**; otevře se ve výchozí aplikaci. **Otevřít v aplikaci** nabízí další aplikace, které ho umí otevřít; **Jiná…** umožní vybrat libovolnou aplikaci.
 - Bucketeer soubor stáhne do dočasné složky a sleduje ho. Chvíli po každém uložení se soubor nahraje zpět přes běžnou frontu přenosů, takže platí i šifrování na straně klienta.
 - Pokud se objekt po otevření na serveru změnil nebo byl smazán, Bucketeer ho nepřepíše. Vaše verze se nahraje vedle něj jako „název (conflict datum).přípona“ a Bucketeer zobrazí zprávu.
-- Dočasná kopie se smaže, když ukončíte aplikaci, ve které jste ji upravovali, když ukončíte Bucketeer, nebo při dalším spuštění.
+- Dočasná kopie se smaže, jakmile má server vaše poslední uložení. Pokud se uložení nepodařilo nahrát (například bez připojení), Bucketeer soubor ponechá v tomto Macu a nabídne **Nahrát znovu**, **Uložit kopii…** nebo **Zahodit úpravu** — také při dalším spuštění, například po pádu aplikace.
 
 ## Správa objektů
 

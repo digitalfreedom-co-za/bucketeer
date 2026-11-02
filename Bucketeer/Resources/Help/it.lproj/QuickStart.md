@@ -35,7 +35,7 @@ Il segreto è nascosto quando modifichi un account. Fai clic su **Rivela le cred
 - Fai doppio clic su un file, oppure clic destro e scegli **Apri**, per aprirlo nella sua app predefinita. **Apri con** elenca le altre app che possono aprirlo; con **Altro…** scegli qualsiasi app.
 - Bucketeer scarica il file in una cartella temporanea e lo tiene d'occhio. Poco dopo ogni salvataggio il file viene ricaricato tramite la normale coda dei trasferimenti, quindi vale anche la crittografia lato client.
 - Se l'oggetto è stato modificato o eliminato sul server dopo l'apertura, Bucketeer non lo sovrascrive. La tua versione viene caricata accanto come "nome (conflict data).ext" e Bucketeer mostra un messaggio.
-- La copia temporanea viene eliminata quando chiudi l'app in cui l'hai modificata, quando chiudi Bucketeer o al successivo avvio.
+- La copia temporanea viene eliminata non appena il server ha il tuo ultimo salvataggio. Se un salvataggio non è stato caricato (ad esempio senza connessione), Bucketeer conserva il file su questo Mac e ti propone **Carica di nuovo**, **Salva una copia…** o **Scarta modifica**, anche al successivo avvio, ad esempio dopo un arresto anomalo.
 
 ## Gestire gli oggetti
 

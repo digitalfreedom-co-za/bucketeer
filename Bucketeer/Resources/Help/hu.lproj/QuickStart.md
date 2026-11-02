@@ -35,7 +35,7 @@ Fiók szerkesztésekor a titkos kulcs rejtve van. Kattints a **Mentett hitelesí
 - Kattints duplán egy fájlra, vagy kattints rá jobb gombbal, és válaszd a **Megnyitás** lehetőséget, hogy az alapértelmezett appban nyíljon meg. A **Megnyitás ezzel** további appokat sorol fel, amelyek meg tudják nyitni; az **Egyéb…** bármely app kiválasztását engedi.
 - A Bucketeer letölti a fájlt egy ideiglenes mappába, és figyeli. Minden mentés után nem sokkal a fájl a szokásos átviteli soron át visszakerül a szerverre, így a kliensoldali titkosítás is érvényes.
 - Ha az objektum a megnyitás után megváltozott vagy törölték a szerveren, a Bucketeer nem írja felül. A te verziód mellé kerül fel „név (conflict dátum).kiterjesztés” néven, és a Bucketeer üzenetet jelenít meg.
-- Az ideiglenes másolat törlődik, amikor kilépsz abból az appból, amelyben szerkesztetted, amikor kilépsz a Bucketeerből, vagy a következő indításkor.
+- Az ideiglenes másolat törlődik, amint a szerveren megvan a legutóbbi mentésed. Ha egy mentést nem sikerült feltölteni (például kapcsolat nélkül), a Bucketeer megtartja a fájlt ezen a Macen, és felajánlja a **Feltöltés újra**, a **Másolat mentése…** vagy a **Módosítás elvetése** lehetőséget – a következő indításkor is, például egy összeomlás után.
 
 ## Objektumok kezelése
 

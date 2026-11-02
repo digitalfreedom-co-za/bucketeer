@@ -35,7 +35,7 @@ O segredo fica oculto quando você edita uma conta. Clique em **Mostrar credenci
 - Clique duas vezes em um arquivo, ou clique com o botão direito e escolha **Abrir**, para abri-lo no app padrão. **Abrir com** lista outros apps que podem abri-lo; **Outro…** permite escolher qualquer app.
 - O Bucketeer baixa o arquivo para uma pasta temporária e o acompanha. Pouco depois de cada salvamento, o arquivo é enviado de volta pela fila de transferências normal, então a criptografia do lado do cliente também vale.
 - Se o objeto foi alterado ou apagado no servidor depois que você o abriu, o Bucketeer não o sobrescreve. Sua versão é enviada ao lado como "nome (conflict data).ext" e o Bucketeer mostra um aviso.
-- A cópia temporária é apagada quando você encerra o app em que a editou, quando encerra o Bucketeer ou na próxima abertura.
+- A cópia temporária é apagada assim que o servidor tem o seu último salvamento. Se um salvamento não pôde ser enviado (por exemplo, sem conexão), o Bucketeer mantém o arquivo neste Mac e oferece **Enviar novamente**, **Salvar uma cópia…** ou **Descartar alteração**, também na próxima abertura, por exemplo após uma falha.
 
 ## Gerenciar objetos
 

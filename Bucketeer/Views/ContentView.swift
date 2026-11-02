@@ -81,6 +81,30 @@ struct ContentView: View {
         } message: { notice in
             Text(notice.message)
         }
+        .alert(
+            "openWith.recovery.title",
+            isPresented: Binding(
+                get: { container.openWithController.recoveryPrompt != nil },
+                set: { _ in }
+            ),
+            presenting: container.openWithController.recoveryPrompt
+        ) { entry in
+            let openWith = container.openWithController
+            Button("openWith.recovery.retry") {
+                Task { await openWith.retry(entry) }
+            }
+            Button("openWith.recovery.export") {
+                openWith.export(entry)
+            }
+            Button("openWith.recovery.discard", role: .destructive) {
+                openWith.discardRecovery(entry)
+            }
+            Button("openWith.recovery.later", role: .cancel) {
+                openWith.postpone(entry)
+            }
+        } message: { entry in
+            Text(container.openWithController.recoveryMessage(for: entry))
+        }
     }
 
     @ViewBuilder
