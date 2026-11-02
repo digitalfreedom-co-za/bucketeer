@@ -13,6 +13,14 @@ before that is internal phase work on the `development` branch.
 
 ## [Unreleased] — `development` branch
 
+### Export compliance (2026-11-02)
+- `ITSAppUsesNonExemptEncryption` is `NO`. v1.0 is not offered in
+  France, so no ANSSI declaration and no documentation are needed.
+  US position unchanged: 5D992.c mass market under §740.17(b)(1),
+  without CCATS and, since 86 FR 16482, without an annual report for
+  an end-user app. `docs/EXPORT_COMPLIANCE.md` describes the steps
+  if France is added later.
+
 ### Trial, Open With and Finder conflicts (2026-11-02)
 - The Pro trial is a free non-consumable IAP
   (`za.co.digitalfreedom.bucketeer.pro.trial`). It runs 14 days from

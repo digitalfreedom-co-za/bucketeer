@@ -160,14 +160,17 @@ the user's Mac and are never transmitted to the Publisher.
 
 ## Encryption
 
-`ITSAppUsesNonExemptEncryption = YES` in Info.plist. The client-side
-encryption layer (Phase 13.15) performs general-purpose AES-256-GCM
-confidentiality encryption of user file contents — that is NON-exempt
-functionality, so the questionnaire answers are: uses encryption
-**Yes**, exempt **No**, proprietary algorithms **No**. Classification:
-ECCN 5D992.c mass-market, self-classified under 15 CFR §740.17(b)(1);
-the annual self-classification report to BIS is owed each February.
-Full reasoning + report format: `docs/EXPORT_COMPLIANCE.md`.
+`ITSAppUsesNonExemptEncryption = NO` in Info.plist. Bucketeer v1.0 is
+not offered in France (deselect France under Pricing and
+Availability), so no ANSSI declaration is needed and, per Apple's
+documentation, the app is exempt from providing documentation; App
+Store Connect does not ask the questionnaire per build. US
+classification of the client-side AES-256-GCM encryption (Phase
+13.15): ECCN 5D992.c mass market, self-classified under 15 CFR
+§740.17(b)(1), no CCATS, no annual report for an end-user app
+(86 FR 16482). Provider and exporter: DigitalFreedom Global LLC.
+Full reasoning and the steps for adding France later:
+`docs/EXPORT_COMPLIANCE.md`.
 
 ## In-App Purchases
 
