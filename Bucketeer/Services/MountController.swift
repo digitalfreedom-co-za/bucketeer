@@ -155,6 +155,17 @@ final class MountController {
         ))
     }
 
+    /// S3 and Azure push no change events, so the extension only learns
+    /// about server-side changes when asked. Called when the user
+    /// refreshes the bucket in the browser.
+    func signalServerChanges(accountID: UUID, bucket: String) async {
+        let identifier = Self.domainIdentifier(accountID: accountID, bucket: bucket)
+        guard mountedDomains.contains(identifier) else { return }
+        // Best effort: a failed signal only delays the update until
+        // Finder enumerates the folder again.
+        try? await registry.signalWorkingSet(identifier: identifier)
+    }
+
     func isMounted(account: S3Account, bucket: String) -> Bool {
         let identifier = Self.domainIdentifier(accountID: account.id, bucket: bucket)
         return mountedDomains.contains(identifier)

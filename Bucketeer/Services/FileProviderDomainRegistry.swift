@@ -16,6 +16,8 @@ protocol FileProviderDomainRegistry {
     func identifiers() async throws -> [NSFileProviderDomainIdentifier]
     func add(identifier: NSFileProviderDomainIdentifier, displayName: String) async throws
     func remove(identifier: NSFileProviderDomainIdentifier) async throws
+    /// Asks the extension to report server-side changes of the domain.
+    func signalWorkingSet(identifier: NSFileProviderDomainIdentifier) async throws
 }
 
 /// The real registry backed by `NSFileProviderManager`.
@@ -34,5 +36,12 @@ struct SystemFileProviderDomainRegistry: FileProviderDomainRegistry {
         if let domain = domains.first(where: { $0.identifier == identifier }) {
             try await NSFileProviderManager.remove(domain)
         }
+    }
+
+    /// No-op when no domain matches.
+    func signalWorkingSet(identifier: NSFileProviderDomainIdentifier) async throws {
+        let domains = try await NSFileProviderManager.domains()
+        guard let domain = domains.first(where: { $0.identifier == identifier }) else { return }
+        try await NSFileProviderManager(for: domain)?.signalEnumerator(for: .workingSet)
     }
 }

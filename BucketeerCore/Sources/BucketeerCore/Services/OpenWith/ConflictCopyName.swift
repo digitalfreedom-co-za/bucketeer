@@ -47,4 +47,14 @@ public enum ETag {
     public static func quoted(_ etag: String) -> String {
         "\"\(normalized(etag))\""
     }
+
+    /// True only when both sides are known and equal. An unknown base
+    /// or a missing server object never counts as unchanged, so the
+    /// caller writes a conflict copy instead of overwriting.
+    public static func matches(base: String?, current: String?) -> Bool {
+        guard let base = base.map(normalized), !base.isEmpty,
+              let current = current.map(normalized)
+        else { return false }
+        return base == current
+    }
 }

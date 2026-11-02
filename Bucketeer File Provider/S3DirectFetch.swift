@@ -47,18 +47,36 @@ enum S3DirectFetch {
         )
     }
 
+    /// With `ifMatch` the object is only replaced while it still has
+    /// that ETag; a 412 surfaces as `BucketeerError.preconditionFailed`.
+    /// Conditional writes always use one PUT, because Soto's multipart
+    /// helper cannot carry the precondition to the completion request.
     static func upload(
         account: S3Account,
         bucket: String,
         key: String,
         localURL: URL,
         contentType: String?,
+        ifMatch: String? = nil,
         factory: S3ClientFactory
     ) async throws {
         let s3 = try await factory.client(for: account)
         let size = (try? localURL.resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0
         let fileSize = Int64(size)
-        if fileSize >= multipartThreshold {
+        if let ifMatch {
+            let data = try Data(contentsOf: localURL, options: .mappedIfSafe)
+            do {
+                _ = try await s3.putObject(.init(
+                    body: AWSHTTPBody(buffer: ByteBuffer(bytes: data)),
+                    bucket: bucket,
+                    contentType: contentType,
+                    ifMatch: ETag.quoted(ifMatch),
+                    key: key
+                ))
+            } catch where S3Service.isPreconditionFailure(error) {
+                throw BucketeerError.preconditionFailed(key: key)
+            }
+        } else if fileSize >= multipartThreshold {
             _ = try await s3.multipartUpload(
                 .init(
                     bucket: bucket,

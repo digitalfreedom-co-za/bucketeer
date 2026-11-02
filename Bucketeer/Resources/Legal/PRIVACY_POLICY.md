@@ -61,6 +61,7 @@ None of the following is sent to the provider.
 | Files you open with another app (Open / Open With) | Temporary folder of the App | Let the other app edit the file and upload your saves; deleted when that app quits, when Bucketeer quits, or at the next launch |
 | Downloaded files | The location you choose | Your files, under your control |
 | Finder mount staging files (only for mounted buckets) | System-managed File Provider storage | Required by macOS to show a bucket in Finder |
+| Last listing of the folders you opened in Finder (object names and ETags, only for mounted buckets) | The Finder extension's own container | Show changes made on the server in Finder |
 
 Uninstalling the App does not necessarily remove all of this data from
 your Mac. Delete accounts in the App first if you want the credentials

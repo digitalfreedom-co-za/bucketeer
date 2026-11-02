@@ -124,6 +124,8 @@ private final class FakeDomainRegistry: FileProviderDomainRegistry {
         registered.removeAll { $0 == identifier }
     }
 
+    func signalWorkingSet(identifier: NSFileProviderDomainIdentifier) async throws {}
+
     func releaseAdd() {
         addGate.release()
     }

@@ -48,6 +48,9 @@ final class BrowserViewModel {
     /// when the user has the opt-in toggle on. Optional so unit
     /// tests don't have to wire it up.
     var spotlightIndexer: SpotlightIndexer?
+    /// Called after the user refreshes a bucket listing; `AppContainer`
+    /// forwards it to the Finder mount of that bucket.
+    var onBucketRefresh: ((_ accountID: UUID, _ bucket: String) async -> Void)?
 
     /// Monotonically increasing token incremented on every navigation
     /// or refresh. Each async load captures the value at issue time and
@@ -156,8 +159,11 @@ final class BrowserViewModel {
 
     func refresh() async {
         let token = bumpGeneration()
-        if bucket != nil {
+        if let bucket {
             await loadObjects(reset: true, token: token)
+            if let account {
+                await onBucketRefresh?(account.id, bucket)
+            }
         } else if account != nil {
             await loadBuckets(token: token)
         }
