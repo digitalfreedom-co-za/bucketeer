@@ -120,6 +120,14 @@ public enum BucketeerEnvelope {
         guard data.count >= headerSize else { return false }
         return Array(data.prefix(magic.count)) == magic
     }
+
+    /// `looksEncrypted` for a file on disk; reads only the header.
+    public static func fileLooksEncrypted(at url: URL) -> Bool {
+        guard let handle = try? FileHandle(forReadingFrom: url) else { return false }
+        defer { try? handle.close() }
+        let header = (try? handle.read(upToCount: headerSize)) ?? Data()
+        return looksEncrypted(header)
+    }
 }
 
 /// Domain errors for the encryption layer. Translated to

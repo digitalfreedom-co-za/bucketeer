@@ -10,8 +10,8 @@ import Foundation
 /// Walks every object page of a bucket and produces a
 /// `BucketStats` snapshot. Phase 13.5.
 ///
-/// The collector deliberately walks from the bucket root with an
-/// empty prefix to capture every key, but accepts a `pageCap` so
+/// The collector walks every folder prefix from the bucket root to
+/// capture every key, but accepts a `pageCap` so
 /// truly huge buckets don't hang the dashboard. When the cap is hit
 /// the resulting `BucketStats.truncated` is `true` and the UI shows
 /// a hint that the totals are partial.
@@ -42,48 +42,51 @@ public struct BucketStatsCollector: Sendable {
         var lastModified: Date?
         var largest: [(key: String, size: Int64)] = []
         largest.reserveCapacity(largestKeep + 1)
-        var continuation: String? = nil
         var pages = 0
         var truncated = false
+        // Listings are one level deep (delimiter "/"), so walk every
+        // folder prefix; `pageCap` bounds the total number of requests.
+        var pendingPrefixes = [""]
 
-        repeat {
-            try Task.checkCancellation()
-            let page = try await browser.listObjects(
-                account: account,
-                bucket: bucket,
-                prefix: "",
-                continuationToken: continuation
-            )
-            pages += 1
-            for object in page.objects {
-                if object.isFolder {
-                    folderCount += 1
-                    continue
+        walk: while let prefix = pendingPrefixes.popLast() {
+            var continuation: String? = nil
+            repeat {
+                try Task.checkCancellation()
+                if pages >= pageCap {
+                    truncated = true
+                    break walk
                 }
-                objectCount += 1
-                // Codex audit R2 (medium): petabyte-scale buckets
-                // can overflow Int64. Overflow-aware add saturates
-                // at .max and the dashboard still shows useful
-                // partial stats rather than crashing.
-                let (sum, overflow) = totalBytes.addingReportingOverflow(object.size)
-                totalBytes = overflow ? .max : sum
-                if lastModified == nil || object.lastModified > (lastModified ?? .distantPast) {
-                    lastModified = object.lastModified
-                }
-                Self.insertLargest(
-                    &largest,
-                    key: object.key,
-                    size: object.size,
-                    keep: largestKeep
+                let page = try await browser.listObjects(
+                    account: account,
+                    bucket: bucket,
+                    prefix: prefix,
+                    continuationToken: continuation
                 )
-            }
-            continuation = page.continuationToken
-            if !page.hasMore { break }
-            if pages >= pageCap {
-                truncated = true
-                break
-            }
-        } while continuation != nil
+                pages += 1
+                for object in page.objects {
+                    if object.isFolder {
+                        folderCount += 1
+                        pendingPrefixes.append(object.key)
+                        continue
+                    }
+                    objectCount += 1
+                    // Petabyte-scale buckets can overflow Int64. Saturate
+                    // so the dashboard still shows useful partial stats.
+                    let (sum, overflow) = totalBytes.addingReportingOverflow(object.size)
+                    totalBytes = overflow ? .max : sum
+                    if lastModified == nil || object.lastModified > (lastModified ?? .distantPast) {
+                        lastModified = object.lastModified
+                    }
+                    Self.insertLargest(
+                        &largest,
+                        key: object.key,
+                        size: object.size,
+                        keep: largestKeep
+                    )
+                }
+                continuation = page.hasMore ? page.continuationToken : nil
+            } while continuation != nil
+        }
 
         return BucketStats(
             bucket: bucket,

@@ -122,3 +122,16 @@ struct S3ClientFactoryEndpointTests {
         #expect(url.absoluteString == "https://localhost")
     }
 }
+
+@Suite("Presigned URL path")
+struct PresignedURLPathTests {
+    @Test("Object keys are percent-encoded exactly once")
+    func keyEncodedOnce() {
+        let url = S3Service.presignTargetURL(
+            endpoint: URL(string: "https://s3.example.com")!,
+            bucket: "bkt",
+            key: "my folder/a?b#c%e.txt"
+        )
+        #expect(url.absoluteString == "https://s3.example.com/bkt/my%20folder/a%3Fb%23c%25e.txt")
+    }
+}

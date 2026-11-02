@@ -34,12 +34,24 @@ public enum LocalFolderEnumerator {
             .fileSizeKey,
             .contentModificationDateKey
         ]
+        // A missing, unmounted or unreadable folder must fail the run,
+        // not enumerate as empty: the planner would otherwise schedule a
+        // mirror delete for every destination key.
+        var isDirectory: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: root.path, isDirectory: &isDirectory),
+              isDirectory.boolValue
+        else { throw unavailableError }
+        var walkFailed = false
         guard let walker = FileManager.default.enumerator(
             at: root,
             includingPropertiesForKeys: Array(keys),
-            options: [.skipsHiddenFiles, .producesRelativePathURLs]
+            options: [.skipsHiddenFiles, .producesRelativePathURLs],
+            errorHandler: { _, _ in
+                walkFailed = true
+                return false
+            }
         ) else {
-            return []
+            throw unavailableError
         }
         var counter = 0
         for case let url as URL in walker {
@@ -67,7 +79,15 @@ public enum LocalFolderEnumerator {
                 isFolder: false
             ))
         }
+        if walkFailed { throw unavailableError }
         return results
+    }
+
+    private static var unavailableError: BucketeerError {
+        .unknown(message: String(
+            localized: "sync.error.localFolderUnavailable",
+            defaultValue: "The local folder is missing or could not be read completely, so the sync job stopped before changing anything."
+        ))
     }
 
     /// Resolve a security-scoped bookmark back to a URL. Caller must
