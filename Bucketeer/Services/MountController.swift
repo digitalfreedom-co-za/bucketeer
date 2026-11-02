@@ -30,7 +30,18 @@ final class MountController {
     var mountedDomains: [NSFileProviderDomainIdentifier] = []
     var lastError: BucketeerError?
 
-    init() {}
+    /// The File Provider extension's deployment target is macOS 14.1
+    /// while the host runs on 14.0, so Mount is unavailable on 14.0.
+    static var isSupportedOnThisSystem: Bool {
+        if #available(macOS 14.1, *) { return true }
+        return false
+    }
+
+    private let encryptionKeyStore: any EncryptionKeyStoring
+
+    init(encryptionKeyStore: any EncryptionKeyStoring) {
+        self.encryptionKeyStore = encryptionKeyStore
+    }
 
     /// Refresh the cached list from the system. Idempotent.
     func refresh() async {
@@ -44,7 +55,32 @@ final class MountController {
 
     /// Add a `NSFileProviderDomain` for the given bucket. No-op when
     /// the domain is already registered.
+    ///
+    /// Refuses encrypted buckets: the extension reads and writes raw
+    /// bytes, so Finder uploads would bypass client-side encryption.
+    /// A failed key lookup also refuses (fail closed).
     func mount(account: S3Account, bucket: String) async {
+        guard Self.isSupportedOnThisSystem else {
+            lastError = .unknown(message: String(
+                localized: "mount.error.requiresNewerMacOS",
+                defaultValue: "Mounting buckets in Finder requires macOS 14.1 or later."
+            ))
+            return
+        }
+        let isEncrypted: Bool
+        do {
+            isEncrypted = try await encryptionKeyStore.key(accountID: account.id, bucket: bucket) != nil
+        } catch {
+            lastError = error as? BucketeerError ?? .unknown(message: error.localizedDescription)
+            return
+        }
+        guard !isEncrypted else {
+            lastError = .unknown(message: String(
+                localized: "mount.error.encryptedBucket",
+                defaultValue: "This bucket uses client-side encryption. Encrypted buckets can't be mounted in Finder yet; transfer its files in the Bucketeer window instead."
+            ))
+            return
+        }
         let identifier = Self.domainIdentifier(accountID: account.id, bucket: bucket)
         let domain = NSFileProviderDomain(
             identifier: identifier,
@@ -69,32 +105,6 @@ final class MountController {
             await refresh()
         } catch {
             lastError = mapMountError(error)
-        }
-    }
-
-    /// Tear down every mounted domain — used when the host app uninstalls
-    /// (Phase 12) or the user clears all data via Settings.
-    ///
-    /// Removal failures are collected per domain instead of aborting
-    /// the loop — one stuck domain must not leave every subsequent
-    /// domain registered as a stale Finder Location.
-    func unmountAll() async {
-        var firstError: Error?
-        do {
-            let domains = try await NSFileProviderManager.domains()
-            for domain in domains {
-                do {
-                    try await NSFileProviderManager.remove(domain)
-                } catch {
-                    firstError = firstError ?? error
-                }
-            }
-        } catch {
-            firstError = firstError ?? error
-        }
-        await refresh()
-        if let firstError {
-            lastError = mapMountError(firstError)
         }
     }
 

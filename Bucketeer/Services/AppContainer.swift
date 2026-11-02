@@ -93,16 +93,7 @@ final class AppContainer {
 
     init() throws {
         let storeURL = Self.resolveStoreURL()
-        let schema = Schema([S3AccountRecord.self, SyncJobRecord.self])
-        let configuration = ModelConfiguration(
-            "Bucketeer",
-            schema: schema,
-            url: storeURL
-        )
-        let modelContainer = try ModelContainer(
-            for: schema,
-            configurations: configuration
-        )
+        let modelContainer = try SharedStore.makeContainer(url: storeURL, allowsSave: true)
         Self.runMigrations(modelContainer)
         let activityContainer = try Self.makeActivityContainer()
         let (trashContainer, trashCacheURL) = try Self.makeTrashContainer()
@@ -211,8 +202,15 @@ final class AppContainer {
             accountStore: accountStore,
             entitlements: entitlementManager
         )
-        self.activationController = AppActivationController()
-        let mountController = MountController()
+        let activationController = AppActivationController()
+        self.activationController = activationController
+        // A persisted menubar mode must not outlive the entitlement.
+        entitlementManager.onStateChange = { [weak entitlementManager, activationController] _ in
+            guard let entitlementManager,
+                  !entitlementManager.isUnlocked(.menubarBackground) else { return }
+            activationController.setMenubarMode(false)
+        }
+        let mountController = MountController(encryptionKeyStore: encryptionKeyStore)
         self.mountController = mountController
         Task { @MainActor [mountController] in
             await mountController.refresh()
@@ -226,7 +224,10 @@ final class AppContainer {
             jobStore: syncJobStore,
             browser: router,
             transferManager: transferManager,
-            activityLog: activityLog
+            activityLog: activityLog,
+            isAuthorized: { [entitlementManager] in
+                await entitlementManager.isUnlockedAfterLaunchCheck(.syncEngine)
+            }
         )
         self.syncJobStore = syncJobStore
         self.syncEngine = syncEngine
@@ -331,7 +332,8 @@ final class AppContainer {
         self.encryptionKeysViewModel = EncryptionKeysViewModel(
             keyStore: encryptionKeyStore,
             accountStore: accountStore,
-            gate: bucketEncryptionGate
+            gate: bucketEncryptionGate,
+            mountController: mountController
         )
 
         // Phase 13.16 — hardware-key unlock.

@@ -27,7 +27,7 @@ side encryption, hardware-key preview).
 >
 > **Native, fast, private.** Built entirely with Swift 6 and SwiftUI.
 > Your credentials live in the macOS Keychain. No telemetry, no
-> analytics, no third-party SDKs. The only network traffic Bucketeer
+> analytics or tracking SDKs. The only network traffic Bucketeer
 > creates is the object-storage traffic you configure.
 >
 > ### What you can do

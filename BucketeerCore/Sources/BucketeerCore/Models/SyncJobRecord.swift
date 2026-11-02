@@ -7,10 +7,11 @@
 
 import Foundation
 import SwiftData
-import BucketeerCore
 
 /// Persistent backing for `SyncJob`. Stored alongside `S3AccountRecord`
-/// in the same SwiftData container.
+/// in the shared SwiftData container (see `SharedStore`). Lives in Core
+/// so the File Provider extension opens the store with the same schema
+/// as the host.
 ///
 /// Phase 9.8 changed the endpoint representation from three flat S3
 /// columns to a single JSON-encoded `SyncEndpoint` enum, so a sync
@@ -19,9 +20,9 @@ import BucketeerCore
 /// (one `Data` field per side) without adding a flock of optional
 /// type-specific columns.
 @Model
-final class SyncJobRecord {
-    @Attribute(.unique) var id: UUID
-    var name: String
+public final class SyncJobRecord {
+    @Attribute(.unique) public var id: UUID
+    public var name: String
     var modeRaw: String
 
     /// JSON-encoded `SyncEndpoint` for the source.
@@ -35,8 +36,8 @@ final class SyncJobRecord {
     var deletePropagation: Bool
     var scheduleRaw: String
     var concurrency: Int
-    var lastRunAt: Date?
-    var lastRunSummary: String?
+    public var lastRunAt: Date?
+    public var lastRunSummary: String?
     var enabled: Bool
 
     init(
@@ -71,7 +72,7 @@ final class SyncJobRecord {
         self.enabled = enabled
     }
 
-    convenience init(job: SyncJob) {
+    public convenience init(job: SyncJob) {
         // SyncEndpoint is Codable; JSON-encoding is deterministic
         // enough for storage (no version drift expected for an enum
         // with two cases). Falls back to empty Data on encode failure
@@ -98,7 +99,7 @@ final class SyncJobRecord {
         )
     }
 
-    func update(from job: SyncJob) {
+    public func update(from job: SyncJob) {
         let encoder = JSONEncoder()
         name = job.name
         modeRaw = job.mode.rawValue
@@ -122,7 +123,7 @@ final class SyncJobRecord {
     /// Sendable snapshot. Returns `nil` when one of the endpoint blobs
     /// fails to decode — that record is then treated as broken and
     /// hidden from the UI rather than crashing the list.
-    var snapshot: SyncJob? {
+    public var snapshot: SyncJob? {
         let decoder = JSONDecoder()
         guard
             let source = try? decoder.decode(SyncEndpoint.self, from: sourceEndpointData),

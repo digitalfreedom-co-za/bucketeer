@@ -51,6 +51,7 @@ final class SyncJobListViewModel {
         await refresh()
         do {
             try await engine.reload()
+            await engine.runLaunchJobs()
         } catch let err as BucketeerError {
             self.error = err
         } catch {

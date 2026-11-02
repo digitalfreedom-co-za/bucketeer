@@ -15,7 +15,8 @@ import BucketeerCore
 /// shared services are pulled from `BucketeerCore`.
 ///
 /// The extension shares two pieces of state with the host:
-/// - The SwiftData store in the App Group container — read-only here
+/// - The SwiftData store in the App Group container — opened with the
+///   host's schema and `allowsSave: false`
 /// - The Keychain access group — per-account credentials
 ///
 /// All stored properties are `let` and reference Sendable services or
@@ -31,7 +32,6 @@ final class ExtensionContainer: Sendable {
     let browser: any S3Browsing
 
     init() throws {
-        let schema = Schema([S3AccountRecord.self])
         guard let groupURL = FileManager.default.containerURL(
             forSecurityApplicationGroupIdentifier: AppEnvironment.appGroupIdentifier
         ) else {
@@ -42,15 +42,9 @@ final class ExtensionContainer: Sendable {
             )
         }
         let storeURL = groupURL.appending(path: AppEnvironment.swiftDataStoreFileName)
-        let configuration = ModelConfiguration(
-            "Bucketeer",
-            schema: schema,
-            url: storeURL
-        )
-        self.modelContainer = try ModelContainer(
-            for: schema,
-            configurations: configuration
-        )
+        // Same schema as the host (never a subset — that would migrate
+        // away the host's sync jobs); saves are disabled here.
+        self.modelContainer = try SharedStore.makeContainer(url: storeURL, allowsSave: false)
         let keychain = KeychainStore(
             service: AppEnvironment.keychainService,
             accessGroup: AppEnvironment.keychainAccessGroup

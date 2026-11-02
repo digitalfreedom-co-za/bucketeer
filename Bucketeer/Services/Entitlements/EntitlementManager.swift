@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import AppKit
 import StoreKit
 import BucketeerCore
 
@@ -75,8 +76,8 @@ final class EntitlementManager {
     static let proProductID = "za.co.digitalfreedom.bucketeer.pro.lifetime"
 
     /// Pure trial-state computation lives in Core's `TrialBookkeeping`
-    /// so it can be regression-tested without StoreKit (Codex review #8
-    /// mitigation — future-date clamp + sticky consumed marker).
+    /// so it can be regression-tested without StoreKit (future-date
+    /// clamp + sticky consumed marker).
     private let trial = TrialBookkeeping()
 
     private(set) var state: State = .free
@@ -88,9 +89,22 @@ final class EntitlementManager {
     private(set) var purchaseInProgress: Bool = false
 
     private var transactionObserver: Task<Void, Never>?
+    private var activationObserver: Task<Void, Never>?
+    /// Re-derives the state the moment a running trial ends, so an app
+    /// left open across the expiry does not keep Pro unlocked.
+    private var trialExpiryTimer: Task<Void, Never>?
+    /// The launch-time state derivation. Local only (trial store plus
+    /// StoreKit's on-device entitlements), so it does not wait for the
+    /// product request.
+    private var initialRefresh: Task<Void, Never>?
+
+    /// Called after every refresh. `AppContainer` uses it to switch
+    /// off Pro-only modes once the entitlement lapses.
+    var onStateChange: ((State) -> Void)?
 
     init() {
         ensureTrialStarted()
+        initialRefresh = Task { [weak self] in await self?.refresh() }
     }
 
     // MARK: - Public API
@@ -98,9 +112,18 @@ final class EntitlementManager {
     /// Kick off StoreKit observation. Called from `AppContainer` after
     /// the SwiftData container is ready.
     func bootstrap() async {
-        await loadProduct()
-        await refresh()
+        await initialRefresh?.value
         startTransactionObserver()
+        startActivationObserver()
+        await loadProduct()
+    }
+
+    /// `isUnlocked(_:)` for background work started at launch (on-launch
+    /// sync jobs, watch folders): waits for the launch-time refresh so a
+    /// Pro user's jobs are not refused while `state` is still `.free`.
+    func isUnlockedAfterLaunchCheck(_ feature: ProFeature) async -> Bool {
+        await initialRefresh?.value
+        return isUnlocked(feature)
     }
 
     /// True when the supplied feature is allowed under the current
@@ -128,15 +151,17 @@ final class EntitlementManager {
     /// Re-derive `state` from the persisted trial start and the live
     /// StoreKit entitlements.
     func refresh() async {
+        trialExpiryTimer?.cancel()
+        trialExpiryTimer = nil
         if await hasActiveProEntitlement() {
             state = .pro
-            return
-        }
-        if let days = trialDaysRemaining() {
-            state = .trial(daysRemaining: days)
+        } else if let seconds = trial.secondsRemaining() {
+            state = .trial(daysRemaining: Int(ceil(seconds / 86_400)))
+            scheduleTrialExpiryRefresh(after: seconds)
         } else {
             state = .free
         }
+        onStateChange?(state)
     }
 
     func purchasePro() async throws {
@@ -154,7 +179,7 @@ final class EntitlementManager {
                     await transaction.finish()
                     await refresh()
                 case .unverified(_, let verificationError):
-                    // Codex medium #13: an unverified purchase result
+                    // An unverified purchase result
                     // used to be silently swallowed, leaving the user
                     // with no feedback and the entitlement state
                     // unchanged. Surface it as an actionable error so
@@ -198,8 +223,23 @@ final class EntitlementManager {
         trial.start()
     }
 
-    private func trialDaysRemaining() -> Int? {
-        trial.daysRemaining()
+    private func scheduleTrialExpiryRefresh(after seconds: TimeInterval) {
+        trialExpiryTimer = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(seconds))
+            guard !Task.isCancelled else { return }
+            await self?.refresh()
+        }
+    }
+
+    /// Backstop for the expiry timer: re-check whenever the app becomes
+    /// active.
+    private func startActivationObserver() {
+        guard activationObserver == nil else { return }
+        activationObserver = Task { [weak self] in
+            for await _ in NotificationCenter.default.notifications(named: NSApplication.didBecomeActiveNotification) {
+                await self?.refresh()
+            }
+        }
     }
 
     // MARK: - StoreKit

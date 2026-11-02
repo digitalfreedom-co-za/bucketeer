@@ -35,7 +35,13 @@ actor SyncEngine {
     private let continuation: AsyncStream<[SyncJobStatus]>.Continuation
 
     private var current: [UUID: SyncJobStatus] = [:]
-    private var runners: [UUID: Task<Void, Never>] = [:]
+    /// One entry per running job. The token identifies the run, so a
+    /// cancelled run winding down cannot clear the slot of a newer run.
+    private struct Runner {
+        let token: UUID
+        let task: Task<Void, Never>
+    }
+    private var runners: [UUID: Runner] = [:]
     private var jobs: [UUID: SyncJob] = [:]
     /// Per-sync-job: the transfer-manager IDs the engine has handed off
     /// to the queue. Used to actively cancel in-flight uploads /
@@ -81,21 +87,31 @@ actor SyncEngine {
         }
     }
     private var watchers: [UUID: WatcherEntry] = [:]
+    private struct IntervalTimer {
+        let seconds: Int
+        let task: Task<Void, Never>
+    }
+    private var intervalTimers: [UUID: IntervalTimer] = [:]
 
     private let activityLog: (any ActivityLogging)?
+    /// Entitlement check run before every job start — manual, on-launch,
+    /// interval and watch-folder triggers alike.
+    private let isAuthorized: @Sendable () async -> Bool
 
     init(
         accountStore: any AccountStoring,
         jobStore: any SyncJobStoring,
         browser: any S3Browsing,
         transferManager: TransferManager,
-        activityLog: (any ActivityLogging)? = nil
+        activityLog: (any ActivityLogging)? = nil,
+        isAuthorized: @escaping @Sendable () async -> Bool = { true }
     ) {
         self.accountStore = accountStore
         self.jobStore = jobStore
         self.browser = browser
         self.transferManager = transferManager
         self.activityLog = activityLog
+        self.isAuthorized = isAuthorized
         let (stream, continuation) = AsyncStream<[SyncJobStatus]>.makeStream(
             bufferingPolicy: .bufferingNewest(1)
         )
@@ -115,7 +131,9 @@ actor SyncEngine {
             entry.teardown()
         }
         watchers.removeAll()
-        runners.values.forEach { $0.cancel() }
+        intervalTimers.values.forEach { $0.task.cancel() }
+        intervalTimers.removeAll()
+        runners.values.forEach { $0.task.cancel() }
         runners.removeAll()
         // A rerun bit left set here would fire `runNow` on the
         // already-shut-down engine from the execute() defer.
@@ -130,15 +148,46 @@ actor SyncEngine {
         let all = try await jobStore.all()
         jobs.removeAll()
         for job in all { jobs[job.id] = job }
+        // Drop statuses of deleted jobs.
+        current = current.filter { jobs[$0.key] != nil }
         publish()
-        // Kick off any on-launch jobs that are enabled. Interval and
-        // manual jobs are not started here.
-        for job in all where job.enabled && job.schedule == .onLaunch {
-            await runNow(id: job.id)
-        }
         // Reconcile FSEvents watchers for `.onLocalChange` jobs whose
         // source is a local folder. Phase 9.10.
         reconcileLocalChangeWatchers(against: all)
+        reconcileIntervalTimers(against: all)
+    }
+
+    /// Start every enabled on-launch job. Called once at app launch —
+    /// not from `reload()`, which runs after every job edit.
+    func runLaunchJobs() async {
+        for job in jobs.values where job.enabled && job.schedule == .onLaunch {
+            await runNow(id: job.id)
+        }
+    }
+
+    /// One repeating timer per enabled interval job; restarted when the
+    /// interval changes, stopped when the job is gone or rescheduled.
+    private func reconcileIntervalTimers(against jobs: [SyncJob]) {
+        var keepIDs: Set<UUID> = []
+        for job in jobs where job.enabled {
+            guard case .interval(let seconds) = job.schedule else { continue }
+            keepIDs.insert(job.id)
+            if intervalTimers[job.id]?.seconds == seconds { continue }
+            intervalTimers.removeValue(forKey: job.id)?.task.cancel()
+            let jobID = job.id
+            let task = Task { [weak self] in
+                while !Task.isCancelled {
+                    try? await Task.sleep(for: .seconds(seconds))
+                    guard !Task.isCancelled else { return }
+                    await self?.runNow(id: jobID)
+                }
+            }
+            intervalTimers[job.id] = IntervalTimer(seconds: seconds, task: task)
+        }
+        for (id, timer) in intervalTimers where !keepIDs.contains(id) {
+            timer.task.cancel()
+            intervalTimers.removeValue(forKey: id)
+        }
     }
 
     /// Bring the set of running FSEvents watchers in sync with the
@@ -227,19 +276,32 @@ actor SyncEngine {
     /// rerun bit, watch-folder events that landed mid-run were lost
     /// and only a *future* event triggered another sync.
     func runNow(id: UUID) async {
-        guard let job = jobs[id] else { return }
+        guard jobs[id] != nil else { return }
         if runners[id] != nil {
             pendingReruns.insert(id)
             return
         }
+        // Checked after the runner slot: a run already in progress may
+        // finish; only new runs need the entitlement.
+        guard await isAuthorized() else {
+            updateStatus(id: id, phase: .failed, message: String(
+                localized: "sync.error.proRequired",
+                defaultValue: "Running sync jobs requires Bucketeer Pro."
+            ))
+            return
+        }
+        // Re-read after the suspension: the job may have been edited,
+        // deleted or started meanwhile.
+        guard let job = jobs[id], runners[id] == nil else { return }
         // Clear any previous cancellation flag so re-running a
         // cancelled job doesn't immediately tear new transfers down.
         cancelledJobIDs.remove(id)
         updateStatus(id: id, phase: .planning, message: nil)
+        let token = UUID()
         let task = Task { [weak self] in
-            _ = await self?.execute(job: job)
+            _ = await self?.execute(job: job, token: token)
         }
-        runners[id] = task
+        runners[id] = Runner(token: token, task: task)
     }
 
     /// Cancel a running job. Idempotent. Cancels the orchestrating
@@ -247,7 +309,8 @@ actor SyncEngine {
     /// to the queue for this job — Codex review #3.
     func cancel(id: UUID) async {
         cancelledJobIDs.insert(id)
-        runners[id]?.cancel()
+        pendingReruns.remove(id)
+        runners[id]?.task.cancel()
         runners[id] = nil
         if let ids = activeTransferIDs[id] {
             for transferID in ids {
@@ -277,7 +340,7 @@ actor SyncEngine {
 
     // MARK: - Execution
 
-    private func execute(job: SyncJob) async {
+    private func execute(job: SyncJob, token: UUID) async {
         let start = Date()
         // Codex audit R2 (high): release the runner slot, then
         // immediately re-trigger if a watch-folder event landed
@@ -285,9 +348,11 @@ actor SyncEngine {
         // set and is only acted on by the *next* fsevent, which
         // could be hours away.
         defer {
-            runners[job.id] = nil
-            if pendingReruns.remove(job.id) != nil {
-                Task { [weak self] in await self?.runNow(id: job.id) }
+            if runners[job.id]?.token == token {
+                runners[job.id] = nil
+                if pendingReruns.remove(job.id) != nil {
+                    Task { [weak self] in await self?.runNow(id: job.id) }
+                }
             }
         }
 
@@ -413,6 +478,13 @@ actor SyncEngine {
         } catch {
             // Per-entry failures are already counted via the Result
             // surface; this catch handles only group-level surprises.
+        }
+        // The `return` inside the task group only leaves the closure; a
+        // cancelled run must not continue to deletes or overwrite its
+        // `.cancelled` status with a terminal summary.
+        guard !Task.isCancelled else {
+            updateStatus(id: job.id, phase: .cancelled)
+            return
         }
 
         // Mirror deletes (only when explicitly enabled).

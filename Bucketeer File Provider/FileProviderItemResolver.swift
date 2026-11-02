@@ -153,7 +153,11 @@ enum FileProviderItemResolver {
         guard let mountInfo = try await container.resolve(domain.identifier.rawValue) else {
             throw mappedError(.providerDomainNotFound)
         }
-        let parentKey = key(from: template.parentItemIdentifier) ?? ""
+        // Unknown parents (trash, working set) must not fall back to the
+        // bucket root.
+        guard let parentKey = key(from: template.parentItemIdentifier) else {
+            throw mappedError(.noSuchItem)
+        }
         let isFolder = template.contentType == .folder
         // Folders carry the trailing slash so the identifier round-trips
         // through `resolve` without needing a HEAD lookup. Files use the
@@ -248,7 +252,9 @@ enum FileProviderItemResolver {
             // Rename = server-side copy + delete (mirrors the rename
             // path in the host's BrowserViewModel).
             if changedFields.contains(.filename) || changedFields.contains(.parentItemIdentifier) {
-                let parentKey = key(from: item.parentItemIdentifier) ?? ""
+                guard let parentKey = key(from: item.parentItemIdentifier) else {
+                    throw mappedError(.noSuchItem)
+                }
                 let newKey = parentKey + item.filename
                 if newKey != originalKey {
                     try await container.browser.copy(

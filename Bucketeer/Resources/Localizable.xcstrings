@@ -4,6 +4,720 @@
     "" : {
 
     },
+    "encryption.error.bucketMounted" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tento bucket je připojen ve Finderu. Před zapnutím šifrování jej odpojte, protože soubory kopírované přes Finder by nebyly šifrovány."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne bucket er monteret i Finder. Afmonter den, før du slår kryptering til, da filer kopieret via Finder ikke ville blive krypteret."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Bucket ist im Finder eingebunden. Wirf ihn aus, bevor du die Verschlüsselung aktivierst, denn über den Finder kopierte Dateien würden nicht verschlüsselt."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αυτό το bucket είναι προσαρτημένο στο Finder. Αποπροσαρτήστε το πριν ενεργοποιήσετε την κρυπτογράφηση, επειδή τα αρχεία που αντιγράφονται μέσω του Finder δεν θα κρυπτογραφούνταν."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This bucket is mounted in Finder. Unmount it before turning on encryption, because files copied through Finder would not be encrypted."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este bucket está montado en el Finder. Desmóntalo antes de activar el cifrado, porque los archivos copiados a través del Finder no se cifrarían."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tämä bucket on liitetty Finderiin. Irrota se ennen salauksen käyttöönottoa, koska Finderin kautta kopioituja tiedostoja ei salattaisi."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce bucket est monté dans le Finder. Démontez-le avant d'activer le chiffrement, car les fichiers copiés via le Finder ne seraient pas chiffrés."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ez a bucket csatolva van a Finderben. Válaszd le a titkosítás bekapcsolása előtt, mert a Finderen keresztül másolt fájlok nem lennének titkosítva."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo bucket è montato nel Finder. Smontalo prima di attivare la crittografia, perché i file copiati tramite il Finder non verrebbero crittografati."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このバケットは Finder にマウントされています。Finder 経由でコピーしたファイルは暗号化されないため、暗号化をオンにする前に取り出してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 버킷은 Finder에 마운트되어 있습니다. Finder를 통해 복사한 파일은 암호화되지 않으므로 암호화를 켜기 전에 마운트를 해제하십시오."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne bucketen er montert i Finder. Avmonter den før du slår på kryptering, fordi filer kopiert via Finder ikke ville blitt kryptert."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze bucket is gekoppeld in de Finder. Ontkoppel hem voordat je versleuteling inschakelt, want via de Finder gekopieerde bestanden zouden niet worden versleuteld."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ten bucket jest zamontowany w Finderze. Odmontuj go przed włączeniem szyfrowania, ponieważ pliki kopiowane przez Findera nie byłyby szyfrowane."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este bucket está montado no Finder. Desmonte-o antes de ativar a criptografia, pois arquivos copiados pelo Finder não seriam criptografados."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este bucket está montado no Finder. Desmonte-o antes de ativar a encriptação, porque os ficheiros copiados através do Finder não seriam encriptados."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Этот бакет смонтирован в Finder. Размонтируйте его перед включением шифрования, так как файлы, скопированные через Finder, не будут зашифрованы."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den här bucketen är monterad i Finder. Avmontera den innan du slår på kryptering, eftersom filer som kopieras via Finder inte skulle krypteras."
+          }
+        }
+      }
+    },
+    "mount.action.mount.unavailable" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Připojit jako disk (macOS 14.1 nebo novější)"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montér som drev (macOS 14.1 eller nyere)"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Als Laufwerk einbinden (macOS 14.1 oder neuer)"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Προσάρτηση ως δίσκος (macOS 14.1 ή νεότερο)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mount as Drive (macOS 14.1 or later)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montar como unidad (macOS 14.1 o posterior)"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liitä asemaksi (macOS 14.1 tai uudempi)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monter comme volume (macOS 14.1 ou ultérieur)"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Csatolás meghajtóként (macOS 14.1 vagy újabb)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monta come unità (macOS 14.1 o successivo)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドライブとしてマウント(macOS 14.1 以降)"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "드라이브로 마운트(macOS 14.1 이상)"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monter som disk (macOS 14.1 eller nyere)"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koppelen als volume (macOS 14.1 of nieuwer)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zamontuj jako dysk (macOS 14.1 lub nowszy)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montar como unidade (macOS 14.1 ou posterior)"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montar como disco (macOS 14.1 ou posterior)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Смонтировать как диск (macOS 14.1 или новее)"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montera som enhet (macOS 14.1 eller senare)"
+          }
+        }
+      }
+    },
+    "mount.error.encryptedBucket" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tento bucket používá šifrování na straně klienta. Šifrované buckety zatím nelze připojit ve Finderu; přenášejte jeho soubory v okně Bucketeeru."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne bucket bruger kryptering på klientsiden. Krypterede buckets kan endnu ikke monteres i Finder; overfør dens filer i Bucketeer-vinduet i stedet."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Bucket nutzt clientseitige Verschlüsselung. Verschlüsselte Buckets lassen sich noch nicht im Finder einbinden; übertrage die Dateien stattdessen im Bucketeer-Fenster."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αυτό το bucket χρησιμοποιεί κρυπτογράφηση στην πλευρά του πελάτη. Τα κρυπτογραφημένα buckets δεν μπορούν ακόμη να προσαρτηθούν στο Finder· μεταφέρετε τα αρχεία του από το παράθυρο του Bucketeer."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This bucket uses client-side encryption. Encrypted buckets can't be mounted in Finder yet; transfer its files in the Bucketeer window instead."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este bucket usa cifrado del lado del cliente. Los buckets cifrados aún no se pueden montar en el Finder; transfiere sus archivos desde la ventana de Bucketeer."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tämä bucket käyttää asiakaspuolen salausta. Salattuja bucketeja ei voi vielä liittää Finderiin; siirrä sen tiedostot Bucketeer-ikkunassa."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce bucket utilise un chiffrement côté client. Les buckets chiffrés ne peuvent pas encore être montés dans le Finder ; transférez ses fichiers depuis la fenêtre de Bucketeer."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ez a bucket kliensoldali titkosítást használ. Titkosított bucketek még nem csatolhatók a Finderben; a fájljait a Bucketeer ablakában vidd át."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo bucket usa la crittografia lato client. I bucket crittografati non possono ancora essere montati nel Finder; trasferisci i suoi file dalla finestra di Bucketeer."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このバケットはクライアント側暗号化を使用しています。暗号化されたバケットはまだ Finder にマウントできません。Bucketeer のウインドウでファイルを転送してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 버킷은 클라이언트 측 암호화를 사용합니다. 암호화된 버킷은 아직 Finder에 마운트할 수 없습니다. Bucketeer 윈도우에서 파일을 전송하십시오."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne bucketen bruker kryptering på klientsiden. Krypterte buckets kan ennå ikke monteres i Finder; overfør filene i Bucketeer-vinduet i stedet."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze bucket gebruikt versleuteling aan de clientzijde. Versleutelde buckets kunnen nog niet in de Finder worden gekoppeld; zet de bestanden over in het Bucketeer-venster."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ten bucket używa szyfrowania po stronie klienta. Zaszyfrowanych bucketów nie można jeszcze zamontować w Finderze; przenoś jego pliki w oknie Bucketeera."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este bucket usa criptografia no lado do cliente. Buckets criptografados ainda não podem ser montados no Finder; transfira os arquivos pela janela do Bucketeer."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este bucket utiliza encriptação do lado do cliente. Os buckets encriptados ainda não podem ser montados no Finder; transfira os ficheiros na janela do Bucketeer."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Этот бакет использует шифрование на стороне клиента. Зашифрованные бакеты пока нельзя смонтировать в Finder; передавайте его файлы в окне Bucketeer."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den här bucketen använder kryptering på klientsidan. Krypterade buckets kan ännu inte monteras i Finder; överför filerna i Bucketeer-fönstret i stället."
+          }
+        }
+      }
+    },
+    "mount.error.requiresNewerMacOS" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Připojení bucketů ve Finderu vyžaduje macOS 14.1 nebo novější."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montering af buckets i Finder kræver macOS 14.1 eller nyere."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Einbinden von Buckets im Finder erfordert macOS 14.1 oder neuer."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Η προσάρτηση buckets στο Finder απαιτεί macOS 14.1 ή νεότερο."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mounting buckets in Finder requires macOS 14.1 or later."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montar buckets en el Finder requiere macOS 14.1 o posterior."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketien liittäminen Finderiin vaatii macOS 14.1:n tai uudemman."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le montage de buckets dans le Finder nécessite macOS 14.1 ou une version ultérieure."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A bucketek Finderben való csatolásához macOS 14.1 vagy újabb szükséges."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Per montare i bucket nel Finder è necessario macOS 14.1 o versioni successive."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finder にバケットをマウントするには macOS 14.1 以降が必要です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finder에 버킷을 마운트하려면 macOS 14.1 이상이 필요합니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montering av buckets i Finder krever macOS 14.1 eller nyere."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voor het koppelen van buckets in de Finder is macOS 14.1 of nieuwer vereist."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montowanie bucketów w Finderze wymaga systemu macOS 14.1 lub nowszego."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montar buckets no Finder requer o macOS 14.1 ou posterior."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montar buckets no Finder requer o macOS 14.1 ou posterior."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Для монтирования бакетов в Finder требуется macOS 14.1 или новее."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montering av buckets i Finder kräver macOS 14.1 eller senare."
+          }
+        }
+      }
+    },
+    "paywall.bullet.mount.requiresNewerMacOS" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Připojení libovolného bucketu ve Finderu (macOS 14.1 nebo novější)"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montér enhver bucket i Finder (macOS 14.1 eller nyere)"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jeden Bucket im Finder einbinden (macOS 14.1 oder neuer)"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Προσάρτηση οποιουδήποτε bucket στο Finder (macOS 14.1 ή νεότερο)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mount any bucket in Finder (macOS 14.1 or later)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monta cualquier bucket en el Finder (macOS 14.1 o posterior)"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liitä mikä tahansa bucket Finderiin (macOS 14.1 tai uudempi)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montez n'importe quel bucket dans le Finder (macOS 14.1 ou ultérieur)"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bármely bucket csatolása a Finderben (macOS 14.1 vagy újabb)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monta qualsiasi bucket nel Finder (macOS 14.1 o successivo)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "あらゆるバケットを Finder にマウント(macOS 14.1 以降)"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finder에서 모든 버킷 마운트(macOS 14.1 이상)"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monter hvilken som helst bucket i Finder (macOS 14.1 eller nyere)"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koppel elke bucket in de Finder (macOS 14.1 of nieuwer)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montuj dowolny bucket w Finderze (macOS 14.1 lub nowszy)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monte qualquer bucket no Finder (macOS 14.1 ou posterior)"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monte qualquer bucket no Finder (macOS 14.1 ou posterior)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Монтирование любого бакета в Finder (macOS 14.1 или новее)"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montera valfri bucket i Finder (macOS 14.1 eller senare)"
+          }
+        }
+      }
+    },
+    "sync.error.proRequired" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spouštění synchronizačních úloh vyžaduje Bucketeer Pro."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kørsel af synkroniseringsjob kræver Bucketeer Pro."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zum Ausführen von Sync-Aufträgen ist Bucketeer Pro erforderlich."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Η εκτέλεση εργασιών συγχρονισμού απαιτεί Bucketeer Pro."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Running sync jobs requires Bucketeer Pro."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ejecutar tareas de sincronización requiere Bucketeer Pro."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synkronointitöiden suorittaminen vaatii Bucketeer Pron."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'exécution des tâches de synchronisation nécessite Bucketeer Pro."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A szinkronizálási feladatok futtatásához Bucketeer Pro szükséges."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Per eseguire i processi di sincronizzazione è necessario Bucketeer Pro."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同期ジョブの実行には Bucketeer Pro が必要です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동기화 작업을 실행하려면 Bucketeer Pro가 필요합니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kjøring av synkroniseringsjobber krever Bucketeer Pro."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voor het uitvoeren van synchronisatietaken is Bucketeer Pro vereist."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uruchamianie zadań synchronizacji wymaga Bucketeer Pro."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Executar tarefas de sincronização requer o Bucketeer Pro."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Executar tarefas de sincronização requer o Bucketeer Pro."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Для запуска заданий синхронизации требуется Bucketeer Pro."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Att köra synkjobb kräver Bucketeer Pro."
+          }
+        }
+      }
+    },
     "—" : {
       "comment" : "A placeholder for empty values.",
       "isCommentAutoGenerated" : true
@@ -36832,7 +37546,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dieses eingebundene Bucket existiert nicht mehr."
+            "value" : "Dieser eingebundene Bucket existiert nicht mehr."
           }
         },
         "el" : {
