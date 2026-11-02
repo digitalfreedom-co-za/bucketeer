@@ -181,6 +181,19 @@ transaction's original purchase date (`ProAccessResolver` in Core). To
 test it again, delete the trial transaction in Manage Transactions; to
 test the expiry, change the transaction's purchase date there.
 
+### App Store screenshot demo mode
+
+Debug builds contain a demo mode for the App Store screenshots
+(`Bucketeer/Services/ScreenshotDemo/`, compiled out of Release). It
+switches on only when **both** hold: the bundle id is
+`za.co.digitalfreedom.Bucketeer.qa` (a re-signed copy of the Debug
+build with its own sandbox container) and the app is launched with
+`-BucketeerScreenshotDemo YES`. It then uses in-memory stores and an
+in-memory Keychain, runs no launch work, seeds the JSON file given by
+`-BucketeerDemoSeed <path>` and opens the screen named by
+`-BucketeerDemoScreen` (`01_browser` … `09_pro`, `paywall`) in a
+1440 × 900 pt window on a Retina display, in light appearance.
+
 ---
 
 ## 9. Adding a new language

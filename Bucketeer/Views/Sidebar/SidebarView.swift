@@ -175,6 +175,13 @@ struct SidebarView: View {
             Text("account.delete.confirm.message \(account.name)")
         }
         .task { await viewModel.refresh() }
+        #if DEBUG
+        .task(id: container.screenshotDemo?.stage?.addAccountSheet) {
+            if container.screenshotDemo?.stage?.addAccountSheet == true {
+                showingAddSheet = true
+            }
+        }
+        #endif
     }
 
     @ViewBuilder
