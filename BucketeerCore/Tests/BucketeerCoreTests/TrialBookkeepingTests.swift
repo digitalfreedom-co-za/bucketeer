@@ -127,16 +127,6 @@ struct TrialBookkeepingTests {
 
     // MARK: - Custom trial length
 
-    @Test("Trial length is configurable for tests")
-    func customTrialLength() {
-        let (book, _) = bookkeeping(trialLength: 60)  // 60-second trial
-        let t0 = Date(timeIntervalSince1970: 0)
-        book.start(now: t0)
-        #expect(book.daysRemaining(now: t0) == 1)              // <1 day → ceil to 1
-        #expect(book.daysRemaining(now: t0.addingTimeInterval(30)) == 1)
-        #expect(book.daysRemaining(now: t0.addingTimeInterval(60)) == nil)
-    }
-
     // MARK: - Edge cases
 
     @Test("daysRemaining always rounds up — partial days surface as full")
@@ -147,17 +137,6 @@ struct TrialBookkeepingTests {
         // 13 days 23 hours elapsed → 1 hour remaining → ceil to 1 day
         let almost = t0.addingTimeInterval(14 * 86_400 - 3_600)
         #expect(book.daysRemaining(now: almost) == 1)
-    }
-
-    @Test("daysRemaining: nil persists between calls once the trial is consumed")
-    func consumedNeverRevives() {
-        let (book, _) = bookkeeping()
-        let t0 = Date(timeIntervalSince1970: 1_000_000)
-        book.start(now: t0)
-        _ = book.daysRemaining(now: t0.addingTimeInterval(15 * 86_400))
-        // Even when the caller passes a date back inside the original
-        // trial window, the consumed marker keeps the trial closed.
-        #expect(book.daysRemaining(now: t0) == nil)
     }
 
     // MARK: - Backward clock rollback

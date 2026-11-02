@@ -85,7 +85,10 @@ live state (transfer manager, coordinators, view models).
 The host now owns **six** SwiftData containers. The shared App Group
 container is read by the File Provider extension; everything else stays
 host-private so the extension never has to load schemas it has no use
-for.
+for. Both processes open the shared store with the one schema defined
+in `SharedStore` (Core); the extension opens it with
+`allowsSave: false`. A process opening it with a subset of the schema
+would migrate the missing entity away.
 
 ```mermaid
 graph TB

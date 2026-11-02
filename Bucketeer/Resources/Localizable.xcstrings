@@ -123,6 +123,244 @@
         }
       }
     },
+    "browser.empty.objects.message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přetáhněte sem soubory a nahrajte je."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Træk filer hertil for at uploade dem."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zieh Dateien hierher, um sie hochzuladen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Σύρετε αρχεία εδώ για να τα αποστείλετε."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag files here to upload them."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrastra archivos aquí para subirlos."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lataa tiedostoja vetämällä ne tähän."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faites glisser des fichiers ici pour les téléverser."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Húzd ide a fájlokat a feltöltésükhöz."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trascina qui i file per caricarli."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ファイルをここにドラッグしてアップロードします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "파일을 여기로 드래그하여 업로드하십시오."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dra filer hit for å laste dem opp."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sleep bestanden hierheen om ze te uploaden."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przeciągnij tutaj pliki, aby je przesłać."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arraste arquivos para cá para enviá-los."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arraste ficheiros para aqui para os carregar."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перетащите сюда файлы, чтобы загрузить их."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dra hit filer för att ladda upp dem."
+          }
+        }
+      }
+    },
+    "browser.empty.objects.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prázdná složka"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tom mappe"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leerer Ordner"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κενός φάκελος"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empty Folder"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carpeta vacía"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tyhjä kansio"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dossier vide"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Üres mappa"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cartella vuota"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "空のフォルダ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "빈 폴더"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tom mappe"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lege map"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pusty folder"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pasta vazia"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pasta vazia"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пустая папка"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tom mapp"
+          }
+        }
+      }
+    },
     "encryption.error.bucketMounted" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -29229,115 +29467,115 @@
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Operace s klíčenkou selhala (stav %d)."
+            "value" : "Operace s klíčenkou selhala (stav %@)."
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Handling i nøgleringen mislykkedes (status %d)."
+            "value" : "Handling i nøgleringen mislykkedes (status %@)."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Schlüsselbund-Operation fehlgeschlagen (Status %d)."
+            "value" : "Schlüsselbund-Operation fehlgeschlagen (Status %@)."
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Η λειτουργία της Κλειδοθήκης απέτυχε (κατάσταση %d)."
+            "value" : "Η λειτουργία της Κλειδοθήκης απέτυχε (κατάσταση %@)."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Keychain operation failed (status %d)."
+            "value" : "Keychain operation failed (status %@)."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Operación del Llavero fallida (estado %d)."
+            "value" : "Operación del Llavero fallida (estado %@)."
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Avainnipputoiminto epäonnistui (tila %d)."
+            "value" : "Avainnipputoiminto epäonnistui (tila %@)."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Échec de l'opération du Trousseau (statut %d)."
+            "value" : "Échec de l'opération du Trousseau (statut %@)."
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A kulcskarika-művelet sikertelen (státusz: %d)."
+            "value" : "A kulcskarika-művelet sikertelen (státusz: %@)."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Operazione del Portachiavi non riuscita (stato %d)."
+            "value" : "Operazione del Portachiavi non riuscita (stato %@)."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "キーチェーン操作に失敗しました(ステータス %d)。"
+            "value" : "キーチェーン操作に失敗しました(ステータス %@)。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "키체인 작업에 실패했습니다(상태 %d)."
+            "value" : "키체인 작업에 실패했습니다(상태 %@)."
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nøkkelring-operasjonen mislyktes (status %d)."
+            "value" : "Nøkkelring-operasjonen mislyktes (status %@)."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sleutelhanger-bewerking mislukt (status %d)."
+            "value" : "Sleutelhanger-bewerking mislukt (status %@)."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Operacja Pęku kluczy nie powiodła się (status %d)."
+            "value" : "Operacja Pęku kluczy nie powiodła się (status %@)."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Falha na operação do Acesso às Chaves (status %d)."
+            "value" : "Falha na operação do Acesso às Chaves (status %@)."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A operação no porta-chaves falhou (estado %d)."
+            "value" : "A operação no porta-chaves falhou (estado %@)."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Сбой операции со Связкой ключей (статус %d)."
+            "value" : "Сбой операции со Связкой ключей (статус %@)."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nyckelringsåtgärden misslyckades (status %d)."
+            "value" : "Nyckelringsåtgärden misslyckades (status %@)."
           }
         }
       }

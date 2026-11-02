@@ -24,6 +24,31 @@ final class AppContainer {
     /// actor afterwards.
     nonisolated(unsafe) static var shared: AppContainer?
 
+    /// What the container is built from. `.production` is the app;
+    /// tests and previews swap in in-memory stores and fakes so nothing
+    /// reads or writes the user's real data, Keychain or accounts.
+    struct Configuration {
+        enum Stores {
+            /// App Group / Application Support, as shipped.
+            case onDisk
+            /// SwiftData in memory, trash cache in a fresh temp folder.
+            case inMemory
+        }
+
+        var stores: Stores = .onDisk
+        /// `nil` uses the shared-group `KeychainStore`.
+        var keychainStore: (any KeychainStoring)?
+        /// `nil` uses the real S3 / Azure `ProviderRouter`.
+        var s3Browser: (any S3Browsing)?
+        /// `nil` derives the entitlement from the trial and StoreKit.
+        var entitlementState: EntitlementManager.State?
+        /// Launch work: StoreKit, Keychain migration, mount refresh,
+        /// sync/auto-tag start, purges and scavengers.
+        var startsBackgroundWork = true
+
+        static let production = Configuration()
+    }
+
     let modelContainer: ModelContainer
     /// Host-only audit-log container — kept separate from the App
     /// Group container because the File Provider extension has no
@@ -91,16 +116,39 @@ final class AppContainer {
     let activityLogViewModel: ActivityLogViewModel
     let trashViewModel: TrashViewModel
 
-    init() throws {
-        let storeURL = Self.resolveStoreURL()
-        let modelContainer = try SharedStore.makeContainer(url: storeURL, allowsSave: true)
-        Self.runMigrations(modelContainer)
-        let activityContainer = try Self.makeActivityContainer()
-        let (trashContainer, trashCacheURL) = try Self.makeTrashContainer()
-        let autoTagContainer = try Self.makeAutoTagContainer()
-        let checkpointContainer = try Self.makeCheckpointContainer()
+    convenience init() throws {
+        try self.init(configuration: .production)
+    }
+
+    init(configuration: Configuration) throws {
+        let stores = configuration.stores
+        let startsBackgroundWork = configuration.startsBackgroundWork
+        let modelContainer: ModelContainer
+        switch stores {
+        case .onDisk:
+            modelContainer = try SharedStore.makeContainer(url: Self.resolveStoreURL(), allowsSave: true)
+            Self.runMigrations(modelContainer)
+        case .inMemory:
+            modelContainer = try SharedStore.makeInMemoryContainer()
+        }
+        let activityContainer = try Self.makeHostContainer(
+            "BucketeerActivity", schema: Schema([ActivityRecord.self]),
+            fileName: AppEnvironment.activityStoreFileName, stores: stores
+        )
+        let (trashContainer, trashCacheURL) = try Self.makeTrashContainer(stores: stores)
+        let autoTagContainer = try Self.makeHostContainer(
+            "BucketeerAutoTags", schema: Schema([AutoTagRuleRecord.self]),
+            fileName: AppEnvironment.autoTagStoreFileName, stores: stores
+        )
+        let checkpointContainer = try Self.makeHostContainer(
+            "BucketeerCheckpoints", schema: Schema([MultipartUploadRecord.self]),
+            fileName: AppEnvironment.checkpointStoreFileName, stores: stores
+        )
         let checkpointStore = CheckpointStore(modelContainer: checkpointContainer)
-        let encryptionContainer = try Self.makeEncryptionContainer()
+        let encryptionContainer = try Self.makeHostContainer(
+            "BucketeerEncryptionKeys", schema: Schema([BucketEncryptionKeyRecord.self]),
+            fileName: AppEnvironment.encryptionStoreFileName, stores: stores
+        )
         let encryptionKeyStore: any EncryptionKeyStoring = EncryptionKeyStore(
             modelContainer: encryptionContainer
         )
@@ -115,12 +163,18 @@ final class AppContainer {
         // On first launch with the shared-group code path, copy any
         // legacy private-namespace entries forward so the user's
         // existing accounts keep working — see `KeychainStore.migrateToSharedAccessGroupIfNeeded`.
-        let keychainStore = KeychainStore(
-            service: AppEnvironment.keychainService,
-            accessGroup: AppEnvironment.keychainAccessGroup
-        )
-        Task { @MainActor [keychainStore] in
-            await keychainStore.migrateFromLegacyPrivateNamespace()
+        let keychainStore: any KeychainStoring
+        if let injected = configuration.keychainStore {
+            keychainStore = injected
+        } else {
+            let sharedKeychain = KeychainStore(
+                service: AppEnvironment.keychainService,
+                accessGroup: AppEnvironment.keychainAccessGroup
+            )
+            keychainStore = sharedKeychain
+            if startsBackgroundWork {
+                Task { await sharedKeychain.migrateFromLegacyPrivateNamespace() }
+            }
         }
         let accountStore = AccountStore(modelContainer: modelContainer)
         let clientFactory = S3ClientFactory(keychainStore: keychainStore)
@@ -135,10 +189,13 @@ final class AppContainer {
             limiter: bandwidthLimiter
         )
         let s3ObjectStore = S3Service(factory: clientFactory)
-        let router = ProviderRouter(s3: s3ObjectStore, azure: azureObjectStore)
+        let router: any S3Browsing = configuration.s3Browser
+            ?? ProviderRouter(s3: s3ObjectStore, azure: azureObjectStore)
         let activityLog = ActivityLogStore(modelContainer: activityContainer)
-        Task { [activityLog] in
-            await activityLog.purgeExpired(retentionDays: 180)
+        if startsBackgroundWork {
+            Task { [activityLog] in
+                await activityLog.purgeExpired(retentionDays: 180)
+            }
         }
         let resumableUploader = S3ResumableUploader(
             factory: clientFactory,
@@ -193,7 +250,7 @@ final class AppContainer {
             transferManager: transferManager
         )
         self.transferQueueViewModel.startObserving()
-        let entitlementManager = EntitlementManager()
+        let entitlementManager = EntitlementManager(fixedState: configuration.entitlementState)
         self.entitlementManager = entitlementManager
         self.dragDropCoordinator = DragDropCoordinator(
             s3Browser: router,
@@ -213,11 +270,13 @@ final class AppContainer {
         }
         let mountController = MountController(encryptionKeyStore: encryptionKeyStore)
         self.mountController = mountController
-        Task { @MainActor [mountController] in
-            await mountController.refresh()
-        }
-        Task { @MainActor [entitlementManager] in
-            await entitlementManager.bootstrap()
+        if startsBackgroundWork {
+            Task { @MainActor [mountController] in
+                await mountController.refresh()
+            }
+            Task { @MainActor [entitlementManager] in
+                await entitlementManager.bootstrap()
+            }
         }
         let syncJobStore = SyncJobStore(modelContainer: modelContainer)
         let syncEngine = SyncEngine(
@@ -271,7 +330,9 @@ final class AppContainer {
         // Hand the trash coordinator to the browser so the inline
         // delete path can capture a soft-delete entry first.
         self.browserViewModel.trashCoordinator = trashCoordinator
-        Task { [trashStore] in await trashStore.purgeExpired() }
+        if startsBackgroundWork {
+            Task { [trashStore] in await trashStore.purgeExpired() }
+        }
 
         // Phase 13.8 — auto-tagging.
         let autoTagStore = AutoTagRuleStore(modelContainer: autoTagContainer)
@@ -288,7 +349,9 @@ final class AppContainer {
             store: autoTagStore,
             coordinator: autoTagCoordinator
         )
-        Task { [autoTagCoordinator] in await autoTagCoordinator.start() }
+        if startsBackgroundWork {
+            Task { [autoTagCoordinator] in await autoTagCoordinator.start() }
+        }
 
         // Phase 13.11 — deep-link router. Holds a reference to the
         // browser so external bucketeer:// URLs land in the right
@@ -310,9 +373,8 @@ final class AppContainer {
         // Phase 14 — per-account Spotlight purge on account delete.
         self.accountListViewModel.spotlightIndexer = spotlightIndexer
 
-        // Phase 13.14 — cross-account copy / move. Encryption gate
-        // The encryption gate disables server-side copy on encrypted
-        // buckets.
+        // Phase 13.14 — cross-account copy / move. The encryption gate
+        // disables server-side copy on encrypted buckets.
         self.crossAccountCopyCoordinator = CrossAccountCopyCoordinator(
             browser: router,
             transferManager: transferManager,
@@ -323,8 +385,10 @@ final class AppContainer {
         // files left over from a crashed round-trip copy. Detached:
         // synchronous directory enumeration in a @MainActor init would
         // block the first render frame on a slow volume.
-        Task.detached(priority: .utility) {
-            CrossAccountCopyCoordinator.scavengeOrphans()
+        if startsBackgroundWork {
+            Task.detached(priority: .utility) {
+                CrossAccountCopyCoordinator.scavengeOrphans()
+            }
         }
 
         // Phase 13.15 — client-side encryption.
@@ -346,11 +410,13 @@ final class AppContainer {
         // it as a dependency; assigned to the container property
         // here.
         self.syncStatusBroker = syncStatusBroker
-        Task { @MainActor [syncJobListViewModel = self.syncJobListViewModel] in
-            await syncJobListViewModel.bootstrap()
-        }
-        Task { @MainActor [activityLogViewModel = self.activityLogViewModel] in
-            await activityLogViewModel.reload()
+        if startsBackgroundWork {
+            Task { @MainActor [syncJobListViewModel = self.syncJobListViewModel] in
+                await syncJobListViewModel.bootstrap()
+            }
+            Task { @MainActor [activityLogViewModel = self.activityLogViewModel] in
+                await activityLogViewModel.reload()
+            }
         }
     }
 
@@ -422,112 +488,55 @@ final class AppContainer {
     }
 
     private static func sandboxStoreURL() -> URL {
-        let support = (try? FileManager.default.url(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: true
-        )) ?? URL.documentsDirectory
-        return support.appending(path: AppEnvironment.swiftDataStoreFileName)
+        applicationSupportURL().appending(path: AppEnvironment.swiftDataStoreFileName)
     }
 
-    /// Build the (host-only) activity log container. Phase 13.1. The
-    /// activity store always lives in the sandbox Application Support
-    /// folder — there's no reason to push it into the App Group.
-    private static func makeActivityContainer() throws -> ModelContainer {
-        let support = (try? FileManager.default.url(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: true
-        )) ?? URL.documentsDirectory
-        let storeURL = support.appending(path: AppEnvironment.activityStoreFileName)
-        let schema = Schema([ActivityRecord.self])
-        let configuration = ModelConfiguration(
-            "BucketeerActivity",
-            schema: schema,
-            url: storeURL
-        )
+    /// Host-only SwiftData container (activity log, auto-tag rules,
+    /// upload checkpoints, encryption-key metadata). These always live
+    /// in the sandbox Application Support folder — the File Provider
+    /// extension never reads them.
+    private static func makeHostContainer(
+        _ name: String,
+        schema: Schema,
+        fileName: String,
+        stores: Configuration.Stores
+    ) throws -> ModelContainer {
+        let configuration: ModelConfiguration
+        switch stores {
+        case .onDisk:
+            configuration = ModelConfiguration(name, schema: schema, url: applicationSupportURL().appending(path: fileName))
+        case .inMemory:
+            configuration = ModelConfiguration(name, schema: schema, isStoredInMemoryOnly: true)
+        }
         return try ModelContainer(for: schema, configurations: configuration)
     }
 
-    /// Phase 13.15 — host-only encryption-key metadata container.
-    private static func makeEncryptionContainer() throws -> ModelContainer {
-        let support = (try? FileManager.default.url(
+    private static func applicationSupportURL() -> URL {
+        (try? FileManager.default.url(
             for: .applicationSupportDirectory,
             in: .userDomainMask,
             appropriateFor: nil,
             create: true
         )) ?? URL.documentsDirectory
-        let storeURL = support.appending(path: AppEnvironment.encryptionStoreFileName)
-        let schema = Schema([BucketEncryptionKeyRecord.self])
-        let configuration = ModelConfiguration(
-            "BucketeerEncryptionKeys",
-            schema: schema,
-            url: storeURL
-        )
-        return try ModelContainer(for: schema, configurations: configuration)
-    }
-
-    /// Phase 13.10 — host-only resumable-upload checkpoint container.
-    private static func makeCheckpointContainer() throws -> ModelContainer {
-        let support = (try? FileManager.default.url(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: true
-        )) ?? URL.documentsDirectory
-        let storeURL = support.appending(path: AppEnvironment.checkpointStoreFileName)
-        let schema = Schema([MultipartUploadRecord.self])
-        let configuration = ModelConfiguration(
-            "BucketeerCheckpoints",
-            schema: schema,
-            url: storeURL
-        )
-        return try ModelContainer(for: schema, configurations: configuration)
-    }
-
-    /// Phase 13.8 — host-only auto-tagging rule container.
-    private static func makeAutoTagContainer() throws -> ModelContainer {
-        let support = (try? FileManager.default.url(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: true
-        )) ?? URL.documentsDirectory
-        let storeURL = support.appending(path: AppEnvironment.autoTagStoreFileName)
-        let schema = Schema([AutoTagRuleRecord.self])
-        let configuration = ModelConfiguration(
-            "BucketeerAutoTags",
-            schema: schema,
-            url: storeURL
-        )
-        return try ModelContainer(for: schema, configurations: configuration)
     }
 
     /// Build the trash container + cache directory. Phase 13.4.
     /// Returns both because the `TrashStore` actor needs the cache
     /// directory URL alongside the model container.
-    private static func makeTrashContainer() throws -> (ModelContainer, URL) {
-        let support = (try? FileManager.default.url(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: true
-        )) ?? URL.documentsDirectory
-        let storeURL = support.appending(path: AppEnvironment.trashStoreFileName)
-        let cacheURL = support.appending(path: AppEnvironment.trashCacheDirectoryName)
-        try? FileManager.default.createDirectory(
-            at: cacheURL,
-            withIntermediateDirectories: true
+    private static func makeTrashContainer(stores: Configuration.Stores) throws -> (ModelContainer, URL) {
+        let cacheURL: URL
+        switch stores {
+        case .onDisk:
+            cacheURL = applicationSupportURL().appending(path: AppEnvironment.trashCacheDirectoryName)
+        case .inMemory:
+            cacheURL = FileManager.default.temporaryDirectory
+                .appending(path: "BucketeerTrash-\(UUID().uuidString)")
+        }
+        try? FileManager.default.createDirectory(at: cacheURL, withIntermediateDirectories: true)
+        let container = try makeHostContainer(
+            "BucketeerTrash", schema: Schema([TrashRecord.self]),
+            fileName: AppEnvironment.trashStoreFileName, stores: stores
         )
-        let schema = Schema([TrashRecord.self])
-        let configuration = ModelConfiguration(
-            "BucketeerTrash",
-            schema: schema,
-            url: storeURL
-        )
-        let container = try ModelContainer(for: schema, configurations: configuration)
         return (container, cacheURL)
     }
 }

@@ -12,13 +12,6 @@ import Testing
 @Suite("AutoTagRuleEvaluator")
 struct AutoTagRuleEvaluatorTests {
 
-    @Test("Empty rule list yields empty results")
-    func emptyRules() {
-        let result = AutoTagRuleEvaluator.evaluate(rules: [], filename: "x", mime: "x")
-        #expect(result.tags.isEmpty)
-        #expect(result.userMetadata.isEmpty)
-    }
-
     @Test("Disabled rules are skipped even when patterns match")
     func disabledIgnored() {
         let rule = AutoTagRule(

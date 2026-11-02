@@ -27,6 +27,7 @@ struct TrashView: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
             }
+            ErrorBanner(error: viewModel.error)
             if viewModel.items.isEmpty && !viewModel.isLoading {
                 emptyState
             } else {

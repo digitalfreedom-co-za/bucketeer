@@ -70,11 +70,11 @@ struct SyncJobDetailWindow: View {
                 Section("syncDetail.section.identity") {
                     LabeledContent("syncDetail.field.name", value: job.name)
                     LabeledContent("syncDetail.field.mode") {
-                        Text(job.mode.rawValue.capitalized)
+                        Text(job.mode.labelKey)
                             .foregroundStyle(.secondary)
                     }
                     LabeledContent("syncDetail.field.schedule") {
-                        Text(job.schedule.rawValue)
+                        job.schedule.label
                             .foregroundStyle(.secondary)
                     }
                     LabeledContent("syncDetail.field.enabled") {

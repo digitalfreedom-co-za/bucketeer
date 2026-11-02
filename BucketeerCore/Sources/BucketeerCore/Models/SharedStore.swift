@@ -32,4 +32,11 @@ public enum SharedStore {
         )
         return try ModelContainer(for: schema, configurations: configuration)
     }
+
+    /// Same schema, never written to disk — previews and tests.
+    public static func makeInMemoryContainer() throws -> ModelContainer {
+        let schema = makeSchema()
+        let configuration = ModelConfiguration(configurationName, schema: schema, isStoredInMemoryOnly: true)
+        return try ModelContainer(for: schema, configurations: configuration)
+    }
 }

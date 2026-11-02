@@ -13,6 +13,44 @@ before that is internal phase work on the `development` branch.
 
 ## [Unreleased] — `development` branch
 
+### Review round 4 (2026-11-02)
+**Data safety**
+- Host and File Provider extension open the shared SwiftData store with
+  one schema (`SharedStore`); the extension cannot save.
+- Keychain legacy migration never deletes shared-group credentials.
+- Sync jobs stop when a local source folder is missing or unreadable
+  instead of treating it as empty (mirror deletes).
+- Encryption key lookup failures fail the transfer instead of uploading
+  plaintext; trash restore keeps envelopes intact; same-account copies
+  between buckets go through download/upload when either side is
+  encrypted; encrypted buckets cannot be mounted and mounted buckets
+  cannot get a key; previews of encrypted objects are refused.
+
+**Entitlements**
+- The trial ends on time while the app runs; every sync start (manual,
+  on-launch, interval, watch folder) checks the entitlement; a lapsed
+  entitlement leaves menubar mode.
+- Mount needs macOS 14.1 and says so in the menu and paywall.
+
+**Correctness**
+- Interval sync schedules actually run; on-launch jobs run once per
+  launch; cancelled runs stay cancelled.
+- Presigned S3 URLs encode the key once; resumable uploads recover from
+  an expired multipart upload; bucket statistics count nested objects;
+  metadata edits keep the storage class; Azure transport errors are
+  translated.
+- File Provider: synchronised enumerator delivery, cancellation reported
+  as NSUserCancelledError, unknown parents rejected, Soto clients shut
+  down on invalidate.
+- `BucketeerError.unknown` messages were replaced by "Unexpected error."
+  everywhere; list errors, mount errors and the empty-folder state are
+  now shown; renaming onto an existing name is refused.
+
+**Tests**
+- New host test bundle `BucketeerTests` (no test host): off-screen
+  renders of every screen, sync scheduling flows. Trivial and duplicate
+  Core tests removed.
+
 ### Release-readiness audit round 3
 **App Store compliance**
 - Privacy manifest: the FileTimestamp reasons `B8FF.1` (not an Apple

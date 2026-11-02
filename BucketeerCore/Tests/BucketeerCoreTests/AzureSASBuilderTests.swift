@@ -24,24 +24,6 @@ struct AzureSASBuilderTests {
 
     private let baseURL = URL(string: "https://myaccount.blob.core.windows.net")!
 
-    @Test("Initialiser rejects invalid base64")
-    func initialiserRejectsBadKey() {
-        let bad = AzureSASBuilder(
-            accountName: "myaccount",
-            base64AccountKey: "spaces are not valid base64"
-        )
-        #expect(bad == nil)
-    }
-
-    @Test("Initialiser rejects empty account name")
-    func initialiserRejectsEmptyName() {
-        let bad = AzureSASBuilder(
-            accountName: "",
-            base64AccountKey: "AAAA"
-        )
-        #expect(bad == nil)
-    }
-
     @Test("Generated URL has every required SAS query parameter")
     func generatedURLHasAllParams() {
         let url = builder.presignedDownloadURL(

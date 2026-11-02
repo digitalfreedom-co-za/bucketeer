@@ -25,6 +25,7 @@ struct ActivityLogView: View {
         VStack(spacing: 0) {
             filterBar
             Divider()
+            ErrorBanner(error: viewModel.error)
             if viewModel.entries.isEmpty && !viewModel.isLoading {
                 emptyState
             } else {

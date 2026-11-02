@@ -102,7 +102,13 @@ final class EntitlementManager {
     /// off Pro-only modes once the entitlement lapses.
     var onStateChange: ((State) -> Void)?
 
-    init() {
+    /// `fixedState` pins the state for tests and previews: no trial
+    /// bookkeeping, no StoreKit. `nil` (the app) derives it.
+    init(fixedState: State? = nil) {
+        if let fixedState {
+            state = fixedState
+            return
+        }
         ensureTrialStarted()
         initialRefresh = Task { [weak self] in await self?.refresh() }
     }
