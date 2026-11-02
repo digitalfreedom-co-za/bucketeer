@@ -12,6 +12,8 @@
     <string>6.0</string>
     <key>CFBundleName</key>
     <string>$(PRODUCT_NAME)</string>
+    <key>CFBundleExecutable</key>
+    <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundlePackageType</key>
     <string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
     <key>CFBundleShortVersionString</key>
@@ -22,6 +24,8 @@
     <dict>
         <key>NSExtensionFileProviderActions</key>
         <array/>
+        <key>NSExtensionFileProviderDocumentGroup</key>
+        <string>group.za.co.digitalfreedom.bucketeer</string>
         <key>NSExtensionFileProviderSupportsEnumeration</key>
         <true/>
         <key>NSExtensionPointIdentifier</key>
