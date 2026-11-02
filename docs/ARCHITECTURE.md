@@ -67,7 +67,7 @@ graph LR
         Sync["Sync helpers<br/>SyncPlanner (pure) · LocalFolderEnumerator<br/>LocalFolderWriter (incl. safeChildURL)<br/>LocalFolderWatcher (FSEvents)"]
         Routing["Routing<br/>ProviderRouter (S3Browsing facade)"]
         Trial["Entitlements<br/>ProAccessResolver (pure, transactions + now)"]
-        OpenWithCore["Open With + Finder changes<br/>OpenWithRoundTrip (actor) · ConflictCopyName<br/>FinderChangeState (pure) · ETag"]
+        OpenWithCore["Open With + Finder changes<br/>OpenWithRoundTrip (actor) · OpenWithWorkspace · ConflictCopyName<br/>FinderChangeTracker (actor) · FinderChangeState (pure) · ETag"]
         Crypto["Encryption (13.15)<br/>BucketeerEnvelope (AES-GCM + AAD)<br/>EncryptionError"]
         AutoTag["Auto-tagging (13.8)<br/>AutoTagRuleEvaluator (pure, glob+MIME)"]
         Stats["Stats (13.5)<br/>BucketStatsCollector · ProviderPricing"]
@@ -85,7 +85,7 @@ graph LR
     end
 
     subgraph FPExt["Bucketeer File Provider.appex<br/>(manual Xcode target — PHASE_9_SETUP.md)"]
-        FPCallbacks["NSFileProviderReplicatedExtension callbacks<br/>FileProviderExtension · FileProviderEnumerator<br/>FileProviderItemResolver · S3DirectFetch<br/>FinderChangeTracker (actor)"]
+        FPCallbacks["NSFileProviderReplicatedExtension callbacks<br/>FileProviderExtension · FileProviderEnumerator<br/>FileProviderItemResolver · S3DirectFetch<br/>FinderChangeTracker.shared"]
         FPContainer["ExtensionContainer (Sendable)"]
     end
 
@@ -109,7 +109,7 @@ graph LR
     HostOnly -- "OpenWithRoundTrip" --> OpenWithCore
 
     FPCallbacks --> FPContainer
-    FPCallbacks -- "FinderChangeState, ConflictCopyName" --> OpenWithCore
+    FPCallbacks -- "FinderChangeTracker, ConflictCopyName" --> OpenWithCore
     FPContainer --> Storage
     FPContainer --> S3Layer
     FPContainer --> AzureLayer
@@ -585,17 +585,25 @@ sequenceDiagram
 
 ### 3.2 Server changes and Finder save conflicts
 
-S3 and Azure have no change feed. `FinderChangeTracker` (extension
-actor, one JSON file per domain in the extension's Application
-Support) keeps a `FinderChangeState` (Core, pure): the sync anchor,
-every folder prefix Finder has enumerated, and the key → ETag map of
-the last listing. Each item's `contentVersion` is its ETag.
+S3 and Azure have no change feed. `FinderChangeTracker` (Core actor;
+the extension keeps one shared instance with one JSON file per domain
+in its Application Support) keeps a `FinderChangeState` (Core, pure):
+the sync anchor, every folder prefix Finder has enumerated, a revision
+counter, and the key → ETag baseline of what the system was given —
+the last change listing plus every page a folder enumeration delivered
+since (`record`). Recording a page widens the baseline but does not
+move the anchor. Each item's `contentVersion` is its ETag.
 
 - **Server → Finder:** refreshing a bucket in the browser calls
   `BrowserViewModel.onBucketRefresh` → `MountController.signalServerChanges`
   → `signalEnumerator(for: .workingSet)` on mounted domains only. The
   working-set enumerator lists all tracked prefixes again, diffs them
-  against the stored map and reports `didUpdate` / `didDeleteItems`.
+  against the baseline and reports `didUpdate` / `didDeleteItems`.
+  Only the listed prefixes are replaced, so a folder tracked during
+  the listing is neither lost nor reported. Before committing, the
+  tracker re-reads the state: a superseded anchor or a cancelled
+  request commits nothing (`syncAnchorExpired`), a changed revision
+  (items recorded meanwhile) means listing again, at most three times.
   An unknown anchor answers `syncAnchorExpired`, so the system lists
   everything again. Folder enumerators always answer
   `syncAnchorExpired` to change requests.
@@ -603,8 +611,12 @@ the last listing. Each item's `contentVersion` is its ETag.
   original key first. A HEAD compares `baseVersion.contentVersion`
   with the server ETag; only on a match is the write sent, with
   If-Match. Mismatch, a missing object or HTTP 412 turn the edit into
-  a conflict copy next to the original; the item keeps the server
-  version and is fetched again.
+  a conflict copy next to the original, created with
+  If-None-Match: * under `<name> (conflict <date> <tag>).<ext>` (a taken
+  name is retried with a fresh tag); the item keeps the server version
+  and is fetched again. After an accepted write the HEAD supplies
+  metadata only: if it shows another ETag than the write answered
+  with, somebody wrote after us and the item is fetched again.
 
 ```mermaid
 sequenceDiagram
@@ -625,10 +637,15 @@ sequenceDiagram
         Enum-->>System: finishEnumeratingWithError, system re-lists
     else anchor matches
         Tracker->>Store: list every tracked prefix
-        Tracker->>Tracker: FinderChangeState.advance → updated, deleted
+        Tracker->>Tracker: re-read state (anchor, revision, cancellation)
+        alt items recorded meanwhile
+            Tracker->>Store: list again (max. 3 attempts)
+        end
+        Tracker->>Tracker: FinderChangeState.advance(listedPrefixes) → updated, deleted
         Tracker-->>Enum: ListingDiff + new anchor
         Enum-->>System: didUpdate, didDeleteItems, finishEnumeratingChanges
     end
+    Note over Enum, Tracker: Folder enumeration pages → Tracker.record(items) (baseline only)
 
     Note over System, Store: User saves a file in Finder
     System->>Res: modifyItem(contents, baseVersion)
@@ -636,13 +653,14 @@ sequenceDiagram
     alt ETag equals baseVersion.contentVersion
         Res->>Store: PUT with If-Match
         alt accepted
-            Store-->>Res: new ETag
-            Res-->>System: item, shouldFetchContent false
+            Store-->>Res: ETag of this write
+            Res->>Store: HEAD (metadata)
+            Res-->>System: item, shouldFetchContent only if HEAD ETag differs
         else 412
-            Res->>Store: PUT "name (conflict date).ext"
+            Res->>Store: PUT "name (conflict date tag).ext", If-None-Match *
         end
     else changed or deleted on server
-        Res->>Store: PUT "name (conflict date).ext"
+        Res->>Store: PUT "name (conflict date tag).ext", If-None-Match *
     end
     Res->>System: signalEnumerator(.workingSet)
     Res-->>System: server item, shouldFetchContent true<br/>(noSuchItem when the original is gone)
@@ -923,16 +941,30 @@ flowchart LR
 
 ### 6.3 Open / Open With round-trip
 
-`OpenWithController` (host) downloads an object into a temp folder
-per launch and per file, opens it with `NSWorkspace`, and watches it
-with `FileChangeWatcher` (DispatchSource on file and folder, re-armed
-after atomic saves). Saves are debounced by 2 s and handed to
-`OpenWithRoundTrip` (Core actor), which serialises syncs per file and
-skips events whose SHA-256 digest did not change. Uploads go through
-`OpenWithTransferRemote` → `TransferManager.uploadIfUnchanged`, so the
-encryption gate applies. On S3 the conditional write is a single PUT
-with If-Match (5 GiB single-PUT cap); on Azure If-Match is sent on Put
-Blob and Put Block List.
+`OpenWithController` (host) downloads an object into a folder of
+`OpenWithWorkspace` (Core; temp folder per launch and per file, with a
+manifest: object, base ETag, digest of the bytes equal to that
+version), opens it with `NSWorkspace`, and watches it with
+`FileChangeWatcher` (DispatchSource on file and folder, re-armed after
+atomic saves). Saves are debounced by 2 s and handed to
+`OpenWithRoundTrip` (Core actor), which serialises syncs per file,
+skips events whose SHA-256 digest did not change and keeps the
+manifest current. Uploads go through `OpenWithTransferRemote` →
+`TransferManager.uploadConditionally`, so the encryption gate applies.
+The next base is the ETag the write itself answered with, never a
+later HEAD. On S3 the conditional write is a single PUT with If-Match
+or If-None-Match: * (5 GiB single-PUT cap); on Azure the condition is
+sent on Put Blob and Put Block List. Conflict copies are created with
+If-None-Match: * under a name with a random tag.
+
+Closing (editor quits, Bucketeer quits) runs a final sync; the temp
+copy is deleted only if that sync succeeded and the bytes still equal
+what the server acknowledged. Anything else moves to
+Application Support/OpenWithRecovery and is offered as Upload Again
+(against the original base) / Save a Copy… / Discard Edit / Later.
+At launch, crash survivors whose bytes differ from their manifest
+move to recovery before old folders are removed. Quitting with kept
+edits asks Quit / Don't Quit.
 
 ```mermaid
 sequenceDiagram
@@ -956,22 +988,29 @@ sequenceDiagram
     alt digest unchanged
         RT-->>OWC: unchanged
     else HEAD ETag equals base
-        RT->>Remote: upload(ifMatch: base)
-        Remote->>TM: uploadIfUnchanged (encryption gate applies)
+        RT->>Remote: upload(.ifMatch(base))
+        Remote->>TM: uploadConditionally (encryption gate applies)
         alt accepted
-            RT-->>OWC: uploaded, new base ETag
+            RT-->>OWC: uploaded, base = ETag of this write
         else 412
-            RT->>Remote: upload "name (conflict date).ext"
+            RT->>Remote: upload "name (conflict date tag).ext", .ifAbsent
             RT-->>OWC: conflict(copyKey)
         end
     else changed or deleted on server
-        RT->>Remote: upload "name (conflict date).ext"
+        RT->>Remote: upload "name (conflict date tag).ext", .ifAbsent
         RT-->>OWC: conflict(copyKey), later saves follow the copy
     end
     OWC-->>User: alert and Dock bounce on conflict or failure
 
-    App-->>OWC: app quits → unregister, temp folder removed
-    Note over OWC: Bucketeer quit flushes pending saves, then removes temp.<br/>Launch removes other launches' folders.
+    App-->>OWC: app quits
+    OWC->>RT: close(localURL): final sync
+    alt synced and bytes equal acknowledged version
+        RT-->>OWC: temp folder removed
+    else failed, or edited during the final upload
+        RT-->>OWC: moved to recovery
+        OWC-->>User: Upload Again / Save a Copy… / Discard Edit / Later
+    end
+    Note over OWC: Bucketeer quit closes every file and asks Quit / Don't Quit if edits were kept.<br/>Launch moves unsynced crash survivors to recovery, then removes old folders.
 ```
 
 ### 6.2 Client-side encryption key lifecycle
@@ -1080,8 +1119,10 @@ runs them in ~25 ms; no Xcode test target is required.
 | `S3Provider` | 11 | defaults, family routing, picker visibility flags, accountID requirements |
 | `SyncPlanner` | 19 | plan computation, prefix relocation, name+size vs name+ETag, mirror deletes respect globs, 5 local-folder cases |
 | `ProAccessResolver` | 11 | lifetime wins, trial window from originalPurchaseDate, expiry boundary, revoked trial and lifetime, earliest trial, unknown products, days remaining |
-| `OpenWithRoundTrip` + `ConflictCopyName` | 14 | no-op saves skipped, If-Match upload, next save on own ETag, 412 / changed / deleted → conflict copy, saves follow the copy, unregistered files, quoted ETags, copy-name dot rules |
-| `FinderChangeState` + `ETag.matches` | 8 | updated / deleted diff, quoted ETags, anchor, tracked prefixes, vanished folders pruned, unknown base or missing object never matches |
+| `OpenWithRoundTrip` + `ConflictCopyName` | 19 | no-op saves skipped, If-Match upload, next save on the write's own ETag, foreign write right after our upload not adopted, 412 / changed / deleted → create-only conflict copy, two same-second conflicts keep both copies, taken names retried (bounded), saves follow the copy, unregistered files, quoted ETags, copy-name dot rules, random tags |
+| Open With recovery (`OpenWithWorkspace`, `close`, `retry`) | 8 | clean close removes, offline save kept with object + base ETag, edit during the final upload kept, crash survivor kept / clean leftover removed, synced file not taken for a survivor, retry against original base, failed retry stays, discard |
+| `FinderChangeState` + `ETag.matches` | 10 | updated / deleted diff, quoted ETags, anchor, tracked prefixes, vanished folders pruned, partial listing keeps other prefixes, record bumps revision, unknown base or missing object never matches |
+| `FinderChangeTracker` | 6 | deletion after folder enumeration, paginated folder, folder recorded during a listing (suspended lister), two requests from one anchor, cancelled request, unknown anchor |
 | `LocalFolderWriter.safeChildURL` | 6 | empty / absolute / `..` / `.` / legitimate paths |
 | `BandwidthLimiter` (13.2) | 5 | unlimited fast-path, sub-burst, deficit-sleep loop, mid-flight toggle, `currentLimit` |
 | `BucketStatsCollector` + `ProviderPricing` (13.5) | 6 | top-N maintenance, every provider rate, AWS GB precision, zero bytes |
@@ -1112,8 +1153,8 @@ end-to-end; no Xcode test target is required.
 | Sync planning (pure) | `BucketeerCore/Sources/BucketeerCore/Services/Sync/SyncPlanner.swift` |
 | Path-traversal guard | `BucketeerCore/Sources/BucketeerCore/Services/Sync/LocalFolderEnumerator.swift` (`LocalFolderWriter.safeChildURL`) |
 | Trial and Pro access rules | `BucketeerCore/Sources/BucketeerCore/Services/Entitlements/ProAccessResolver.swift` + `Bucketeer/Services/Entitlements/EntitlementManager.swift` |
-| Open With round-trip | `BucketeerCore/.../Services/OpenWith/OpenWithRoundTrip.swift` + `ConflictCopyName.swift` + `Bucketeer/Services/OpenWith/*.swift` |
-| Finder change tracking and save conflicts | `BucketeerCore/.../Services/OpenWith/FinderChangeState.swift` + `Bucketeer File Provider/FinderChangeTracker.swift` + `FileProviderItemResolver.swift` (`modifyItem`) |
+| Open With round-trip and recovery | `BucketeerCore/.../Services/OpenWith/OpenWithRoundTrip.swift` + `OpenWithWorkspace.swift` + `ConflictCopyName.swift` + `Bucketeer/Services/OpenWith/*.swift` |
+| Finder change tracking and save conflicts | `BucketeerCore/.../Services/OpenWith/FinderChangeState.swift` + `FinderChangeTracker.swift` + `Bucketeer File Provider/FinderChangeTracker.swift` (shared instance) + `FileProviderItemResolver.swift` (`modifyItem`) |
 | File Provider host coordinator | `Bucketeer/Services/MountController.swift` |
 | File Provider extension | `Bucketeer File Provider/*` |
 | Per-phase changelog | `CHANGELOG.md` |
