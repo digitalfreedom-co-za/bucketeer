@@ -85,6 +85,12 @@ final class EncryptionKeysViewModel {
         }
     }
 
+    /// Drives UI hints only; `MountController.mount` re-checks the key
+    /// store itself, so a stale list cannot let a mount through.
+    func isEncrypted(accountID: UUID, bucket: String) -> Bool {
+        keys.contains { $0.accountID == accountID && $0.bucket == bucket }
+    }
+
     /// Resolve an account UUID back to a display name for the list.
     func accountName(for id: UUID) -> String {
         accounts.first(where: { $0.id == id })?.name ?? "(unknown)"

@@ -92,7 +92,7 @@ final class MountController {
         guard !isEncrypted else {
             lastError = .unknown(message: String(
                 localized: "mount.error.encryptedBucket",
-                defaultValue: "This bucket uses client-side encryption. Encrypted buckets can't be mounted in Finder yet; transfer its files in the Bucketeer window instead."
+                defaultValue: "This bucket uses client-side encryption. In this version of Bucketeer, encrypted buckets can't be mounted in Finder; transfer its files in the Bucketeer window instead."
             ))
             return
         }

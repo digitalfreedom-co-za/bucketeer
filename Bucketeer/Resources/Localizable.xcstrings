@@ -599,6 +599,125 @@
         }
       }
     },
+    "mount.action.mount.encrypted" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Připojit jako disk (není k dispozici pro šifrované buckety)"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montér som drev (ikke tilgængelig for krypterede buckets)"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Als Laufwerk einbinden (für verschlüsselte Buckets nicht verfügbar)"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Προσάρτηση ως δίσκος (μη διαθέσιμο για κρυπτογραφημένα buckets)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mount as Drive (not available for encrypted buckets)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montar como unidad (no disponible para buckets cifrados)"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liitä asemaksi (ei käytettävissä salatuille bucketeille)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monter comme volume (indisponible pour les buckets chiffrés)"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Csatolás meghajtóként (titkosított bucketeknél nem érhető el)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monta come unità (non disponibile per i bucket crittografati)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドライブとしてマウント(暗号化されたバケットでは利用不可)"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "드라이브로 마운트(암호화된 버킷에서는 사용할 수 없음)"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monter som disk (ikke tilgjengelig for krypterte buckets)"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koppelen als volume (niet beschikbaar voor versleutelde buckets)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zamontuj jako dysk (niedostępne dla zaszyfrowanych bucketów)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montar como unidade (indisponível para buckets criptografados)"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montar como disco (indisponível para buckets encriptados)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Смонтировать как диск (недоступно для зашифрованных бакетов)"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montera som enhet (inte tillgängligt för krypterade buckets)"
+          }
+        }
+      }
+    },
     "mount.action.mount.unavailable" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -843,115 +962,115 @@
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tento bucket používá šifrování na straně klienta. Šifrované buckety zatím nelze připojit ve Finderu; přenášejte jeho soubory v okně Bucketeeru."
+            "value" : "Tento bucket používá šifrování na straně klienta. V této verzi Bucketeeru nelze šifrované buckety připojit ve Finderu; přenášejte jeho soubory v okně Bucketeeru."
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Denne bucket bruger kryptering på klientsiden. Krypterede buckets kan endnu ikke monteres i Finder; overfør dens filer i Bucketeer-vinduet i stedet."
+            "value" : "Denne bucket bruger kryptering på klientsiden. I denne version af Bucketeer kan krypterede buckets ikke monteres i Finder; overfør dens filer i Bucketeer-vinduet i stedet."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dieser Bucket nutzt clientseitige Verschlüsselung. Verschlüsselte Buckets lassen sich noch nicht im Finder einbinden; übertrage die Dateien stattdessen im Bucketeer-Fenster."
+            "value" : "Dieser Bucket nutzt clientseitige Verschlüsselung. In dieser Version von Bucketeer lassen sich verschlüsselte Buckets nicht im Finder einbinden; übertrage die Dateien stattdessen im Bucketeer-Fenster."
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Αυτό το bucket χρησιμοποιεί κρυπτογράφηση στην πλευρά του πελάτη. Τα κρυπτογραφημένα buckets δεν μπορούν ακόμη να προσαρτηθούν στο Finder· μεταφέρετε τα αρχεία του από το παράθυρο του Bucketeer."
+            "value" : "Αυτό το bucket χρησιμοποιεί κρυπτογράφηση στην πλευρά του πελάτη. Σε αυτή την έκδοση του Bucketeer τα κρυπτογραφημένα buckets δεν μπορούν να προσαρτηθούν στο Finder· μεταφέρετε τα αρχεία του από το παράθυρο του Bucketeer."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This bucket uses client-side encryption. Encrypted buckets can't be mounted in Finder yet; transfer its files in the Bucketeer window instead."
+            "value" : "This bucket uses client-side encryption. In this version of Bucketeer, encrypted buckets can't be mounted in Finder; transfer its files in the Bucketeer window instead."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Este bucket usa cifrado del lado del cliente. Los buckets cifrados aún no se pueden montar en el Finder; transfiere sus archivos desde la ventana de Bucketeer."
+            "value" : "Este bucket usa cifrado del lado del cliente. En esta versión de Bucketeer, los buckets cifrados no se pueden montar en el Finder; transfiere sus archivos desde la ventana de Bucketeer."
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tämä bucket käyttää asiakaspuolen salausta. Salattuja bucketeja ei voi vielä liittää Finderiin; siirrä sen tiedostot Bucketeer-ikkunassa."
+            "value" : "Tämä bucket käyttää asiakaspuolen salausta. Tässä Bucketeerin versiossa salattuja bucketeja ei voi liittää Finderiin; siirrä sen tiedostot Bucketeer-ikkunassa."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ce bucket utilise un chiffrement côté client. Les buckets chiffrés ne peuvent pas encore être montés dans le Finder ; transférez ses fichiers depuis la fenêtre de Bucketeer."
+            "value" : "Ce bucket utilise un chiffrement côté client. Dans cette version de Bucketeer, les buckets chiffrés ne peuvent pas être montés dans le Finder ; transférez ses fichiers depuis la fenêtre de Bucketeer."
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ez a bucket kliensoldali titkosítást használ. Titkosított bucketek még nem csatolhatók a Finderben; a fájljait a Bucketeer ablakában vidd át."
+            "value" : "Ez a bucket kliensoldali titkosítást használ. A Bucketeer ezen verziójában titkosított bucketek nem csatolhatók a Finderben; a fájljait a Bucketeer ablakában vidd át."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Questo bucket usa la crittografia lato client. I bucket crittografati non possono ancora essere montati nel Finder; trasferisci i suoi file dalla finestra di Bucketeer."
+            "value" : "Questo bucket usa la crittografia lato client. In questa versione di Bucketeer i bucket crittografati non possono essere montati nel Finder; trasferisci i suoi file dalla finestra di Bucketeer."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "このバケットはクライアント側暗号化を使用しています。暗号化されたバケットはまだ Finder にマウントできません。Bucketeer のウインドウでファイルを転送してください。"
+            "value" : "このバケットはクライアント側暗号化を使用しています。このバージョンの Bucketeer では、暗号化されたバケットを Finder にマウントできません。Bucketeer のウインドウでファイルを転送してください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이 버킷은 클라이언트 측 암호화를 사용합니다. 암호화된 버킷은 아직 Finder에 마운트할 수 없습니다. Bucketeer 윈도우에서 파일을 전송하십시오."
+            "value" : "이 버킷은 클라이언트 측 암호화를 사용합니다. 이 버전의 Bucketeer에서는 암호화된 버킷을 Finder에 마운트할 수 없습니다. Bucketeer 윈도우에서 파일을 전송하십시오."
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Denne bucketen bruker kryptering på klientsiden. Krypterte buckets kan ennå ikke monteres i Finder; overfør filene i Bucketeer-vinduet i stedet."
+            "value" : "Denne bucketen bruker kryptering på klientsiden. I denne versjonen av Bucketeer kan krypterte buckets ikke monteres i Finder; overfør filene i Bucketeer-vinduet i stedet."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deze bucket gebruikt versleuteling aan de clientzijde. Versleutelde buckets kunnen nog niet in de Finder worden gekoppeld; zet de bestanden over in het Bucketeer-venster."
+            "value" : "Deze bucket gebruikt versleuteling aan de clientzijde. In deze versie van Bucketeer kunnen versleutelde buckets niet in de Finder worden gekoppeld; zet de bestanden over in het Bucketeer-venster."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ten bucket używa szyfrowania po stronie klienta. Zaszyfrowanych bucketów nie można jeszcze zamontować w Finderze; przenoś jego pliki w oknie Bucketeera."
+            "value" : "Ten bucket używa szyfrowania po stronie klienta. W tej wersji Bucketeera zaszyfrowanych bucketów nie można zamontować w Finderze; przenoś jego pliki w oknie Bucketeera."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Este bucket usa criptografia no lado do cliente. Buckets criptografados ainda não podem ser montados no Finder; transfira os arquivos pela janela do Bucketeer."
+            "value" : "Este bucket usa criptografia no lado do cliente. Nesta versão do Bucketeer, buckets criptografados não podem ser montados no Finder; transfira os arquivos pela janela do Bucketeer."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Este bucket utiliza encriptação do lado do cliente. Os buckets encriptados ainda não podem ser montados no Finder; transfira os ficheiros na janela do Bucketeer."
+            "value" : "Este bucket utiliza encriptação do lado do cliente. Nesta versão do Bucketeer, os buckets encriptados não podem ser montados no Finder; transfira os ficheiros na janela do Bucketeer."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Этот бакет использует шифрование на стороне клиента. Зашифрованные бакеты пока нельзя смонтировать в Finder; передавайте его файлы в окне Bucketeer."
+            "value" : "Этот бакет использует шифрование на стороне клиента. В этой версии Bucketeer зашифрованные бакеты нельзя смонтировать в Finder; передавайте его файлы в окне Bucketeer."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Den här bucketen använder kryptering på klientsidan. Krypterade buckets kan ännu inte monteras i Finder; överför filerna i Bucketeer-fönstret i stället."
+            "value" : "Den här bucketen använder kryptering på klientsidan. I den här versionen av Bucketeer kan krypterade buckets inte monteras i Finder; överför filerna i Bucketeer-fönstret i stället."
           }
         }
       }
