@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!--
+        Bucketeer Info.plist additions.
+
+        We keep GENERATE_INFOPLIST_FILE = YES in the project so Xcode
+        still merges in CFBundleVersion, CFBundleShortVersionString,
+        and every INFOPLIST_KEY_* setting from project.pbxproj. This
+        file only carries keys Xcode can't express as flat strings —
+        currently just CFBundleURLTypes (Phase 13.11 / 13.12 deep
+        link registration) and LSMinimumSystemVersion fallback.
+    -->
+
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>za.co.digitalfreedom.bucketeer.deeplink</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>bucketeer</string>
+            </array>
+            <key>CFBundleTypeRole</key>
+            <string>Viewer</string>
+        </dict>
+    </array>
+</dict>
+</plist>
