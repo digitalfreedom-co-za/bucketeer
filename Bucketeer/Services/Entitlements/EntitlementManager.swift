@@ -183,6 +183,10 @@ final class EntitlementManager {
         do {
             try await AppStore.sync()
             await refresh()
+        } catch StoreKitError.userCancelled {
+            // Dismissing the App Store sign-in prompt is a choice, not
+            // a failure — mirror purchasePro()'s silent .userCancelled.
+            return
         } catch {
             throw EntitlementError.unknown(error.localizedDescription)
         }

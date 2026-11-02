@@ -13,6 +13,27 @@ before that is internal phase work on the `development` branch.
 
 ## [Unreleased] — `development` branch
 
+### Release-readiness audit round 3
+**App Store compliance**
+- Privacy manifest: the FileTimestamp reasons `B8FF.1` (not an Apple
+  reason code) and `0A2A.1` (reserved for third-party SDK wrappers)
+  replaced by `3B52.1` (user-granted files); `C617.1` / `DDA9.1` kept.
+- File Provider extension ships its own `PrivacyInfo.xcprivacy`
+  (FileTimestamp `C617.1` + `3B52.1`, no tracking, no collected data).
+- Shortcuts / Siri intent titles, descriptions, parameter names and
+  summaries translated into all 18 non-English catalog languages —
+  they showed English in every locale.
+
+**Correctness**
+- Restore Purchases no longer reports an error when the user
+  dismisses the App Store sign-in prompt.
+
+**Tooling + docs**
+- `scripts/preflight.sh` checks both entitlements files and both
+  privacy manifests (existence + `plutil -lint`).
+- README / metadata draft list the 20 shipped locales; release plan
+  branch table matches the four Xcode Cloud workflows.
+
 ### Line-by-line audit round 2 + Apple-guideline compliance
 Second full pass: every Swift file read completely across eight
 parallel review batches plus a dedicated App Store Review
