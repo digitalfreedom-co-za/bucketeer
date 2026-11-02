@@ -4,6 +4,125 @@
     "" : {
 
     },
+    "browser.action.rename.exists" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objekt s tímto názvem v této složce již existuje."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der findes allerede et objekt med det navn i denne mappe."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In diesem Ordner gibt es bereits ein Objekt mit diesem Namen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Υπάρχει ήδη αντικείμενο με αυτό το όνομα σε αυτόν τον φάκελο."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An object with that name already exists in this folder."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ya existe un objeto con ese nombre en esta carpeta."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tässä kansiossa on jo samanniminen objekti."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un objet portant ce nom existe déjà dans ce dossier."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ebben a mappában már létezik ilyen nevű objektum."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In questa cartella esiste già un oggetto con questo nome."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このフォルダには同じ名前のオブジェクトがすでに存在します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 폴더에 같은 이름의 객체가 이미 있습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Det finnes allerede et objekt med det navnet i denne mappen."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Er bestaat al een object met die naam in deze map."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obiekt o tej nazwie już istnieje w tym folderze."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Já existe um objeto com esse nome nesta pasta."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Já existe um objeto com esse nome nesta pasta."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Объект с таким именем уже существует в этой папке."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Det finns redan ett objekt med det namnet i den här mappen."
+          }
+        }
+      }
+    },
     "encryption.error.bucketMounted" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -595,6 +714,244 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Montera valfri bucket i Finder (macOS 14.1 eller senare)"
+          }
+        }
+      }
+    },
+    "preview.error.encrypted" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Náhledy nejsou pro šifrované objekty k dispozici. Objekt otevřete po stažení."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksempelvisninger er ikke tilgængelige for krypterede objekter. Hent objektet for at åbne det."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für verschlüsselte Objekte ist keine Vorschau verfügbar. Lade das Objekt herunter, um es zu öffnen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Οι προεπισκοπήσεις δεν είναι διαθέσιμες για κρυπτογραφημένα αντικείμενα. Κατεβάστε το αντικείμενο για να το ανοίξετε."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previews aren't available for encrypted objects. Download the object to open it."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las vistas previas no están disponibles para objetos cifrados. Descarga el objeto para abrirlo."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esikatselu ei ole käytettävissä salatuille objekteille. Lataa objekti avataksesi sen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les aperçus ne sont pas disponibles pour les objets chiffrés. Téléchargez l'objet pour l'ouvrir."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Titkosított objektumokhoz nem érhető el előnézet. Töltsd le az objektumot a megnyitásához."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le anteprime non sono disponibili per gli oggetti crittografati. Scarica l'oggetto per aprirlo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暗号化されたオブジェクトはプレビューできません。開くにはオブジェクトをダウンロードしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "암호화된 객체는 미리 보기를 사용할 수 없습니다. 객체를 다운로드하여 여십시오."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forhåndsvisning er ikke tilgjengelig for krypterte objekter. Last ned objektet for å åpne det."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voorvertoningen zijn niet beschikbaar voor versleutelde objecten. Download het object om het te openen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podgląd nie jest dostępny dla zaszyfrowanych obiektów. Pobierz obiekt, aby go otworzyć."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pré-visualizações não estão disponíveis para objetos criptografados. Baixe o objeto para abri-lo."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As pré-visualizações não estão disponíveis para objetos encriptados. Transfira o objeto para o abrir."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Предпросмотр недоступен для зашифрованных объектов. Загрузите объект, чтобы открыть его."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Förhandsvisningar är inte tillgängliga för krypterade objekt. Hämta objektet för att öppna det."
+          }
+        }
+      }
+    },
+    "sync.error.localFolderUnavailable" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Místní složka chybí nebo ji nebylo možné celou přečíst, proto se synchronizační úloha zastavila dříve, než cokoli změnila."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den lokale mappe mangler eller kunne ikke læses fuldt ud, så synkroniseringsjobbet stoppede, før noget blev ændret."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der lokale Ordner fehlt oder konnte nicht vollständig gelesen werden, daher wurde der Sync-Auftrag beendet, bevor etwas geändert wurde."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ο τοπικός φάκελος λείπει ή δεν ήταν δυνατή η πλήρης ανάγνωσή του, οπότε η εργασία συγχρονισμού σταμάτησε πριν αλλάξει οτιδήποτε."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The local folder is missing or could not be read completely, so the sync job stopped before changing anything."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La carpeta local no existe o no se pudo leer por completo, así que la tarea de sincronización se detuvo antes de cambiar nada."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paikallinen kansio puuttuu tai sitä ei voitu lukea kokonaan, joten synkronointityö pysähtyi ennen kuin mitään muutettiin."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le dossier local est introuvable ou n'a pas pu être lu entièrement ; la tâche de synchronisation s'est arrêtée avant toute modification."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A helyi mappa hiányzik, vagy nem sikerült teljesen beolvasni, ezért a szinkronizálási feladat leállt, mielőtt bármit módosított volna."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La cartella locale manca o non è stato possibile leggerla completamente, quindi il processo di sincronizzazione si è fermato prima di modificare qualcosa."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ローカルフォルダが見つからないか、すべてを読み取れなかったため、同期ジョブは何も変更せずに停止しました。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "로컬 폴더가 없거나 전체를 읽을 수 없어 동기화 작업이 아무것도 변경하지 않고 중지되었습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den lokale mappen mangler eller kunne ikke leses fullstendig, så synkroniseringsjobben stoppet før noe ble endret."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De lokale map ontbreekt of kon niet volledig worden gelezen, dus de synchronisatietaak is gestopt voordat er iets werd gewijzigd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Folder lokalny nie istnieje lub nie dało się go w całości odczytać, więc zadanie synchronizacji zatrzymało się, zanim cokolwiek zmieniło."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A pasta local não existe ou não pôde ser lida por completo, então a tarefa de sincronização parou antes de alterar qualquer coisa."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A pasta local não existe ou não pôde ser lida na totalidade, pelo que a tarefa de sincronização parou antes de alterar o que quer que fosse."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Локальная папка отсутствует или не может быть прочитана полностью, поэтому задание синхронизации остановлено, ничего не изменив."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den lokala mappen saknas eller kunde inte läsas helt, så synkjobbet stoppades innan något ändrades."
           }
         }
       }
@@ -29943,127 +30300,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kan inte komma åt %@ — appens sandlåda nekade begäran."
-          }
-        }
-      }
-    },
-    "error.unknown" : {
-      "comment" : "A generic error message for when an unexpected error occurs.",
-      "extractionState" : "extracted_with_value",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Neočekávaná chyba."
-          }
-        },
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Uventet fejl."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unerwarteter Fehler."
-          }
-        },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Απροσδόκητο σφάλμα."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Unexpected error."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Error inesperado."
-          }
-        },
-        "fi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Odottamaton virhe."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Erreur inattendue."
-          }
-        },
-        "hu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Váratlan hiba."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Errore inatteso."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "予期しないエラー。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "예기치 못한 오류."
-          }
-        },
-        "nb" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Uventet feil."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Onverwachte fout."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nieoczekiwany błąd."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Erro inesperado."
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Erro inesperado."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Непредвиденная ошибка."
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Oväntat fel."
           }
         }
       }

@@ -235,6 +235,15 @@ final class BrowserViewModel {
         isPerformingAction = true
         defer { isPerformingAction = false }
         do {
+            // Rename is copy + delete; the copy would silently replace an
+            // existing object (without a trash capture) under the new name.
+            if try await objectExists(account: account, bucket: bucket, key: newKey) {
+                actionError = .unknown(message: String(
+                    localized: "browser.action.rename.exists",
+                    defaultValue: "An object with that name already exists in this folder."
+                ))
+                return
+            }
             try await s3Browser.copy(
                 account: account,
                 fromBucket: bucket,
@@ -259,6 +268,15 @@ final class BrowserViewModel {
         } catch {
             actionError = .unknown(message: error.localizedDescription)
             await record(.copy, status: .failure, key: key, errorMessage: error.localizedDescription)
+        }
+    }
+
+    private func objectExists(account: S3Account, bucket: String, key: String) async throws -> Bool {
+        do {
+            _ = try await s3Browser.head(account: account, bucket: bucket, key: key)
+            return true
+        } catch BucketeerError.objectNotFound {
+            return false
         }
     }
 

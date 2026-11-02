@@ -178,7 +178,7 @@ final class TrashCoordinator {
             key: item.key,
             localURL: fileURL,
             contentType: item.contentType,
-            bypassEncryption: Self.isEnvelope(fileURL)
+            bypassEncryption: BucketeerEnvelope.fileLooksEncrypted(at: fileURL)
         )
         let state = await transferManager.awaitCompletion(id: id)
         switch state {
@@ -223,12 +223,5 @@ final class TrashCoordinator {
         } catch {
             return error.localizedDescription
         }
-    }
-
-    private static func isEnvelope(_ url: URL) -> Bool {
-        guard let handle = try? FileHandle(forReadingFrom: url) else { return false }
-        defer { try? handle.close() }
-        let header = (try? handle.read(upToCount: BucketeerEnvelope.headerSize)) ?? Data()
-        return BucketeerEnvelope.looksEncrypted(header)
     }
 }
