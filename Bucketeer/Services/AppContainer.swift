@@ -93,16 +93,7 @@ final class AppContainer {
 
     init() throws {
         let storeURL = Self.resolveStoreURL()
-        let schema = Schema([S3AccountRecord.self, SyncJobRecord.self])
-        let configuration = ModelConfiguration(
-            "Bucketeer",
-            schema: schema,
-            url: storeURL
-        )
-        let modelContainer = try ModelContainer(
-            for: schema,
-            configurations: configuration
-        )
+        let modelContainer = try SharedStore.makeContainer(url: storeURL, allowsSave: true)
         Self.runMigrations(modelContainer)
         let activityContainer = try Self.makeActivityContainer()
         let (trashContainer, trashCacheURL) = try Self.makeTrashContainer()
