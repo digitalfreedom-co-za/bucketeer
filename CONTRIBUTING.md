@@ -88,7 +88,7 @@ Key seams:
   (activity, trash, auto-tag, encryption envelope, bucket stats,
   bandwidth limiter, deep-link grammar, resumable-upload
   checkpoints). Pure-logic extraction is the preferred way to make
-  host code testable — `SyncPlanner`, `TrialBookkeeping`,
+  host code testable — `SyncPlanner`, `ProAccessResolver`,
   `AutoTagRuleEvaluator`, `BucketeerEnvelope`, `BucketeerDeepLink`,
   `BucketStatsCollector`, and `BandwidthLimiter` are all in Core
   precisely because they have no live-state dependency.
@@ -158,7 +158,7 @@ encryption, etc.), the pattern is:
   ("opened the menubar popover, verified the badge", etc.).
 - For host-only async logic that's hard to unit-test today, extract
   the pure core into a helper inside `BucketeerCore` (like we did
-  with `SyncPlanner` and `TrialBookkeeping`).
+  with `SyncPlanner` and `ProAccessResolver`).
 
 ---
 
