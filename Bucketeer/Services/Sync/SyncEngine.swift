@@ -97,6 +97,8 @@ actor SyncEngine {
     /// Entitlement check run before every job start — manual, on-launch,
     /// interval and watch-folder triggers alike.
     private let isAuthorized: @Sendable () async -> Bool
+    /// Decides whether a same-account copy may stay server-side.
+    private let encryptionGate: BucketEncryptionGate?
 
     init(
         accountStore: any AccountStoring,
@@ -104,8 +106,10 @@ actor SyncEngine {
         browser: any S3Browsing,
         transferManager: TransferManager,
         activityLog: (any ActivityLogging)? = nil,
+        encryptionGate: BucketEncryptionGate? = nil,
         isAuthorized: @escaping @Sendable () async -> Bool = { true }
     ) {
+        self.encryptionGate = encryptionGate
         self.accountStore = accountStore
         self.jobStore = jobStore
         self.browser = browser
@@ -754,7 +758,13 @@ actor SyncEngine {
         guard let sourceAccount, let destinationAccount else {
             throw BucketeerError.unknown(message: "Sync context incomplete.")
         }
-        if sourceAccount.id == destinationAccount.id {
+        let encryptionAllowsServerCopy = await encryptionGate?.allowsServerSideCopy(
+            sourceAccountID: sourceAccount.id,
+            sourceBucket: sourceBucket,
+            destinationAccountID: destinationAccount.id,
+            destinationBucket: destinationBucket
+        ) ?? true
+        if sourceAccount.id == destinationAccount.id, encryptionAllowsServerCopy {
             try await browser.copy(
                 account: sourceAccount,
                 fromBucket: sourceBucket,
@@ -765,7 +775,7 @@ actor SyncEngine {
             )
             return
         }
-        // Cross-account → temp staging, then upload.
+        // Cross-account or encrypted side → temp staging, then upload.
         let staging = stagingURL(for: entry.sourceKey)
         let downloadID = await transferManager.enqueueDownload(
             account: sourceAccount,

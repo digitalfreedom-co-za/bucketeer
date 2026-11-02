@@ -200,7 +200,8 @@ final class AppContainer {
             transferManager: transferManager,
             transferQueue: self.transferQueueViewModel,
             accountStore: accountStore,
-            entitlements: entitlementManager
+            entitlements: entitlementManager,
+            encryptionGate: bucketEncryptionGate
         )
         let activationController = AppActivationController()
         self.activationController = activationController
@@ -225,6 +226,7 @@ final class AppContainer {
             browser: router,
             transferManager: transferManager,
             activityLog: activityLog,
+            encryptionGate: bucketEncryptionGate,
             isAuthorized: { [entitlementManager] in
                 await entitlementManager.isUnlockedAfterLaunchCheck(.syncEngine)
             }

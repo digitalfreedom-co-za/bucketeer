@@ -60,25 +60,19 @@ final class CrossAccountCopyCoordinator {
         keepSource: Bool
     ) async -> [(key: String, error: BucketeerError?)] {
         var results: [(key: String, error: BucketeerError?)] = []
-        // Codex audit fix (high #1): once either side of the copy
+        // Once either side of the copy
         // touches a BYOK-protected bucket, we MUST go through the
         // round-trip path. Server-side `CopyObject` doesn't know
         // about Bucketeer envelopes and would otherwise produce
         // ciphertext encrypted under the wrong key (or plaintext
         // landing in an encrypted destination).
-        let encryptionInvolved: Bool = await {
-            guard let encryptionGate else { return false }
-            if await encryptionGate.key(
-                accountID: sourceAccount.id,
-                bucket: sourceBucket
-            ) != nil { return true }
-            if await encryptionGate.key(
-                accountID: destinationAccount.id,
-                bucket: destinationBucket
-            ) != nil { return true }
-            return false
-        }()
-        let canServerCopy = !encryptionInvolved && Self.canServerSideCopy(
+        let encryptionAllowsServerCopy = await encryptionGate?.allowsServerSideCopy(
+            sourceAccountID: sourceAccount.id,
+            sourceBucket: sourceBucket,
+            destinationAccountID: destinationAccount.id,
+            destinationBucket: destinationBucket
+        ) ?? true
+        let canServerCopy = encryptionAllowsServerCopy && Self.canServerSideCopy(
             from: sourceAccount,
             to: destinationAccount
         )

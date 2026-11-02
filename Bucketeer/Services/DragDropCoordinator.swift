@@ -29,14 +29,17 @@ final class DragDropCoordinator {
     private let transferQueue: TransferQueueViewModel
     private let accountStore: any AccountStoring
     private let entitlements: EntitlementManager
+    private let encryptionGate: BucketEncryptionGate?
 
     init(
         s3Browser: any S3Browsing,
         transferManager: TransferManager,
         transferQueue: TransferQueueViewModel,
         accountStore: any AccountStoring,
-        entitlements: EntitlementManager
+        entitlements: EntitlementManager,
+        encryptionGate: BucketEncryptionGate?
     ) {
+        self.encryptionGate = encryptionGate
         self.s3Browser = s3Browser
         self.transferManager = transferManager
         self.transferQueue = transferQueue
@@ -132,7 +135,13 @@ final class DragDropCoordinator {
             return
         }
 
-        if sourceAccount.id == destinationAccount.id {
+        let encryptionAllowsServerCopy = await encryptionGate?.allowsServerSideCopy(
+            sourceAccountID: sourceAccount.id,
+            sourceBucket: ref.bucket,
+            destinationAccountID: destinationAccount.id,
+            destinationBucket: destinationBucket
+        ) ?? true
+        if sourceAccount.id == destinationAccount.id, encryptionAllowsServerCopy {
             // Server-side copy within one account.
             do {
                 try await s3Browser.copy(
