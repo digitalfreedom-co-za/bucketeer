@@ -10,8 +10,8 @@ import SwiftData
 import BucketeerCore
 
 /// Business rules for when a sync job may start: the entitlement gate,
-/// on-launch jobs, and interval schedules. Everything runs on in-memory
-/// stores and the in-memory object store.
+/// on-launch jobs, interval schedules, and restarting a cancelled job.
+/// Everything runs on in-memory stores and the in-memory object store.
 final class SyncEngineSchedulingTests: XCTestCase {
 
     func testRunIsRefusedWithoutEntitlementAndSaysWhy() async throws {
@@ -39,11 +39,29 @@ final class SyncEngineSchedulingTests: XCTestCase {
         _ = try await fixture.firstStatus(timeout: .seconds(4)) { _ in true }
         await fixture.engine.shutdown()
     }
+
+    func testCancelledRunWindingDownLeavesItsRestartAlone() async throws {
+        let fixture = try await Fixture(authorized: true, schedule: .manual)
+        await fixture.browser.put(bucket: "source", key: "report.pdf", size: 1)
+        await fixture.browser.holdNextCopy()
+        await fixture.engine.runNow(id: fixture.job.id)
+        try await fixture.waitUntil { await fixture.browser.isHoldingCopy }
+
+        await fixture.engine.cancel(id: fixture.job.id)
+        await fixture.engine.runNow(id: fixture.job.id)
+        _ = try await fixture.firstStatus { $0.phase == .finished }
+        await fixture.browser.releaseHeldCopy()
+        try await Task.sleep(for: .milliseconds(300))
+
+        let status = await fixture.collectedStatuses()[fixture.job.id]
+        XCTAssertEqual(status?.phase, .finished, "the cancelled run must not overwrite the restart's status")
+    }
 }
 
 private struct Fixture {
     let engine: SyncEngine
     let job: SyncJob
+    let browser: InMemoryS3Browser
     private let collector: StatusCollector
 
     init(authorized: Bool, schedule: SyncSchedule) async throws {
@@ -52,7 +70,7 @@ private struct Fixture {
         let jobStore = SyncJobStore(modelContainer: container)
         let account = S3Account(name: "Demo", provider: .awsS3)
         try await accountStore.upsert(account)
-        let browser = InMemoryS3Browser()
+        browser = InMemoryS3Browser()
         await browser.addBucket("source")
         await browser.addBucket("destination")
         job = SyncJob(
@@ -89,6 +107,16 @@ private struct Fixture {
             try await Task.sleep(for: .milliseconds(50))
         }
         XCTFail("no matching status for the job within \(timeout)")
+        throw CancellationError()
+    }
+
+    func waitUntil(_ condition: @Sendable () async -> Bool) async throws {
+        let deadline = ContinuousClock.now + .seconds(2)
+        while ContinuousClock.now < deadline {
+            if await condition() { return }
+            try await Task.sleep(for: .milliseconds(20))
+        }
+        XCTFail("condition not met within 2 seconds")
         throw CancellationError()
     }
 }

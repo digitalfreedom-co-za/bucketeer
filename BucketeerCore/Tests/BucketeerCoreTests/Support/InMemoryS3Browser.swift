@@ -17,9 +17,24 @@ actor InMemoryS3Browser: S3Browsing {
     private let pageSize: Int
     /// Thrown by every call when set — drives error-state tests.
     private var failure: BucketeerError?
+    private var holdsNextCopy = false
+    private var heldCopy: CheckedContinuation<Void, Never>?
 
     init(pageSize: Int = 1_000) {
         self.pageSize = pageSize
+    }
+
+    /// Parks the next `copy` until `releaseHeldCopy()`, so a test can
+    /// act while an operation is mid-flight.
+    func holdNextCopy() {
+        holdsNextCopy = true
+    }
+
+    var isHoldingCopy: Bool { heldCopy != nil }
+
+    func releaseHeldCopy() {
+        heldCopy?.resume()
+        heldCopy = nil
     }
 
     func addBucket(_ name: String) {
@@ -89,6 +104,10 @@ actor InMemoryS3Browser: S3Browsing {
 
     func copy(account: S3Account, fromBucket: String, fromKey: String, toBucket: String, toKey: String, metadata: [String: String]?) async throws {
         try check()
+        if holdsNextCopy {
+            holdsNextCopy = false
+            await withCheckedContinuation { heldCopy = $0 }
+        }
         guard let source = buckets[fromBucket]?[fromKey] else { throw BucketeerError.objectNotFound(key: fromKey) }
         put(bucket: toBucket, key: toKey, size: source.size, lastModified: source.lastModified)
     }

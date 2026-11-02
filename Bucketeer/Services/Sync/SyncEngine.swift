@@ -35,25 +35,28 @@ actor SyncEngine {
     private let continuation: AsyncStream<[SyncJobStatus]>.Continuation
 
     private var current: [UUID: SyncJobStatus] = [:]
-    /// One entry per running job. The token identifies the run, so a
-    /// cancelled run winding down cannot clear the slot of a newer run.
+    /// One entry per running job. The token identifies the run: only
+    /// the run that owns the slot may publish status or persist its
+    /// summary, so a cancelled run winding down can neither clear the
+    /// slot of a newer run nor overwrite its status.
     private struct Runner {
         let token: UUID
         let task: Task<Void, Never>
     }
     private var runners: [UUID: Runner] = [:]
     private var jobs: [UUID: SyncJob] = [:]
-    /// Per-sync-job: the transfer-manager IDs the engine has handed off
+    /// Per run token: the transfer-manager IDs the run has handed off
     /// to the queue. Used to actively cancel in-flight uploads /
     /// downloads when the sync job is cancelled, instead of just
     /// cancelling the orchestrating task and letting the transfers keep
-    /// running.
+    /// running. Keyed by run, not job, so a cancel that resumes after
+    /// a restart cannot drop the new run's transfers.
     private var activeTransferIDs: [UUID: Set<UUID>] = [:]
-    /// Set on cancellation so a transfer that returned
-    /// from `enqueue…` *after* the cancel call still gets caught and
-    /// torn down. Without this guard the registration-race window
-    /// could leak an in-flight transfer past the cancel.
-    private var cancelledJobIDs: Set<UUID> = []
+    /// Tokens of cancelled runs, so a transfer that returned from
+    /// `enqueue…` *after* the cancel call still gets caught and torn
+    /// down — even when a new run of the same job started meanwhile.
+    /// Removed when the cancelled run has fully wound down.
+    private var cancelledRuns: Set<UUID> = []
     /// Watch-folder events that arrive while
     /// a job is already running used to be dropped (runNow no-ops
     /// when `runners[id] != nil`). Local file changes could then
@@ -296,9 +299,6 @@ actor SyncEngine {
         // Re-read after the suspension: the job may have been edited,
         // deleted or started meanwhile.
         guard let job = jobs[id], runners[id] == nil else { return }
-        // Clear any previous cancellation flag so re-running a
-        // cancelled job doesn't immediately tear new transfers down.
-        cancelledJobIDs.remove(id)
         updateStatus(id: id, phase: .planning, message: nil)
         let token = UUID()
         let task = Task { [weak self] in
@@ -310,35 +310,43 @@ actor SyncEngine {
     /// Cancel a running job. Idempotent. Cancels the orchestrating
     /// task **and** every transfer-manager task the engine has handed
     /// to the queue for this job.
+    ///
+    /// All bookkeeping happens before the first suspension; the awaits
+    /// only cancel the transfers already detached from the run, so a
+    /// `runNow` that slips in meanwhile starts a clean, cancellable run.
     func cancel(id: UUID) async {
-        cancelledJobIDs.insert(id)
         pendingReruns.remove(id)
-        runners[id]?.task.cancel()
-        runners[id] = nil
-        if let ids = activeTransferIDs[id] {
-            for transferID in ids {
-                await transferManager.cancel(id: transferID)
-            }
+        var transfersToCancel: Set<UUID> = []
+        if let runner = runners.removeValue(forKey: id) {
+            cancelledRuns.insert(runner.token)
+            runner.task.cancel()
+            transfersToCancel = activeTransferIDs.removeValue(forKey: runner.token) ?? []
         }
-        activeTransferIDs.removeValue(forKey: id)
         if current[id] != nil {
             updateStatus(id: id, phase: .cancelled, message: nil)
         }
+        for transferID in transfersToCancel {
+            await transferManager.cancel(id: transferID)
+        }
     }
 
-    /// If the job was cancelled while the transfer was
-    /// being enqueued, the new transfer would otherwise dangle. Catch
-    /// it here and tear it down immediately.
-    private func registerActiveTransfer(jobID: UUID, transferID: UUID) {
-        if cancelledJobIDs.contains(jobID) {
+    /// If the run was cancelled while the transfer was being enqueued,
+    /// the new transfer would otherwise dangle. Catch it here and tear
+    /// it down immediately.
+    private func registerActiveTransfer(run token: UUID, transferID: UUID) {
+        if cancelledRuns.contains(token) {
             Task { [transferManager] in await transferManager.cancel(id: transferID) }
             return
         }
-        activeTransferIDs[jobID, default: []].insert(transferID)
+        activeTransferIDs[token, default: []].insert(transferID)
     }
 
-    private func unregisterActiveTransfer(jobID: UUID, transferID: UUID) {
-        activeTransferIDs[jobID]?.remove(transferID)
+    private func unregisterActiveTransfer(run token: UUID, transferID: UUID) {
+        activeTransferIDs[token]?.remove(transferID)
+    }
+
+    private func ownsSlot(jobID: UUID, run token: UUID) -> Bool {
+        runners[jobID]?.token == token
     }
 
     // MARK: - Execution
@@ -351,7 +359,11 @@ actor SyncEngine {
         // set and is only acted on by the *next* fsevent, which
         // could be hours away.
         defer {
-            if runners[job.id]?.token == token {
+            // The task group has awaited every child by now, so no
+            // transfer of this run can register any more.
+            cancelledRuns.remove(token)
+            activeTransferIDs.removeValue(forKey: token)
+            if ownsSlot(jobID: job.id, run: token) {
                 runners[job.id] = nil
                 if pendingReruns.remove(job.id) != nil {
                     Task { [weak self] in await self?.runNow(id: job.id) }
@@ -365,6 +377,7 @@ actor SyncEngine {
         } catch {
             updateStatus(
                 id: job.id,
+                run: token,
                 phase: .failed,
                 message: bucketeerError(error).errorDescription
             )
@@ -389,6 +402,7 @@ actor SyncEngine {
         } catch {
             updateStatus(
                 id: job.id,
+                run: token,
                 phase: .failed,
                 message: bucketeerError(error).errorDescription
             )
@@ -403,6 +417,7 @@ actor SyncEngine {
         let planned = plan.upserts.count + (job.mode == .mirror && job.deletePropagation ? plan.deletes.count : 0)
         updateStatus(
             id: job.id,
+            run: token,
             phase: .running,
             planned: planned,
             startedAt: start
@@ -434,6 +449,7 @@ actor SyncEngine {
                             try await self.execute(
                                 upsert: entry,
                                 job: job,
+                                run: token,
                                 context: context
                             )
                             return (entry, .success(()))
@@ -452,7 +468,7 @@ actor SyncEngine {
                 while inflight > 0 {
                     if Task.isCancelled {
                         group.cancelAll()
-                        updateStatus(id: job.id, phase: .cancelled)
+                        updateStatus(id: job.id, run: token, phase: .cancelled)
                         return
                     }
                     guard let result = try await group.next() else { break }
@@ -467,6 +483,7 @@ actor SyncEngine {
                     }
                     updateStatus(
                         id: job.id,
+                        run: token,
                         phase: .running,
                         planned: planned,
                         completed: completed,
@@ -476,7 +493,7 @@ actor SyncEngine {
                 }
             }
         } catch is CancellationError {
-            updateStatus(id: job.id, phase: .cancelled)
+            updateStatus(id: job.id, run: token, phase: .cancelled)
             return
         } catch {
             // Per-entry failures are already counted via the Result
@@ -486,7 +503,7 @@ actor SyncEngine {
         // cancelled run must not continue to deletes or overwrite its
         // `.cancelled` status with a terminal summary.
         guard !Task.isCancelled else {
-            updateStatus(id: job.id, phase: .cancelled)
+            updateStatus(id: job.id, run: token, phase: .cancelled)
             return
         }
 
@@ -502,6 +519,7 @@ actor SyncEngine {
                 }
                 updateStatus(
                     id: job.id,
+                    run: token,
                     phase: .running,
                     planned: planned,
                     completed: completed,
@@ -540,6 +558,7 @@ actor SyncEngine {
         // they race in ahead of `touchLastRun` and render a stale
         // snapshot. Swap the order so the store is up to date by
         // the time any observer reacts.
+        guard ownsSlot(jobID: job.id, run: token) else { return }
         let lastRunAt = Date()
         try? await jobStore.touchLastRun(id: job.id, at: lastRunAt, summary: summary)
         if var refreshed = jobs[job.id] {
@@ -549,6 +568,7 @@ actor SyncEngine {
         }
         updateStatus(
             id: job.id,
+            run: token,
             phase: failed > 0 ? .failed : .finished,
             planned: planned,
             completed: completed,
@@ -697,6 +717,7 @@ actor SyncEngine {
     private func execute(
         upsert entry: SyncPlanner.PlanEntry,
         job: SyncJob,
+        run token: UUID,
         context: SyncRunContext
     ) async throws {
         switch (job.source, job.destination) {
@@ -704,6 +725,7 @@ actor SyncEngine {
             try await executeS3ToS3(
                 entry: entry,
                 job: job,
+                run: token,
                 sourceBucket: srcBucket,
                 destinationBucket: dstBucket,
                 sourceAccount: context.source.account,
@@ -717,6 +739,7 @@ actor SyncEngine {
             try await executeS3ToLocal(
                 entry: entry,
                 job: job,
+                run: token,
                 sourceAccount: sourceAccount,
                 sourceBucket: srcBucket,
                 destinationRoot: destinationRoot
@@ -729,6 +752,7 @@ actor SyncEngine {
             try await executeLocalToS3(
                 entry: entry,
                 job: job,
+                run: token,
                 sourceRoot: sourceRoot,
                 destinationAccount: destinationAccount,
                 destinationBucket: dstBucket
@@ -749,6 +773,7 @@ actor SyncEngine {
     private func executeS3ToS3(
         entry: SyncPlanner.PlanEntry,
         job: SyncJob,
+        run token: UUID,
         sourceBucket: String,
         destinationBucket: String,
         sourceAccount: S3Account?,
@@ -782,9 +807,9 @@ actor SyncEngine {
             key: entry.sourceKey,
             localURL: staging
         )
-        registerActiveTransfer(jobID: job.id, transferID: downloadID)
+        registerActiveTransfer(run: token, transferID: downloadID)
         defer {
-            unregisterActiveTransfer(jobID: job.id, transferID: downloadID)
+            unregisterActiveTransfer(run: token, transferID: downloadID)
             try? FileManager.default.removeItem(at: staging)
         }
         try terminalToError(await transferManager.awaitCompletion(id: downloadID))
@@ -796,14 +821,15 @@ actor SyncEngine {
             localURL: staging,
             contentType: nil
         )
-        registerActiveTransfer(jobID: job.id, transferID: uploadID)
-        defer { unregisterActiveTransfer(jobID: job.id, transferID: uploadID) }
+        registerActiveTransfer(run: token, transferID: uploadID)
+        defer { unregisterActiveTransfer(run: token, transferID: uploadID) }
         try terminalToError(await transferManager.awaitCompletion(id: uploadID))
     }
 
     private func executeS3ToLocal(
         entry: SyncPlanner.PlanEntry,
         job: SyncJob,
+        run token: UUID,
         sourceAccount: S3Account,
         sourceBucket: String,
         destinationRoot: URL
@@ -820,8 +846,8 @@ actor SyncEngine {
             key: entry.sourceKey,
             localURL: staging
         )
-        registerActiveTransfer(jobID: job.id, transferID: downloadID)
-        defer { unregisterActiveTransfer(jobID: job.id, transferID: downloadID) }
+        registerActiveTransfer(run: token, transferID: downloadID)
+        defer { unregisterActiveTransfer(run: token, transferID: downloadID) }
         do {
             try terminalToError(await transferManager.awaitCompletion(id: downloadID))
             try LocalFolderWriter.install(
@@ -838,6 +864,7 @@ actor SyncEngine {
     private func executeLocalToS3(
         entry: SyncPlanner.PlanEntry,
         job: SyncJob,
+        run token: UUID,
         sourceRoot: URL,
         destinationAccount: S3Account,
         destinationBucket: String
@@ -860,8 +887,8 @@ actor SyncEngine {
             localURL: sourceFile,
             contentType: nil
         )
-        registerActiveTransfer(jobID: job.id, transferID: uploadID)
-        defer { unregisterActiveTransfer(jobID: job.id, transferID: uploadID) }
+        registerActiveTransfer(run: token, transferID: uploadID)
+        defer { unregisterActiveTransfer(run: token, transferID: uploadID) }
         try terminalToError(await transferManager.awaitCompletion(id: uploadID))
     }
 
@@ -954,8 +981,11 @@ actor SyncEngine {
 
     // MARK: - Status
 
+    /// With `run`, the update is dropped unless that run still owns the
+    /// job's slot — a cancelled run must not overwrite its successor.
     private func updateStatus(
         id: UUID,
+        run token: UUID? = nil,
         phase: SyncJobStatus.Phase,
         planned: Int? = nil,
         completed: Int? = nil,
@@ -963,6 +993,7 @@ actor SyncEngine {
         startedAt: Date? = nil,
         message: String? = nil
     ) {
+        if let token, !ownsSlot(jobID: id, run: token) { return }
         var status = current[id] ?? SyncJobStatus(
             jobID: id,
             phase: phase,
