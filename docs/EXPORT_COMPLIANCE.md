@@ -6,22 +6,25 @@ to be classified before worldwide App Store distribution.
 Bucketeer's `Info.plist` declares:
 
 ```
-ITSAppUsesNonExemptEncryption = YES
+ITSAppUsesNonExemptEncryption = NO
 ```
 
-This document records the classification reasoning and the exact
-App Store Connect answers, so the position is consistent across
-the plist, the submission questionnaire, and any App Review or
-BIS follow-up.
+This document records the classification reasoning, why the key is
+`NO` for v1.0, and the exact App Store Connect answers, so the
+position is consistent across the plist, the submission
+questionnaire, and any App Review or BIS follow-up.
 
-> **Status:** engineering self-assessment. The classification
-> follows the standard mass-market self-classification path used
-> by comparable apps (client-side-encryption file tools, password
-> managers). Have counsel confirm before first submission if in
-> doubt — the declaration is the developer's legal responsibility,
-> not Apple's.
+> **Status:** engineering self-assessment, decided by the owner for
+> v1.0. Have counsel confirm before first submission — the
+> declaration is the developer's legal responsibility, not Apple's.
 
 ---
+
+## Provider and exporter
+
+**DigitalFreedom Global LLC** (Wyoming, USA) publishes Bucketeer on
+the Mac App Store and is the exporter of record for the EAR
+classification below.
 
 ## What encryption does Bucketeer use?
 
@@ -38,33 +41,19 @@ BIS follow-up.
 Every algorithm is a **standard symmetric cipher, MAC, or hash**.
 The app's own encryption, signing and hashing use Apple CryptoKit;
 the one bundled third-party cryptographic implementation is BoringSSL
-inside swift-nio-ssl (transitive dependency of Soto, see table).
-There is no proprietary cryptography, no key-escrow scheme, and no
-certificate-issuing capability.
+inside swift-nio-ssl (transitive dependency of Soto, see table). It
+implements standard TLS only. There is no proprietary cryptography,
+no key-escrow scheme, and no certificate-issuing capability.
 
-> **Open (2026-11-02):** the classification below was written assuming
-> no bundled third-party crypto. Reassess it with BoringSSL in the
-> inventory before submission.
-
-## Classification
+## US classification (EAR)
 
 **ECCN 5D992.c — mass-market encryption software**, self-classified
 per the Cryptography Note (Note 3 to Category 5, Part 2) and
 License Exception ENC, 15 CFR §740.17(b)(1).
 
-Why not "exempt" (`ITSAppUsesNonExemptEncryption = NO`): the
-`NO` answer is reserved for apps that use **no** encryption or
-only encryption within Apple's exemption categories (encryption
-limited to authentication, digital signatures, DRM, OS-provided
-HTTPS calls only, banking/medical uses, etc.). Bucketeer's Phase
-13.15 feature performs **general-purpose confidentiality
-encryption of arbitrary user file contents** (AES-256-GCM on
-object bodies). That is squarely non-exempt functionality, so the
-honest plist answer is `YES` — followed by the mass-market
-self-classification, which removes the need for a CCATS/license
-but not the need to answer `YES`.
-
-Mass-market prongs (Cryptography Note), all met:
+The client-side encryption of Phase 13.15 is general-purpose
+confidentiality encryption of user file contents, so Bucketeer is not
+outside the EAR's encryption controls. It is released as mass market:
 
 1. **Generally available to the public** — sold without
    restriction on the Mac App Store at a published price.
@@ -76,33 +65,55 @@ Mass-market prongs (Cryptography Note), all met:
    `BucketeerEnvelope` / `ObjectEncryptor` source comments (cipher,
    256-bit key, 96-bit nonce, AAD header, user-held key custody).
 
+Consequences of the §740.17(b)(1) mass-market self-classification:
+
+- **No CCATS** — no classification request to BIS is needed.
+- **No annual self-classification report.** Since the BIS rule of
+  29 March 2021 (86 FR 16482) the report under Supp. No. 8 to
+  Part 742 is only required for the mass-market components, toolsets
+  and chips listed in §740.17(b)(1); an end-user app like Bucketeer
+  is not among them.
+
 The source-available publication of the encryption implementation
 (see `LICENSE`) supports prong 3 but is **not** relied on as a
 §742.15(b) published-source carve-out — that route would require a
 formal email notification to BIS and the ENC Encryption Request
 Coordinator, which has not been made.
 
-## Continuing obligations
+## Why `ITSAppUsesNonExemptEncryption = NO`
 
-- **Annual self-classification report.** Self-classification under
-  §740.17(b)(1) carries the annual report duty (§740.17(e)(3),
-  Supp. No. 8 to Part 742): a CSV naming the product, ECCN
-  5D992.c, and authorization type "ENC", emailed to
-  `crypt-supp8@bis.doc.gov` and `enc@nsa.gov` by **February 1**
-  covering the prior calendar year. First report is due the
-  February after the first public release.
-- **App Store Connect questionnaire** (per version, or answered
-  once via plist keys):
-  - "Does your app use encryption?" → **Yes**
-  - "Does your app qualify for any of the exemptions?" → **No**
-  - "Does your app implement any encryption algorithms that are
-    proprietary or not accepted as standard?" → **No**
-  - "Is your app going to be available in France?" → follow the
-    questionnaire; standard mass-market apps upload the France
-    import declaration only if prompted.
-- Once App Store Connect issues an export-compliance key, add
-  `ITSEncryptionExportComplianceCode` to the Info.plist so
-  TestFlight builds skip the per-build questionnaire.
+Apple's export-compliance questionnaire asks for documentation only
+where it is legally required. With the US position settled by the
+mass-market self-classification above, the remaining document Apple
+collects is the French import declaration (ANSSI). Bucketeer v1.0
+is **not offered in France**: the App Store availability in App Store
+Connect excludes France. Per Apple's documentation the app is then
+exempt from providing documentation, and the key is `NO`. App Store
+Connect stops asking the questionnaire for each build.
+
+The key is a statement about documentation duties for the chosen
+storefronts, not a claim that Bucketeer contains no encryption. The
+inventory above stays accurate and complete.
+
+## App Store Connect checklist (v1.0)
+
+- Pricing and Availability: **France deselected**. Keep it that way
+  for every version while the key is `NO`.
+- No `ITSEncryptionExportComplianceCode` in the plist.
+- If App Review asks: 5D992.c mass market, self-classified under
+  §740.17(b)(1), no CCATS, no annual report owed, not distributed in
+  France.
+
+## If France is added later
+
+1. File the ANSSI declaration for the encryption functions listed
+   above and wait for the acknowledgement.
+2. Upload the ANSSI documentation in App Store Connect (App
+   Information → App Encryption Documentation) and wait for approval.
+3. Set `INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = YES` and add
+   `ITSEncryptionExportComplianceCode` with the key App Store Connect
+   issues.
+4. Only then add France to the availability.
 
 ## Operational reminders
 
@@ -112,15 +123,17 @@ Coordinator, which has not been made.
 - The classification applies per major version. v1.0 → v1.x
   carries this assessment unchanged; v2.0 with enterprise
   provisioning / managed key roll-forward needs re-classification.
-- If App Review questions the declaration, answer with the
-  classification above (5D992.c mass-market, §740.17(b)(1),
-  annual self-classification report filed). Apple's reviewers
-  verify consistency, not the EAR analysis itself.
+- Before the first submission, have a lawyer confirm both the
+  5D992.c self-classification and the France exclusion as the basis
+  for `NO`.
 
 ## References
 
 - 15 CFR §740.17 (License Exception ENC) — https://www.ecfr.gov/current/title-15/subtitle-B/chapter-VII/subchapter-C/part-740/section-740.17
 - 15 CFR Part 742, Supp. No. 8 (self-classification report format) — https://www.ecfr.gov/current/title-15/subtitle-B/chapter-VII/subchapter-C/part-742
+- 86 FR 16482 (29 March 2021), BIS rule removing the mass-market
+  self-classification report for most items —
+  https://www.federalregister.gov/citation/86-FR-16482
 - Apple — *Determine your export compliance requirements* —
   https://developer.apple.com/help/app-store-connect/manage-app-and-version-information/determine-your-export-compliance-requirements
 - Apple — *Complying with encryption export regulations* —
