@@ -47,11 +47,25 @@ struct ObjectListView: View {
                 ProgressView()
                     .controlSize(.large)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if viewModel.filteredObjects.isEmpty {
+            } else if viewModel.filteredObjects.isEmpty, !viewModel.searchText.isEmpty {
                 ContentUnavailableView.search
+            } else if viewModel.objects.isEmpty {
+                ContentUnavailableView(
+                    "browser.empty.objects.title",
+                    systemImage: "tray",
+                    description: Text("browser.empty.objects.message")
+                )
             } else {
                 table
             }
+        }
+        // On the container, not the table: an empty folder shows no
+        // table and must still accept drops.
+        .dropDestination(for: URL.self) { urls, _ in
+            handleURLDrop(urls)
+        }
+        .dropDestination(for: S3ObjectRef.self) { refs, _ in
+            handleObjectRefDrop(refs)
         }
         .navigationTitle(viewModel.bucket ?? "")
         .navigationSubtitle(viewModel.prefix.isEmpty ? "" : viewModel.prefix)
@@ -306,12 +320,6 @@ struct ObjectListView: View {
             if viewModel.objects.isEmpty {
                 Task { await viewModel.loadObjectsResetting() }
             }
-        }
-        .dropDestination(for: URL.self) { urls, _ in
-            handleURLDrop(urls)
-        }
-        .dropDestination(for: S3ObjectRef.self) { refs, _ in
-            handleObjectRefDrop(refs)
         }
         .overlay(alignment: .bottom) {
             if viewModel.hasMore {

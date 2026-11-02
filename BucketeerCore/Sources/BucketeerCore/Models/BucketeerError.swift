@@ -50,8 +50,10 @@ extension BucketeerError: LocalizedError {
             return String(localized: "error.sandboxAccessDenied",
                           defaultValue: "Cannot access \(url.path) — the app sandbox denied the request.")
         case .keychainFailure(let status):
+            // As text: an OSStatus is a code, not a quantity, so no
+            // locale grouping ("-25.308").
             return String(localized: "error.keychainFailure",
-                          defaultValue: "Keychain operation failed (status \(status)).")
+                          defaultValue: "Keychain operation failed (status \(String(status))).")
         case .persistenceFailure(let message):
             return String(localized: "error.persistenceFailure",
                           defaultValue: "Saving to the local store failed: \(message)")
