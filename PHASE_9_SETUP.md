@@ -94,10 +94,5 @@ not yet provisioned — go back to Step 1.
   short)
 - Working-set enumerator (favourites, pending, recents) for richer
   Finder integration
-- Promote keychain access group on the host from `nil` to
-  `AppEnvironment.keychainAccessGroup` with a one-shot migration of
-  existing entries — currently the host writes to the private namespace
-  so the extension only sees credentials added *after* a provisioned
-  build.
 - Flat-listing primitive on `S3Browsing` to skip the per-prefix recursion
   in the sync engine and the file provider walk for huge buckets

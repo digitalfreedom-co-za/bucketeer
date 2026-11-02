@@ -30,6 +30,7 @@ final class ExtensionContainer: Sendable {
     let azureCredentialsCache: AzureCredentialsCache
     let azureTransporter: AzureBlobTransporter
     let browser: any S3Browsing
+    let encryptedBucketListURL: URL
 
     init() throws {
         guard let groupURL = FileManager.default.containerURL(
@@ -41,6 +42,7 @@ final class ExtensionContainer: Sendable {
                 userInfo: [NSLocalizedDescriptionKey: "App Group container is not available — entitlement missing or not yet provisioned."]
             )
         }
+        self.encryptedBucketListURL = EncryptedBucketList.url(inGroupContainer: groupURL)
         let storeURL = groupURL.appending(path: AppEnvironment.swiftDataStoreFileName)
         // Same schema as the host (never a subset — that would migrate
         // away the host's sync jobs); saves are disabled here.
@@ -59,6 +61,23 @@ final class ExtensionContainer: Sendable {
         self.azureTransporter = AzureBlobTransporter(credentialsCache: azureCache)
         let s3Store = S3Service(factory: factory)
         self.browser = ProviderRouter(s3: s3Store, azure: azureStore)
+    }
+
+    /// Refuses moving bytes for a bucket with client-side encryption:
+    /// this extension reads and writes raw bytes, so Finder would see
+    /// ciphertext and upload plaintext. Fails closed when the host's
+    /// encrypted-bucket list is missing or unreadable.
+    func refuseIfEncrypted(_ identifier: String) throws {
+        let isEncrypted = (try? EncryptedBucketList.contains(
+            domainIdentifier: identifier,
+            at: encryptedBucketListURL
+        )) ?? true
+        guard isEncrypted else { return }
+        throw NSError(
+            domain: NSCocoaErrorDomain,
+            code: NSFeatureUnsupportedError,
+            userInfo: [NSLocalizedDescriptionKey: "This bucket uses client-side encryption and can't be used in Finder. Open it in the Bucketeer window instead."]
+        )
     }
 
     /// Resolve the `(account, bucket)` tuple that a domain identifier

@@ -480,6 +480,125 @@
         }
       }
     },
+    "encryption.error.mountStateUnknown" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer nemohl ověřit, zda je tento bucket připojen ve Finderu, proto šifrování zůstává vypnuté. Zkuste to znovu."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer kunne ikke kontrollere, om denne bucket er monteret i Finder, så kryptering forbliver slået fra. Prøv igen."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer konnte nicht prüfen, ob dieser Bucket im Finder eingebunden ist, deshalb bleibt die Verschlüsselung aus. Versuch es noch einmal."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το Bucketeer δεν μπόρεσε να ελέγξει αν αυτό το bucket είναι προσαρτημένο στο Finder, οπότε η κρυπτογράφηση παραμένει απενεργοποιημένη. Δοκιμάστε ξανά."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer couldn't check whether this bucket is mounted in Finder, so encryption stays off. Try again."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer no pudo comprobar si este bucket está montado en el Finder, así que el cifrado sigue desactivado. Inténtalo de nuevo."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer ei voinut tarkistaa, onko tämä bucket liitetty Finderiin, joten salaus pysyy poissa käytöstä. Yritä uudelleen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer n'a pas pu vérifier si ce bucket est monté dans le Finder ; le chiffrement reste donc désactivé. Réessayez."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A Bucketeer nem tudta ellenőrizni, hogy ez a bucket csatolva van-e a Finderben, ezért a titkosítás kikapcsolva marad. Próbáld újra."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer non è riuscito a verificare se questo bucket è montato nel Finder, quindi la crittografia resta disattivata. Riprova."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このバケットが Finder にマウントされているか確認できなかったため、暗号化はオフのままです。もう一度お試しください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer가 이 버킷이 Finder에 마운트되어 있는지 확인할 수 없어 암호화가 꺼진 상태로 유지됩니다. 다시 시도하십시오."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer kunne ikke sjekke om denne bucketen er montert i Finder, så kryptering forblir av. Prøv igjen."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer kon niet controleren of deze bucket in de Finder is gekoppeld, dus versleuteling blijft uit. Probeer het opnieuw."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer nie mógł sprawdzić, czy ten bucket jest zamontowany w Finderze, więc szyfrowanie pozostaje wyłączone. Spróbuj ponownie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Bucketeer não conseguiu verificar se este bucket está montado no Finder, então a criptografia continua desativada. Tente novamente."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Bucketeer não conseguiu verificar se este bucket está montado no Finder, por isso a encriptação continua desativada. Tente novamente."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer не удалось проверить, смонтирован ли этот бакет в Finder, поэтому шифрование остаётся выключенным. Повторите попытку."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer kunde inte kontrollera om den här bucketen är monterad i Finder, så krypteringen förblir avstängd. Försök igen."
+          }
+        }
+      }
+    },
     "mount.action.mount.unavailable" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -595,6 +714,125 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Montera som enhet (macOS 14.1 eller senare)"
+          }
+        }
+      }
+    },
+    "mount.error.busy" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jiná změna tohoto bucketu stále probíhá. Zkuste to za chvíli znovu."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En anden ændring af denne bucket kører stadig. Prøv igen om lidt."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eine andere Änderung an diesem Bucket läuft noch. Versuch es gleich noch einmal."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μια άλλη αλλαγή σε αυτό το bucket εκτελείται ακόμη. Δοκιμάστε ξανά σε λίγο."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Another change to this bucket is still running. Try again in a moment."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todavía se está aplicando otro cambio a este bucket. Inténtalo de nuevo en un momento."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toinen tämän bucketin muutos on vielä käynnissä. Yritä hetken kuluttua uudelleen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une autre modification de ce bucket est encore en cours. Réessayez dans un instant."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Egy másik módosítás még folyamatban van ezen a bucketen. Próbáld újra egy kicsit később."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un'altra modifica a questo bucket è ancora in corso. Riprova tra un momento."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このバケットに対する別の変更がまだ実行中です。少し待ってからもう一度お試しください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 버킷에 대한 다른 변경이 아직 진행 중입니다. 잠시 후 다시 시도하십시오."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En annen endring av denne bucketen pågår fortsatt. Prøv igjen om litt."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Er loopt nog een andere wijziging aan deze bucket. Probeer het zo opnieuw."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inna zmiana tego bucketu wciąż trwa. Spróbuj ponownie za chwilę."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Outra alteração neste bucket ainda está em andamento. Tente novamente em instantes."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Outra alteração a este bucket ainda está em curso. Tente novamente dentro de momentos."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Другое изменение этого бакета ещё выполняется. Повторите попытку чуть позже."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En annan ändring av den här bucketen pågår fortfarande. Försök igen om en stund."
           }
         }
       }

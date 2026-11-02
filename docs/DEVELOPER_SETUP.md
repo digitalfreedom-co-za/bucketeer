@@ -131,11 +131,12 @@ actual scheme file backs it — ignore it.
 The App is sandboxed even in Debug. Practical implications when you
 run from Xcode:
 
-- **Account credentials** live in the macOS Keychain. Debug runs
-  without provisioned shared-group entitlement fall back to the
-  private namespace, so the File Provider extension (if you wire it
-  up) cannot read them across processes. Add accounts after enabling
-  the shared group to test the extension path end-to-end.
+- **Account credentials** live in the shared access group of the
+  data-protection keychain, which host and File Provider extension
+  both read. That keychain needs a signed build with the shared group
+  provisioned; unsigned builds get `errSecMissingEntitlement` (-34018)
+  when saving an account. Credentials that earlier builds stored in
+  the file-based login keychain are copied over at launch.
 - **Local-folder sync** asks for security-scoped bookmarks via
   NSOpenPanel. Bookmarks resolved from the previous session will
   surface `isStale` if you've moved the folder — the engine throws

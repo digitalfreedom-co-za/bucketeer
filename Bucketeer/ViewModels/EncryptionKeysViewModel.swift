@@ -21,22 +21,33 @@ final class EncryptionKeysViewModel {
     private let accountStore: any AccountStoring
     private let gate: BucketEncryptionGate
     private let mountController: MountController
+    /// Where the File Provider extension looks up encrypted buckets.
+    /// Nil when the App Group container is unavailable (unsigned
+    /// builds), where the extension cannot run either.
+    private let encryptedBucketListURL: URL?
 
     init(
         keyStore: any EncryptionKeyStoring,
         accountStore: any AccountStoring,
         gate: BucketEncryptionGate,
-        mountController: MountController
+        mountController: MountController,
+        encryptedBucketListURL: URL?
     ) {
         self.keyStore = keyStore
         self.accountStore = accountStore
         self.gate = gate
         self.mountController = mountController
+        self.encryptedBucketListURL = encryptedBucketListURL
     }
 
+    /// Also mirrors the key list for the File Provider extension, so
+    /// every create, delete and launch refreshes it.
     func reload() async {
         do {
             keys = try await keyStore.all()
+            if let encryptedBucketListURL {
+                try EncryptedBucketList.write(keys, to: encryptedBucketListURL)
+            }
             accounts = try await accountStore.all()
             error = nil
         } catch let bucketeerError as BucketeerError {
@@ -49,16 +60,10 @@ final class EncryptionKeysViewModel {
     /// Refuses buckets mounted in Finder: the File Provider extension
     /// writes raw bytes, so Finder copies would stay unencrypted.
     func create(label: String, account: S3Account, bucket: String) async {
-        await mountController.refresh()
-        guard !mountController.isMounted(account: account, bucket: bucket) else {
-            error = .unknown(message: String(
-                localized: "encryption.error.bucketMounted",
-                defaultValue: "This bucket is mounted in Finder. Unmount it before turning on encryption, because files copied through Finder would not be encrypted."
-            ))
-            return
-        }
         do {
-            _ = try await keyStore.create(label: label, accountID: account.id, bucket: bucket)
+            try await mountController.whileUnmounted(account: account, bucket: bucket) {
+                _ = try await keyStore.create(label: label, accountID: account.id, bucket: bucket)
+            }
             await gate.invalidate(accountID: account.id, bucket: bucket)
             await reload()
         } catch let bucketeerError as BucketeerError {

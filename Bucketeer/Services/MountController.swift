@@ -38,16 +38,25 @@ final class MountController {
     }
 
     private let encryptionKeyStore: any EncryptionKeyStoring
+    private let registry: any FileProviderDomainRegistry
+    /// Buckets with a mount or an encryption change in flight. Both
+    /// flows reserve the bucket before their first check and release
+    /// it after their last await, so neither can act on a state the
+    /// other is about to change.
+    private var bucketsInFlight: Set<NSFileProviderDomainIdentifier> = []
 
-    init(encryptionKeyStore: any EncryptionKeyStoring) {
+    init(
+        encryptionKeyStore: any EncryptionKeyStoring,
+        registry: any FileProviderDomainRegistry = SystemFileProviderDomainRegistry()
+    ) {
         self.encryptionKeyStore = encryptionKeyStore
+        self.registry = registry
     }
 
     /// Refresh the cached list from the system. Idempotent.
     func refresh() async {
         do {
-            let domains = try await NSFileProviderManager.domains()
-            mountedDomains = domains.map(\.identifier)
+            mountedDomains = try await registry.identifiers()
         } catch {
             lastError = .unknown(message: error.localizedDescription)
         }
@@ -67,6 +76,12 @@ final class MountController {
             ))
             return
         }
+        let identifier = Self.domainIdentifier(accountID: account.id, bucket: bucket)
+        guard reserve(identifier) else {
+            lastError = Self.busyError
+            return
+        }
+        defer { bucketsInFlight.remove(identifier) }
         let isEncrypted: Bool
         do {
             isEncrypted = try await encryptionKeyStore.key(accountID: account.id, bucket: bucket) != nil
@@ -81,13 +96,8 @@ final class MountController {
             ))
             return
         }
-        let identifier = Self.domainIdentifier(accountID: account.id, bucket: bucket)
-        let domain = NSFileProviderDomain(
-            identifier: identifier,
-            displayName: "\(account.name): \(bucket)"
-        )
         do {
-            try await NSFileProviderManager.add(domain)
+            try await registry.add(identifier: identifier, displayName: "\(account.name): \(bucket)")
             await refresh()
         } catch {
             lastError = mapMountError(error)
@@ -98,14 +108,51 @@ final class MountController {
     func unmount(account: S3Account, bucket: String) async {
         let identifier = Self.domainIdentifier(accountID: account.id, bucket: bucket)
         do {
-            let domains = try await NSFileProviderManager.domains()
-            if let domain = domains.first(where: { $0.identifier == identifier }) {
-                try await NSFileProviderManager.remove(domain)
-            }
+            try await registry.remove(identifier: identifier)
             await refresh()
         } catch {
             lastError = mapMountError(error)
         }
+    }
+
+    /// Runs `operation` (turning on encryption) only after a fresh
+    /// domain lookup succeeded and showed the bucket is not mounted,
+    /// and keeps mounts of the bucket out until it returns. A failed
+    /// lookup throws instead of assuming "not mounted".
+    func whileUnmounted(
+        account: S3Account,
+        bucket: String,
+        _ operation: () async throws -> Void
+    ) async throws {
+        let identifier = Self.domainIdentifier(accountID: account.id, bucket: bucket)
+        guard reserve(identifier) else { throw Self.busyError }
+        defer { bucketsInFlight.remove(identifier) }
+        do {
+            mountedDomains = try await registry.identifiers()
+        } catch {
+            throw BucketeerError.unknown(message: String(
+                localized: "encryption.error.mountStateUnknown",
+                defaultValue: "Bucketeer couldn't check whether this bucket is mounted in Finder, so encryption stays off. Try again."
+            ))
+        }
+        guard !mountedDomains.contains(identifier) else {
+            throw BucketeerError.unknown(message: String(
+                localized: "encryption.error.bucketMounted",
+                defaultValue: "This bucket is mounted in Finder. Unmount it before turning on encryption, because files copied through Finder would not be encrypted."
+            ))
+        }
+        try await operation()
+    }
+
+    private func reserve(_ identifier: NSFileProviderDomainIdentifier) -> Bool {
+        bucketsInFlight.insert(identifier).inserted
+    }
+
+    private static var busyError: BucketeerError {
+        .unknown(message: String(
+            localized: "mount.error.busy",
+            defaultValue: "Another change to this bucket is still running. Try again in a moment."
+        ))
     }
 
     func isMounted(account: S3Account, bucket: String) -> Bool {
