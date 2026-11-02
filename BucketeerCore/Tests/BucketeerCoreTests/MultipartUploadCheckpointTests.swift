@@ -37,7 +37,7 @@ struct MultipartUploadCheckpointTests {
         defer { try? FileManager.default.removeItem(at: url) }
         let initial = MultipartUploadCheckpoint.fingerprint(for: url)
         // Sleep 50ms — well below the previous second-precision
-        // bug threshold, but Codex R3's nanosecond fix should
+        // bug threshold, but the nanosecond-precision mtime should
         // still flip the fingerprint.
         try await Task.sleep(nanoseconds: 50_000_000)
         try Data([0x02, 0x03]).write(to: url)

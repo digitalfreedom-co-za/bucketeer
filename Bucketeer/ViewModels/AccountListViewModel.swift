@@ -20,7 +20,7 @@ final class AccountListViewModel {
     private let azureCredentialsCache: AzureCredentialsCache
     private let transferManager: TransferManager
     private let activityLog: (any ActivityLogging)?
-    /// Phase 14 / Codex R2 (low) follow-up: hand the indexer to the
+    /// Hand the indexer to the
     /// view model so account-delete purges the right sub-domain
     /// instead of nuking the whole Bucketeer Spotlight index.
     var spotlightIndexer: SpotlightIndexer?
@@ -70,7 +70,7 @@ final class AccountListViewModel {
 
     /// Saves the account in Keychain first, then in the SwiftData store.
     /// If the SwiftData write fails the rollback strategy depends on
-    /// whether this is an edit or a create — Codex high #7: on edit
+    /// whether this is an edit or a create — on edit
     /// we used to delete the original credentials too, which destroyed
     /// the user's existing access when only the metadata write failed.
     ///
@@ -200,7 +200,7 @@ final class AccountListViewModel {
         }
 
         await invalidateAllCaches(for: account.id)
-        // Codex audit R2 (low) follow-up: targeted Spotlight purge.
+        // Targeted Spotlight purge.
         // Other accounts' search results stay intact.
         if let spotlightIndexer {
             await spotlightIndexer.purgeAccount(account.id)

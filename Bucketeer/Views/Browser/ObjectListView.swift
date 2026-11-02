@@ -47,11 +47,25 @@ struct ObjectListView: View {
                 ProgressView()
                     .controlSize(.large)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if viewModel.filteredObjects.isEmpty {
+            } else if viewModel.filteredObjects.isEmpty, !viewModel.searchText.isEmpty {
                 ContentUnavailableView.search
+            } else if viewModel.objects.isEmpty {
+                ContentUnavailableView(
+                    "browser.empty.objects.title",
+                    systemImage: "tray",
+                    description: Text("browser.empty.objects.message")
+                )
             } else {
                 table
             }
+        }
+        // On the container, not the table: an empty folder shows no
+        // table and must still accept drops.
+        .dropDestination(for: URL.self) { urls, _ in
+            handleURLDrop(urls)
+        }
+        .dropDestination(for: S3ObjectRef.self) { refs, _ in
+            handleObjectRefDrop(refs)
         }
         .navigationTitle(viewModel.bucket ?? "")
         .navigationSubtitle(viewModel.prefix.isEmpty ? "" : viewModel.prefix)
@@ -307,12 +321,6 @@ struct ObjectListView: View {
                 Task { await viewModel.loadObjectsResetting() }
             }
         }
-        .dropDestination(for: URL.self) { urls, _ in
-            handleURLDrop(urls)
-        }
-        .dropDestination(for: S3ObjectRef.self) { refs, _ in
-            handleObjectRefDrop(refs)
-        }
         .overlay(alignment: .bottom) {
             if viewModel.hasMore {
                 Button("action.loadMore") {
@@ -383,6 +391,11 @@ struct ObjectListView: View {
         let resolved = viewModel.objects.filter { selection.contains($0.key) }
         if resolved.count == 1, let object = resolved.first {
             if !object.isFolder {
+                Button("browser.action.open", systemImage: "arrow.up.forward.app") {
+                    openObject(object)
+                }
+                openWithMenu(for: object)
+                Divider()
                 Button("action.download", systemImage: "arrow.down.circle") {
                     Task { await downloadObject(object) }
                 }
@@ -459,6 +472,29 @@ struct ObjectListView: View {
         }
     }
 
+    private func openWithMenu(for object: S3Object) -> some View {
+        Menu("browser.action.openWith") {
+            ForEach(OpenWithController.applications(forFileNamed: object.displayName), id: \.self) { appURL in
+                Button {
+                    openObject(object, with: appURL)
+                } label: {
+                    Text(FileManager.default.displayName(atPath: appURL.path))
+                }
+            }
+            Divider()
+            Button("browser.action.openWith.other") {
+                guard let account = viewModel.account, let bucket = viewModel.bucket else { return }
+                Task {
+                    await container.openWithController.openWithChosenApplication(
+                        object,
+                        account: account,
+                        bucket: bucket
+                    )
+                }
+            }
+        }
+    }
+
     /// True only when at least two accounts are configured — the
     /// cross-account copy entry has no meaning with just one.
     private var hasMultipleAccounts: Bool {
@@ -518,8 +554,22 @@ struct ObjectListView: View {
     private func handleOpen(_ object: S3Object) {
         if object.isFolder {
             Task { await viewModel.openFolder(object) }
+        } else {
+            openObject(object)
         }
-        // Files: preview/download wiring lands in Phase 6.
+    }
+
+    /// `application == nil` opens with the default app.
+    private func openObject(_ object: S3Object, with application: URL? = nil) {
+        guard let account = viewModel.account, let bucket = viewModel.bucket else { return }
+        Task {
+            await container.openWithController.open(
+                object,
+                account: account,
+                bucket: bucket,
+                application: application
+            )
+        }
     }
 
     private func confirmationTitle() -> LocalizedStringKey {

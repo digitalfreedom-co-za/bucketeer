@@ -87,26 +87,22 @@ public actor KeychainStore: KeychainStoring {
 
     // MARK: - Migration
 
-    /// One-shot migration from the legacy private-namespace Keychain
-    /// items (created when the host had `accessGroup: nil`) to the
-    /// shared access group used by both host and File Provider
-    /// extension. Codex blocker #3 — without this migration, every
-    /// existing account stops working the moment the host starts
-    /// writing to the shared group.
+    /// One-shot migration of credentials from the file-based login
+    /// keychain into the shared access group of the data-protection
+    /// keychain, which both the host and the File Provider extension
+    /// read. Earlier builds never set `kSecUseDataProtectionKeychain`,
+    /// so every item they wrote — with or without an access-group
+    /// attribute — lives in the file-based keychain, where macOS
+    /// ignores access groups (SecItem.h).
     ///
-    /// Algorithm: for each item in the private namespace with our
-    /// service identifier, copy the payload into the shared group, then
-    /// delete the legacy entry. Items already in the shared group are
-    /// left untouched. Idempotent — re-running is a no-op once the
-    /// private namespace is empty.
-    public func migrateFromLegacyPrivateNamespace() async {
-        // Only meaningful if we're configured against a shared access
-        // group in the first place — otherwise there is nothing to
-        // migrate to.
-        guard let accessGroup else { return }
+    /// Queries without `kSecUseDataProtectionKeychain` (and without
+    /// `kSecAttrSynchronizable`) only reach the file-based keychain, so
+    /// the listing and the delete below never touch the shared items.
+    /// A legacy item is deleted only after its shared copy reads back;
+    /// on any failure it stays in place and the next launch retries.
+    public func migrateFromLegacyFileKeychain() async {
+        guard accessGroup != nil else { return }
 
-        // List every generic-password item in the private namespace
-        // (no kSecAttrAccessGroup) for our service.
         let listQuery: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -120,58 +116,38 @@ public actor KeychainStore: KeychainStoring {
 
         for item in items {
             guard let accountString = item[kSecAttrAccount as String] as? String,
-                  let data = item[kSecValueData as String] as? Data,
-                  UUID(uuidString: accountString) != nil
+                  let accountID = UUID(uuidString: accountString),
+                  let data = item[kSecValueData as String] as? Data
             else { continue }
-            // Codex review #3: use SecItemAdd directly with the
-            // shared-group attributes instead of the load+save loop.
-            // SecItemAdd returns errSecDuplicateItem when the shared
-            // entry already exists, which lets us skip without
-            // overwriting a credential that may have been updated in
-            // a signed build between the load and the save.
-            var addQuery: [String: Any] = [
-                kSecClass as String: kSecClassGenericPassword,
-                kSecAttrService as String: service,
-                kSecAttrAccount as String: accountString,
-                kSecAttrAccessGroup as String: accessGroup,
-                kSecValueData as String: data,
-                kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked,
-                kSecAttrSynchronizable as String: false
-            ]
-            // Carry over creation date if the source item exposes one.
+            // SecItemAdd (not update) so an existing shared entry, which
+            // may be newer, is never overwritten.
+            var addQuery = baseQuery(for: accountID)
+            addQuery[kSecValueData as String] = data
+            addQuery[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlocked
+            addQuery[kSecAttrSynchronizable as String] = false
             if let creation = item[kSecAttrCreationDate as String] {
                 addQuery[kSecAttrCreationDate as String] = creation
             }
             let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
-            switch addStatus {
-            case errSecSuccess:
-                // Best-effort: delete the legacy entry once the shared
-                // copy is safely in place.
-                let deleteQuery: [String: Any] = [
-                    kSecClass as String: kSecClassGenericPassword,
-                    kSecAttrService as String: service,
-                    kSecAttrAccount as String: accountString
-                ]
-                _ = SecItemDelete(deleteQuery as CFDictionary)
-            case errSecDuplicateItem:
-                // Shared-group entry already exists — newer than ours.
-                // Leave it alone. Optionally drop the legacy copy too.
-                let deleteQuery: [String: Any] = [
-                    kSecClass as String: kSecClassGenericPassword,
-                    kSecAttrService as String: service,
-                    kSecAttrAccount as String: accountString
-                ]
-                _ = SecItemDelete(deleteQuery as CFDictionary)
-            default:
-                // Couldn't migrate this entry — leave the legacy item
-                // in place so the next launch can try again.
-                continue
-            }
+            guard addStatus == errSecSuccess || addStatus == errSecDuplicateItem,
+                  (try? await load(for: accountID)) != nil
+            else { continue }
+            let legacyDeleteQuery: [String: Any] = [
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrService as String: service,
+                kSecAttrAccount as String: accountString
+            ]
+            _ = SecItemDelete(legacyDeleteQuery as CFDictionary)
         }
     }
 
     // MARK: - Internals
 
+    /// With an access group the query targets the data-protection
+    /// keychain: on macOS that is the only backend that honours
+    /// `kSecAttrAccessGroup` for non-synchronizable items, and therefore
+    /// the only way the extension sees the host's credentials. Signed
+    /// builds only — unsigned ones get `errSecMissingEntitlement`.
     private func baseQuery(for accountID: UUID) -> [String: Any] {
         var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -180,6 +156,7 @@ public actor KeychainStore: KeychainStoring {
         ]
         if let accessGroup {
             query[kSecAttrAccessGroup as String] = accessGroup
+            query[kSecUseDataProtectionKeychain as String] = true
         }
         return query
     }

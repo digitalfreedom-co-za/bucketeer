@@ -115,6 +115,12 @@ struct BucketListView: View {
                 Button("mount.action.unmount", systemImage: "eject") {
                     Task { await container.mountController.unmount(account: account, bucket: bucket.name) }
                 }
+            } else if !MountController.isSupportedOnThisSystem {
+                Button("mount.action.mount.unavailable", systemImage: "externaldrive.badge.plus") {}
+                    .disabled(true)
+            } else if container.encryptionKeysViewModel.isEncrypted(accountID: account.id, bucket: bucket.name) {
+                Button("mount.action.mount.encrypted", systemImage: "lock.shield") {}
+                    .disabled(true)
             } else if container.entitlementManager.isUnlocked(.mountDrive) {
                 Button("mount.action.mount", systemImage: "externaldrive.badge.plus") {
                     Task { await container.mountController.mount(account: account, bucket: bucket.name) }

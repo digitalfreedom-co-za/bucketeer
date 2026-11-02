@@ -103,12 +103,30 @@ public struct S3ResumableUploader: Sendable {
         // 2. Reconcile with the server. Parts that the server already
         // confirms get adopted into the checkpoint so we don't re-
         // upload them.
-        let serverParts = try await listServerParts(
-            s3: s3,
-            bucket: bucket,
-            key: key,
-            uploadId: checkpoint.uploadId
-        )
+        let serverParts: [CompletedUploadPart]
+        do {
+            serverParts = try await listServerParts(
+                s3: s3,
+                bucket: bucket,
+                key: key,
+                uploadId: checkpoint.uploadId
+            )
+        } catch let error as S3ErrorType where error.errorCode == S3ErrorType.noSuchUpload.errorCode {
+            // The upload was aborted or expired on the server (e.g. a
+            // lifecycle rule); its checkpoint can never complete, and
+            // keeping it would fail every retry of this file.
+            try? await checkpointStore.delete(id: checkpoint.id)
+            checkpoint = try await loadOrCreateCheckpoint(
+                account: account,
+                bucket: bucket,
+                key: key,
+                localURL: localURL,
+                fileSize: fileSize,
+                contentType: contentType,
+                s3: s3
+            )
+            serverParts = []
+        }
         let serverPartNumbers = Set(serverParts.map(\.partNumber))
         let localPartNumbers = Set(checkpoint.completedParts.map(\.partNumber))
         if serverPartNumbers != localPartNumbers {
@@ -216,7 +234,7 @@ public struct S3ResumableUploader: Sendable {
             localPath: localURL.path,
             fileSize: fileSize
         ) {
-            // Codex audit fix (high #3): a stale checkpoint with the
+            // A stale checkpoint with the
             // same path + size but a different mtime is a *different
             // file*. Reusing its uploadId would assemble the final
             // object from a mix of old and new parts. Drop and
@@ -224,7 +242,7 @@ public struct S3ResumableUploader: Sendable {
             if existing.fileFingerprint == fingerprint {
                 return existing
             }
-            // Codex R3 (medium): also abort the dangling multipart
+            // Also abort the dangling multipart
             // upload on the server so the orphan parts aren't
             // billed until the bucket's lifecycle policy reaps
             // them. Best-effort — a failure here doesn't block

@@ -13,7 +13,7 @@ import BucketeerCore
 /// the same way the UI's Run-Now button does and returns the job's
 /// name so Shortcuts can confirm.
 ///
-/// Codex audit R2 (low) follow-up — Phase 14: picks from a typed
+/// Phase 14: picks from a typed
 /// `SyncJobEntity` list keyed on stable `id`. Duplicate display
 /// names no longer cause the wrong job to fire.
 struct RunSyncJobIntent: AppIntent {

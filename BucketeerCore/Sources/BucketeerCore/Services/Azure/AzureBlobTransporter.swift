@@ -51,34 +51,32 @@ public struct AzureBlobTransporter: Sendable {
 
     /// Upload `localURL` to the supplied blob coordinates. Routes between
     /// single-shot and multipart based on file size. `progress` receives
-    /// `(bytesTransferred, totalBytes)` snapshots.
+    /// `(bytesTransferred, totalBytes)` snapshots. With a `precondition`
+    /// the write (Put Blob or Put Block List) only succeeds while it
+    /// holds; otherwise it throws `.preconditionFailed`. Returns the
+    /// ETag the write answered with (unquoted).
+    @discardableResult
     public func upload(
         account: S3Account,
         container: String,
         blob: String,
         localURL: URL,
         contentType: String?,
+        precondition: WritePrecondition? = nil,
         progress: @Sendable @escaping (Int64, Int64) async -> Void
-    ) async throws {
-        let size = (try? localURL.resourceValues(forKeys: [.fileSizeKey]))?.fileSize
-        let fileSize = Int64(size ?? 0)
+    ) async throws -> String? {
+        // An unknown size must not be treated as 0: the single-shot
+        // path would PUT an empty blob for a non-empty file.
+        guard let size = try? localURL.resourceValues(forKeys: [.fileSizeKey]).fileSize else {
+            throw BucketeerError.sandboxAccessDenied(localURL)
+        }
+        let fileSize = Int64(size)
 
         let signer = try await credentialsCache.signer(for: account)
         let builder = AzureRequestBuilder(account: account)
 
         if fileSize < Self.multipartThreshold {
-            try await singleShotUpload(
-                builder: builder,
-                signer: signer,
-                container: container,
-                blob: blob,
-                localURL: localURL,
-                fileSize: fileSize,
-                contentType: contentType
-            )
-            await progress(fileSize, fileSize)
-        } else {
-            try await multipartUpload(
+            let etag = try await singleShotUpload(
                 builder: builder,
                 signer: signer,
                 container: container,
@@ -86,6 +84,20 @@ public struct AzureBlobTransporter: Sendable {
                 localURL: localURL,
                 fileSize: fileSize,
                 contentType: contentType,
+                precondition: precondition
+            )
+            await progress(fileSize, fileSize)
+            return etag
+        } else {
+            return try await multipartUpload(
+                builder: builder,
+                signer: signer,
+                container: container,
+                blob: blob,
+                localURL: localURL,
+                fileSize: fileSize,
+                contentType: contentType,
+                precondition: precondition,
                 progress: progress
             )
         }
@@ -98,8 +110,9 @@ public struct AzureBlobTransporter: Sendable {
         blob: String,
         localURL: URL,
         fileSize: Int64,
-        contentType: String?
-    ) async throws {
+        contentType: String?,
+        precondition: WritePrecondition?
+    ) async throws -> String? {
         let data: Data
         do {
             data = try Data(contentsOf: localURL, options: .mappedIfSafe)
@@ -114,21 +127,19 @@ public struct AzureBlobTransporter: Sendable {
         if let contentType {
             request.setValue(contentType, forHTTPHeaderField: "Content-Type")
         }
+        Self.apply(precondition, to: &request)
         request.httpBody = data
         signer.sign(&request)
 
-        let (responseData, response) = try await session.data(for: request)
+        let (responseData, response) = try await session.azureData(for: request)
         // Phase 13.2 — post-charge the limiter once the bytes have hit
         // the wire so the next call back-pressures correctly.
         await limiter?.consume(bytes: data.count)
         guard let http = response as? HTTPURLResponse else {
             throw BucketeerError.unknown(message: "Azure PUT returned a non-HTTP response.")
         }
-        if let mapped = AzureBlobObjectStore.mapHTTP(
-            http, body: responseData, bucket: container, key: blob
-        ) {
-            throw mapped
-        }
+        try Self.check(http, body: responseData, container: container, blob: blob, precondition: precondition)
+        return Self.etag(of: http)
     }
 
     private func multipartUpload(
@@ -139,8 +150,9 @@ public struct AzureBlobTransporter: Sendable {
         localURL: URL,
         fileSize: Int64,
         contentType: String?,
+        precondition: WritePrecondition?,
         progress: @Sendable @escaping (Int64, Int64) async -> Void
-    ) async throws {
+    ) async throws -> String? {
         let blockSize = Int64(Self.blockSize)
         let blockCount = Int((fileSize + blockSize - 1) / blockSize)
         let blockIDs: [String] = (0..<blockCount).map { AzureRequestBuilder.blockID(index: $0) }
@@ -166,7 +178,13 @@ public struct AzureBlobTransporter: Sendable {
                 let offset = Int64(index) * blockSize
                 let chunkSize = min(blockSize, fileSize - offset)
                 try handle.seek(toOffset: UInt64(offset))
-                guard let chunk = try handle.read(upToCount: Int(chunkSize)) else { return }
+                // A short read would commit a block list that references
+                // a block that was never staged.
+                guard let chunk = try handle.read(upToCount: Int(chunkSize)),
+                      chunk.count == Int(chunkSize)
+                else {
+                    throw BucketeerError.sandboxAccessDenied(localURL)
+                }
                 let blockID = blockIDs[index]
 
                 group.addTask { [session, limiter] in
@@ -201,15 +219,17 @@ public struct AzureBlobTransporter: Sendable {
             try await group.waitForAll()
         }
 
-        try await commitBlockList(
+        let etag = try await commitBlockList(
             builder: builder,
             signer: signer,
             container: container,
             blob: blob,
             blockIDs: blockIDs,
-            contentType: contentType
+            contentType: contentType,
+            precondition: precondition
         )
         await progress(fileSize, fileSize)
+        return etag
     }
 
     private static func putBlock(
@@ -229,7 +249,7 @@ public struct AzureBlobTransporter: Sendable {
         request.httpBody = data
         signer.sign(&request)
 
-        let (responseData, response) = try await session.data(for: request)
+        let (responseData, response) = try await session.azureData(for: request)
         guard let http = response as? HTTPURLResponse else {
             throw BucketeerError.unknown(message: "Azure Put Block returned a non-HTTP response.")
         }
@@ -246,8 +266,9 @@ public struct AzureBlobTransporter: Sendable {
         container: String,
         blob: String,
         blockIDs: [String],
-        contentType: String?
-    ) async throws {
+        contentType: String?,
+        precondition: WritePrecondition?
+    ) async throws -> String? {
         let body = AzureRequestBuilder.blockListXML(blockIDs: blockIDs)
         var request = URLRequest(
             url: builder.putBlockListURL(container: container, blob: blob)
@@ -258,18 +279,53 @@ public struct AzureBlobTransporter: Sendable {
         if let contentType {
             request.setValue(contentType, forHTTPHeaderField: "x-ms-blob-content-type")
         }
+        // Staged blocks are invisible until this commit, so the
+        // precondition belongs here.
+        Self.apply(precondition, to: &request)
         request.httpBody = body
         signer.sign(&request)
 
-        let (responseData, response) = try await session.data(for: request)
+        let (responseData, response) = try await session.azureData(for: request)
         guard let http = response as? HTTPURLResponse else {
             throw BucketeerError.unknown(message: "Azure Put Block List returned a non-HTTP response.")
         }
-        if let mapped = AzureBlobObjectStore.mapHTTP(
-            http, body: responseData, bucket: container, key: blob
-        ) {
+        try Self.check(http, body: responseData, container: container, blob: blob, precondition: precondition)
+        return Self.etag(of: http)
+    }
+
+    // MARK: - Preconditions
+
+    private static func apply(_ precondition: WritePrecondition?, to request: inout URLRequest) {
+        switch precondition {
+        case .ifMatch(let etag):
+            request.setValue(ETag.quoted(etag), forHTTPHeaderField: "If-Match")
+        case .ifAbsent:
+            request.setValue("*", forHTTPHeaderField: "If-None-Match")
+        case nil:
+            break
+        }
+    }
+
+    /// A create-only write that finds the blob already there answers
+    /// 409 (BlobAlreadyExists) rather than 412; both mean the
+    /// precondition failed.
+    private static func check(
+        _ http: HTTPURLResponse,
+        body: Data?,
+        container: String,
+        blob: String,
+        precondition: WritePrecondition?
+    ) throws {
+        if precondition == .ifAbsent, http.statusCode == 409 || http.statusCode == 412 {
+            throw BucketeerError.preconditionFailed(key: blob)
+        }
+        if let mapped = AzureBlobObjectStore.mapHTTP(http, body: body, bucket: container, key: blob) {
             throw mapped
         }
+    }
+
+    private static func etag(of http: HTTPURLResponse) -> String? {
+        http.value(forHTTPHeaderField: "ETag").map(ETag.normalized)
     }
 
     // MARK: - Download
@@ -293,7 +349,7 @@ public struct AzureBlobTransporter: Sendable {
         )
         headRequest.httpMethod = "HEAD"
         signer.sign(&headRequest)
-        let (_, headResponse) = try await session.data(for: headRequest)
+        let (_, headResponse) = try await session.azureData(for: headRequest)
         guard let headHTTP = headResponse as? HTTPURLResponse else {
             throw BucketeerError.unknown(message: "Azure HEAD returned a non-HTTP response.")
         }
@@ -352,7 +408,7 @@ public struct AzureBlobTransporter: Sendable {
         request.httpMethod = "GET"
         signer.sign(&request)
 
-        let (data, response) = try await session.data(for: request)
+        let (data, response) = try await session.azureData(for: request)
         guard let http = response as? HTTPURLResponse else {
             throw BucketeerError.unknown(message: "Azure GET returned a non-HTTP response.")
         }
@@ -448,7 +504,7 @@ public struct AzureBlobTransporter: Sendable {
         request.setValue("bytes=\(offset)-\(endInclusive)", forHTTPHeaderField: "Range")
         signer.sign(&request)
 
-        let (data, response) = try await session.data(for: request)
+        let (data, response) = try await session.azureData(for: request)
         guard let http = response as? HTTPURLResponse else {
             throw BucketeerError.unknown(message: "Azure ranged GET returned a non-HTTP response.")
         }
@@ -457,7 +513,7 @@ public struct AzureBlobTransporter: Sendable {
         ) {
             throw mapped
         }
-        // Codex review #5: a proxy or misbehaving server that ignores
+        // A proxy or misbehaving server that ignores
         // the Range header returns 200 with the full body — writing
         // that into our chunk slot would scramble the file. Demand
         // 206 (Partial Content) and verify the response is exactly
@@ -475,7 +531,7 @@ public struct AzureBlobTransporter: Sendable {
                 message: "Azure ranged GET returned \(data.count) bytes; expected \(length)."
             )
         }
-        // Codex review #4: write failures now propagate so a disk-full
+        // Write failures now propagate so a disk-full
         // or permission error fails the task group instead of leaving
         // a corrupt partial file marked complete.
         try await writer.write(data, at: offset)
@@ -517,7 +573,7 @@ private actor DownloadWriter {
         self.callback = callback
     }
 
-    /// Codex review #4: write failures now propagate to the caller so a
+    /// Write failures now propagate to the caller so a
     /// disk-full, permission, or invalid-handle error fails the outer
     /// throwing task group immediately instead of leaving a corrupt
     /// partial file marked complete.

@@ -69,16 +69,19 @@
         </dict>
 
         <!--
-            FileTimestamp uses, expanded for Phase 13.x:
-              • C617.1 — display Last-Modified to user (browser + sync)
-              • DDA9.1 — display local file timestamps in the app's
-                          own download / preview lists
-              • B8FF.1 — inspect timestamp of files the user explicitly
-                          granted access to (security-scoped local
-                          folder sync, Phase 9.8 + 9.10 + 13.3)
-              • 0A2A.1 — file-replace / metadata reads on the user's
-                          own caches (resumable-upload fingerprint
-                          mtime/inode, Phase 13.10 + Codex R3 medium)
+            FileTimestamp uses (size / mtime / other metadata):
+              • C617.1 — files inside the app's own container or App
+                          Group container (preview cache, trash cache,
+                          resumable-upload fingerprints, Phase 13.4 +
+                          13.10)
+              • DDA9.1 — display local file timestamps to the user
+                          (download / preview lists, sync detail)
+              • 3B52.1 — files and folders the user explicitly granted
+                          access to (open panel, drag and drop,
+                          security-scoped local folder sync, Phase 9.8
+                          + 9.10 + 13.3)
+            0A2A.1 is reserved for third-party SDK wrappers and must
+            not be declared by the app itself.
         -->
         <dict>
             <key>NSPrivacyAccessedAPIType</key>
@@ -87,8 +90,7 @@
             <array>
                 <string>C617.1</string>
                 <string>DDA9.1</string>
-                <string>B8FF.1</string>
-                <string>0A2A.1</string>
+                <string>3B52.1</string>
             </array>
         </dict>
 

@@ -35,20 +35,29 @@ actor SyncEngine {
     private let continuation: AsyncStream<[SyncJobStatus]>.Continuation
 
     private var current: [UUID: SyncJobStatus] = [:]
-    private var runners: [UUID: Task<Void, Never>] = [:]
+    /// One entry per running job. The token identifies the run: only
+    /// the run that owns the slot may publish status or persist its
+    /// summary, so a cancelled run winding down can neither clear the
+    /// slot of a newer run nor overwrite its status.
+    private struct Runner {
+        let token: UUID
+        let task: Task<Void, Never>
+    }
+    private var runners: [UUID: Runner] = [:]
     private var jobs: [UUID: SyncJob] = [:]
-    /// Per-sync-job: the transfer-manager IDs the engine has handed off
+    /// Per run token: the transfer-manager IDs the run has handed off
     /// to the queue. Used to actively cancel in-flight uploads /
     /// downloads when the sync job is cancelled, instead of just
     /// cancelling the orchestrating task and letting the transfers keep
-    /// running.
+    /// running. Keyed by run, not job, so a cancel that resumes after
+    /// a restart cannot drop the new run's transfers.
     private var activeTransferIDs: [UUID: Set<UUID>] = [:]
-    /// Codex #7: set on cancellation so a transfer that returned
-    /// from `enqueue…` *after* the cancel call still gets caught and
-    /// torn down. Without this guard the registration-race window
-    /// could leak an in-flight transfer past the cancel.
-    private var cancelledJobIDs: Set<UUID> = []
-    /// Codex audit R2 (high): watch-folder events that arrive while
+    /// Tokens of cancelled runs, so a transfer that returned from
+    /// `enqueue…` *after* the cancel call still gets caught and torn
+    /// down — even when a new run of the same job started meanwhile.
+    /// Removed when the cancelled run has fully wound down.
+    private var cancelledRuns: Set<UUID> = []
+    /// Watch-folder events that arrive while
     /// a job is already running used to be dropped (runNow no-ops
     /// when `runners[id] != nil`). Local file changes could then
     /// stay unsynced until a *future* event nudged the watcher
@@ -64,8 +73,8 @@ actor SyncEngine {
         let watcher: LocalFolderWatcher
         let pumpTask: Task<Void, Never>
         /// The raw bookmark `Data` — used to detect that the user
-        /// re-picked the folder. Codex audit R2 (medium) replaced
-        /// the old `Int` hashValue (which collides) with the full
+        /// re-picked the folder. Compares the full bytes rather than
+        /// the `Int` hashValue (which collides) with the full
         /// bytes; equality is the only correct identity check.
         let bookmarkData: Data
         /// The resolved URL whose security scope was started when the
@@ -81,21 +90,35 @@ actor SyncEngine {
         }
     }
     private var watchers: [UUID: WatcherEntry] = [:]
+    private struct IntervalTimer {
+        let seconds: Int
+        let task: Task<Void, Never>
+    }
+    private var intervalTimers: [UUID: IntervalTimer] = [:]
 
     private let activityLog: (any ActivityLogging)?
+    /// Entitlement check run before every job start — manual, on-launch,
+    /// interval and watch-folder triggers alike.
+    private let isAuthorized: @Sendable () async -> Bool
+    /// Decides whether a same-account copy may stay server-side.
+    private let encryptionGate: BucketEncryptionGate?
 
     init(
         accountStore: any AccountStoring,
         jobStore: any SyncJobStoring,
         browser: any S3Browsing,
         transferManager: TransferManager,
-        activityLog: (any ActivityLogging)? = nil
+        activityLog: (any ActivityLogging)? = nil,
+        encryptionGate: BucketEncryptionGate? = nil,
+        isAuthorized: @escaping @Sendable () async -> Bool = { true }
     ) {
+        self.encryptionGate = encryptionGate
         self.accountStore = accountStore
         self.jobStore = jobStore
         self.browser = browser
         self.transferManager = transferManager
         self.activityLog = activityLog
+        self.isAuthorized = isAuthorized
         let (stream, continuation) = AsyncStream<[SyncJobStatus]>.makeStream(
             bufferingPolicy: .bufferingNewest(1)
         )
@@ -105,8 +128,7 @@ actor SyncEngine {
 
     deinit { continuation.finish() }
 
-    /// Tear down every FSEvents watcher + pump task. Codex audit
-    /// R2 (medium): actor deinit can't reach actor-isolated state
+    /// Tear down every FSEvents watcher + pump task. Actor deinit can't reach actor-isolated state
     /// in Swift 6, so we expose an explicit shutdown the host
     /// calls from its own dealloc path (or from a hot-reload
     /// hook in tests). Idempotent.
@@ -115,7 +137,9 @@ actor SyncEngine {
             entry.teardown()
         }
         watchers.removeAll()
-        runners.values.forEach { $0.cancel() }
+        intervalTimers.values.forEach { $0.task.cancel() }
+        intervalTimers.removeAll()
+        runners.values.forEach { $0.task.cancel() }
         runners.removeAll()
         // A rerun bit left set here would fire `runNow` on the
         // already-shut-down engine from the execute() defer.
@@ -130,15 +154,46 @@ actor SyncEngine {
         let all = try await jobStore.all()
         jobs.removeAll()
         for job in all { jobs[job.id] = job }
+        // Drop statuses of deleted jobs.
+        current = current.filter { jobs[$0.key] != nil }
         publish()
-        // Kick off any on-launch jobs that are enabled. Interval and
-        // manual jobs are not started here.
-        for job in all where job.enabled && job.schedule == .onLaunch {
-            await runNow(id: job.id)
-        }
         // Reconcile FSEvents watchers for `.onLocalChange` jobs whose
         // source is a local folder. Phase 9.10.
         reconcileLocalChangeWatchers(against: all)
+        reconcileIntervalTimers(against: all)
+    }
+
+    /// Start every enabled on-launch job. Called once at app launch —
+    /// not from `reload()`, which runs after every job edit.
+    func runLaunchJobs() async {
+        for job in jobs.values where job.enabled && job.schedule == .onLaunch {
+            await runNow(id: job.id)
+        }
+    }
+
+    /// One repeating timer per enabled interval job; restarted when the
+    /// interval changes, stopped when the job is gone or rescheduled.
+    private func reconcileIntervalTimers(against jobs: [SyncJob]) {
+        var keepIDs: Set<UUID> = []
+        for job in jobs where job.enabled {
+            guard case .interval(let seconds) = job.schedule else { continue }
+            keepIDs.insert(job.id)
+            if intervalTimers[job.id]?.seconds == seconds { continue }
+            intervalTimers.removeValue(forKey: job.id)?.task.cancel()
+            let jobID = job.id
+            let task = Task { [weak self] in
+                while !Task.isCancelled {
+                    try? await Task.sleep(for: .seconds(seconds))
+                    guard !Task.isCancelled else { return }
+                    await self?.runNow(id: jobID)
+                }
+            }
+            intervalTimers[job.id] = IntervalTimer(seconds: seconds, task: task)
+        }
+        for (id, timer) in intervalTimers where !keepIDs.contains(id) {
+            timer.task.cancel()
+            intervalTimers.removeValue(forKey: id)
+        }
     }
 
     /// Bring the set of running FSEvents watchers in sync with the
@@ -153,7 +208,7 @@ actor SyncEngine {
             guard case .localFolder(let bookmark, _) = job.source else { continue }
             keepIDs.insert(job.id)
             // Existing watcher with the same bookmark → leave running.
-            // Codex audit R2 (medium): equality on the raw bytes
+            // Equality on the raw bytes
             // instead of `hashValue`; hashValue collisions would
             // falsely treat an edited bookmark as identical.
             if let existing = watchers[job.id], existing.bookmarkData == bookmark {
@@ -223,71 +278,96 @@ actor SyncEngine {
     /// Run the job immediately. Idempotent — calling while already
     /// running is a no-op for the *current* run but now records a
     /// pending-rerun flag so the job re-fires the moment the
-    /// in-flight run terminates. Codex audit R2 (high): without the
+    /// in-flight run terminates. Without the
     /// rerun bit, watch-folder events that landed mid-run were lost
     /// and only a *future* event triggered another sync.
     func runNow(id: UUID) async {
-        guard let job = jobs[id] else { return }
+        guard jobs[id] != nil else { return }
         if runners[id] != nil {
             pendingReruns.insert(id)
             return
         }
-        // Clear any previous cancellation flag so re-running a
-        // cancelled job doesn't immediately tear new transfers down.
-        cancelledJobIDs.remove(id)
-        updateStatus(id: id, phase: .planning, message: nil)
-        let task = Task { [weak self] in
-            _ = await self?.execute(job: job)
+        // Checked after the runner slot: a run already in progress may
+        // finish; only new runs need the entitlement.
+        guard await isAuthorized() else {
+            updateStatus(id: id, phase: .failed, message: String(
+                localized: "sync.error.proRequired",
+                defaultValue: "Running sync jobs requires Bucketeer Pro."
+            ))
+            return
         }
-        runners[id] = task
+        // Re-read after the suspension: the job may have been edited,
+        // deleted or started meanwhile.
+        guard let job = jobs[id], runners[id] == nil else { return }
+        updateStatus(id: id, phase: .planning, message: nil)
+        let token = UUID()
+        let task = Task { [weak self] in
+            _ = await self?.execute(job: job, token: token)
+        }
+        runners[id] = Runner(token: token, task: task)
     }
 
     /// Cancel a running job. Idempotent. Cancels the orchestrating
     /// task **and** every transfer-manager task the engine has handed
-    /// to the queue for this job — Codex review #3.
+    /// to the queue for this job.
+    ///
+    /// All bookkeeping happens before the first suspension; the awaits
+    /// only cancel the transfers already detached from the run, so a
+    /// `runNow` that slips in meanwhile starts a clean, cancellable run.
     func cancel(id: UUID) async {
-        cancelledJobIDs.insert(id)
-        runners[id]?.cancel()
-        runners[id] = nil
-        if let ids = activeTransferIDs[id] {
-            for transferID in ids {
-                await transferManager.cancel(id: transferID)
-            }
+        pendingReruns.remove(id)
+        var transfersToCancel: Set<UUID> = []
+        if let runner = runners.removeValue(forKey: id) {
+            cancelledRuns.insert(runner.token)
+            runner.task.cancel()
+            transfersToCancel = activeTransferIDs.removeValue(forKey: runner.token) ?? []
         }
-        activeTransferIDs.removeValue(forKey: id)
         if current[id] != nil {
             updateStatus(id: id, phase: .cancelled, message: nil)
         }
+        for transferID in transfersToCancel {
+            await transferManager.cancel(id: transferID)
+        }
     }
 
-    /// Codex #7: if the job was cancelled while the transfer was
-    /// being enqueued, the new transfer would otherwise dangle. Catch
-    /// it here and tear it down immediately.
-    private func registerActiveTransfer(jobID: UUID, transferID: UUID) {
-        if cancelledJobIDs.contains(jobID) {
+    /// If the run was cancelled while the transfer was being enqueued,
+    /// the new transfer would otherwise dangle. Catch it here and tear
+    /// it down immediately.
+    private func registerActiveTransfer(run token: UUID, transferID: UUID) {
+        if cancelledRuns.contains(token) {
             Task { [transferManager] in await transferManager.cancel(id: transferID) }
             return
         }
-        activeTransferIDs[jobID, default: []].insert(transferID)
+        activeTransferIDs[token, default: []].insert(transferID)
     }
 
-    private func unregisterActiveTransfer(jobID: UUID, transferID: UUID) {
-        activeTransferIDs[jobID]?.remove(transferID)
+    private func unregisterActiveTransfer(run token: UUID, transferID: UUID) {
+        activeTransferIDs[token]?.remove(transferID)
+    }
+
+    private func ownsSlot(jobID: UUID, run token: UUID) -> Bool {
+        runners[jobID]?.token == token
     }
 
     // MARK: - Execution
 
-    private func execute(job: SyncJob) async {
+    private func execute(job: SyncJob, token: UUID) async {
         let start = Date()
-        // Codex audit R2 (high): release the runner slot, then
+        // Release the runner slot, then
         // immediately re-trigger if a watch-folder event landed
         // while we were running. Without this, the rerun bit stays
         // set and is only acted on by the *next* fsevent, which
         // could be hours away.
         defer {
-            runners[job.id] = nil
-            if pendingReruns.remove(job.id) != nil {
-                Task { [weak self] in await self?.runNow(id: job.id) }
+            // The task group has awaited every child by now, so no
+            // transfer of this run can register any more.
+            cancelledRuns.remove(token)
+            activeTransferIDs.removeValue(forKey: token)
+            if ownsSlot(jobID: job.id, run: token) {
+                runners[job.id] = nil
+                if pendingReruns.remove(job.id) != nil {
+                    Task { [weak self] in await self?.runNow(id: job.id) }
+                }
             }
         }
 
@@ -297,6 +377,7 @@ actor SyncEngine {
         } catch {
             updateStatus(
                 id: job.id,
+                run: token,
                 phase: .failed,
                 message: bucketeerError(error).errorDescription
             )
@@ -321,6 +402,7 @@ actor SyncEngine {
         } catch {
             updateStatus(
                 id: job.id,
+                run: token,
                 phase: .failed,
                 message: bucketeerError(error).errorDescription
             )
@@ -335,6 +417,7 @@ actor SyncEngine {
         let planned = plan.upserts.count + (job.mode == .mirror && job.deletePropagation ? plan.deletes.count : 0)
         updateStatus(
             id: job.id,
+            run: token,
             phase: .running,
             planned: planned,
             startedAt: start
@@ -343,10 +426,10 @@ actor SyncEngine {
         var completed = 0
         var failed = 0
         /// Tracks which entries actually succeeded so move-mode does
-        /// not delete the source for failed upserts (Codex blocker #1).
+        /// not delete the source for failed upserts.
         var successfulEntries: [SyncPlanner.PlanEntry] = []
 
-        // Upserts: copy or transfer per entry. Codex medium #11 —
+        // Upserts: copy or transfer per entry.
         // honour `job.concurrency` instead of running serially. We
         // use a bounded task group with an inflight cap so the
         // configured parallelism is respected without exhausting
@@ -366,6 +449,7 @@ actor SyncEngine {
                             try await self.execute(
                                 upsert: entry,
                                 job: job,
+                                run: token,
                                 context: context
                             )
                             return (entry, .success(()))
@@ -384,7 +468,7 @@ actor SyncEngine {
                 while inflight > 0 {
                     if Task.isCancelled {
                         group.cancelAll()
-                        updateStatus(id: job.id, phase: .cancelled)
+                        updateStatus(id: job.id, run: token, phase: .cancelled)
                         return
                     }
                     guard let result = try await group.next() else { break }
@@ -399,6 +483,7 @@ actor SyncEngine {
                     }
                     updateStatus(
                         id: job.id,
+                        run: token,
                         phase: .running,
                         planned: planned,
                         completed: completed,
@@ -408,11 +493,18 @@ actor SyncEngine {
                 }
             }
         } catch is CancellationError {
-            updateStatus(id: job.id, phase: .cancelled)
+            updateStatus(id: job.id, run: token, phase: .cancelled)
             return
         } catch {
             // Per-entry failures are already counted via the Result
             // surface; this catch handles only group-level surprises.
+        }
+        // The `return` inside the task group only leaves the closure; a
+        // cancelled run must not continue to deletes or overwrite its
+        // `.cancelled` status with a terminal summary.
+        guard !Task.isCancelled else {
+            updateStatus(id: job.id, run: token, phase: .cancelled)
+            return
         }
 
         // Mirror deletes (only when explicitly enabled).
@@ -427,6 +519,7 @@ actor SyncEngine {
                 }
                 updateStatus(
                     id: job.id,
+                    run: token,
                     phase: .running,
                     planned: planned,
                     completed: completed,
@@ -436,9 +529,9 @@ actor SyncEngine {
         }
 
         // Move mode: delete the source **only** for entries whose
-        // upsert succeeded (Codex blocker #1 — failed copies must not
+        // upsert succeeded (failed copies must not
         // trigger source deletes), and only if the job was not
-        // cancelled mid-flight. Codex medium #9 — count delete
+        // cancelled mid-flight. Count delete
         // failures so the final summary reflects them instead of
         // silently swallowing leftover-source duplicates.
         var moveDeleteFailures = 0
@@ -458,13 +551,14 @@ actor SyncEngine {
         let summary = moveDeleteFailures > 0
             ? "\(completed) ok / \(failed) failed (\(moveDeleteFailures) move-delete) / \(planned) planned"
             : "\(completed) ok / \(failed) failed / \(planned) planned"
-        // Codex R5 (medium): persist *before* publishing the
+        // Persist *before* publishing the
         // terminal status. Observers (`SyncJobDetailWindow` via
         // `SyncStatusBroker`) reload the job from the store on
         // terminal-phase transitions; if we updateStatus first
         // they race in ahead of `touchLastRun` and render a stale
         // snapshot. Swap the order so the store is up to date by
         // the time any observer reacts.
+        guard ownsSlot(jobID: job.id, run: token) else { return }
         let lastRunAt = Date()
         try? await jobStore.touchLastRun(id: job.id, at: lastRunAt, summary: summary)
         if var refreshed = jobs[job.id] {
@@ -474,6 +568,7 @@ actor SyncEngine {
         }
         updateStatus(
             id: job.id,
+            run: token,
             phase: failed > 0 ? .failed : .finished,
             planned: planned,
             completed: completed,
@@ -527,7 +622,7 @@ actor SyncEngine {
             )
         case .localFolder(let bookmark, let displayPath):
             let resolved = try LocalFolderEnumerator.resolveBookmark(bookmark)
-            // Codex medium #5: a stale bookmark means macOS has
+            // A stale bookmark means macOS has
             // garbage-collected the underlying file identity. The
             // bookmark may still resolve to *a* URL but its security
             // scope is not the one the user originally granted.
@@ -536,7 +631,7 @@ actor SyncEngine {
             if resolved.isStale {
                 throw BucketeerError.sandboxAccessDenied(resolved.url)
             }
-            // Codex medium #6: a failed start means the sandbox
+            // A failed start means the sandbox
             // refused the scope. Continuing would either fail every
             // operation with confusing errors or, worse, succeed only
             // by accident if the URL happens to be inside our container.
@@ -622,6 +717,7 @@ actor SyncEngine {
     private func execute(
         upsert entry: SyncPlanner.PlanEntry,
         job: SyncJob,
+        run token: UUID,
         context: SyncRunContext
     ) async throws {
         switch (job.source, job.destination) {
@@ -629,6 +725,7 @@ actor SyncEngine {
             try await executeS3ToS3(
                 entry: entry,
                 job: job,
+                run: token,
                 sourceBucket: srcBucket,
                 destinationBucket: dstBucket,
                 sourceAccount: context.source.account,
@@ -642,6 +739,7 @@ actor SyncEngine {
             try await executeS3ToLocal(
                 entry: entry,
                 job: job,
+                run: token,
                 sourceAccount: sourceAccount,
                 sourceBucket: srcBucket,
                 destinationRoot: destinationRoot
@@ -654,6 +752,7 @@ actor SyncEngine {
             try await executeLocalToS3(
                 entry: entry,
                 job: job,
+                run: token,
                 sourceRoot: sourceRoot,
                 destinationAccount: destinationAccount,
                 destinationBucket: dstBucket
@@ -674,6 +773,7 @@ actor SyncEngine {
     private func executeS3ToS3(
         entry: SyncPlanner.PlanEntry,
         job: SyncJob,
+        run token: UUID,
         sourceBucket: String,
         destinationBucket: String,
         sourceAccount: S3Account?,
@@ -682,7 +782,13 @@ actor SyncEngine {
         guard let sourceAccount, let destinationAccount else {
             throw BucketeerError.unknown(message: "Sync context incomplete.")
         }
-        if sourceAccount.id == destinationAccount.id {
+        let encryptionAllowsServerCopy = await encryptionGate?.allowsServerSideCopy(
+            sourceAccountID: sourceAccount.id,
+            sourceBucket: sourceBucket,
+            destinationAccountID: destinationAccount.id,
+            destinationBucket: destinationBucket
+        ) ?? true
+        if sourceAccount.id == destinationAccount.id, encryptionAllowsServerCopy {
             try await browser.copy(
                 account: sourceAccount,
                 fromBucket: sourceBucket,
@@ -693,7 +799,7 @@ actor SyncEngine {
             )
             return
         }
-        // Cross-account → temp staging, then upload.
+        // Cross-account or encrypted side → temp staging, then upload.
         let staging = stagingURL(for: entry.sourceKey)
         let downloadID = await transferManager.enqueueDownload(
             account: sourceAccount,
@@ -701,9 +807,9 @@ actor SyncEngine {
             key: entry.sourceKey,
             localURL: staging
         )
-        registerActiveTransfer(jobID: job.id, transferID: downloadID)
+        registerActiveTransfer(run: token, transferID: downloadID)
         defer {
-            unregisterActiveTransfer(jobID: job.id, transferID: downloadID)
+            unregisterActiveTransfer(run: token, transferID: downloadID)
             try? FileManager.default.removeItem(at: staging)
         }
         try terminalToError(await transferManager.awaitCompletion(id: downloadID))
@@ -715,14 +821,15 @@ actor SyncEngine {
             localURL: staging,
             contentType: nil
         )
-        registerActiveTransfer(jobID: job.id, transferID: uploadID)
-        defer { unregisterActiveTransfer(jobID: job.id, transferID: uploadID) }
+        registerActiveTransfer(run: token, transferID: uploadID)
+        defer { unregisterActiveTransfer(run: token, transferID: uploadID) }
         try terminalToError(await transferManager.awaitCompletion(id: uploadID))
     }
 
     private func executeS3ToLocal(
         entry: SyncPlanner.PlanEntry,
         job: SyncJob,
+        run token: UUID,
         sourceAccount: S3Account,
         sourceBucket: String,
         destinationRoot: URL
@@ -739,8 +846,8 @@ actor SyncEngine {
             key: entry.sourceKey,
             localURL: staging
         )
-        registerActiveTransfer(jobID: job.id, transferID: downloadID)
-        defer { unregisterActiveTransfer(jobID: job.id, transferID: downloadID) }
+        registerActiveTransfer(run: token, transferID: downloadID)
+        defer { unregisterActiveTransfer(run: token, transferID: downloadID) }
         do {
             try terminalToError(await transferManager.awaitCompletion(id: downloadID))
             try LocalFolderWriter.install(
@@ -757,11 +864,12 @@ actor SyncEngine {
     private func executeLocalToS3(
         entry: SyncPlanner.PlanEntry,
         job: SyncJob,
+        run token: UUID,
         sourceRoot: URL,
         destinationAccount: S3Account,
         destinationBucket: String
     ) async throws {
-        // Path-traversal guard (Codex blocker #1): even on the local
+        // Path-traversal guard: even on the local
         // *source* side, a malicious sync-job definition could carry
         // an entry.sourceKey of `../../../etc/passwd`. Refuse to
         // operate outside the chosen sync root.
@@ -779,8 +887,8 @@ actor SyncEngine {
             localURL: sourceFile,
             contentType: nil
         )
-        registerActiveTransfer(jobID: job.id, transferID: uploadID)
-        defer { unregisterActiveTransfer(jobID: job.id, transferID: uploadID) }
+        registerActiveTransfer(run: token, transferID: uploadID)
+        defer { unregisterActiveTransfer(run: token, transferID: uploadID) }
         try terminalToError(await transferManager.awaitCompletion(id: uploadID))
     }
 
@@ -804,7 +912,7 @@ actor SyncEngine {
             withIntermediateDirectories: true
         )
         // Atomic replace via temporary intermediate so a failed copy
-        // never leaves a partial file at the destination — Codex #8.
+        // never leaves a partial file at the destination.
         let staging = parent.appending(path: ".bucketeer-sync-staging-" + UUID().uuidString)
         do {
             try FileManager.default.copyItem(at: sourceFile, to: staging)
@@ -873,8 +981,11 @@ actor SyncEngine {
 
     // MARK: - Status
 
+    /// With `run`, the update is dropped unless that run still owns the
+    /// job's slot — a cancelled run must not overwrite its successor.
     private func updateStatus(
         id: UUID,
+        run token: UUID? = nil,
         phase: SyncJobStatus.Phase,
         planned: Int? = nil,
         completed: Int? = nil,
@@ -882,6 +993,7 @@ actor SyncEngine {
         startedAt: Date? = nil,
         message: String? = nil
     ) {
+        if let token, !ownsSlot(jobID: id, run: token) { return }
         var status = current[id] ?? SyncJobStatus(
             jobID: id,
             phase: phase,

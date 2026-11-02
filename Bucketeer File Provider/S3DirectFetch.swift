@@ -47,19 +47,42 @@ enum S3DirectFetch {
         )
     }
 
+    /// With a `precondition` the write only succeeds while it holds; a
+    /// refusal surfaces as `BucketeerError.preconditionFailed`.
+    /// Conditional writes always use one PUT, because Soto's multipart
+    /// helper cannot carry the precondition to the completion request.
+    /// Returns the ETag the write answered with (unquoted).
+    @discardableResult
     static func upload(
         account: S3Account,
         bucket: String,
         key: String,
         localURL: URL,
         contentType: String?,
+        precondition: WritePrecondition? = nil,
         factory: S3ClientFactory
-    ) async throws {
+    ) async throws -> String? {
         let s3 = try await factory.client(for: account)
         let size = (try? localURL.resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0
         let fileSize = Int64(size)
-        if fileSize >= multipartThreshold {
-            _ = try await s3.multipartUpload(
+        if precondition != nil {
+            let data = try Data(contentsOf: localURL, options: .mappedIfSafe)
+            let headers = S3Service.headers(for: precondition)
+            do {
+                let output = try await s3.putObject(.init(
+                    body: AWSHTTPBody(buffer: ByteBuffer(bytes: data)),
+                    bucket: bucket,
+                    contentType: contentType,
+                    ifMatch: headers.ifMatch,
+                    ifNoneMatch: headers.ifNoneMatch,
+                    key: key
+                ))
+                return output.eTag.map(ETag.normalized)
+            } catch where S3Service.isPreconditionFailure(error) {
+                throw BucketeerError.preconditionFailed(key: key)
+            }
+        } else if fileSize >= multipartThreshold {
+            let output = try await s3.multipartUpload(
                 .init(
                     bucket: bucket,
                     contentType: contentType,
@@ -69,15 +92,17 @@ enum S3DirectFetch {
                 filename: localURL.path,
                 progress: { @Sendable _ in }
             )
+            return output.eTag.map(ETag.normalized)
         } else {
             let data = try Data(contentsOf: localURL, options: .mappedIfSafe)
             let buffer = ByteBuffer(bytes: data)
-            _ = try await s3.putObject(.init(
+            let output = try await s3.putObject(.init(
                 body: AWSHTTPBody(buffer: buffer),
                 bucket: bucket,
                 contentType: contentType,
                 key: key
             ))
+            return output.eTag.map(ETag.normalized)
         }
     }
 }

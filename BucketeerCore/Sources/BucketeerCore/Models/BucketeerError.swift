@@ -24,6 +24,10 @@ public enum BucketeerError: Error, Sendable, Equatable {
     /// (e.g. asking Azure Blob Storage for S3-style object versions).
     /// Phase 13.6.
     case featureNotSupported(featureKey: String)
+    /// A conditional write (If-Match) was refused because the object
+    /// changed on the server (HTTP 412).
+    case preconditionFailed(key: String)
+    /// `message` is shown as-is, so it must already be user-facing text.
     case unknown(message: String)
 }
 
@@ -49,8 +53,10 @@ extension BucketeerError: LocalizedError {
             return String(localized: "error.sandboxAccessDenied",
                           defaultValue: "Cannot access \(url.path) — the app sandbox denied the request.")
         case .keychainFailure(let status):
+            // As text: an OSStatus is a code, not a quantity, so no
+            // locale grouping ("-25.308").
             return String(localized: "error.keychainFailure",
-                          defaultValue: "Keychain operation failed (status \(status)).")
+                          defaultValue: "Keychain operation failed (status \(String(status))).")
         case .persistenceFailure(let message):
             return String(localized: "error.persistenceFailure",
                           defaultValue: "Saving to the local store failed: \(message)")
@@ -60,9 +66,14 @@ extension BucketeerError: LocalizedError {
         case .featureNotSupported(let featureKey):
             return String(localized: "error.featureNotSupported",
                           defaultValue: "This provider does not support \(featureKey).")
+        case .preconditionFailed(let key):
+            return String(localized: "error.preconditionFailed",
+                          defaultValue: "\"\(key)\" was changed on the server in the meantime.")
         case .unknown(let message):
-            return String(localized: "error.unknown",
-                          defaultValue: "Unexpected error: \(message)")
+            // Call sites pass either an already-localized explanation or
+            // a system `localizedDescription`; wrapping it in a catalog
+            // entry used to drop the message (the entry had no `%@`).
+            return message
         }
     }
 }

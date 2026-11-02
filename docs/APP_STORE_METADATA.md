@@ -27,7 +27,7 @@ side encryption, hardware-key preview).
 >
 > **Native, fast, private.** Built entirely with Swift 6 and SwiftUI.
 > Your credentials live in the macOS Keychain. No telemetry, no
-> analytics, no third-party SDKs. The only network traffic Bucketeer
+> analytics or tracking SDKs. The only network traffic Bucketeer
 > creates is the object-storage traffic you configure.
 >
 > ### What you can do
@@ -68,8 +68,10 @@ side encryption, hardware-key preview).
 >   otherwise — automatically picks the right path
 > - **Touch ID / password gate** for revealing stored secrets;
 >   YubiKey / smartcard support shipped as technical preview
-> - **Localised in 10 languages** — English, German, Spanish, French,
->   Italian, Japanese, Korean, Dutch, Polish, Brazilian Portuguese
+> - **Localised in 20 locales** — English (US and UK), Czech, Danish,
+>   Dutch, Finnish, French, German, Greek, Hungarian, Italian, Japanese,
+>   Korean, Norwegian, Polish, Portuguese (Brazil and Portugal), Russian,
+>   Spanish, Swedish
 >
 > ### How pricing works
 >
@@ -215,9 +217,9 @@ one) so the data looks plausible.
 - [ ] App Store Connect: create app record with bundle id
       `za.co.digitalfreedom.Bucketeer`
 - [ ] Upload Bucketeer Pro IAP (see table above)
-- [ ] Add 10 InfoPlist.strings translations (already in repo)
+- [ ] Add 20 InfoPlist.strings translations (already in repo)
 - [ ] Add localised App Store descriptions (drafts above are en/de;
-      es/fr/it/ja/ko/nl/pl/pt-BR translations follow same convention)
+      the other 18 store locales follow the same convention)
 - [ ] Upload one screenshot set per locale
 - [ ] **Xcode manual step**: register `CFBundleURLTypes` for the
       `bucketeer://` scheme (see `docs/DEEP_LINKS.md` §

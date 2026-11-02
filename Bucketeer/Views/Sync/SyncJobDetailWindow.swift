@@ -30,7 +30,7 @@ struct SyncJobDetailWindow: View {
     @State private var loadError: BucketeerError?
 
     var body: some View {
-        // Codex R4 (high #2): read status through the multicast
+        // Read status through the multicast
         // broker so we don't race the sync list view model on the
         // single `SyncEngine.statuses` AsyncStream iterator.
         let status = container.syncStatusBroker.status(for: jobID)
@@ -47,7 +47,7 @@ struct SyncJobDetailWindow: View {
         }
         .frame(minWidth: 520, minHeight: 360)
         .task { await loadJob() }
-        // Codex R4 (medium): reload from the store on terminal
+        // Reload from the store on terminal
         // status transitions so lastRunAt / lastRunSummary update
         // when the in-flight run finishes. Without this the
         // snapshot loaded on open stays visible forever.
@@ -70,11 +70,11 @@ struct SyncJobDetailWindow: View {
                 Section("syncDetail.section.identity") {
                     LabeledContent("syncDetail.field.name", value: job.name)
                     LabeledContent("syncDetail.field.mode") {
-                        Text(job.mode.rawValue.capitalized)
+                        Text(job.mode.labelKey)
                             .foregroundStyle(.secondary)
                     }
                     LabeledContent("syncDetail.field.schedule") {
-                        Text(job.schedule.rawValue)
+                        job.schedule.label
                             .foregroundStyle(.secondary)
                     }
                     LabeledContent("syncDetail.field.enabled") {
@@ -183,8 +183,8 @@ struct SyncJobDetailWindow: View {
         }
     }
 
-    // Status observation moved to SyncStatusBroker (Codex R4
-    // high #2) — the window now reads via
+    // Status observation moved to SyncStatusBroker — the window now
+    // reads via
     // `container.syncStatusBroker.status(for:)` in `body`, so
     // SwiftUI re-renders automatically when the broker's
     // @Observable snapshot changes. No per-window AsyncStream

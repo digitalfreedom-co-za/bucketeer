@@ -30,13 +30,33 @@ final class MountController {
     var mountedDomains: [NSFileProviderDomainIdentifier] = []
     var lastError: BucketeerError?
 
-    init() {}
+    /// The File Provider extension's deployment target is macOS 14.1
+    /// while the host runs on 14.0, so Mount is unavailable on 14.0.
+    static var isSupportedOnThisSystem: Bool {
+        if #available(macOS 14.1, *) { return true }
+        return false
+    }
+
+    private let encryptionKeyStore: any EncryptionKeyStoring
+    private let registry: any FileProviderDomainRegistry
+    /// Buckets with a mount or an encryption change in flight. Both
+    /// flows reserve the bucket before their first check and release
+    /// it after their last await, so neither can act on a state the
+    /// other is about to change.
+    private var bucketsInFlight: Set<NSFileProviderDomainIdentifier> = []
+
+    init(
+        encryptionKeyStore: any EncryptionKeyStoring,
+        registry: any FileProviderDomainRegistry = SystemFileProviderDomainRegistry()
+    ) {
+        self.encryptionKeyStore = encryptionKeyStore
+        self.registry = registry
+    }
 
     /// Refresh the cached list from the system. Idempotent.
     func refresh() async {
         do {
-            let domains = try await NSFileProviderManager.domains()
-            mountedDomains = domains.map(\.identifier)
+            mountedDomains = try await registry.identifiers()
         } catch {
             lastError = .unknown(message: error.localizedDescription)
         }
@@ -44,14 +64,40 @@ final class MountController {
 
     /// Add a `NSFileProviderDomain` for the given bucket. No-op when
     /// the domain is already registered.
+    ///
+    /// Refuses encrypted buckets: the extension reads and writes raw
+    /// bytes, so Finder uploads would bypass client-side encryption.
+    /// A failed key lookup also refuses (fail closed).
     func mount(account: S3Account, bucket: String) async {
+        guard Self.isSupportedOnThisSystem else {
+            lastError = .unknown(message: String(
+                localized: "mount.error.requiresNewerMacOS",
+                defaultValue: "Mounting buckets in Finder requires macOS 14.1 or later."
+            ))
+            return
+        }
         let identifier = Self.domainIdentifier(accountID: account.id, bucket: bucket)
-        let domain = NSFileProviderDomain(
-            identifier: identifier,
-            displayName: "\(account.name): \(bucket)"
-        )
+        guard reserve(identifier) else {
+            lastError = Self.busyError
+            return
+        }
+        defer { bucketsInFlight.remove(identifier) }
+        let isEncrypted: Bool
         do {
-            try await NSFileProviderManager.add(domain)
+            isEncrypted = try await encryptionKeyStore.key(accountID: account.id, bucket: bucket) != nil
+        } catch {
+            lastError = error as? BucketeerError ?? .unknown(message: error.localizedDescription)
+            return
+        }
+        guard !isEncrypted else {
+            lastError = .unknown(message: String(
+                localized: "mount.error.encryptedBucket",
+                defaultValue: "This bucket uses client-side encryption. In this version of Bucketeer, encrypted buckets can't be mounted in Finder; transfer its files in the Bucketeer window instead."
+            ))
+            return
+        }
+        do {
+            try await registry.add(identifier: identifier, displayName: "\(account.name): \(bucket)")
             await refresh()
         } catch {
             lastError = mapMountError(error)
@@ -62,40 +108,62 @@ final class MountController {
     func unmount(account: S3Account, bucket: String) async {
         let identifier = Self.domainIdentifier(accountID: account.id, bucket: bucket)
         do {
-            let domains = try await NSFileProviderManager.domains()
-            if let domain = domains.first(where: { $0.identifier == identifier }) {
-                try await NSFileProviderManager.remove(domain)
-            }
+            try await registry.remove(identifier: identifier)
             await refresh()
         } catch {
             lastError = mapMountError(error)
         }
     }
 
-    /// Tear down every mounted domain — used when the host app uninstalls
-    /// (Phase 12) or the user clears all data via Settings.
-    ///
-    /// Removal failures are collected per domain instead of aborting
-    /// the loop — one stuck domain must not leave every subsequent
-    /// domain registered as a stale Finder Location.
-    func unmountAll() async {
-        var firstError: Error?
+    /// Runs `operation` (turning on encryption) only after a fresh
+    /// domain lookup succeeded and showed the bucket is not mounted,
+    /// and keeps mounts of the bucket out until it returns. A failed
+    /// lookup throws instead of assuming "not mounted".
+    func whileUnmounted(
+        account: S3Account,
+        bucket: String,
+        _ operation: () async throws -> Void
+    ) async throws {
+        let identifier = Self.domainIdentifier(accountID: account.id, bucket: bucket)
+        guard reserve(identifier) else { throw Self.busyError }
+        defer { bucketsInFlight.remove(identifier) }
         do {
-            let domains = try await NSFileProviderManager.domains()
-            for domain in domains {
-                do {
-                    try await NSFileProviderManager.remove(domain)
-                } catch {
-                    firstError = firstError ?? error
-                }
-            }
+            mountedDomains = try await registry.identifiers()
         } catch {
-            firstError = firstError ?? error
+            throw BucketeerError.unknown(message: String(
+                localized: "encryption.error.mountStateUnknown",
+                defaultValue: "Bucketeer couldn't check whether this bucket is mounted in Finder, so encryption stays off. Try again."
+            ))
         }
-        await refresh()
-        if let firstError {
-            lastError = mapMountError(firstError)
+        guard !mountedDomains.contains(identifier) else {
+            throw BucketeerError.unknown(message: String(
+                localized: "encryption.error.bucketMounted",
+                defaultValue: "This bucket is mounted in Finder. Unmount it before turning on encryption, because files copied through Finder would not be encrypted."
+            ))
         }
+        try await operation()
+    }
+
+    private func reserve(_ identifier: NSFileProviderDomainIdentifier) -> Bool {
+        bucketsInFlight.insert(identifier).inserted
+    }
+
+    private static var busyError: BucketeerError {
+        .unknown(message: String(
+            localized: "mount.error.busy",
+            defaultValue: "Another change to this bucket is still running. Try again in a moment."
+        ))
+    }
+
+    /// S3 and Azure push no change events, so the extension only learns
+    /// about server-side changes when asked. Called when the user
+    /// refreshes the bucket in the browser.
+    func signalServerChanges(accountID: UUID, bucket: String) async {
+        let identifier = Self.domainIdentifier(accountID: accountID, bucket: bucket)
+        guard mountedDomains.contains(identifier) else { return }
+        // Best effort: a failed signal only delays the update until
+        // Finder enumerates the folder again.
+        try? await registry.signalWorkingSet(identifier: identifier)
     }
 
     func isMounted(account: S3Account, bucket: String) -> Bool {

@@ -40,7 +40,7 @@ struct UploadFileIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
-        // Codex audit R2 (medium): validate the user-supplied bucket
+        // Validate the user-supplied bucket
         // and key before we even fetch the account so a typo in a
         // Shortcut doesn't enqueue a doomed upload that fills the
         // activity log with failure rows.
@@ -57,7 +57,7 @@ struct UploadFileIntent: AppIntent {
         // IntentFile exposes the URL only when the file is bookmarked
         // / referenced from disk; for in-memory data we materialise a
         // temp file so the existing TransferManager can mmap it.
-        // Codex audit R2 (high): track ownership so the materialised
+        // Track ownership so the materialised
         // temp file is removed once the transfer reaches a terminal
         // state — without this the file lingers in tmp forever after
         // every Shortcut-triggered upload.

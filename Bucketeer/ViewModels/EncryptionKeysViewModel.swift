@@ -20,20 +20,34 @@ final class EncryptionKeysViewModel {
     private let keyStore: any EncryptionKeyStoring
     private let accountStore: any AccountStoring
     private let gate: BucketEncryptionGate
+    private let mountController: MountController
+    /// Where the File Provider extension looks up encrypted buckets.
+    /// Nil when the App Group container is unavailable (unsigned
+    /// builds), where the extension cannot run either.
+    private let encryptedBucketListURL: URL?
 
     init(
         keyStore: any EncryptionKeyStoring,
         accountStore: any AccountStoring,
-        gate: BucketEncryptionGate
+        gate: BucketEncryptionGate,
+        mountController: MountController,
+        encryptedBucketListURL: URL?
     ) {
         self.keyStore = keyStore
         self.accountStore = accountStore
         self.gate = gate
+        self.mountController = mountController
+        self.encryptedBucketListURL = encryptedBucketListURL
     }
 
+    /// Also mirrors the key list for the File Provider extension, so
+    /// every create, delete and launch refreshes it.
     func reload() async {
         do {
             keys = try await keyStore.all()
+            if let encryptedBucketListURL {
+                try EncryptedBucketList.write(keys, to: encryptedBucketListURL)
+            }
             accounts = try await accountStore.all()
             error = nil
         } catch let bucketeerError as BucketeerError {
@@ -43,9 +57,13 @@ final class EncryptionKeysViewModel {
         }
     }
 
+    /// Refuses buckets mounted in Finder: the File Provider extension
+    /// writes raw bytes, so Finder copies would stay unencrypted.
     func create(label: String, account: S3Account, bucket: String) async {
         do {
-            _ = try await keyStore.create(label: label, accountID: account.id, bucket: bucket)
+            try await mountController.whileUnmounted(account: account, bucket: bucket) {
+                _ = try await keyStore.create(label: label, accountID: account.id, bucket: bucket)
+            }
             await gate.invalidate(accountID: account.id, bucket: bucket)
             await reload()
         } catch let bucketeerError as BucketeerError {
@@ -65,6 +83,12 @@ final class EncryptionKeysViewModel {
         } catch {
             self.error = .unknown(message: error.localizedDescription)
         }
+    }
+
+    /// Drives UI hints only; `MountController.mount` re-checks the key
+    /// store itself, so a stale list cannot let a mount through.
+    func isEncrypted(accountID: UUID, bucket: String) -> Bool {
+        keys.contains { $0.accountID == accountID && $0.bucket == bucket }
     }
 
     /// Resolve an account UUID back to a display name for the list.

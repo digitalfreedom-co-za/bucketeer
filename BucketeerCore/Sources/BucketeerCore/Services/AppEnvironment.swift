@@ -59,6 +59,11 @@ public enum AppEnvironment {
     /// Keychain under `keychainServiceEncryption`.
     public static let encryptionStoreFileName = "BucketeerEncryptionKeys.store"
 
+    /// Filename of the encrypted-bucket list inside the App Group
+    /// container. Written by the host, read by the File Provider
+    /// extension — see `EncryptedBucketList`.
+    public static let encryptedBucketListFileName = "EncryptedBuckets.json"
+
     /// `kSecAttrService` value for per-bucket BYOK encryption keys.
     /// Phase 13.15. Distinct from the connection-credential service
     /// so a Keychain Access search for one doesn't surface the other.

@@ -337,7 +337,7 @@ private final class TagDelegate: NSObject, XMLParserDelegate {
             buffer = ""
             if !path.isEmpty { path.removeLast() }
         }
-        // Codex R4 (low): only trim the key (Azure tag keys are
+        // Only trim the key (Azure tag keys are
         // alphanumeric + a few punct chars, never whitespace).
         // Leave the value verbatim — leading / trailing spaces in a
         // tag value are legitimate user data and trimming them

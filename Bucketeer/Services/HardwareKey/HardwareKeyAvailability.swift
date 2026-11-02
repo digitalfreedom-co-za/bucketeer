@@ -61,7 +61,7 @@ final class HardwareKeyAvailability {
             // so we can ask whether a card is present. Returns nil
             // when the slot was unplugged between names lookup and
             // resolve.
-            // Codex audit R2 (medium): CryptoTokenKit can fail to
+            // CryptoTokenKit can fail to
             // invoke the callback at all if the driver crashed or
             // the reader was hot-unplugged. Without a timeout the
             // continuation hangs `refresh()` and the polling loop
@@ -116,7 +116,7 @@ final class HardwareKeyAvailability {
         pollTask?.cancel()
         pollTask = Task { [weak self] in
             while !Task.isCancelled {
-                // Codex audit R2 (medium): break the loop when the
+                // Break the loop when the
                 // owning availability instance is gone so the poll
                 // task self-terminates rather than sleeping forever
                 // against a nil weak-self.

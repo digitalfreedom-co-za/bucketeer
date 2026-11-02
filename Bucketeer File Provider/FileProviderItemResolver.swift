@@ -153,7 +153,11 @@ enum FileProviderItemResolver {
         guard let mountInfo = try await container.resolve(domain.identifier.rawValue) else {
             throw mappedError(.providerDomainNotFound)
         }
-        let parentKey = key(from: template.parentItemIdentifier) ?? ""
+        // Unknown parents (trash, working set) must not fall back to the
+        // bucket root.
+        guard let parentKey = key(from: template.parentItemIdentifier) else {
+            throw mappedError(.noSuchItem)
+        }
         let isFolder = template.contentType == .folder
         // Folders carry the trailing slash so the identifier round-trips
         // through `resolve` without needing a HEAD lookup. Files use the
@@ -218,14 +222,22 @@ enum FileProviderItemResolver {
 
     // MARK: - Modify
 
+    struct ModifyResult {
+        let item: NSFileProviderItem
+        /// True when the server kept its own version and the system must
+        /// download it again (the local edit went into a conflict copy).
+        let shouldFetchContent: Bool
+    }
+
     static func modifyItem(
         item: NSFileProviderItem,
+        baseVersion: NSFileProviderItemVersion,
         changedFields: NSFileProviderItemFields,
         contents: URL?,
         in domain: NSFileProviderDomain,
         container: ExtensionContainer,
         progress: Progress
-    ) async throws -> NSFileProviderItem {
+    ) async throws -> ModifyResult {
         guard let mountInfo = try await container.resolve(domain.identifier.rawValue) else {
             throw mappedError(.providerDomainNotFound)
         }
@@ -239,17 +251,40 @@ enum FileProviderItemResolver {
            changedFields.contains(.filename) || changedFields.contains(.parentItemIdentifier) {
             throw mappedError(.cannotSynchronize)
         }
+        let isMove = changedFields.contains(.filename) || changedFields.contains(.parentItemIdentifier)
         var currentKey = originalKey
+        var written: Written?
         // Every network call below must surface as an
         // NSFileProviderError — createItem/deleteItem already wrap;
         // an unmapped BucketeerError here would land in a foreign
         // error domain and confuse the system's retry logic.
         do {
+            // Contents first, against the key the edit was based on.
+            if changedFields.contains(.contents), let contents {
+                written = try await uploadIfUnchanged(
+                    contents,
+                    key: originalKey,
+                    baseVersion: baseVersion,
+                    mountInfo: mountInfo,
+                    container: container,
+                    progress: progress
+                )
+                if written == nil {
+                    return try await keepServerVersion(
+                        of: originalKey,
+                        conflictCopyOf: isMove ? try moveTarget(of: item) : originalKey,
+                        contents: contents,
+                        in: domain,
+                        mountInfo: mountInfo,
+                        container: container,
+                        progress: progress
+                    )
+                }
+            }
             // Rename = server-side copy + delete (mirrors the rename
             // path in the host's BrowserViewModel).
-            if changedFields.contains(.filename) || changedFields.contains(.parentItemIdentifier) {
-                let parentKey = key(from: item.parentItemIdentifier) ?? ""
-                let newKey = parentKey + item.filename
+            if isMove {
+                let newKey = try moveTarget(of: item)
                 if newKey != originalKey {
                     try await container.browser.copy(
                         account: mountInfo.account,
@@ -267,28 +302,129 @@ enum FileProviderItemResolver {
                     currentKey = newKey
                 }
             }
-            if changedFields.contains(.contents), let contents {
-                try await uploadFile(
-                    contents,
-                    account: mountInfo.account,
-                    bucket: mountInfo.bucket,
-                    key: currentKey,
-                    container: container,
-                    progress: progress
-                )
-            }
+            // The HEAD supplies the metadata only. If it already shows
+            // a version other than the one our write answered with,
+            // somebody wrote after us: the local contents are not that
+            // version, so the system has to fetch it.
             let head = try await container.browser.head(
                 account: mountInfo.account,
                 bucket: mountInfo.bucket,
                 key: currentKey
             )
-            return ResolvedItem(
-                identifier: identifier(for: currentKey),
-                parent: parentIdentifier(for: currentKey),
-                object: head
+            let newerOnServer = written.map { !ETag.matches(base: $0.etag, current: head.etag) } ?? false
+            return ModifyResult(
+                item: ResolvedItem(
+                    identifier: identifier(for: currentKey),
+                    parent: parentIdentifier(for: currentKey),
+                    object: head
+                ),
+                shouldFetchContent: newerOnServer
             )
         } catch {
             throw fileProviderError(error, fallback: .cannotSynchronize)
+        }
+    }
+
+    private static func moveTarget(of item: NSFileProviderItem) throws -> String {
+        guard let parentKey = key(from: item.parentItemIdentifier) else {
+            throw mappedError(.noSuchItem)
+        }
+        return parentKey + item.filename
+    }
+
+    /// A content write the server accepted; `etag` is what the write
+    /// answered with.
+    private struct Written {
+        let etag: String?
+    }
+
+    /// Uploads only while the server still has the version Finder's
+    /// edit was based on: a HEAD compare first (also catches providers
+    /// that ignore If-Match), then the write itself with If-Match.
+    /// Returns `nil` when the server version differs or is gone.
+    private static func uploadIfUnchanged(
+        _ contents: URL,
+        key: String,
+        baseVersion: NSFileProviderItemVersion,
+        mountInfo: (account: S3Account, bucket: String),
+        container: ExtensionContainer,
+        progress: Progress
+    ) async throws -> Written? {
+        let base = String(data: baseVersion.contentVersion, encoding: .utf8)
+        let serverETag = try await currentETag(of: key, mountInfo: mountInfo, container: container)
+        guard ETag.matches(base: base, current: serverETag), let base else { return nil }
+        do {
+            return Written(etag: try await uploadFile(
+                contents,
+                account: mountInfo.account,
+                bucket: mountInfo.bucket,
+                key: key,
+                precondition: .ifMatch(base),
+                container: container,
+                progress: progress
+            ))
+        } catch BucketeerError.preconditionFailed {
+            return nil
+        }
+    }
+
+    /// Conflict: the edit goes up as `<name> (conflict <date> <tag>).<ext>`,
+    /// created only if that name is free (never replacing another
+    /// copy), the item keeps the server's version (Finder downloads it
+    /// again) and the working set is signalled so the copy shows up.
+    /// When the server object was deleted, the item is reported as gone.
+    private static func keepServerVersion(
+        of key: String,
+        conflictCopyOf targetKey: String,
+        contents: URL,
+        in domain: NSFileProviderDomain,
+        mountInfo: (account: S3Account, bucket: String),
+        container: ExtensionContainer,
+        progress: Progress
+    ) async throws -> ModifyResult {
+        _ = try await ConflictCopyName.create(copyOf: targetKey, date: Date()) { copyKey -> Bool? in
+            do {
+                try await uploadFile(
+                    contents,
+                    account: mountInfo.account,
+                    bucket: mountInfo.bucket,
+                    key: copyKey,
+                    precondition: .ifAbsent,
+                    container: container,
+                    progress: progress
+                )
+                return true
+            } catch BucketeerError.preconditionFailed {
+                return nil
+            }
+        }
+        try? await NSFileProviderManager(for: domain)?.signalEnumerator(for: .workingSet)
+        guard let head = try await currentHead(of: key, mountInfo: mountInfo, container: container) else {
+            throw mappedError(.noSuchItem)
+        }
+        return ModifyResult(
+            item: ResolvedItem(identifier: identifier(for: key), parent: parentIdentifier(for: key), object: head),
+            shouldFetchContent: true
+        )
+    }
+
+    private static func currentETag(
+        of key: String,
+        mountInfo: (account: S3Account, bucket: String),
+        container: ExtensionContainer
+    ) async throws -> String? {
+        try await currentHead(of: key, mountInfo: mountInfo, container: container)?.etag
+    }
+
+    private static func currentHead(
+        of key: String,
+        mountInfo: (account: S3Account, bucket: String),
+        container: ExtensionContainer
+    ) async throws -> S3Object? {
+        do {
+            return try await container.browser.head(account: mountInfo.account, bucket: mountInfo.bucket, key: key)
+        } catch BucketeerError.objectNotFound {
+            return nil
         }
     }
 
@@ -307,7 +443,7 @@ enum FileProviderItemResolver {
         }
         do {
             if key.hasSuffix("/") {
-                // Codex high #4: folder identifiers represent a virtual
+                // Folder identifiers represent a virtual
                 // prefix in the bucket. Deleting only the `prefix/`
                 // marker would leave every descendant orphaned in the
                 // bucket while Finder reports success. Recursively
@@ -428,37 +564,43 @@ enum FileProviderItemResolver {
         }
     }
 
+    /// Returns the ETag the write answered with.
+    @discardableResult
     private static func uploadFile(
         _ url: URL,
         account: S3Account,
         bucket: String,
         key: String,
+        precondition: WritePrecondition? = nil,
         container: ExtensionContainer,
         progress: Progress
-    ) async throws {
+    ) async throws -> String? {
         switch account.provider.family {
         case .azureBlob:
-            try await container.azureTransporter.upload(
+            return try await container.azureTransporter.upload(
                 account: account,
                 container: bucket,
                 blob: key,
                 localURL: url,
                 contentType: contentType(for: url),
+                precondition: precondition,
                 progress: { bytes, total in
                     Self.publish(progress: progress, bytes: bytes, total: total)
                 }
             )
         case .s3:
-            try await S3DirectFetch.upload(
+            let etag = try await S3DirectFetch.upload(
                 account: account,
                 bucket: bucket,
                 key: key,
                 localURL: url,
                 contentType: contentType(for: url),
+                precondition: precondition,
                 factory: container.clientFactory
             )
             let size = (try? url.resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0
             Self.publish(progress: progress, bytes: Int64(size), total: Int64(size))
+            return etag
         }
     }
 
@@ -484,7 +626,8 @@ enum FileProviderItemResolver {
     }
 
     static func fileProviderError(_ error: Error, fallback: NSFileProviderError.Code) -> Error {
-        if let nsError = error as? NSError, nsError.domain == NSFileProviderErrorDomain {
+        let nsError = error as NSError
+        if nsError.domain == NSFileProviderErrorDomain {
             return nsError
         }
         if let bucketeer = error as? BucketeerError {
@@ -532,7 +675,9 @@ final class ResolvedItem: NSObject, NSFileProviderItem {
         self.filename = object.displayName
         self.isFolder = object.isFolder
         self.size = object.size
-        self.modificationDate = object.lastModified
+        // Folders are listing prefixes without a date (`.distantPast`);
+        // Finder would show year 1.
+        self.modificationDate = object.lastModified == .distantPast ? nil : object.lastModified
         self.etag = object.etag
         super.init()
     }
@@ -569,7 +714,7 @@ final class ResolvedItem: NSObject, NSFileProviderItem {
     var capabilities: NSFileProviderItemCapabilities {
         // The root container (the bucket itself) cannot be renamed or
         // deleted via Finder — that would require a `DeleteBucket`
-        // call we do not expose. Codex medium #10: returning the
+        // call we do not expose. Returning the
         // folder capabilities here let Finder offer a Delete that
         // would silently fail.
         if itemIdentifier == .rootContainer {
@@ -580,7 +725,7 @@ final class ResolvedItem: NSObject, NSFileProviderItem {
             // rename would have to copy+delete every descendant.
             // v1 doesn't implement that, and offering the action just
             // to fail (or worse, move only the marker and orphan the
-            // children) is the worst outcome. Codex round-2 finding.
+            // children) is the worst outcome.
             return [.allowsContentEnumerating, .allowsAddingSubItems, .allowsDeleting]
         }
         return [.allowsReading, .allowsWriting, .allowsDeleting, .allowsRenaming]

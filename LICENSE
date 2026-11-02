@@ -1,71 +1,76 @@
-S3 Browser — Source-Available License (SAL) v1
-Copyright (c) 2026 Marcel R. G. Berger / Berger & Rosenstock GbR (DigitalFreedom)
+Bucketeer — Source-Available License (SAL) v1
+Copyright (c) 2026 DigitalFreedom Global LLC (trading as DigitalFreedom)
 All rights reserved.
 
-This source code is published for transparency, learning, and contribution
-(the "Build in Public" model). It is NOT open-source software within the
-meaning of the Open Source Initiative definition: redistribution rights are
-restricted as set out below.
+This source code is published for transparency, learning and contribution.
+It is NOT open-source software within the meaning of the Open Source
+Initiative definition: redistribution rights are restricted as set out
+below. The same text, formatted for the App, is at
+Bucketeer/Resources/Legal/LICENSE.md.
 
 ────────────────────────────────────────────────────────────────────────────
-1. YOU ARE PERMITTED TO
+1. YOU MAY
 ────────────────────────────────────────────────────────────────────────────
 
-(a) View, read, and study the source code in this repository.
+(a) View, read and study the source code in this repository.
 
-(b) Clone or fork the repository for personal study and for the purpose of
-    submitting contributions back to the canonical repository.
+(b) Clone or fork the repository for personal study and to prepare
+    contributions to the canonical repository.
 
-(c) Build the App locally from this source for your own personal, non-
-    commercial use on devices you own or control.
+(c) Build the App locally for your own personal, non-commercial use on
+    Macs you own or control.
 
-(d) Submit pull requests, issues, or other contributions to this
-    repository. By submitting a contribution you agree that your
-    contribution is licensed to the Publisher under the same terms as this
-    License and may be incorporated into the canonical App distributed by
-    the Publisher.
-
-────────────────────────────────────────────────────────────────────────────
-2. YOU ARE NOT PERMITTED TO
-────────────────────────────────────────────────────────────────────────────
-
-(a) Redistribute this source code, in whole or in substantial part, as
-    part of another software product, repository, gist, or distribution
-    channel — whether public or private, free or commercial.
-
-(b) Distribute binaries built from this source code to any third party,
-    by any means, including but not limited to GitHub Releases, direct
-    download, peer-to-peer, removable media, or pre-installation on
-    hardware sold to third parties.
-
-(c) Submit derivatives of this software, in source or binary form, to the
-    Apple Mac App Store, Apple iOS App Store, Google Play Store, or any
-    other software distribution channel under any name, your own or
-    another's.
-
-(d) Use this source code, or any substantial part of it, in any
-    commercial product, service, or hosted offering.
-
-(e) Use the names "S3 Browser", "DigitalFreedom", or any associated
-    trademarks of the Publisher to promote derivative works, without
-    prior written permission of the Publisher.
+(d) Submit pull requests, issues or other contributions. By submitting a
+    contribution you license it to DigitalFreedom Global LLC under the
+    terms of this License, and DigitalFreedom Global LLC may include it
+    in the App it distributes.
 
 ────────────────────────────────────────────────────────────────────────────
-3. BINARY DISTRIBUTION
+2. YOU MAY NOT
 ────────────────────────────────────────────────────────────────────────────
 
-The single canonical binary distribution of the App is the version
-published by the Publisher on the Apple Mac App Store. Use of that binary
-is governed by the End User License Agreement (EULA) bundled with the App
-and reproduced in this repository at:
+(a) Redistribute the source code, in whole or in substantial part, as part
+    of another software product, repository, gist, package archive or
+    distribution channel, public or private, free or commercial.
 
-    S3 Browser/Resources/Legal/EULA.md
+(b) Distribute binaries built from this source code to anyone, by any
+    means, including GitHub Releases, direct download, peer-to-peer
+    transfer, removable media, Homebrew casks or pre-installation on
+    hardware.
+
+(c) Submit derivatives, in source or binary form, to the Mac App Store,
+    any other Apple App Store or any other distribution channel, under
+    any name.
+
+(d) Use the source code, or a substantial part of it, in a commercial
+    product, service or hosted offering.
+
+(e) Use the names "Bucketeer" or "DigitalFreedom", or associated logos,
+    to promote derivative works without prior written permission.
 
 ────────────────────────────────────────────────────────────────────────────
-4. NO WARRANTY
+3. THIRD-PARTY OPEN-SOURCE COMPONENTS
 ────────────────────────────────────────────────────────────────────────────
 
-THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+The source tree uses third-party libraries under their own licenses,
+listed in Bucketeer/Resources/Legal/OPEN_SOURCE_NOTICES.md. Nothing in
+this License restricts the rights those licenses grant.
+
+────────────────────────────────────────────────────────────────────────────
+4. CANONICAL BINARY
+────────────────────────────────────────────────────────────────────────────
+
+The only canonical binary of Bucketeer is the version published by
+DigitalFreedom Global LLC on the Mac App Store. Its use is governed by the
+End User License Agreement at:
+
+    Bucketeer/Resources/Legal/EULA.md
+
+────────────────────────────────────────────────────────────────────────────
+5. NO WARRANTY
+────────────────────────────────────────────────────────────────────────────
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
 THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
@@ -73,26 +78,27 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
-────────────────────────────────────────────────────────────────────────────
-5. GOVERNING LAW
-────────────────────────────────────────────────────────────────────────────
-
-This License is governed by the laws of the Federal Republic of Germany.
-Mandatory consumer-protection rights of the user's country of residence
-remain unaffected.
+Mandatory liability under applicable law, in particular for intent, gross
+negligence and injury to life, body or health, remains unaffected.
 
 ────────────────────────────────────────────────────────────────────────────
-6. CONTACT
+6. GOVERNING LAW
 ────────────────────────────────────────────────────────────────────────────
 
-Publisher:
-    Berger & Rosenstock GbR (trading as DigitalFreedom)
-    Dieselstr. 22e
-    61231 Bad Nauheim
-    Germany
+This License is governed by the laws of the State of Wyoming, United
+States of America, excluding its conflict-of-law rules. Mandatory
+consumer-protection rights of your country of habitual residence remain
+unaffected.
+
+────────────────────────────────────────────────────────────────────────────
+7. CONTACT
+────────────────────────────────────────────────────────────────────────────
+
+    DigitalFreedom Global LLC (trading as DigitalFreedom)
+    30 N Gould St, Ste N
+    Sheridan, WY 82801
+    United States
     hello@digitalfreedom.co.za
 
-For permissions beyond the scope of this License, please contact the
-Publisher.
-
-────────────────────────────────────────────────────────────────────────────
+For permissions beyond the scope of this License, contact the address
+above.

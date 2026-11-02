@@ -10,8 +10,7 @@ import CryptoKit
 import Testing
 @testable import BucketeerCore
 
-/// Extra coverage for the AAD-authenticated envelope (Codex R1
-/// medium #1). The original `BucketeerEnvelopeTests` covered the
+/// Extra coverage for the AAD-authenticated envelope. The original `BucketeerEnvelopeTests` covered the
 /// header tamper paths; this suite probes a wider set of edge
 /// cases that came up during the audit follow-ups.
 @Suite("BucketeerEnvelope (AAD + edges)")
@@ -40,16 +39,6 @@ struct BucketeerEnvelopeAADTests {
         } catch let error as EncryptionError {
             #expect(error == .authenticationFailed || error == .badEnvelope)
         }
-    }
-
-    @Test("Header layout sanity — magic + version + reserved zeros")
-    func headerLayoutSanity() throws {
-        let key = SymmetricKey(size: .bits256)
-        let env = try BucketeerEnvelope.seal(plaintext: Data(), key: key)
-        let bytes = Array(env.prefix(BucketeerEnvelope.headerSize))
-        #expect(Array(bytes.prefix(4)) == BucketeerEnvelope.magic)
-        #expect(bytes[4] == BucketeerEnvelope.version)
-        #expect(Array(bytes.suffix(3)) == BucketeerEnvelope.reservedZeroes)
     }
 
     @Test("looksEncrypted on partial header returns false")

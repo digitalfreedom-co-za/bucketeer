@@ -209,7 +209,18 @@ struct AddEditAccountSheet: View {
                 .textContentType(.URL)
                 .autocorrectionDisabled()
             }
+            if Self.isUnencrypted(endpointOverride) {
+                Label("account.endpoint.httpWarning", systemImage: "exclamationmark.triangle")
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+            }
         }
+    }
+
+    /// An http:// endpoint is allowed (local MinIO, test servers), but
+    /// its traffic is not protected by TLS; say so where it is entered.
+    static func isUnencrypted(_ endpoint: String) -> Bool {
+        parseEndpoint(endpoint)?.scheme?.lowercased() == "http"
     }
 
     @ViewBuilder

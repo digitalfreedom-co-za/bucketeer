@@ -27,8 +27,7 @@ final class CrossAccountCopyCoordinator {
     private let transferManager: TransferManager
     private let activityLog: any ActivityLogging
     /// Optional encryption gate so we can detect "either side has a
-    /// BYOK key" and force the round-trip rewrap path — Codex audit
-    /// fix (high #1). Without it, server-side `CopyObject` would
+    /// BYOK key" and force the round-trip rewrap path. Without it, server-side `CopyObject` would
     /// copy an encrypted envelope under the wrong destination key
     /// or write plaintext into an encrypted-bucket destination.
     private let encryptionGate: BucketEncryptionGate?
@@ -60,25 +59,19 @@ final class CrossAccountCopyCoordinator {
         keepSource: Bool
     ) async -> [(key: String, error: BucketeerError?)] {
         var results: [(key: String, error: BucketeerError?)] = []
-        // Codex audit fix (high #1): once either side of the copy
+        // Once either side of the copy
         // touches a BYOK-protected bucket, we MUST go through the
         // round-trip path. Server-side `CopyObject` doesn't know
         // about Bucketeer envelopes and would otherwise produce
         // ciphertext encrypted under the wrong key (or plaintext
         // landing in an encrypted destination).
-        let encryptionInvolved: Bool = await {
-            guard let encryptionGate else { return false }
-            if await encryptionGate.key(
-                accountID: sourceAccount.id,
-                bucket: sourceBucket
-            ) != nil { return true }
-            if await encryptionGate.key(
-                accountID: destinationAccount.id,
-                bucket: destinationBucket
-            ) != nil { return true }
-            return false
-        }()
-        let canServerCopy = !encryptionInvolved && Self.canServerSideCopy(
+        let encryptionAllowsServerCopy = await encryptionGate?.allowsServerSideCopy(
+            sourceAccountID: sourceAccount.id,
+            sourceBucket: sourceBucket,
+            destinationAccountID: destinationAccount.id,
+            destinationBucket: destinationBucket
+        ) ?? true
+        let canServerCopy = encryptionAllowsServerCopy && Self.canServerSideCopy(
             from: sourceAccount,
             to: destinationAccount
         )
@@ -185,7 +178,7 @@ final class CrossAccountCopyCoordinator {
         destinationBucket: String,
         destinationKey: String
     ) async throws {
-        // Codex audit fix (medium #3): keep the plaintext staging
+        // Keep the plaintext staging
         // file inside the App-private Application Support directory
         // and under a `bucketeer-roundtrip-*` prefix so the
         // launch-time scavenger (`CrossAccountCopyCoordinator.scavengeOrphans()`)
@@ -251,8 +244,7 @@ final class CrossAccountCopyCoordinator {
 
     /// Sweep any leftover round-trip staging files. Called by
     /// `AppContainer.init` on every launch so a crash mid-copy
-    /// doesn't leave plaintext on disk indefinitely. Codex audit
-    /// fix (medium #3).
+    /// doesn't leave plaintext on disk indefinitely.
     // nonisolated: pure FileManager work, called from a detached
     // utility task at launch so it never blocks the main actor.
     nonisolated static func scavengeOrphans() {

@@ -45,34 +45,34 @@ read-only on init.
 5. Provisioning profiles regenerate automatically when "Automatically
    manage signing" is on
 
-## Step 2 — add the extension target in Xcode (once)
+## Step 2 — extension target (DONE — committed in the project)
 
-1. Open `Bucketeer.xcodeproj`
-2. **File → New → Target → File Provider Extension**
-3. Product name: **Bucketeer File Provider**, Language: Swift, Lifetime: macOS
-4. After Xcode creates the target:
-   - **Delete** the auto-generated `FileProviderExtension.swift` /
-     `FileProviderEnumerator.swift` Xcode added (they are stubs that
-     conflict with the live versions in this repo)
-   - In the Project navigator, remove the references Xcode added under
-     the new group
-   - Drag the existing `Bucketeer File Provider/` folder onto the new
-     target and choose **Create folder references** (this creates a
-     `PBXFileSystemSynchronizedRootGroup` so every file in the folder
-     gets auto-included)
-   - Signing & Capabilities tab: set the entitlements file to
-     `Bucketeer File Provider/BucketeerFileProvider.entitlements`
-   - Build Settings: set `PRODUCT_BUNDLE_IDENTIFIER = za.co.digitalfreedom.Bucketeer.FileProvider`
-   - Build Settings: set `INFOPLIST_FILE = Bucketeer File Provider/Info.plist`
-5. **Add the BucketeerCore dependency**: select the extension target →
-   General → Frameworks and Libraries → `+` → **BucketeerCore**. The
-   package was added to the host in Phase 9.5 so it's already
-   resolved; you only need to link the product into the extension.
-6. Select the **Bucketeer** target → General → **Frameworks, Libraries,
-   and Embedded Content** → `+` → add **Bucketeer File Provider.appex**
-   → **Embed & Sign**
-7. Build the host scheme — both targets sign and the extension lands
-   inside `Bucketeer.app/Contents/PlugIns/`
+The extension target is now part of `Bucketeer.xcodeproj`, added
+programmatically via `scripts/add_file_provider_target.rb` (uses the
+`xcodeproj` gem, so no hand-edited pbxproj). Re-running the script is a
+no-op once the target exists. What it wired:
+
+- Target **Bucketeer File Provider**, product type app-extension,
+  bundle id `za.co.digitalfreedom.Bucketeer.FileProvider`
+- The five source files in `Bucketeer File Provider/` in its Sources
+  phase; links **SotoS3** + **BucketeerCore** (same package refs the
+  host uses)
+- `INFOPLIST_FILE = Bucketeer File Provider/Info.plist`,
+  `GENERATE_INFOPLIST_FILE = NO`,
+  `CODE_SIGN_ENTITLEMENTS = Bucketeer File Provider/BucketeerFileProvider.entitlements`,
+  `APPLICATION_EXTENSION_API_ONLY = YES`
+- **`MACOSX_DEPLOYMENT_TARGET = 14.1`** for the extension (the host
+  stays 14.0). `NSFileProviderError.providerDomainNotFound` is a
+  FileProvider API-v6.0 symbol = macOS 14.1, so the extension needs
+  14.1. Consequence: Mount-as-Drive requires macOS 14.1+; the rest of
+  the app runs on 14.0. This split is App-Store-legal.
+- Host: target dependency on the extension + an *Embed Foundation
+  Extensions* copy-files phase (PlugIns) that bundles the `.appex`
+
+Verified: `xcodebuild … CODE_SIGNING_ALLOWED=NO build` succeeds and
+`Bucketeer.app/Contents/PlugIns/Bucketeer File Provider.appex` is
+present. Final archive-time code signing still needs the identifiers
+from Step 1 registered at developer.apple.com.
 
 ## Step 3 — verify locally
 
@@ -94,10 +94,5 @@ not yet provisioned — go back to Step 1.
   short)
 - Working-set enumerator (favourites, pending, recents) for richer
   Finder integration
-- Promote keychain access group on the host from `nil` to
-  `AppEnvironment.keychainAccessGroup` with a one-shot migration of
-  existing entries — currently the host writes to the private namespace
-  so the extension only sees credentials added *after* a provisioned
-  build. Tracked as Codex review #10 follow-up.
 - Flat-listing primitive on `S3Browsing` to skip the per-prefix recursion
   in the sync engine and the file provider walk for huge buckets

@@ -57,13 +57,27 @@ struct BandwidthLimiterTests {
         #expect(elapsed < 0.05)
     }
 
-    @Test("currentLimit reflects the most recent setLimit call")
-    func currentLimitReflectsSetter() async {
-        let limiter = BandwidthLimiter(bytesPerSecond: 2_048)
-        var snapshot = await limiter.currentLimit
-        #expect(snapshot == 2_048)
-        await limiter.setLimit(bytesPerSecond: 4_096)
-        snapshot = await limiter.currentLimit
-        #expect(snapshot == 4_096)
+    @Test("setLimit(0) while a charge is waiting releases the waiter")
+    func disableWhileWaiting() async {
+        // 10 B/s and 10 KB requested: without the fix the waiter would
+        // either sleep ~1000 s or spin forever once the cap is zero.
+        let limiter = BandwidthLimiter(bytesPerSecond: 10)
+        let start = ContinuousClock.now
+        let waiter = Task { await limiter.consume(bytes: 10_000) }
+        try? await Task.sleep(for: .milliseconds(200))
+        await limiter.setLimit(bytesPerSecond: 0)
+        await waiter.value
+        #expect(ContinuousClock.now - start < .seconds(3))
+    }
+
+    @Test("Cancelling a waiting charge returns promptly")
+    func cancelWhileWaiting() async {
+        let limiter = BandwidthLimiter(bytesPerSecond: 10)
+        let start = ContinuousClock.now
+        let waiter = Task { await limiter.consume(bytes: 10_000) }
+        try? await Task.sleep(for: .milliseconds(200))
+        waiter.cancel()
+        await waiter.value
+        #expect(ContinuousClock.now - start < .seconds(3))
     }
 }

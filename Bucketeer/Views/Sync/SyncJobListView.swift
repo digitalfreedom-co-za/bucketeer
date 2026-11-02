@@ -17,7 +17,8 @@ struct SyncJobListView: View {
     @State private var pendingDeletion: SyncJob?
 
     var body: some View {
-        Group {
+        VStack(spacing: 0) {
+            ErrorBanner(error: viewModel.error)
             if viewModel.jobs.isEmpty {
                 emptyState
             } else {
@@ -127,7 +128,7 @@ struct SyncJobListView: View {
                               : Text("sync.row.kind.syncJob"))
                     VStack(alignment: .leading, spacing: 2) {
                         Text(job.name).lineLimit(1)
-                        Text(modeLabel(job.mode))
+                        Text(job.mode.labelKey)
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }
@@ -181,7 +182,7 @@ struct SyncJobListView: View {
             }
         } else {
             Button("sync.action.runNow", systemImage: "play.fill") {
-                Task { await viewModel.runNow(id: job.id) }
+                guardPro { Task { await viewModel.runNow(id: job.id) } }
             }
         }
         Button("action.edit", systemImage: "pencil") {
@@ -242,14 +243,6 @@ struct SyncJobListView: View {
             Label("sync.status.idle", systemImage: "circle")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
-        }
-    }
-
-    private func modeLabel(_ mode: SyncMode) -> LocalizedStringKey {
-        switch mode {
-        case .copy:   return "sync.mode.copy"
-        case .move:   return "sync.mode.move"
-        case .mirror: return "sync.mode.mirror"
         }
     }
 

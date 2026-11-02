@@ -9,8 +9,8 @@ import Foundation
 import Testing
 @testable import BucketeerCore
 
-/// Locks down the path-traversal guard introduced in the Codex Phase
-/// 9.8 review (blocker #1). A failure here means an attacker-controlled
+/// Locks down the path-traversal guard introduced in Phase 9.8.
+/// A failure here means an attacker-controlled
 /// S3 key could escape the chosen sync root and write to (or delete
 /// from) arbitrary paths the app sandbox can reach.
 @Suite("LocalFolderWriter.safeChildURL")

@@ -1,106 +1,149 @@
 # Bucketeer
 
 A native macOS app for browsing, transferring, mounting and synchronising
-object storage across every major provider — including Amazon S3, every
-S3-compatible service, **and Azure Blob Storage**.
+object storage: Amazon S3, every S3-compatible service and Azure Blob
+Storage.
 
 Built in public. Source available. Distributed exclusively through the
 Mac App Store.
 
 ---
 
-## Features
-
-- **Nine provider presets** — AWS S3, **Azure Blob Storage**, Civo,
-  Cloudflare R2, Backblaze B2, Wasabi, DigitalOcean Spaces, Storj,
-  MinIO / Custom Endpoint
-- **Finder-style three-pane browser** with inline metadata pane
-- **Quick Look preview** for any macOS-supported file type *(roadmap Phase 6)*
-- **Drag-and-drop in every direction** — Finder ↔ App, App ↔ App,
-  cross-account, cross-provider *(roadmap Phase 7)*
-- **Mount buckets and containers as Finder drives** via the File
-  Provider extension *(roadmap Phase 9)*
-- **Menubar background mode** that keeps mounts and sync alive when
-  the main window is closed *(roadmap Phase 8)*
-- **S3-to-S3, S3-to-Azure and Azure-to-S3** copy / move / one-way
-  mirror with optional scheduling *(roadmap Phase 10)*
-- **Multipart upload and download**, parallel transfers, live progress
-- **Touch ID / password gate** for revealing stored secrets
-- **Localised in 10 languages** — English, German, Spanish, French,
-  Italian, Japanese, Korean, Dutch, Polish, Brazilian Portuguese
-- **Privacy by design** — credentials live in your macOS Keychain,
-  nothing leaves your Mac apart from the object-storage traffic you
-  configure
-
----
-
-## Pricing
-
-Bucketeer is **free to evaluate for 14 days** with every feature
-unlocked, then converts to a **Free tier** that keeps the core
-browser usable, with **Bucketeer Pro** unlocked by a single
-**€14.99 lifetime in-app purchase** (no subscription).
-
----
-
 ## Status
 
-🚧 In active development. v1 implementation in progress on the
-`development` branch. Not yet available on the App Store.
+**Bucketeer 1.0 for the Mac App Store.** The 1.0 feature set is complete
+on the `development` branch and goes through the release branches
+`test → beta → main` before submission. See [`CHANGELOG.md`](CHANGELOG.md)
+for the development history.
 
-Phases 0 – 12, A, B and 9.5 – 9.10 are merged on `development`. The
-`13.x` feature block ships incrementally — each phase lands as one
-commit so the development history reads as a phase-by-phase log.
+---
 
-| Phase | Title | Status |
-|------:|---|---|
-| 0–5 | Scaffold → browser → transfers → object actions → reveal | ✅ |
-| A | Azure Blob Storage via `ProviderRouter` | ✅ |
-| 6 | Preview + Quick Look | ✅ |
-| 7 | Drag and drop | ✅ |
-| 8 | Menubar background mode | ✅ |
-| 9 | File Provider scaffold | ✅ |
-| 9.5 | Core SPM package + live File Provider | ✅ |
-| 9.6 | Core test target (Swift Testing, 92 tests) | ✅ |
-| 9.7 | Trial bookkeeping tests | ✅ |
-| 9.8 | Local folder ↔ S3 sync | ✅ |
-| 9.9 | Presigned download URLs (S3 + Azure SAS) | ✅ |
-| 9.10 | Sync-on-change via FSEvents | ✅ |
-| 10 | Sync engine | ✅ |
-| 11 | Localisation finalisation | ✅ |
-| B | Paywall (StoreKit 2, lifetime IAP) | ✅ |
-| 12 | Hardening | ✅ |
-| 13.1 | Activity log | ✅ |
-| 13.2 | Bandwidth limit | ✅ |
-| 13.3 | Watch folder → bucket | ✅ |
-| 13.4 | Trash / soft-delete | ✅ |
-| 13.5 | Bucket dashboard | ✅ |
-| 13.6 | Versions browser | ✅ |
-| 13.7 | Metadata / tags editor | ✅ |
-| 13.8 | Auto-tagging rules | ✅ |
-| 13.9 | Lifecycle / policy / CORS viewer | ✅ |
-| 13.10 | Resumable transfers | ✅ |
-| 13.11 | `bucketeer://` URL scheme | ✅ |
-| 13.12 | App Intents (Shortcuts / Siri) | ✅ |
-| 13.13 | Spotlight indexing | ✅ |
-| 13.14 | Server-side copy across accounts | ✅ |
-| 13.15 | Client-side encryption per bucket | ✅ |
-| 13.16 | Hardware-key unlock (CryptoTokenKit) | ✅ (technical preview) |
+## Features
 
-See [`CHANGELOG.md`](CHANGELOG.md) for the per-phase history and
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the architectural
-reference.
+### Accounts and security
 
-**Documentation map:**
+- **Nine provider presets**: AWS S3, Azure Blob Storage, Civo,
+  Cloudflare R2, Backblaze B2, Wasabi, DigitalOcean Spaces, Storj and
+  Custom (MinIO or any other S3-compatible endpoint), with path-style
+  addressing where the provider needs it
+- **Credentials in the macOS Keychain**, never in the app's database
+- **Touch ID or Mac password** before stored secrets are shown again
+- **Hardware key (technical preview)**: Settings → Security lists
+  connected smart-card readers; unlocking still uses Touch ID or the
+  Mac password in 1.0
+- **Client-side encryption per bucket**: AES-256-GCM on the Mac before
+  upload, decryption on download, key kept in the Keychain and not
+  exportable
+
+### Browsing and transfers
+
+- **Three-pane browser** with breadcrumbs, search and a details pane
+- **Quick Look preview** for any file type macOS can show
+- **Drag and drop** between Finder and Bucketeer
+- **Multipart upload and download** with parallel parts and live progress
+- **Resumable transfers**: an interrupted upload continues where it stopped
+- **Bandwidth limit** for all transfers
+- **Object actions**: new folder, rename, delete, download
+- **Open / Open With**: edit an object in any Mac app; every save is
+  uploaded back, and a change on the server in the meantime leads to a
+  conflict copy instead of an overwrite
+- **Presigned links**: S3 presigned URLs and Azure SAS links, signed
+  locally with an expiry you choose
+
+### Insight and housekeeping
+
+- **Bucket dashboard**: object count, total size, largest objects and a
+  rough monthly cost estimate
+- **Lifecycle, bucket policy and CORS viewer** (read-only)
+- **Versions browser**: list, restore and delete object versions
+- **Metadata and tags editor**: HTTP headers, user metadata, tags,
+  storage class
+- **Auto-tagging rules** for new uploads by file name pattern or MIME type
+- **Trash**: optional local copy of deleted objects with restore and a
+  retention period
+- **Activity log** of transfers, deletes, sync runs, share links and
+  account changes, with CSV export
+
+### macOS integration
+
+- **`bucketeer://` deep links** to accounts, buckets, objects, sync jobs,
+  the activity log and the trash
+- **Shortcuts and Siri (App Intents)**: list buckets, upload a file,
+  create a presigned link, run a sync job
+- **Spotlight** (opt-in): object names you browse become searchable;
+  contents are never indexed
+- **Localised in 20 locales**: English (US and UK), Czech, Danish, Dutch,
+  Finnish, French, German, Greek, Hungarian, Italian, Japanese, Korean,
+  Norwegian, Polish, Portuguese (Brazil and Portugal), Russian, Spanish,
+  Swedish. The in-app help is translated into all of them.
+
+### Bucketeer Pro
+
+- **Mount as Drive**: use a bucket or container in Finder through the
+  File Provider extension (macOS 14.1 or later). Server-side changes
+  reach Finder when you refresh the bucket; a Finder save over a newer
+  server version becomes a conflict copy. Buckets with client-side
+  encryption cannot be mounted in this version.
+- **Sync jobs**: copy, move or mirror between buckets, across accounts
+  and providers (S3 ↔ Azure included), or between a local folder and a
+  bucket; run by hand, at launch, on a schedule or when the local folder
+  changes
+- **Watch folders**: upload every new file in a local folder to a bucket
+- **Copy to other account**: server-side copy when both accounts share
+  provider and endpoint and neither bucket is encrypted, otherwise a
+  download and upload through the Mac
+- **Menu bar mode**: keeps mounts and sync jobs running with the main
+  window closed
+
+### Privacy
+
+No Bucketeer server, no user account, no analytics, no tracking SDKs.
+Account metadata, logs and caches stay on the Mac. Network traffic goes
+only to the storage endpoints you configure and to Apple for purchases.
+Details in the [Privacy Policy](Bucketeer/Resources/Legal/PRIVACY_POLICY.md).
+
+---
+
+## Free and Pro
+
+| | Free | Pro |
+|---|:---:|:---:|
+| Accounts, all nine provider presets | ✅ | ✅ |
+| Browse, Quick Look, search | ✅ | ✅ |
+| Upload, download, drag and drop, resumable transfers, bandwidth limit | ✅ | ✅ |
+| Rename, delete, new folder, presigned links | ✅ | ✅ |
+| Open / Open With with upload of saves and conflict copies | ✅ | ✅ |
+| Dashboard, versions, metadata and tags, lifecycle / policy / CORS viewer | ✅ | ✅ |
+| Trash, activity log, auto-tagging rules | ✅ | ✅ |
+| Client-side encryption | ✅ | ✅ |
+| Deep links, Shortcuts and Siri, Spotlight | ✅ | ✅ |
+| Mount as Drive | | ✅ |
+| Sync jobs and watch folders | | ✅ |
+| Copy to other account | | ✅ |
+| Menu bar mode | | ✅ |
+
+Bucketeer Pro is a single one-time in-app purchase through the App Store,
+with no subscription. The App Store shows the price in your currency.
+
+<!-- Trial wording: the only place in this README that describes the trial. -->
+**Trial:** Bucketeer Pro can be tried for 14 days at no cost, once per
+Apple ID. The trial is a free in-app purchase, so Restore Purchases
+brings it back on another Mac. Before it starts, the app shows the
+trial length, that Bucketeer returns to the Free tier afterwards
+without any charge, and the Pro Lifetime price.
+
+---
+
+## Documentation
 
 | Doc | Purpose |
 |---|---|
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | End-to-end architecture with eight Mermaid diagrams (module composition, sync routing, sandbox lifecycle, File Provider sequence, entitlement state machine, account save flow, multipart transfer flow, provisioning topology) |
-| [`docs/DEVELOPER_SETUP.md`](docs/DEVELOPER_SETUP.md) | Clone → build → test in five minutes |
-| [`PHASE_9_SETUP.md`](PHASE_9_SETUP.md) | One-time manual setup for the File Provider extension target |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Architecture reference with 20 Mermaid diagrams: user-level feature overview, module composition, deep-link and App Intents routing, sync routing, sandbox lifecycle, File Provider sequence, mount and unmount with the encrypted-bucket refusal, Finder server changes and save conflicts, trial and entitlement state machine, StoreKit trial / purchase / restore / offer codes, account save flow, Touch ID secret reveal, multipart transfer flow, Open With round-trip, encryption key lifecycle, provisioning topology |
+| [`docs/DEVELOPER_SETUP.md`](docs/DEVELOPER_SETUP.md) | Clone, build and test |
+| [`PHASE_9_SETUP.md`](PHASE_9_SETUP.md) | One-time setup for the File Provider extension identifiers |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Branch model, coding standards, review process |
-| [`CHANGELOG.md`](CHANGELOG.md) | Per-phase development history |
-| [`docs/APP_STORE_METADATA.md`](docs/APP_STORE_METADATA.md) | App Store Connect copy + launch checklist |
+| [`CHANGELOG.md`](CHANGELOG.md) | Development history |
+| [`docs/APP_STORE_METADATA.md`](docs/APP_STORE_METADATA.md) | App Store Connect copy and launch checklist |
 
 ---
 
@@ -108,7 +151,7 @@ reference.
 
 Requirements:
 
-- macOS 14.0 or later
+- macOS 14.0 or later (Mount as Drive needs 14.1)
 - Xcode 16 or later (Swift 6 strict concurrency)
 
 ```bash
@@ -117,7 +160,7 @@ cd bucketeer
 open Bucketeer.xcodeproj
 ```
 
-Select the **Bucketeer** scheme and ⌘R to run.
+Select the **Bucketeer** scheme and press ⌘R.
 
 Local builds are permitted for personal, non-commercial use under the
 [Source-Available License](LICENSE).
@@ -126,77 +169,77 @@ Local builds are permitted for personal, non-commercial use under the
 
 ## Architecture
 
-Swift 6 strict concurrency end-to-end. SwiftUI for the host app.
-Soto-S3 for the AWS family and every S3-compatible provider. A
-purpose-built Azure backend (`AzureBlobObjectStore`, Phase A) for
-Azure Blob Storage, dispatched through a `ProviderRouter` so the
-upper layers stay protocol-agnostic. SwiftData for account metadata
-(SwiftData store in the sandbox Application Support directory,
-moving to an App Group container in Phase 9). Keychain for
-credentials. File Provider replicated extension for Finder mounts.
-LocalAuthentication for Touch-ID-gated secret reveal.
+Swift 6 strict concurrency end to end. SwiftUI for the host app. Soto
+for AWS and every S3-compatible provider, a purpose-built Azure backend
+for Azure Blob Storage, both behind a `ProviderRouter` so the upper
+layers stay protocol-agnostic. SwiftData for account metadata in the
+App Group container shared with the File Provider extension. Keychain
+for credentials and encryption keys. StoreKit 2 for the Pro purchase.
 
 ```
 Bucketeer.xcodeproj/
-Bucketeer/                          ← host app target
-  App/                              @main BucketeerApp + menus
-  Models/                           Sendable domain types
-  Services/                         actors + protocols
-    S3/                             Soto-backed S3Service
-    Azure/                          (Phase A) URLSession + Shared Key
-    Keychain/                       KeychainStore
-    Account/                        AccountStore @ModelActor
-    Transfers/                      TransferManager
+Bucketeer/                          host app target
+  App/                              @main BucketeerApp, menus, commands
+  Models/                           host-only value types
+  Services/                         actors and controllers (AppContainer,
+                                    transfers, sync, mount, entitlements,
+                                    encryption, trash, Spotlight, App Intents,
+                                    deep links, hardware key)
   ViewModels/
-  Views/
-    Accounts/  Browser/  Sidebar/  Transfers/  About/  Help/
+  Views/                            Accounts, Browser, Sidebar, Transfers,
+                                    Sync, Activity, Trash, Paywall, Settings,
+                                    Menubar, About, Help
   Resources/
-    Legal/                          EULA, Privacy, Impressum, License, OSS notices
-    Help/                           QuickStart.md
-    Localizable.xcstrings           10-language string catalog
+    Legal/                          EULA, Privacy Policy, Impressum,
+                                    License, open-source notices
+    Help/<lang>.lproj/QuickStart.md in-app help, 20 locales
+    Localizable.xcstrings           string catalog, 20 locales
     PrivacyInfo.xcprivacy
   <lang>.lproj/InfoPlist.strings    per-language CFBundleDisplayName
-Bucketeer File Provider/            .appex (Phase 9)
-Bucketeer Core/                     embedded framework (Phase 9)
+  Bucketeer.storekit                StoreKit configuration for local testing
+Bucketeer File Provider/            File Provider extension (Mount as Drive)
+BucketeerCore/                      local Swift package: models, S3, Azure,
+                                    Keychain, sync planning, encryption
+BucketeerTests/                     host test target
 ```
 
 ---
 
 ## Legal
 
-This project is governed by these documents:
-
 | File | Scope |
 |---|---|
 | [`LICENSE`](LICENSE) | Source-Available License governing this **source code** |
-| [`Bucketeer/Resources/Legal/EULA.md`](Bucketeer/Resources/Legal/EULA.md) | End User License Agreement governing the **App binary** |
+| [`Bucketeer/Resources/Legal/EULA.md`](Bucketeer/Resources/Legal/EULA.md) | End User License Agreement governing the **app binary** |
 | [`Bucketeer/Resources/Legal/PRIVACY_POLICY.md`](Bucketeer/Resources/Legal/PRIVACY_POLICY.md) | Privacy Policy |
-| [`Bucketeer/Resources/Legal/IMPRESSUM.md`](Bucketeer/Resources/Legal/IMPRESSUM.md) | Impressum (German legal notice) |
+| [`Bucketeer/Resources/Legal/IMPRESSUM.md`](Bucketeer/Resources/Legal/IMPRESSUM.md) | Legal notice (Impressum) |
 | [`Bucketeer/Resources/Legal/OPEN_SOURCE_NOTICES.md`](Bucketeer/Resources/Legal/OPEN_SOURCE_NOTICES.md) | Third-party open-source attributions |
 
-**Source-available, not OSI-open-source.** You may read, fork for
-study, and contribute back. You may not redistribute, ship binaries,
-or publish derivatives to any app store. The single canonical binary
-distribution is the App Store version published by the author.
+**Source-available, not OSI open source.** You may read the code, fork
+it for study and contribute back. You may not redistribute it, ship
+binaries or publish derivatives to any app store. The only binary
+distribution is the App Store version published by DigitalFreedom
+Global LLC.
 
-The same documents are reachable in-app via **Bucketeer → About**.
+The same documents are reachable in the app via **Bucketeer → About**
+and the **Help** menu.
 
 ---
 
 ## Contributing
 
-Issues and pull requests are welcome. Contributions are accepted
-under the [Source-Available License](LICENSE) — by submitting a PR
-you license your contribution to the Publisher under the same terms.
+Issues and pull requests are welcome. Contributions are accepted under
+the [Source-Available License](LICENSE); by submitting a pull request
+you license your contribution to the publisher under the same terms.
 
-For bug reports please include macOS version, app version, and
-reproduction steps.
+For bug reports please include the macOS version, the app version and
+the steps to reproduce.
 
 ---
 
 ## Publisher
 
-DigitalFreedom — a brand of Berger & Rosenstock GbR
-Dieselstr. 22e, 61231 Bad Nauheim, Germany
+DigitalFreedom Global LLC
+30 N Gould St, Ste N, Sheridan, WY 82801, United States
 Contact: hello@digitalfreedom.co.za
 Website: https://digitalfreedom.co.za

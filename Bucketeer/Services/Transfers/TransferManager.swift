@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CryptoKit
 @preconcurrency import SotoS3
 @preconcurrency import NIOCore
 import BucketeerCore
@@ -36,13 +37,26 @@ actor TransferManager: Transferring {
         var task: TransferTask
         let contentType: String?
         let fileSize: Int64
-        /// Codex audit fix (high #2): set on the trash-capture
-        /// download so `finalizeDownloadDecryption` leaves the
-        /// raw Bucketeer envelope on disk instead of decrypting
-        /// it into plaintext. Without this, an encrypted object
-        /// gets decrypted on capture and the local trash cache
-        /// holds plaintext outside the encryption boundary.
+        /// Set on the trash-capture download so
+        /// `finalizeDownloadDecryption` leaves the raw Bucketeer
+        /// envelope on disk instead of decrypting it into plaintext.
+        /// Without this, the local trash cache would hold plaintext
+        /// outside the encryption boundary.
         var bypassDecryption: Bool = false
+        /// Set on the trash restore of a cached envelope: the bytes are
+        /// already sealed and must not be sealed a second time.
+        var bypassEncryption: Bool = false
+        /// Condition the server must check before it accepts the write
+        /// (Open With round-trip). `nil` = unconditional.
+        var precondition: WritePrecondition? = nil
+    }
+
+    enum ConditionalUploadOutcome: Equatable, Sendable {
+        /// `etag` is the one the write answered with (unquoted).
+        case uploaded(etag: String?)
+        case preconditionFailed
+        case failed(message: String)
+        case cancelled
     }
 
     private let factory: S3ClientFactory
@@ -77,12 +91,18 @@ actor TransferManager: Transferring {
     private var terminated: Set<UUID> = []
     /// Per-ID waiters created by `awaitCompletion(id:)`. Each entry is
     /// a list of continuations resumed once the task reaches a terminal
-    /// state. Codex review #2 — fixes the race where a fast transfer
+    /// state. Fixes the race where a fast transfer
     /// completed before a sync engine's stream-based waiter observed it.
     private var waiters: [UUID: [CheckedContinuation<TransferState, Never>]] = [:]
     /// Terminal-state cache for waiters that arrive after a transfer
     /// completed. Cleared when the task is removed via `clearTerminal`.
     private var terminalCache: [UUID: TransferState] = [:]
+    /// Conditional uploads the server refused with 412. Read once by
+    /// `uploadConditionally` and then dropped.
+    private var preconditionRefused: Set<UUID> = []
+    /// ETag each conditional upload's write answered with. Read once by
+    /// `uploadConditionally` and then dropped.
+    private var writtenETags: [UUID: String] = [:]
 
     init(
         factory: S3ClientFactory,
@@ -119,6 +139,29 @@ actor TransferManager: Transferring {
         localURL: URL,
         contentType: String?
     ) async -> UUID {
+        await enqueueUpload(
+            account: account,
+            bucket: bucket,
+            key: key,
+            localURL: localURL,
+            contentType: contentType,
+            bypassEncryption: false
+        )
+    }
+
+    /// Variant for the trash restore, which re-uploads an object's raw
+    /// bytes. Outside the protocol for the same reason as the
+    /// `bypassDecryption` download variant.
+    @discardableResult
+    func enqueueUpload(
+        account: S3Account,
+        bucket: String,
+        key: String,
+        localURL: URL,
+        contentType: String?,
+        bypassEncryption: Bool,
+        precondition: WritePrecondition? = nil
+    ) async -> UUID {
         let id = UUID()
         let size = (try? localURL.resourceValues(forKeys: [.fileSizeKey]))?.fileSize
         let fileSize = Int64(size ?? 0)
@@ -136,12 +179,47 @@ actor TransferManager: Transferring {
             account: account,
             task: task,
             contentType: contentType,
-            fileSize: fileSize
+            fileSize: fileSize,
+            bypassEncryption: bypassEncryption,
+            precondition: precondition
         )
         order.append(id)
         publish()
         pump()
         return id
+    }
+
+    /// Uploads through the normal queue (so encryption applies and the
+    /// transfer shows up in the list), but the server only accepts the
+    /// write while `precondition` holds. Waits for the result.
+    func uploadConditionally(
+        account: S3Account,
+        bucket: String,
+        key: String,
+        localURL: URL,
+        contentType: String?,
+        precondition: WritePrecondition
+    ) async -> ConditionalUploadOutcome {
+        let id = await enqueueUpload(
+            account: account,
+            bucket: bucket,
+            key: key,
+            localURL: localURL,
+            contentType: contentType,
+            bypassEncryption: false,
+            precondition: precondition
+        )
+        let state = await awaitCompletion(id: id)
+        let refused = preconditionRefused.remove(id) != nil
+        let etag = writtenETags.removeValue(forKey: id)
+        switch state {
+        case .completed:
+            return .uploaded(etag: etag)
+        case .failed(let message):
+            return refused ? .preconditionFailed : .failed(message: message)
+        default:
+            return .cancelled
+        }
     }
 
     @discardableResult
@@ -200,7 +278,7 @@ actor TransferManager: Transferring {
     func cancel(id: UUID) async {
         workers[id]?.cancel()
         // Route through setState so `awaitCompletion(id:)` waiters get
-        // resumed and `terminalCache` is populated — Codex blocker #2:
+        // resumed and `terminalCache` is populated —
         // bypassing setState left sync engine + drag-drop round-trips
         // hung forever after a user-initiated cancel.
         if let item = items[id], !item.task.state.isTerminal {
@@ -237,13 +315,16 @@ actor TransferManager: Transferring {
     /// already terminated before this call, the cached terminal state
     /// is returned immediately. Used by `SyncEngine` to wait on
     /// cross-account round-trip halves without racing the public
-    /// `tasks` stream (Codex review #2).
+    /// `tasks` stream.
     func awaitCompletion(id: UUID) async -> TransferState {
         if let cached = terminalCache[id] { return cached }
         if let item = items[id], item.task.state.isTerminal {
             terminalCache[id] = item.task.state
             return item.task.state
         }
+        // Unknown (or already cleared from the queue): nothing would
+        // ever resume the waiter.
+        guard items[id] != nil else { return .cancelled }
         return await withCheckedContinuation { (continuation: CheckedContinuation<TransferState, Never>) in
             waiters[id, default: []].append(continuation)
         }
@@ -306,11 +387,17 @@ actor TransferManager: Transferring {
         // user-selected one.
         var item = item
         var encryptionCleanup: URL? = nil
-        if let encryptionGate,
-           let key = await encryptionGate.key(
-               accountID: item.account.id,
-               bucket: item.task.bucket
-           ) {
+        let encryptionKey: SymmetricKey?
+        do {
+            encryptionKey = item.bypassEncryption ? nil : try await encryptionGate?.key(
+                accountID: item.account.id,
+                bucket: item.task.bucket
+            )
+        } catch {
+            setState(id: id, state: .failed(message: errorMessage(error)))
+            return
+        }
+        if let key = encryptionKey {
             do {
                 let plaintext = try Data(contentsOf: url, options: .mappedIfSafe)
                 let envelope = try BucketeerEnvelope.seal(plaintext: plaintext, key: key)
@@ -330,7 +417,8 @@ actor TransferManager: Transferring {
                         startedAt: item.task.startedAt
                     ),
                     contentType: item.contentType,
-                    fileSize: Int64(envelope.count)
+                    fileSize: Int64(envelope.count),
+                    precondition: item.precondition
                 )
                 encryptionCleanup = temp
             } catch {
@@ -358,12 +446,27 @@ actor TransferManager: Transferring {
         }
 
         do {
-            // Phase 13.10 — files large enough that an interruption
-            // costs noticeable bandwidth go through the resumable
-            // path (sequential parts + checkpoint after each).
-            // Smaller multiparts keep Soto's parallel helper.
-            if item.fileSize >= S3ResumableUploader.resumableThreshold,
+            if let precondition = item.precondition {
+                // One PUT carries the precondition; Soto's multipart
+                // helpers cannot attach it to the completion.
+                let data = try Data(contentsOf: item.task.localURL, options: .mappedIfSafe)
+                let headers = S3Service.headers(for: precondition)
+                let output = try await s3.putObject(.init(
+                    body: AWSHTTPBody(buffer: ByteBuffer(bytes: data)),
+                    bucket: item.task.bucket,
+                    contentType: item.contentType,
+                    ifMatch: headers.ifMatch,
+                    ifNoneMatch: headers.ifNoneMatch,
+                    key: item.task.key
+                ))
+                recordWrittenETag(output.eTag, id: id)
+                await limiter?.consume(bytes: data.count)
+            } else if item.fileSize >= S3ResumableUploader.resumableThreshold,
                let resumableUploader {
+                // Phase 13.10 — files large enough that an interruption
+                // costs noticeable bandwidth go through the resumable
+                // path (sequential parts + checkpoint after each).
+                // Smaller multiparts keep Soto's parallel helper.
                 let total = item.fileSize
                 try await resumableUploader.upload(
                     account: item.account,
@@ -418,6 +521,8 @@ actor TransferManager: Transferring {
             setState(id: id, state: .completed)
         } catch is CancellationError {
             setState(id: id, state: .cancelled)
+        } catch let error where S3Service.isPreconditionFailure(error) {
+            markPreconditionRefused(item: item)
         } catch {
             if Task.isCancelled {
                 setState(id: id, state: .cancelled)
@@ -425,6 +530,19 @@ actor TransferManager: Transferring {
                 setState(id: id, state: .failed(message: errorMessage(error)))
             }
         }
+    }
+
+    private func recordWrittenETag(_ etag: String?, id: UUID) {
+        guard let etag else { return }
+        writtenETags[id] = ETag.normalized(etag)
+    }
+
+    private func markPreconditionRefused(item: QueuedItem) {
+        preconditionRefused.insert(item.task.id)
+        setState(
+            id: item.task.id,
+            state: .failed(message: errorMessage(BucketeerError.preconditionFailed(key: item.task.key)))
+        )
     }
 
     // MARK: - Download
@@ -552,12 +670,13 @@ actor TransferManager: Transferring {
         }
         let total = item.fileSize
         do {
-            try await azure.upload(
+            let etag = try await azure.upload(
                 account: item.account,
                 container: item.task.bucket,
                 blob: item.task.key,
                 localURL: item.task.localURL,
                 contentType: item.contentType,
+                precondition: item.precondition,
                 progress: { @Sendable [weak self] bytes, totalBytes in
                     await self?.setState(
                         id: id,
@@ -568,9 +687,14 @@ actor TransferManager: Transferring {
                     )
                 }
             )
+            if item.precondition != nil {
+                recordWrittenETag(etag, id: id)
+            }
             setState(id: id, state: .completed)
         } catch is CancellationError {
             setState(id: id, state: .cancelled)
+        } catch BucketeerError.preconditionFailed {
+            markPreconditionRefused(item: item)
         } catch {
             if Task.isCancelled {
                 setState(id: id, state: .cancelled)
@@ -635,7 +759,7 @@ actor TransferManager: Transferring {
     /// a green checkmark on a file that is still ciphertext would be
     /// a silent failure.
     private func finalizeDownloadDecryption(item: QueuedItem) async -> String? {
-        // Codex audit fix (high #2): trash-capture downloads pass
+        // Trash-capture downloads pass
         // `bypassDecryption = true` so the local cache keeps the
         // raw envelope instead of holding plaintext copies of
         // encrypted objects.
@@ -645,11 +769,17 @@ actor TransferManager: Transferring {
         guard FileManager.default.fileExists(atPath: url.path) else { return nil }
         guard let data = try? Data(contentsOf: url, options: .mappedIfSafe) else { return nil }
         guard BucketeerEnvelope.looksEncrypted(data) else { return nil }
-        guard let key = await encryptionGate.key(
-            accountID: item.account.id,
-            bucket: item.task.bucket
-        ) else {
-            // Codex review: fail closed. The object is a Bucketeer
+        let lookedUpKey: SymmetricKey?
+        do {
+            lookedUpKey = try await encryptionGate.key(
+                accountID: item.account.id,
+                bucket: item.task.bucket
+            )
+        } catch {
+            return errorMessage(error)
+        }
+        guard let key = lookedUpKey else {
+            // Fail closed. The object is a Bucketeer
             // envelope but no key exists for this (account, bucket) —
             // e.g. the user deleted the key. A `.completed` transfer
             // would hand them ciphertext with a green checkmark.

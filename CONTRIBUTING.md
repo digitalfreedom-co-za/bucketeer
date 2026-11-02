@@ -14,7 +14,7 @@ under the same Source-Available License (see `Bucketeer/Resources/Legal/LICENSE.
 |---|---|
 | Bug report or feature request | <https://support.apps.digitalfreedom.co.za/> |
 | Code contribution | GitHub Pull Request against the `development` branch |
-| Security disclosure | `data-protection@digitalfreedom.co.za` (private; please don't open a public issue) |
+| Security disclosure | `security@digitalfreedom.co.za` or <https://security.digitalfreedom.co.za> (private; please don't open a public issue, see `SECURITY.md`) |
 
 GitHub Issues on this repo are **not** the support channel — use the
 support site for that. The repo issue tracker is for development
@@ -88,7 +88,7 @@ Key seams:
   (activity, trash, auto-tag, encryption envelope, bucket stats,
   bandwidth limiter, deep-link grammar, resumable-upload
   checkpoints). Pure-logic extraction is the preferred way to make
-  host code testable — `SyncPlanner`, `TrialBookkeeping`,
+  host code testable — `SyncPlanner`, `ProAccessResolver`,
   `AutoTagRuleEvaluator`, `BucketeerEnvelope`, `BucketeerDeepLink`,
   `BucketStatsCollector`, and `BandwidthLimiter` are all in Core
   precisely because they have no live-state dependency.
@@ -158,7 +158,7 @@ encryption, etc.), the pattern is:
   ("opened the menubar popover, verified the badge", etc.).
 - For host-only async logic that's hard to unit-test today, extract
   the pure core into a helper inside `BucketeerCore` (like we did
-  with `SyncPlanner` and `TrialBookkeeping`).
+  with `SyncPlanner` and `ProAccessResolver`).
 
 ---
 
@@ -195,7 +195,7 @@ Berger` is the only author).
 ## 10. License
 
 By contributing you agree that your contribution is licensed to the
-Publisher (Berger & Rosenstock GbR, trading as DigitalFreedom) under
+Publisher (DigitalFreedom Global LLC, trading as DigitalFreedom) under
 the [Source-Available License](Bucketeer/Resources/Legal/LICENSE.md).
 The canonical binary ships exclusively on the Mac App Store. There is
 no CLA beyond what this paragraph and the License together establish.

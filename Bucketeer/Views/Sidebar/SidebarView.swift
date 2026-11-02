@@ -9,9 +9,7 @@ import SwiftUI
 import BucketeerCore
 
 enum SidebarSelection: Hashable {
-    case accountsRoot
     case account(UUID)
-    case mountedRoot
     case syncRoot
     case transfersRoot
 }
@@ -109,9 +107,12 @@ struct SidebarView: View {
         }
         .listStyle(.sidebar)
         .safeAreaInset(edge: .bottom) {
-            entitlementFooter
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+            VStack(spacing: 0) {
+                ErrorBanner(error: viewModel.error)
+                entitlementFooter
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+            }
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {

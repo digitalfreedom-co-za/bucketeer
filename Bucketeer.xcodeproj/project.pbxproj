@@ -7,12 +7,63 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		02889BB64F8F2750EF4AC632 /* BucketeerCore in Frameworks */ = {isa = PBXBuildFile; productRef = 2F723E91389E0B5E98DE6CC6 /* BucketeerCore */; };
+		0BEE6471623AAC6F3BB9D0BD /* BucketeerCore in Frameworks */ = {isa = PBXBuildFile; productRef = CFCORE001000000000000002 /* BucketeerCore */; };
+		133FAFA24EC97D38781E0489 /* FileProviderItemResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D403121BCBAD37A574715302 /* FileProviderItemResolver.swift */; };
+		15C2BFE8FD78B59DAE93A7BA /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A7D24961DE4AB33C27D9AFE /* Cocoa.framework */; };
+		48722717BC366A24184B3820 /* S3DirectFetch.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA0CE48458241096873407A7 /* S3DirectFetch.swift */; };
+		49F0520C34321841749C8EE9 /* Bucketeer File Provider.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4225AB9B545123E428D2F397 /* Bucketeer File Provider.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		68A6C30D1C52B8C3B31538EF /* InMemoryS3Browser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FFC2B297F5B2A270E8171EB /* InMemoryS3Browser.swift */; };
+		6D8546F79FFFCB15C28887E5 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 241487FA4B5FD959C2DC8EC9 /* PrivacyInfo.xcprivacy */; };
+		974794418044562EF4D9A481 /* FinderChangeTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA1BCB3AA28BF1C8521B52D9 /* FinderChangeTracker.swift */; };
+		AC733F81096D0A392D46B674 /* SotoS3 in Frameworks */ = {isa = PBXBuildFile; productRef = 4C4D57285C892C019C5308CF /* SotoS3 */; };
+		B91AC84D4AD46B0603B483A6 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9DD393CC1B0467D6CF66999A /* Cocoa.framework */; };
+		BE677D84C4C452E748E6C331 /* FileProviderExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E727AAFD746C6DAF7F9BE9 /* FileProviderExtension.swift */; };
 		CF50705B01000000A0000001 /* SotoS3 in Frameworks */ = {isa = PBXBuildFile; productRef = CF50705B01000000A0000002 /* SotoS3 */; };
 		CFCORE001000000000000001 /* BucketeerCore in Frameworks */ = {isa = PBXBuildFile; productRef = CFCORE001000000000000002 /* BucketeerCore */; };
+		E9E53D46DD8F81B6A195DFAD /* SotoS3 in Frameworks */ = {isa = PBXBuildFile; productRef = CF50705B01000000A0000002 /* SotoS3 */; };
+		EC7F69387BD71DA5F88BC001 /* ExtensionContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 126DCFB84C5369747D5A2364 /* ExtensionContainer.swift */; };
+		F68C2AC25F1A501B43179911 /* FileProviderEnumerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18FBF5F1BD4C3EFC1F229E3 /* FileProviderEnumerator.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		867833EB8526E22214FBE169 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CF398B6A2FC08D2B00363696 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A428FF0477F2E82E69A22FE1;
+			remoteInfo = "Bucketeer File Provider";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		142E325AEB03C79A6345174E /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				49F0520C34321841749C8EE9 /* Bucketeer File Provider.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		126DCFB84C5369747D5A2364 /* ExtensionContainer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExtensionContainer.swift; path = ExtensionContainer.swift; sourceTree = "<group>"; };
+		241487FA4B5FD959C2DC8EC9 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		4225AB9B545123E428D2F397 /* Bucketeer File Provider.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Bucketeer File Provider.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4FFC2B297F5B2A270E8171EB /* InMemoryS3Browser.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = InMemoryS3Browser.swift; path = BucketeerCore/Tests/BucketeerCoreTests/Support/InMemoryS3Browser.swift; sourceTree = "<group>"; };
+		9A7D24961DE4AB33C27D9AFE /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
+		9DD393CC1B0467D6CF66999A /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
+		C4E727AAFD746C6DAF7F9BE9 /* FileProviderExtension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FileProviderExtension.swift; path = FileProviderExtension.swift; sourceTree = "<group>"; };
 		CF398B722FC08D2B00363696 /* Bucketeer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Bucketeer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D403121BCBAD37A574715302 /* FileProviderItemResolver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FileProviderItemResolver.swift; path = FileProviderItemResolver.swift; sourceTree = "<group>"; };
+		DA1BCB3AA28BF1C8521B52D9 /* FinderChangeTracker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FinderChangeTracker.swift; sourceTree = "<group>"; };
+		E18FBF5F1BD4C3EFC1F229E3 /* FileProviderEnumerator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FileProviderEnumerator.swift; path = FileProviderEnumerator.swift; sourceTree = "<group>"; };
+		E997DC0B3C1B3950B0DAB81F /* BucketeerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BucketeerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		EA0CE48458241096873407A7 /* S3DirectFetch.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = S3DirectFetch.swift; path = S3DirectFetch.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -23,13 +74,29 @@
 			);
 			target = CF398B712FC08D2B00363696 /* Bucketeer */;
 		};
+		E8D1001E852306B0099DC8C3 /* Exceptions for "Bucketeer" folder in "BucketeerTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				App/BucketeerApp.swift,
+			);
+			target = CB1E8BB60409863E7C4E50A9 /* BucketeerTests */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		48569A26123C810559992141 /* BucketeerTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			path = BucketeerTests;
+			sourceTree = "<group>";
+		};
 		CF398B742FC08D2B00363696 /* Bucketeer */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				CF398B902FC08D2B00363696 /* Exceptions for "Bucketeer" folder in "Bucketeer" target */,
+				E8D1001E852306B0099DC8C3 /* Exceptions for "Bucketeer" folder in "BucketeerTests" target */,
 			);
 			path = Bucketeer;
 			sourceTree = "<group>";
@@ -37,6 +104,26 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		4CE9FDA0D051EFB49DC7B79A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				15C2BFE8FD78B59DAE93A7BA /* Cocoa.framework in Frameworks */,
+				AC733F81096D0A392D46B674 /* SotoS3 in Frameworks */,
+				02889BB64F8F2750EF4AC632 /* BucketeerCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		737DC481AA361E0B1E76F13C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B91AC84D4AD46B0603B483A6 /* Cocoa.framework in Frameworks */,
+				E9E53D46DD8F81B6A195DFAD /* SotoS3 in Frameworks */,
+				0BEE6471623AAC6F3BB9D0BD /* BucketeerCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		CF398B6F2FC08D2B00363696 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -49,11 +136,47 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		02D5D68CEF02E3AB4D29E359 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A248B5767B6FB984EE255F54 /* OS X */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		7D09B60C28D8B235AC8815C5 /* Bucketeer File Provider */ = {
+			isa = PBXGroup;
+			children = (
+				126DCFB84C5369747D5A2364 /* ExtensionContainer.swift */,
+				E18FBF5F1BD4C3EFC1F229E3 /* FileProviderEnumerator.swift */,
+				C4E727AAFD746C6DAF7F9BE9 /* FileProviderExtension.swift */,
+				D403121BCBAD37A574715302 /* FileProviderItemResolver.swift */,
+				EA0CE48458241096873407A7 /* S3DirectFetch.swift */,
+				241487FA4B5FD959C2DC8EC9 /* PrivacyInfo.xcprivacy */,
+				DA1BCB3AA28BF1C8521B52D9 /* FinderChangeTracker.swift */,
+			);
+			name = "Bucketeer File Provider";
+			path = "Bucketeer File Provider";
+			sourceTree = SOURCE_ROOT;
+		};
+		A248B5767B6FB984EE255F54 /* OS X */ = {
+			isa = PBXGroup;
+			children = (
+				9A7D24961DE4AB33C27D9AFE /* Cocoa.framework */,
+				9DD393CC1B0467D6CF66999A /* Cocoa.framework */,
+			);
+			name = "OS X";
+			sourceTree = "<group>";
+		};
 		CF398B692FC08D2B00363696 = {
 			isa = PBXGroup;
 			children = (
 				CF398B742FC08D2B00363696 /* Bucketeer */,
 				CF398B732FC08D2B00363696 /* Products */,
+				02D5D68CEF02E3AB4D29E359 /* Frameworks */,
+				7D09B60C28D8B235AC8815C5 /* Bucketeer File Provider */,
+				48569A26123C810559992141 /* BucketeerTests */,
+				4FFC2B297F5B2A270E8171EB /* InMemoryS3Browser.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -61,6 +184,8 @@
 			isa = PBXGroup;
 			children = (
 				CF398B722FC08D2B00363696 /* Bucketeer.app */,
+				4225AB9B545123E428D2F397 /* Bucketeer File Provider.appex */,
+				E997DC0B3C1B3950B0DAB81F /* BucketeerTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -68,6 +193,52 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		A428FF0477F2E82E69A22FE1 /* Bucketeer File Provider */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 958C69687437A2C3FF9715B1 /* Build configuration list for PBXNativeTarget "Bucketeer File Provider" */;
+			buildPhases = (
+				A77836BEFBB2377AA3B14B74 /* Sources */,
+				4CE9FDA0D051EFB49DC7B79A /* Frameworks */,
+				FE72909F53CDC6A153978817 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Bucketeer File Provider";
+			packageProductDependencies = (
+				4C4D57285C892C019C5308CF /* SotoS3 */,
+				2F723E91389E0B5E98DE6CC6 /* BucketeerCore */,
+			);
+			productName = "Bucketeer File Provider";
+			productReference = 4225AB9B545123E428D2F397 /* Bucketeer File Provider.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		CB1E8BB60409863E7C4E50A9 /* BucketeerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 96907E2D05BBC20949297D46 /* Build configuration list for PBXNativeTarget "BucketeerTests" */;
+			buildPhases = (
+				11AE5289A3C4BB5D9CA3F0C8 /* Sources */,
+				737DC481AA361E0B1E76F13C /* Frameworks */,
+				2A684A147F53359DA6FBF710 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				CF398B742FC08D2B00363696 /* Bucketeer */,
+				48569A26123C810559992141 /* BucketeerTests */,
+			);
+			name = BucketeerTests;
+			packageProductDependencies = (
+				CF50705B01000000A0000002 /* SotoS3 */,
+				CFCORE001000000000000002 /* BucketeerCore */,
+			);
+			productName = BucketeerTests;
+			productReference = E997DC0B3C1B3950B0DAB81F /* BucketeerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		CF398B712FC08D2B00363696 /* Bucketeer */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = CF398B7F2FC08D2C00363696 /* Build configuration list for PBXNativeTarget "Bucketeer" */;
@@ -75,10 +246,12 @@
 				CF398B6E2FC08D2B00363696 /* Sources */,
 				CF398B6F2FC08D2B00363696 /* Frameworks */,
 				CF398B702FC08D2B00363696 /* Resources */,
+				142E325AEB03C79A6345174E /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				1FB80767CC27EE3FC1773B7B /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				CF398B742FC08D2B00363696 /* Bucketeer */,
@@ -145,11 +318,20 @@
 			projectRoot = "";
 			targets = (
 				CF398B712FC08D2B00363696 /* Bucketeer */,
+				A428FF0477F2E82E69A22FE1 /* Bucketeer File Provider */,
+				CB1E8BB60409863E7C4E50A9 /* BucketeerTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		2A684A147F53359DA6FBF710 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		CF398B702FC08D2B00363696 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -157,9 +339,38 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		FE72909F53CDC6A153978817 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6D8546F79FFFCB15C28887E5 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		11AE5289A3C4BB5D9CA3F0C8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				68A6C30D1C52B8C3B31538EF /* InMemoryS3Browser.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A77836BEFBB2377AA3B14B74 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EC7F69387BD71DA5F88BC001 /* ExtensionContainer.swift in Sources */,
+				F68C2AC25F1A501B43179911 /* FileProviderEnumerator.swift in Sources */,
+				BE677D84C4C452E748E6C331 /* FileProviderExtension.swift in Sources */,
+				133FAFA24EC97D38781E0489 /* FileProviderItemResolver.swift in Sources */,
+				48722717BC366A24184B3820 /* S3DirectFetch.swift in Sources */,
+				974794418044562EF4D9A481 /* FinderChangeTracker.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		CF398B6E2FC08D2B00363696 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -169,7 +380,92 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		1FB80767CC27EE3FC1773B7B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "Bucketeer File Provider";
+			target = A428FF0477F2E82E69A22FE1 /* Bucketeer File Provider */;
+			targetProxy = 867833EB8526E22214FBE169 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		56E72764F2DCB5D71FF3FD0D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGNING_ALLOWED = "$(CODE_SIGNING_ALLOWED)";
+				CODE_SIGN_ENTITLEMENTS = "Bucketeer File Provider/BucketeerFileProvider.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7TSZJCJY88;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Bucketeer File Provider/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../../../../Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = za.co.digitalfreedom.Bucketeer.FileProvider;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		5BBD731B90F81173F5C44704 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 7TSZJCJY88;
+				GENERATE_INFOPLIST_FILE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = za.co.digitalfreedom.BucketeerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		8BD6A7A7D9A2BE2283190C7B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGNING_ALLOWED = "$(CODE_SIGNING_ALLOWED)";
+				CODE_SIGN_ENTITLEMENTS = "Bucketeer File Provider/BucketeerFileProvider.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7TSZJCJY88;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Bucketeer File Provider/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../../../../Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = za.co.digitalfreedom.Bucketeer.FileProvider;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
 		CF398B7D2FC08D2C00363696 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -309,7 +605,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Bucketeer;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = YES;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 DigitalFreedom — Berger & Rosenstock GbR";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 DigitalFreedom Global LLC";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -345,7 +641,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Bucketeer;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = YES;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 DigitalFreedom — Berger & Rosenstock GbR";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 DigitalFreedom Global LLC";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -362,9 +658,47 @@
 			};
 			name = Release;
 		};
+		D42BE338D9FCAE85C181D0B5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 7TSZJCJY88;
+				GENERATE_INFOPLIST_FILE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = za.co.digitalfreedom.BucketeerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		958C69687437A2C3FF9715B1 /* Build configuration list for PBXNativeTarget "Bucketeer File Provider" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8BD6A7A7D9A2BE2283190C7B /* Release */,
+				56E72764F2DCB5D71FF3FD0D /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		96907E2D05BBC20949297D46 /* Build configuration list for PBXNativeTarget "BucketeerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D42BE338D9FCAE85C181D0B5 /* Release */,
+				5BBD731B90F81173F5C44704 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		CF398B6D2FC08D2B00363696 /* Build configuration list for PBXProject "Bucketeer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -404,6 +738,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		2F723E91389E0B5E98DE6CC6 /* BucketeerCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CFCORE001000000000000003 /* XCLocalSwiftPackageReference "BucketeerCore" */;
+			productName = BucketeerCore;
+		};
+		4C4D57285C892C019C5308CF /* SotoS3 */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CF50705B01000000A0000003 /* XCRemoteSwiftPackageReference "soto" */;
+			productName = SotoS3;
+		};
 		CF50705B01000000A0000002 /* SotoS3 */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = CF50705B01000000A0000003 /* XCRemoteSwiftPackageReference "soto" */;

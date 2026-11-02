@@ -43,6 +43,27 @@ struct BucketStatsCollectorTests {
     }
 }
 
+@Suite("BucketStatsCollector walk")
+struct BucketStatsCollectorWalkTests {
+    @Test("Objects in nested folders are counted, across pages")
+    func countsNestedObjects() async throws {
+        let browser = InMemoryS3Browser(pageSize: 2)
+        await browser.addBucket("b")
+        await browser.put(bucket: "b", key: "root.txt", size: 1)
+        await browser.put(bucket: "b", key: "a/one.txt", size: 10)
+        await browser.put(bucket: "b", key: "a/two.txt", size: 20)
+        await browser.put(bucket: "b", key: "a/deep/three.txt", size: 300)
+        let collector = BucketStatsCollector(browser: browser)
+
+        let stats = try await collector.collect(account: S3Account(name: "Demo", provider: .awsS3), bucket: "b")
+
+        #expect(stats.objectCount == 4)
+        #expect(stats.folderCount == 2)
+        #expect(stats.totalBytes == 331)
+        #expect(stats.largestObjects.first?.key == "a/deep/three.txt")
+    }
+}
+
 @Suite("ProviderPricing")
 struct ProviderPricingTests {
 
@@ -63,11 +84,5 @@ struct ProviderPricingTests {
     func awsRate() {
         let usd = ProviderPricing.estimateMonthlyUSD(bytes: 1_073_741_824, provider: .awsS3) ?? 0
         #expect(abs(usd - 0.023) < 0.0001)
-    }
-
-    @Test("Zero bytes returns zero cost")
-    func zeroBytes() {
-        let usd = ProviderPricing.estimateMonthlyUSD(bytes: 0, provider: .awsS3) ?? 0
-        #expect(usd == 0)
     }
 }

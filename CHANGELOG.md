@@ -13,10 +13,100 @@ before that is internal phase work on the `development` branch.
 
 ## [Unreleased] — `development` branch
 
+### Trial, Open With and Finder conflicts (2026-11-02)
+- The Pro trial is a free non-consumable IAP
+  (`za.co.digitalfreedom.bucketeer.pro.trial`). It runs 14 days from
+  the trial transaction's original purchase date; nothing is stored in
+  `UserDefaults`, and Restore Purchases restores it. The paywall shows
+  the trial length, the fallback to the free tier and the Pro Lifetime
+  price before "Start trial"; the button is hidden once the trial was
+  used. `ProAccessResolver` (Core) replaces `TrialBookkeeping`.
+- Open / Open With in the browser (double-click, context menu with an
+  app list and "Other…"). The object is downloaded into a temp folder
+  of the current launch and opened; saves are uploaded back after a
+  2-second pause through the transfer queue, so encryption applies.
+  The upload carries If-Match on the ETag the download was based on
+  (S3 single PUT, Azure Put Blob / Put Block List). If the object
+  changed or was deleted on the server, the save goes up as
+  `<name> (conflict <date>).<ext>` and an alert says so. Temp files
+  are removed when the editing app quits, when Bucketeer quits, and at
+  launch. `OpenWithRoundTrip` (Core) holds the rules; new error case
+  `BucketeerError.preconditionFailed`.
+- Finder mount: a save from Finder is uploaded only while the server
+  still has the version it was based on (HEAD compare of `baseVersion`
+  against the current ETag, then If-Match on the write). Otherwise the
+  edit goes up as a conflict copy, the item keeps the server version
+  (Finder downloads it again) and the working set is signalled.
+- Finder mount: `enumerateChanges` on the working set lists every
+  folder Finder has opened again, diffs it against the last listing
+  (`FinderChangeState` in Core, persisted per domain by the extension)
+  and reports updated and deleted items; folder enumerators answer
+  with `syncAnchorExpired` so the system lists them again. Refreshing
+  a mounted bucket in the browser signals the working set.
+
+### Review round 4 (2026-11-02)
+**Data safety**
+- Host and File Provider extension open the shared SwiftData store with
+  one schema (`SharedStore`); the extension cannot save.
+- Keychain legacy migration never deletes shared-group credentials.
+- Sync jobs stop when a local source folder is missing or unreadable
+  instead of treating it as empty (mirror deletes).
+- Encryption key lookup failures fail the transfer instead of uploading
+  plaintext; trash restore keeps envelopes intact; same-account copies
+  between buckets go through download/upload when either side is
+  encrypted; encrypted buckets cannot be mounted and mounted buckets
+  cannot get a key; previews of encrypted objects are refused.
+
+**Entitlements**
+- The trial ends on time while the app runs; every sync start (manual,
+  on-launch, interval, watch folder) checks the entitlement; a lapsed
+  entitlement leaves menubar mode.
+- Mount needs macOS 14.1 and says so in the menu and paywall.
+
+**Correctness**
+- Interval sync schedules actually run; on-launch jobs run once per
+  launch; cancelled runs stay cancelled.
+- Presigned S3 URLs encode the key once; resumable uploads recover from
+  an expired multipart upload; bucket statistics count nested objects;
+  metadata edits keep the storage class; Azure transport errors are
+  translated.
+- File Provider: synchronised enumerator delivery, cancellation reported
+  as NSUserCancelledError, unknown parents rejected, Soto clients shut
+  down on invalidate.
+- `BucketeerError.unknown` messages were replaced by "Unexpected error."
+  everywhere; list errors, mount errors and the empty-folder state are
+  now shown; renaming onto an existing name is refused.
+
+**Tests**
+- New host test bundle `BucketeerTests` (no test host): off-screen
+  renders of every screen, sync scheduling flows. Trivial and duplicate
+  Core tests removed.
+
+### Release-readiness audit round 3
+**App Store compliance**
+- Privacy manifest: the FileTimestamp reasons `B8FF.1` (not an Apple
+  reason code) and `0A2A.1` (reserved for third-party SDK wrappers)
+  replaced by `3B52.1` (user-granted files); `C617.1` / `DDA9.1` kept.
+- File Provider extension ships its own `PrivacyInfo.xcprivacy`
+  (FileTimestamp `C617.1` + `3B52.1`, no tracking, no collected data).
+- Shortcuts / Siri intent titles, descriptions, parameter names and
+  summaries translated into all 18 non-English catalog languages —
+  they showed English in every locale.
+
+**Correctness**
+- Restore Purchases no longer reports an error when the user
+  dismisses the App Store sign-in prompt.
+
+**Tooling + docs**
+- `scripts/preflight.sh` checks both entitlements files and both
+  privacy manifests (existence + `plutil -lint`).
+- README / metadata draft list the 20 shipped locales; release plan
+  branch table matches the four Xcode Cloud workflows.
+
 ### Line-by-line audit round 2 + Apple-guideline compliance
 Second full pass: every Swift file read completely across eight
 parallel review batches plus a dedicated App Store Review
-Guidelines audit; all findings verified before fixing, Codex
+Guidelines audit; all findings verified before fixing, independent
 counter-review on the changeset.
 
 **App Store compliance**
@@ -150,7 +240,7 @@ finding verified against the code before fixing.
 Captures everything between the v1.0 feature freeze (end of
 Phase 13.16) and the development → main draft PR.
 
-**Codex audits**: four rounds across the 13.x delta, 41 findings
+**External audits**: four rounds across the 13.x delta, 41 findings
 addressed total.
 
 - Round 1 (security-critical): 3 high, 3 medium, 2 low. CSE
@@ -652,7 +742,7 @@ TestFlight step that can't be automated, plus v1.1 follow-ups.
 - 8 localised strings × 10 languages.
 - 5 new `SyncPlanner` tests cover local-folder paths.
 
-### Codex review #2 + fixes (commit `79620a0`)
+### External review #2 + fixes (commit `79620a0`)
 Method-by-method review of Phase 9.5–9.8 + the audit fixes. 10
 findings, 9 addressed:
 - **Blocker (path traversal):** `LocalFolderWriter.safeChildURL`
@@ -683,7 +773,7 @@ findings, 9 addressed:
 - `TrialBookkeeping` extracted from host `EntitlementManager` into
   `BucketeerCore` with a `TrialDefaults` storage seam.
 - 11 regression tests covering the future-date clamp + consumed
-  marker (Codex deep-audit medium #8 mitigation).
+  marker (deep-audit medium #8 mitigation).
 
 ### Phase 9.6 — Core test target (commit `2a5413c`)
 - `BucketeerCore/Tests/BucketeerCoreTests/` with Swift Testing,
@@ -698,14 +788,14 @@ findings, 9 addressed:
 - `Bucketeer File Provider/` rewritten to do live S3 / Azure traffic
   via `ExtensionContainer` (Sendable composition root) and
   `FileProviderItemResolver` with synthetic folder handling.
-- Codex review #1 findings 1, 3, 4, 5 addressed (`any` existentials,
+- External review #1 findings 1, 3, 4, 5 addressed (`any` existentials,
   synthetic folder items, stable sync anchor, visibility tightened).
 - Dead-code pass: 15 unused `import BucketeerCore` removed,
   `CredentialCacheInvalidating` protocol + extensions deleted,
   `EntitlementManager.shutdown()` deleted, umbrella file deleted.
 
-### Codex deep-audit (commit `05fa218`)
-First Codex review across the entire spec-phase delta. 15 findings:
+### Deep audit (commit `05fa218`)
+First external review across the entire spec-phase delta. 15 findings:
 3 blockers + 5 high + 6 medium + 1 low — all addressed in the same
 commit. See the commit body for details.
 

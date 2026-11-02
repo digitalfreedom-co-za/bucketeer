@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import FileProvider
+@preconcurrency import FileProvider
 import BucketeerCore
 
 /// `NSFileProviderReplicatedExtension` is the modern (macOS 11+) hook
@@ -18,7 +18,7 @@ import BucketeerCore
 /// The identifier `"<accountID>::<bucket>"` is parsed by
 /// `ExtensionContainer.resolve(_:)` on every call so the right S3 /
 /// Azure account is targeted.
-final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
+final class FileProviderExtension: NSObject, @unchecked Sendable, NSFileProviderReplicatedExtension {
 
     let domain: NSFileProviderDomain
     let container: ExtensionContainer?
@@ -37,9 +37,10 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
     }
 
     func invalidate() {
-        // No connections to drain — S3 clients are pooled per-account
-        // inside the shared S3ClientFactory and the URL session is
-        // singleton.
+        // Each extension instance owns its S3ClientFactory; Soto requires
+        // every cached AWSClient to be shut down before it is dropped.
+        guard let factory = container?.clientFactory else { return }
+        Task { await factory.shutdownAll() }
     }
 
     // MARK: - Item
@@ -50,7 +51,9 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
         completionHandler: @escaping (NSFileProviderItem?, Error?) -> Void
     ) -> Progress {
         let progress = Progress(totalUnitCount: 1)
+        let ch = UncheckedSendable(value: completionHandler)
         let task = Task {
+            let completionHandler = ch.value
             guard let container = container else {
                 completionHandler(nil, self.containerError ?? Self.notProvisionedError())
                 return
@@ -65,12 +68,12 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
                 completionHandler(item, nil)
                 progress.completedUnitCount = 1
             } catch is CancellationError {
-                completionHandler(nil, FileProviderItemResolver.mappedError(.serverUnreachable))
+                completionHandler(nil, Self.cancelledError)
             } catch {
                 completionHandler(nil, error)
             }
         }
-        // Codex high #8: bridge Progress cancellation (Finder ⌘. or
+        // Bridge Progress cancellation (Finder ⌘. or
         // a system-initiated cancel) to the orchestrating Task so the
         // network work actually stops instead of running to completion
         // and calling the completion handler late.
@@ -87,12 +90,15 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
         completionHandler: @escaping (URL?, NSFileProviderItem?, Error?) -> Void
     ) -> Progress {
         let progress = Progress(totalUnitCount: 100)
+        let ch = UncheckedSendable(value: completionHandler)
         let task = Task {
+            let completionHandler = ch.value
             guard let container = container else {
                 completionHandler(nil, nil, self.containerError ?? Self.notProvisionedError())
                 return
             }
             do {
+                try container.refuseIfEncrypted(domain.identifier.rawValue)
                 let result = try await FileProviderItemResolver.fetchContents(
                     identifier: itemIdentifier,
                     in: domain,
@@ -104,12 +110,12 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
                 // used to throw past the result and orphan it in tmp.
                 if Task.isCancelled {
                     try? FileManager.default.removeItem(at: result.url)
-                    completionHandler(nil, nil, FileProviderItemResolver.mappedError(.serverUnreachable))
+                    completionHandler(nil, nil, Self.cancelledError)
                     return
                 }
                 completionHandler(result.url, result.item, nil)
             } catch is CancellationError {
-                completionHandler(nil, nil, FileProviderItemResolver.mappedError(.serverUnreachable))
+                completionHandler(nil, nil, Self.cancelledError)
             } catch {
                 completionHandler(nil, nil, error)
             }
@@ -129,12 +135,15 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
         completionHandler: @escaping (NSFileProviderItem?, NSFileProviderItemFields, Bool, Error?) -> Void
     ) -> Progress {
         let progress = Progress(totalUnitCount: 100)
+        let ch = UncheckedSendable(value: completionHandler)
         let task = Task {
+            let completionHandler = ch.value
             guard let container = container else {
                 completionHandler(nil, [], false, self.containerError ?? Self.notProvisionedError())
                 return
             }
             do {
+                try container.refuseIfEncrypted(domain.identifier.rawValue)
                 let created = try await FileProviderItemResolver.createItem(
                     template: itemTemplate,
                     contents: url,
@@ -142,10 +151,9 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
                     container: container,
                     progress: progress
                 )
-                try Task.checkCancellation()
                 completionHandler(created, [], false, nil)
             } catch is CancellationError {
-                completionHandler(nil, [], false, FileProviderItemResolver.mappedError(.serverUnreachable))
+                completionHandler(nil, [], false, Self.cancelledError)
             } catch {
                 completionHandler(nil, [], false, error)
             }
@@ -166,24 +174,27 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
         completionHandler: @escaping (NSFileProviderItem?, NSFileProviderItemFields, Bool, Error?) -> Void
     ) -> Progress {
         let progress = Progress(totalUnitCount: 100)
+        let ch = UncheckedSendable(value: completionHandler)
         let task = Task {
+            let completionHandler = ch.value
             guard let container = container else {
                 completionHandler(nil, [], false, self.containerError ?? Self.notProvisionedError())
                 return
             }
             do {
+                try container.refuseIfEncrypted(domain.identifier.rawValue)
                 let modified = try await FileProviderItemResolver.modifyItem(
                     item: item,
+                    baseVersion: version,
                     changedFields: changedFields,
                     contents: newContents,
                     in: domain,
                     container: container,
                     progress: progress
                 )
-                try Task.checkCancellation()
-                completionHandler(modified, [], false, nil)
+                completionHandler(modified.item, [], modified.shouldFetchContent, nil)
             } catch is CancellationError {
-                completionHandler(nil, [], false, FileProviderItemResolver.mappedError(.serverUnreachable))
+                completionHandler(nil, [], false, Self.cancelledError)
             } catch {
                 completionHandler(nil, [], false, error)
             }
@@ -202,7 +213,9 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
         completionHandler: @escaping (Error?) -> Void
     ) -> Progress {
         let progress = Progress(totalUnitCount: 1)
+        let ch = UncheckedSendable(value: completionHandler)
         let task = Task {
+            let completionHandler = ch.value
             guard let container = container else {
                 completionHandler(self.containerError ?? Self.notProvisionedError())
                 return
@@ -213,11 +226,10 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
                     in: domain,
                     container: container
                 )
-                try Task.checkCancellation()
                 completionHandler(nil)
                 progress.completedUnitCount = 1
             } catch is CancellationError {
-                completionHandler(FileProviderItemResolver.mappedError(.serverUnreachable))
+                completionHandler(Self.cancelledError)
             } catch {
                 completionHandler(error)
             }
@@ -243,6 +255,11 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
     }
 
     // MARK: - Helpers
+
+    /// The FileProvider contract for a cancelled progress is
+    /// `NSUserCancelledError`; `serverUnreachable` would make the system
+    /// show an offline state and retry.
+    private static let cancelledError: Error = CocoaError(.userCancelled)
 
     private static func notProvisionedError() -> Error {
         NSError(

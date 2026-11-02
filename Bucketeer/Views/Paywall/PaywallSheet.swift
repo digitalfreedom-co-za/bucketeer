@@ -7,10 +7,13 @@
 
 import SwiftUI
 import StoreKit
+import BucketeerCore
 
 /// Single-page upsell shown when a Free user reaches a gated feature
 /// (mount, sync, cross-account copy, menubar) or opens Settings → Pro.
-/// One product, one price, one button — no funnel, no nag.
+/// One paid product, one price, one button — no funnel, no nag. Users
+/// who never claimed the trial also see the trial terms and a
+/// "Start trial" button.
 struct PaywallSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openWindow) private var openWindow
@@ -27,6 +30,7 @@ struct PaywallSheet: View {
             header
             bulletList
             priceCard
+            trialCard
             footer
         }
         .padding(36)
@@ -62,7 +66,10 @@ struct PaywallSheet: View {
 
     private var bulletList: some View {
         VStack(alignment: .leading, spacing: 12) {
-            bullet("paywall.bullet.mount", icon: "externaldrive.badge.plus")
+            bullet(
+                MountController.isSupportedOnThisSystem ? "paywall.bullet.mount" : "paywall.bullet.mount.requiresNewerMacOS",
+                icon: "externaldrive.badge.plus"
+            )
             bullet("paywall.bullet.sync", icon: "arrow.triangle.2.circlepath")
             bullet("paywall.bullet.crossAccount", icon: "rectangle.2.swap")
             bullet("paywall.bullet.menubar", icon: "menubar.rectangle")
@@ -105,15 +112,46 @@ struct PaywallSheet: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            Button("paywall.button.restore") {
-                Task { await restore() }
+            HStack(spacing: 16) {
+                Button("paywall.button.restore") {
+                    Task { await restore() }
+                }
+                .disabled(entitlement.purchaseInProgress)
+                RedeemCodeButton()
             }
             .buttonStyle(.borderless)
-            .disabled(entitlement.purchaseInProgress)
         }
         .padding(16)
         .frame(maxWidth: .infinity)
         .background(.background.secondary, in: RoundedRectangle(cornerRadius: 14))
+    }
+
+    /// Shown only while the trial is unclaimed and both products are
+    /// loaded, so the terms always carry the real Pro Lifetime price.
+    @ViewBuilder
+    private var trialCard: some View {
+        let entitlement = container.entitlementManager
+        if entitlement.isTrialAvailable,
+           entitlement.trialProduct != nil,
+           let lifetime = entitlement.product {
+            VStack(spacing: 8) {
+                Text("paywall.trial.title \(ProAccessResolver.trialLengthDays)")
+                    .font(.headline)
+                Text("paywall.trial.terms \(ProAccessResolver.trialLengthDays) \(lifetime.displayPrice)")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button("paywall.trial.start") {
+                    Task { await startTrial() }
+                }
+                .controlSize(.large)
+                .disabled(entitlement.purchaseInProgress)
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity)
+            .background(.background.secondary, in: RoundedRectangle(cornerRadius: 14))
+        }
     }
 
     @ViewBuilder
@@ -184,11 +222,26 @@ struct PaywallSheet: View {
         }
     }
 
+    private func startTrial() async {
+        purchaseError = nil
+        do {
+            try await container.entitlementManager.startTrial()
+            if case .trial = container.entitlementManager.state {
+                dismiss()
+            }
+        } catch let error as EntitlementManager.EntitlementError {
+            purchaseError = error.errorDescription
+        } catch {
+            purchaseError = error.localizedDescription
+        }
+    }
+
     private func restore() async {
         purchaseError = nil
         do {
             try await container.entitlementManager.restorePurchases()
-            if case .pro = container.entitlementManager.state {
+            // A restored running trial unlocks Pro as well.
+            if container.entitlementManager.state != .free {
                 dismiss()
             }
         } catch let error as EntitlementManager.EntitlementError {

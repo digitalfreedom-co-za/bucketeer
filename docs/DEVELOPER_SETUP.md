@@ -48,34 +48,42 @@ The product lands at:
 
 ---
 
-## 3. Run the Core test suite
+## 3. Run the tests
 
-`BucketeerCore` is a local Swift package with an SPM test target. No
-Xcode test bundle required.
+Tests exist only where they pay for themselves: formulas, business
+rules and flows, plus off-screen renders of every screen. No blanket
+suites.
+
+### Core package
+
+`BucketeerCore` is a local Swift package with an SPM test target
+(Swift Testing: `import Testing`, `@Test`, `#expect`).
 
 ```bash
-cd BucketeerCore
-swift test
+swift test --package-path BucketeerCore               # all (~140 tests, ~3 s)
+swift test --package-path BucketeerCore --filter SyncPlanner
 ```
 
-Expected output: **84 tests in 8 suites, all green**, ~25 ms wall.
+### Host app (`BucketeerTests`)
 
-Suites:
+An XCTest bundle **without a test host**: it compiles the host sources
+(everything in `Bucketeer/` except `App/BucketeerApp.swift`) and the
+string catalog, so running it never launches Bucketeer.app.
 
-| Suite | Tests | What it covers |
-|---|---|---|
-| `AzureSharedKeySigner` | 10 | Azure Shared-Key HMAC-SHA256 signing |
-| `AzureRequestBuilder` | 9 | URL composition + block-blob XML |
-| `AzureListXMLParser` | 6 | container + blob XML parsing |
-| `S3ClientFactory.endpoint` | 12 | per-provider URL templates |
-| `S3Provider` | 11 | defaults + family routing |
-| `SyncPlanner` | 19 | diff plans, mirror deletes, local-folder paths |
-| `TrialBookkeeping` | 11 | trial bookkeeping incl. clamp + sticky marker |
-| `LocalFolderWriter.safeChildURL` | 6 | path-traversal guard |
+```bash
+xcodebuild -project Bucketeer.xcodeproj -scheme BucketeerTests \
+  -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO test
+# one suite:  -only-testing:BucketeerTests/SyncEngineSchedulingTests
+```
 
-Add new test files alongside the existing ones under
-`BucketeerCore/Tests/BucketeerCoreTests/`. Use Swift Testing
-(`import Testing`, `@Test`, `#expect`) — not XCTest.
+- `*RenderTests` render each screen and sheet in empty / populated /
+  error states into an off-screen window that is never shown, check the
+  key content with Vision OCR and write PNGs for a visual check.
+- `AppContainer(configuration:)` with `.inMemory` stores, an in-memory
+  Keychain (`InMemoryKeychain`) and object store (`InMemoryS3Browser`,
+  shared with the Core tests) keeps tests away from real data, the
+  Keychain and real accounts.
+- The target is created by `scripts/add_test_target.rb`.
 
 ---
 
@@ -123,11 +131,12 @@ actual scheme file backs it — ignore it.
 The App is sandboxed even in Debug. Practical implications when you
 run from Xcode:
 
-- **Account credentials** live in the macOS Keychain. Debug runs
-  without provisioned shared-group entitlement fall back to the
-  private namespace, so the File Provider extension (if you wire it
-  up) cannot read them across processes. Add accounts after enabling
-  the shared group to test the extension path end-to-end.
+- **Account credentials** live in the shared access group of the
+  data-protection keychain, which host and File Provider extension
+  both read. That keychain needs a signed build with the shared group
+  provisioned; unsigned builds get `errSecMissingEntitlement` (-34018)
+  when saving an account. Credentials that earlier builds stored in
+  the file-based login keychain are copied over at launch.
 - **Local-folder sync** asks for security-scoped bookmarks via
   NSOpenPanel. Bookmarks resolved from the previous session will
   surface `isStale` if you've moved the folder — the engine throws
@@ -155,19 +164,22 @@ file when you want to bring the mount feature to life.
 
 ## 8. StoreKit testing
 
-Phase B paywall uses StoreKit 2. The Mac App Store IAP product
-`za.co.digitalfreedom.bucketeer.pro.lifetime` must exist in App Store
-Connect before TestFlight or production builds will see it.
+The paywall uses StoreKit 2 with two non-consumable IAP products, both
+of which must exist in App Store Connect before TestFlight or
+production builds will see them:
+
+- `za.co.digitalfreedom.bucketeer.pro.lifetime` (paid, Family Sharing on)
+- `za.co.digitalfreedom.bucketeer.pro.trial` (price Free, Family Sharing off)
 
 Local testing uses `Bucketeer/Bucketeer.storekit`, which the scheme
 references (Xcode → Edit Scheme → Run → Options → StoreKit
 Configuration). Reset the local entitlement via Xcode → Debug →
 StoreKit → Manage Transactions during runs.
 
-The 14-day trial timer persists in `UserDefaults` with keys
-`bucketeer.trial.start` and `bucketeer.trial.consumed`. To restart a
-trial during development, delete both — the consumed-marker is
-specifically sticky in production to block the trial-reset bypass.
+The trial is not stored locally. It runs for 14 days from the trial
+transaction's original purchase date (`ProAccessResolver` in Core). To
+test it again, delete the trial transaction in Manage Transactions; to
+test the expiry, change the transaction's purchase date there.
 
 ---
 
