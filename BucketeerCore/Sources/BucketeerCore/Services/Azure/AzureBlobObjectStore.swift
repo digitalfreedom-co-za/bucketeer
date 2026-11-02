@@ -95,7 +95,7 @@ public struct AzureBlobObjectStore: S3Browsing {
         request.httpMethod = "HEAD"
         signer.sign(&request)
 
-        let (_, response) = try await session.data(for: request)
+        let (_, response) = try await session.azureData(for: request)
         guard let http = response as? HTTPURLResponse else {
             throw BucketeerError.unknown(message: "Azure HEAD returned a non-HTTP response.")
         }
@@ -248,7 +248,7 @@ public struct AzureBlobObjectStore: S3Browsing {
         // finishes — Codex blocker #1: the previous "fire and assume
         // success" path caused the rename / move flow to delete the
         // source while the copy was still pending, losing data.
-        let (_, response) = try await session.data(for: request)
+        let (_, response) = try await session.azureData(for: request)
         guard let http = response as? HTTPURLResponse else {
             throw BucketeerError.unknown(message: "Azure Copy Blob returned a non-HTTP response.")
         }
@@ -295,7 +295,7 @@ public struct AzureBlobObjectStore: S3Browsing {
             var head = URLRequest(url: builder.blobPropertiesURL(container: container, blob: key))
             head.httpMethod = "HEAD"
             signer.sign(&head)
-            let (_, response) = try await session.data(for: head)
+            let (_, response) = try await session.azureData(for: head)
             guard let http = response as? HTTPURLResponse else {
                 throw BucketeerError.unknown(message: "Azure copy poll returned a non-HTTP response.")
             }
@@ -435,7 +435,7 @@ public struct AzureBlobObjectStore: S3Browsing {
             forHTTPHeaderField: "x-ms-copy-source"
         )
         signer.sign(&request)
-        let (_, response) = try await session.data(for: request)
+        let (_, response) = try await session.azureData(for: request)
         guard let http = response as? HTTPURLResponse else {
             throw BucketeerError.unknown(message: "Azure snapshot restore returned a non-HTTP response.")
         }
@@ -489,7 +489,7 @@ public struct AzureBlobObjectStore: S3Browsing {
         // `x-ms-delete-snapshots = only` would error here because the
         // URL already targets a snapshot — leave it off.
         signer.sign(&request)
-        let (data, response) = try await session.data(for: request)
+        let (data, response) = try await session.azureData(for: request)
         guard let http = response as? HTTPURLResponse else {
             throw BucketeerError.unknown(message: "Azure snapshot delete returned a non-HTTP response.")
         }
@@ -521,7 +521,7 @@ public struct AzureBlobObjectStore: S3Browsing {
         var head = URLRequest(url: builder.blobPropertiesURL(container: bucket, blob: key))
         head.httpMethod = "HEAD"
         signer.sign(&head)
-        let (_, headResponse) = try await session.data(for: head)
+        let (_, headResponse) = try await session.azureData(for: head)
         guard let http = headResponse as? HTTPURLResponse else {
             throw BucketeerError.unknown(message: "Azure HEAD for metadata returned a non-HTTP response.")
         }
@@ -607,7 +607,7 @@ public struct AzureBlobObjectStore: S3Browsing {
         var head = URLRequest(url: builder.blobPropertiesURL(container: bucket, blob: key))
         head.httpMethod = "HEAD"
         signer.sign(&head)
-        let (_, headResponse) = try await session.data(for: head)
+        let (_, headResponse) = try await session.azureData(for: head)
         guard let headHTTP = headResponse as? HTTPURLResponse else {
             throw BucketeerError.unknown(
                 message: "Azure HEAD before saveMetadata returned a non-HTTP response."
@@ -682,7 +682,7 @@ public struct AzureBlobObjectStore: S3Browsing {
     /// Small helper used by saveMetadata to send a request and bubble
     /// any non-2xx response through the standard `mapHTTP` path.
     private func fireAndCheck(request: URLRequest, bucket: String, key: String) async throws {
-        let (data, response) = try await session.data(for: request)
+        let (data, response) = try await session.azureData(for: request)
         guard let http = response as? HTTPURLResponse else {
             throw BucketeerError.unknown(
                 message: "Azure metadata update returned a non-HTTP response."
@@ -723,7 +723,7 @@ public struct AzureBlobObjectStore: S3Browsing {
     ) async throws -> Data {
         let (data, response): (Data, URLResponse)
         do {
-            (data, response) = try await session.data(for: request)
+            (data, response) = try await session.azureData(for: request)
         } catch is CancellationError {
             throw BucketeerError.cancelled
         } catch {
@@ -752,7 +752,7 @@ public struct AzureBlobObjectStore: S3Browsing {
         request.setValue("include", forHTTPHeaderField: "x-ms-delete-snapshots")
         signer.sign(&request)
 
-        let (_, response) = try await session.data(for: request)
+        let (_, response) = try await session.azureData(for: request)
         guard let http = response as? HTTPURLResponse else {
             throw BucketeerError.unknown(message: "Azure DELETE returned a non-HTTP response.")
         }
@@ -813,7 +813,12 @@ public struct AzureBlobObjectStore: S3Browsing {
 
     /// Map transport-layer errors (DNS, TLS, offline) into BucketeerError.
     static func mapTransport(_ error: Error) -> BucketeerError {
+        if let existing = error as? BucketeerError { return existing }
+        if error is CancellationError { return .cancelled }
         let nsError = error as NSError
+        if nsError.domain == NSURLErrorDomain, nsError.code == NSURLErrorCancelled {
+            return .cancelled
+        }
         if nsError.domain == NSURLErrorDomain {
             switch nsError.code {
             case NSURLErrorCannotFindHost,
@@ -861,7 +866,7 @@ public struct AzureBlobObjectStore: S3Browsing {
 
         let (data, response): (Data, URLResponse)
         do {
-            (data, response) = try await session.data(for: request)
+            (data, response) = try await session.azureData(for: request)
         } catch {
             throw Self.mapTransport(error)
         }
@@ -870,6 +875,18 @@ public struct AzureBlobObjectStore: S3Browsing {
         }
         if let mapped = Self.mapHTTP(http, body: data, bucket: nil, key: nil) {
             throw mapped
+        }
+    }
+}
+
+extension URLSession {
+    /// `data(for:)` with transport errors translated to `BucketeerError`,
+    /// so no raw `URLError` / `CancellationError` reaches the UI.
+    func azureData(for request: URLRequest) async throws -> (Data, URLResponse) {
+        do {
+            return try await data(for: request)
+        } catch {
+            throw AzureBlobObjectStore.mapTransport(error)
         }
     }
 }
