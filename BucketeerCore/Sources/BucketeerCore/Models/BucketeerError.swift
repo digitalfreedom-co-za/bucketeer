@@ -24,6 +24,7 @@ public enum BucketeerError: Error, Sendable, Equatable {
     /// (e.g. asking Azure Blob Storage for S3-style object versions).
     /// Phase 13.6.
     case featureNotSupported(featureKey: String)
+    /// `message` is shown as-is, so it must already be user-facing text.
     case unknown(message: String)
 }
 
@@ -61,8 +62,10 @@ extension BucketeerError: LocalizedError {
             return String(localized: "error.featureNotSupported",
                           defaultValue: "This provider does not support \(featureKey).")
         case .unknown(let message):
-            return String(localized: "error.unknown",
-                          defaultValue: "Unexpected error: \(message)")
+            // Call sites pass either an already-localized explanation or
+            // a system `localizedDescription`; wrapping it in a catalog
+            // entry used to drop the message (the entry had no `%@`).
+            return message
         }
     }
 }
