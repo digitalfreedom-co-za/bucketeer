@@ -17,13 +17,9 @@ import BucketeerCore
 /// - `enumerateItems(for:startingAt:)` finishes by calling
 ///   `finishEnumerating(upTo:)` with either `nil` (no more pages) or
 ///   the next `NSFileProviderPage` (a continuation cursor).
-/// - `currentSyncAnchor` returns a monotonically-increasing token; we
-///   emit a fresh anchor on every change so the system re-enumerates
-///   the affected container after host-side writes.
-/// - `enumerateChanges(for:from:)` is a no-op in v1 — pull-based; the
-///   host signals the system via `NSFileProviderManager.signalEnumerator`
-///   when a write through the host app should be reflected in Finder
-///   (wired in Phase 9.5.1).
+/// - Change tracking is not implemented in v1: `currentSyncAnchor` is a
+///   fixed value and `enumerateChanges` reports no changes. Finder picks
+///   up remote changes only when it re-enumerates a folder.
 final class FileProviderEnumerator: NSObject, @unchecked Sendable, NSFileProviderEnumerator {
     let domain: NSFileProviderDomain
     let containerIdentifier: NSFileProviderItemIdentifier
@@ -40,66 +36,103 @@ final class FileProviderEnumerator: NSObject, @unchecked Sendable, NSFileProvide
         super.init()
     }
 
-    /// In-flight enumeration, cancelled on `invalidate()`. The system
-    /// calls `invalidate` when the enumeration is superseded or the
-    /// observer goes away — touching the observer after that point is
-    /// undefined behaviour per Apple's contract, so every observer
-    /// call below re-checks for cancellation first.
+    /// Serialises task replacement, invalidation and observer delivery.
+    /// Invariant: an observer is only called while `lock` is held and
+    /// only if the publishing task's generation is still current, so
+    /// once `invalidate()` (or a superseding enumeration) has taken the
+    /// lock, the superseded task can no longer reach its observer. This
+    /// is what makes the `@unchecked Sendable` conformance sound.
+    private let lock = NSLock()
+    /// Guarded by `lock`.
+    private var generation: UInt64 = 0
+    /// Guarded by `lock`.
     private var enumerationTask: Task<Void, Never>?
 
     func invalidate() {
-        enumerationTask?.cancel()
-        enumerationTask = nil
+        lock.withLock {
+            generation &+= 1
+            enumerationTask?.cancel()
+            enumerationTask = nil
+        }
     }
 
     func enumerateItems(
         for observer: NSFileProviderEnumerationObserver,
         startingAt page: NSFileProviderPage
     ) {
-        // A superseding enumeration must cancel the previous one, or
-        // the old task could still touch its (now stale) observer.
-        enumerationTask?.cancel()
         let obs = UncheckedSendable(value: observer)
-        enumerationTask = Task {
-            let observer = obs.value
-            do {
-                guard let mountInfo = try await extensionContainer.resolve(domain.identifier.rawValue) else {
-                    guard !Task.isCancelled else { return }
-                    observer.finishEnumeratingWithError(
+        lock.withLock {
+            generation &+= 1
+            let token = generation
+            enumerationTask?.cancel()
+            enumerationTask = Task {
+                await self.enumerate(page: page, generation: token, observer: obs)
+            }
+        }
+    }
+
+    private func enumerate(
+        page: NSFileProviderPage,
+        generation token: UInt64,
+        observer obs: UncheckedSendable<NSFileProviderEnumerationObserver>
+    ) async {
+        do {
+            guard let mountInfo = try await extensionContainer.resolve(domain.identifier.rawValue) else {
+                publish(token) {
+                    obs.value.finishEnumeratingWithError(
                         FileProviderItemResolver.mappedError(.providerDomainNotFound)
                     )
-                    return
                 }
-                let prefix = FileProviderItemResolver.key(from: containerIdentifier) ?? ""
-                let token = continuationToken(from: page)
-                let result = try await extensionContainer.browser.listObjects(
-                    account: mountInfo.account,
-                    bucket: mountInfo.bucket,
-                    prefix: prefix,
-                    continuationToken: token
+                return
+            }
+            // v1 reports the root listing as the working set; its items
+            // keep their real parent, never the synthetic container.
+            let isWorkingSet = containerIdentifier == .workingSet
+            let parent: NSFileProviderItemIdentifier = isWorkingSet ? .rootContainer : containerIdentifier
+            guard let prefix = isWorkingSet ? "" : FileProviderItemResolver.key(from: containerIdentifier) else {
+                publish(token) {
+                    obs.value.finishEnumeratingWithError(FileProviderItemResolver.mappedError(.noSuchItem))
+                }
+                return
+            }
+            let result = try await extensionContainer.browser.listObjects(
+                account: mountInfo.account,
+                bucket: mountInfo.bucket,
+                prefix: prefix,
+                continuationToken: continuationToken(from: page)
+            )
+            let items: [NSFileProviderItem] = result.objects.map { object in
+                ResolvedItem(
+                    identifier: FileProviderItemResolver.identifier(for: object.key),
+                    parent: parent,
+                    object: object
                 )
-                guard !Task.isCancelled else { return }
-                let items: [NSFileProviderItem] = result.objects.map { object in
-                    ResolvedItem(
-                        identifier: FileProviderItemResolver.identifier(for: object.key),
-                        parent: containerIdentifier,
-                        object: object
-                    )
-                }
-                observer.didEnumerate(items)
-                let nextPage: NSFileProviderPage?
-                if result.hasMore, let nextToken = result.continuationToken {
-                    nextPage = NSFileProviderPage(Data(nextToken.utf8))
-                } else {
-                    nextPage = nil
-                }
-                observer.finishEnumerating(upTo: nextPage)
-            } catch {
-                guard !Task.isCancelled else { return }
-                observer.finishEnumeratingWithError(
+            }
+            let nextPage: NSFileProviderPage?
+            if result.hasMore, let nextToken = result.continuationToken {
+                nextPage = NSFileProviderPage(Data(nextToken.utf8))
+            } else {
+                nextPage = nil
+            }
+            publish(token) {
+                obs.value.didEnumerate(items)
+                obs.value.finishEnumerating(upTo: nextPage)
+            }
+        } catch {
+            publish(token) {
+                obs.value.finishEnumeratingWithError(
                     FileProviderItemResolver.fileProviderError(error, fallback: .serverUnreachable)
                 )
             }
+        }
+    }
+
+    /// Delivers to the observer only if `token` is still the current
+    /// generation; see the invariant on `lock`.
+    private func publish(_ token: UInt64, _ delivery: () -> Void) {
+        lock.withLock {
+            guard generation == token else { return }
+            delivery()
         }
     }
 
@@ -143,6 +176,6 @@ final class FileProviderEnumerator: NSObject, @unchecked Sendable, NSFileProvide
 /// boundary. Use only where the value is provably safe to transfer —
 /// NSFileProvider observer and completion handler types are designed for
 /// cross-thread invocation, so the @unchecked conformance is warranted.
-private struct UncheckedSendable<T>: @unchecked Sendable {
+struct UncheckedSendable<T>: @unchecked Sendable {
     let value: T
 }
