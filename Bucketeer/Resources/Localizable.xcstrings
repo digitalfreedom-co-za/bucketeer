@@ -242,6 +242,125 @@
         }
       }
     },
+    "account.endpoint.httpWarning" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tato adresa používá http://, takže připojení není šifrované. Názvy objektů, obsah souborů a požadavky lze v síti přečíst. Použijte https://, pokud server není v síti, které důvěřujete."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne adresse bruger http://, så forbindelsen er ikke krypteret. Objektnavne, filindhold og forespørgsler kan læses på netværket. Brug https://, medmindre serveren er på et netværk, du stoler på."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Adresse nutzt http://, die Verbindung ist also nicht verschlüsselt. Objektnamen, Dateiinhalte und Anfragen können im Netzwerk mitgelesen werden. Nutze https://, außer der Server steht in einem Netzwerk, dem du vertraust."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αυτή η διεύθυνση χρησιμοποιεί http://, επομένως η σύνδεση δεν είναι κρυπτογραφημένη. Τα ονόματα αντικειμένων, το περιεχόμενο αρχείων και τα αιτήματα μπορούν να διαβαστούν στο δίκτυο. Χρησιμοποιήστε https://, εκτός αν ο διακομιστής βρίσκεται σε δίκτυο που εμπιστεύεστε."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This address uses http://, so the connection is not encrypted. Object names, file content and requests can be read on the network. Use https:// unless the server is in a network you trust."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta dirección usa http://, así que la conexión no está cifrada. Los nombres de objetos, el contenido de los archivos y las solicitudes se pueden leer en la red. Usa https:// salvo que el servidor esté en una red de confianza."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tämä osoite käyttää http://-muotoa, joten yhteys ei ole salattu. Objektien nimet, tiedostojen sisältö ja pyynnöt voidaan lukea verkossa. Käytä https://-osoitetta, ellei palvelin ole luotetussa verkossa."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette adresse utilise http://, la connexion n'est donc pas chiffrée. Les noms d'objets, le contenu des fichiers et les requêtes peuvent être lus sur le réseau. Utilisez https://, sauf si le serveur se trouve sur un réseau de confiance."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ez a cím http://-t használ, így a kapcsolat nincs titkosítva. Az objektumnevek, a fájlok tartalma és a kérések a hálózaton olvashatók. Használj https://-t, hacsak a szerver nem megbízható hálózatban van."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo indirizzo usa http://, quindi la connessione non è crittografata. Nomi degli oggetti, contenuto dei file e richieste possono essere letti in rete. Usa https://, a meno che il server non si trovi in una rete di cui ti fidi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このアドレスは http:// を使用しているため、接続は暗号化されません。オブジェクト名、ファイルの内容、リクエストはネットワーク上で読み取られる可能性があります。信頼できるネットワーク内のサーバでない限り https:// を使用してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 주소는 http://를 사용하므로 연결이 암호화되지 않습니다. 객체 이름, 파일 내용 및 요청이 네트워크에서 읽힐 수 있습니다. 신뢰할 수 있는 네트워크의 서버가 아니라면 https://를 사용하십시오."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne adressen bruker http://, så tilkoblingen er ikke kryptert. Objektnavn, filinnhold og forespørsler kan leses på nettverket. Bruk https:// med mindre serveren er i et nettverk du stoler på."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dit adres gebruikt http://, dus de verbinding is niet versleuteld. Objectnamen, bestandsinhoud en verzoeken kunnen op het netwerk worden meegelezen. Gebruik https://, tenzij de server in een netwerk staat dat je vertrouwt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ten adres używa http://, więc połączenie nie jest szyfrowane. Nazwy obiektów, zawartość plików i żądania można odczytać w sieci. Używaj https://, chyba że serwer jest w zaufanej sieci."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este endereço usa http://, então a conexão não é criptografada. Nomes de objetos, conteúdo dos arquivos e solicitações podem ser lidos na rede. Use https://, a menos que o servidor esteja em uma rede confiável."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este endereço utiliza http://, pelo que a ligação não é encriptada. Os nomes dos objetos, o conteúdo dos ficheiros e os pedidos podem ser lidos na rede. Utilize https://, exceto se o servidor estiver numa rede de confiança."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Этот адрес использует http://, поэтому соединение не шифруется. Имена объектов, содержимое файлов и запросы могут быть прочитаны в сети. Используйте https://, если сервер не находится в доверенной сети."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den här adressen använder http://, så anslutningen är inte krypterad. Objektnamn, filinnehåll och förfrågningar kan läsas i nätverket. Använd https:// om inte servern finns i ett nätverk du litar på."
+          }
+        }
+      }
+    },
     "browser.action.rename.exists" : {
       "extractionState" : "manual",
       "localizations" : {

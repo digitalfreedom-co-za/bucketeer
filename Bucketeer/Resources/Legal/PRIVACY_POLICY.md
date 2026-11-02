@@ -80,8 +80,13 @@ Keychain Access.
 | Links you open (website, support form, GitHub, Apple refund page) | Only when you click them | Request from your browser | The operator of that page |
 
 The App sends no data to the provider. Requests to your storage
-endpoints go directly from your Mac to the endpoint over TLS; the
-provider is not on that path.
+endpoints go directly from your Mac to the endpoint; the provider is
+not on that path. The built-in provider addresses are reached over TLS
+(https). If you enter an endpoint address yourself (custom S3, MinIO or
+an endpoint override) and it starts with http://, for example a server
+in your own network, the App connects without TLS, as you asked: object names, metadata, file content and the signed
+requests then travel unencrypted and can be read on the network path.
+The App shows a warning when you enter such an address.
 
 ---
 
@@ -243,8 +248,10 @@ therefore does not knowingly process personal data of children.
 - Credentials and encryption keys are kept in the macOS Keychain, only
   available while the Mac is unlocked and not synchronised via iCloud.
   They are not written to log files or shown in error messages.
-- Connections to storage endpoints use TLS. Requests are signed on
-  your Mac (AWS Signature Version 4 or Azure Shared Key).
+- Connections to storage endpoints use TLS, except an endpoint address
+  you enter yourself with http:// (see section 4). Requests are
+  signed on your Mac (AWS Signature Version 4 or Azure Shared Key);
+  the secret key itself is never sent.
 
 No software is free of defects. Please report security issues to
 security@digitalfreedom.co.za.
