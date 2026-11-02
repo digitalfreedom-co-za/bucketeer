@@ -539,7 +539,9 @@ final class ResolvedItem: NSObject, NSFileProviderItem {
         self.filename = object.displayName
         self.isFolder = object.isFolder
         self.size = object.size
-        self.modificationDate = object.lastModified
+        // Folders are listing prefixes without a date (`.distantPast`);
+        // Finder would show year 1.
+        self.modificationDate = object.lastModified == .distantPast ? nil : object.lastModified
         self.etag = object.etag
         super.init()
     }

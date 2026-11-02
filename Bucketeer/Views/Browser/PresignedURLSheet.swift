@@ -52,6 +52,10 @@ struct PresignedURLSheet: View {
             }
         }
 
+        /// 7 days — the SigV4 maximum; the service clamps to it too, so
+        /// a larger typed value would show a later expiry than the URL has.
+        static let customMinutesRange = 1...10_080
+
         func seconds(custom: Int) -> TimeInterval {
             switch self {
             case .fifteenMinutes: return 15 * 60
@@ -59,7 +63,9 @@ struct PresignedURLSheet: View {
             case .sixHours:       return 6 * 60 * 60
             case .oneDay:         return 24 * 60 * 60
             case .sevenDays:      return 7 * 24 * 60 * 60
-            case .custom:         return TimeInterval(max(1, custom) * 60)
+            case .custom:
+                let range = Self.customMinutesRange
+                return TimeInterval(min(max(custom, range.lowerBound), range.upperBound) * 60)
             }
         }
     }
@@ -122,7 +128,7 @@ struct PresignedURLSheet: View {
                 .frame(width: 80)
                 .multilineTextAlignment(.trailing)
                 .onSubmit { Task { await generate() } }
-            Stepper(value: $customMinutes, in: 1...10_080, step: 5, label: { EmptyView() })
+            Stepper(value: $customMinutes, in: TTLOption.customMinutesRange, step: 5, label: { EmptyView() })
                 .labelsHidden()
         }
         // The stepper mutates customMinutes without an onSubmit — the

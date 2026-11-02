@@ -89,10 +89,13 @@ final class DeepLinkRouter {
     ) async {
         do {
             let accounts = try await accountStore.all()
-            // Codex audit R2 (medium): bail if a newer handle()
+            // Bail if a newer handle()
             // bumped the token while we were awaiting accountStore.
             guard token == routeToken else { return }
             guard let account = accounts.first(where: { $0.id == accountID }) else { return }
+            // Full reset first: a selection left over from the previous
+            // bucket must not be applied to keys of the new one.
+            browser.clear()
             browser.account = account
             browser.bucket = bucket
             browser.prefix = prefix

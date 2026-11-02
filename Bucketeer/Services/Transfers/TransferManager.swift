@@ -270,6 +270,9 @@ actor TransferManager: Transferring {
             terminalCache[id] = item.task.state
             return item.task.state
         }
+        // Unknown (or already cleared from the queue): nothing would
+        // ever resume the waiter.
+        guard items[id] != nil else { return .cancelled }
         return await withCheckedContinuation { (continuation: CheckedContinuation<TransferState, Never>) in
             waiters[id, default: []].append(continuation)
         }
