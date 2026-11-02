@@ -60,6 +60,25 @@ struct FinderChangeStateTests {
         #expect(diff.deleted == ["docs/old/", "docs/old/x.txt"])
         #expect(current.trackedPrefixes == ["", "docs/"])
     }
+
+    @Test("A listing of some prefixes neither deletes nor reports items of the others")
+    func partialListingKeepsOtherPrefixes() {
+        var current = state(["docs/": "", "top.txt": "1"])
+        current.record(["docs/a.txt": "1"], under: "docs/")
+        let diff = current.advance(to: ["docs/": "", "top.txt": "2"], listedPrefixes: [""], anchor: "a2")
+        #expect(diff == ListingDiff(updated: ["top.txt"], deleted: []))
+        #expect(current.entries["docs/a.txt"] == "1")
+    }
+
+    @Test("Recording delivered items bumps the revision and tracks the folder")
+    func recordBumpsRevision() {
+        var current = state([:])
+        let before = current.revision
+        current.record(["docs/a.txt": "\"1\""], under: "docs/")
+        #expect(current.revision > before)
+        #expect(current.trackedPrefixes.contains("docs/"))
+        #expect(current.entries["docs/a.txt"] == "1")
+    }
 }
 
 @Suite("ETag.matches")

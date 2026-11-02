@@ -28,8 +28,13 @@ public struct FinderChangeState: Codable, Equatable, Sendable {
     public private(set) var anchor: String
     /// Folder prefixes Finder has enumerated; `""` is the bucket root.
     public private(set) var trackedPrefixes: Set<String> = [""]
-    /// Key → unquoted ETag (`""` for folders) of the last listing.
+    /// Key → unquoted ETag (`""` for folders) of what the system has
+    /// been given: the last change listing plus every item a folder
+    /// enumeration delivered since.
     public private(set) var entries: [String: String] = [:]
+    /// Bumped on every change, so a caller that read the state before
+    /// an await can tell whether somebody changed it meanwhile.
+    public private(set) var revision = 0
 
     public init(anchor: String) {
         self.anchor = anchor
@@ -38,29 +43,61 @@ public struct FinderChangeState: Codable, Equatable, Sendable {
     /// Returns `true` when the prefix was not tracked yet.
     @discardableResult
     public mutating func track(prefix: String) -> Bool {
-        trackedPrefixes.insert(prefix).inserted
+        let inserted = trackedPrefixes.insert(prefix).inserted
+        if inserted { revision += 1 }
+        return inserted
+    }
+
+    /// A folder enumeration handed these items (key → ETag, one page of
+    /// `prefix`) to the system. They join the baseline, so a later
+    /// deletion of any of them is reported.
+    public mutating func record(_ delivered: [String: String], under prefix: String) {
+        track(prefix: prefix)
+        for (key, etag) in delivered where Self.parent(of: key) == prefix {
+            entries[key] = ETag.normalized(etag)
+        }
+        revision += 1
     }
 
     /// Replaces the remembered listing with `listing` (the fresh
     /// listing of all tracked prefixes) and returns what changed.
     public mutating func advance(to listing: [String: String], anchor newAnchor: String) -> ListingDiff {
-        let fresh = listing.mapValues(ETag.normalized)
+        advance(to: listing, listedPrefixes: trackedPrefixes, anchor: newAnchor)
+    }
+
+    /// Like `advance(to:anchor:)` for a listing of `listedPrefixes`
+    /// only. Entries of other prefixes (tracked after the listing was
+    /// taken) stay as they are and produce no changes.
+    public mutating func advance(
+        to listing: [String: String],
+        listedPrefixes: Set<String>,
+        anchor newAnchor: String
+    ) -> ListingDiff {
+        let fresh = listing
+            .filter { listedPrefixes.contains(Self.parent(of: $0.key)) }
+            .mapValues(ETag.normalized)
         let updated = fresh.filter { entries[$0.key] != $0.value }.map(\.key).sorted()
-        let deleted = entries.keys.filter { fresh[$0] == nil }.sorted()
-        entries = fresh
+        let deleted = entries.keys
+            .filter { listedPrefixes.contains(Self.parent(of: $0)) && fresh[$0] == nil }
+            .sorted()
+        for key in deleted { entries.removeValue(forKey: key) }
+        entries.merge(fresh) { _, new in new }
         anchor = newAnchor
+        revision += 1
         pruneVanishedFolders()
         return ListingDiff(updated: updated, deleted: deleted)
     }
 
     /// A folder whose parent is tracked but which no longer shows up in
-    /// that parent's listing is gone; stop listing it.
+    /// that parent's listing is gone; stop listing it and forget what
+    /// was under it.
     private mutating func pruneVanishedFolders() {
         trackedPrefixes = trackedPrefixes.filter { prefix in
             prefix.isEmpty
                 || !trackedPrefixes.contains(Self.parent(of: prefix))
                 || entries[prefix] != nil
         }
+        entries = entries.filter { trackedPrefixes.contains(Self.parent(of: $0.key)) }
     }
 
     static func parent(of prefix: String) -> String {
