@@ -90,23 +90,19 @@ public actor KeychainStore: KeychainStoring {
     /// One-shot migration from the legacy private-namespace Keychain
     /// items (created when the host had `accessGroup: nil`) to the
     /// shared access group used by both host and File Provider
-    /// extension. Codex blocker #3 — without this migration, every
-    /// existing account stops working the moment the host starts
-    /// writing to the shared group.
+    /// extension. Without it, existing accounts stop working the moment
+    /// the host starts writing to the shared group.
     ///
-    /// Algorithm: for each item in the private namespace with our
-    /// service identifier, copy the payload into the shared group, then
-    /// delete the legacy entry. Items already in the shared group are
-    /// left untouched. Idempotent — re-running is a no-op once the
-    /// private namespace is empty.
+    /// A query without `kSecAttrAccessGroup` searches *every* access
+    /// group the app belongs to (SecItem.h), so the listing also returns
+    /// the shared items and an unscoped delete would remove them too.
+    /// Hence: shared-group items are skipped, and a legacy item is only
+    /// deleted through a query scoped to its own reported access group.
+    /// Items that report no group are left in place; re-running is then
+    /// a harmless duplicate-add.
     public func migrateFromLegacyPrivateNamespace() async {
-        // Only meaningful if we're configured against a shared access
-        // group in the first place — otherwise there is nothing to
-        // migrate to.
         guard let accessGroup else { return }
 
-        // List every generic-password item in the private namespace
-        // (no kSecAttrAccessGroup) for our service.
         let listQuery: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -119,16 +115,14 @@ public actor KeychainStore: KeychainStoring {
         guard status == errSecSuccess, let items = result as? [[String: Any]] else { return }
 
         for item in items {
-            guard let accountString = item[kSecAttrAccount as String] as? String,
+            let itemGroup = item[kSecAttrAccessGroup as String] as? String
+            guard itemGroup != accessGroup,
+                  let accountString = item[kSecAttrAccount as String] as? String,
                   let data = item[kSecValueData as String] as? Data,
                   UUID(uuidString: accountString) != nil
             else { continue }
-            // Codex review #3: use SecItemAdd directly with the
-            // shared-group attributes instead of the load+save loop.
-            // SecItemAdd returns errSecDuplicateItem when the shared
-            // entry already exists, which lets us skip without
-            // overwriting a credential that may have been updated in
-            // a signed build between the load and the save.
+            // SecItemAdd (not update) so an existing shared entry, which
+            // may be newer, is never overwritten.
             var addQuery: [String: Any] = [
                 kSecClass as String: kSecClassGenericPassword,
                 kSecAttrService as String: service,
@@ -138,35 +132,20 @@ public actor KeychainStore: KeychainStoring {
                 kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked,
                 kSecAttrSynchronizable as String: false
             ]
-            // Carry over creation date if the source item exposes one.
             if let creation = item[kSecAttrCreationDate as String] {
                 addQuery[kSecAttrCreationDate as String] = creation
             }
             let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
-            switch addStatus {
-            case errSecSuccess:
-                // Best-effort: delete the legacy entry once the shared
-                // copy is safely in place.
-                let deleteQuery: [String: Any] = [
-                    kSecClass as String: kSecClassGenericPassword,
-                    kSecAttrService as String: service,
-                    kSecAttrAccount as String: accountString
-                ]
-                _ = SecItemDelete(deleteQuery as CFDictionary)
-            case errSecDuplicateItem:
-                // Shared-group entry already exists — newer than ours.
-                // Leave it alone. Optionally drop the legacy copy too.
-                let deleteQuery: [String: Any] = [
-                    kSecClass as String: kSecClassGenericPassword,
-                    kSecAttrService as String: service,
-                    kSecAttrAccount as String: accountString
-                ]
-                _ = SecItemDelete(deleteQuery as CFDictionary)
-            default:
-                // Couldn't migrate this entry — leave the legacy item
-                // in place so the next launch can try again.
-                continue
-            }
+            guard addStatus == errSecSuccess || addStatus == errSecDuplicateItem,
+                  let itemGroup
+            else { continue }
+            let deleteQuery: [String: Any] = [
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrService as String: service,
+                kSecAttrAccount as String: accountString,
+                kSecAttrAccessGroup as String: itemGroup
+            ]
+            _ = SecItemDelete(deleteQuery as CFDictionary)
         }
     }
 
