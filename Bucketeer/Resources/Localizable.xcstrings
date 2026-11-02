@@ -70305,115 +70305,115 @@
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pro na zkoušku na %lld dní"
+            "value" : "Zkušební verze na %lld dní"
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prøv Pro i %lld dage"
+            "value" : "%lld-dages prøveperiode"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pro %lld Tage lang testen"
+            "value" : "%lld-tägige Testversion"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Δοκίμασε το Pro για %lld ημέρες"
+            "value" : "Δοκιμή %lld ημερών"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Try Pro for %lld days"
+            "value" : "%lld-day Trial"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prueba Pro durante %lld días"
+            "value" : "Prueba de %lld días"
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kokeile Prota %lld päivää"
+            "value" : "%lld päivän kokeilu"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Essayer Pro pendant %lld jours"
+            "value" : "Essai de %lld jours"
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Próbáld ki a Prót %lld napig"
+            "value" : "%lld napos próbaidőszak"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prova Pro per %lld giorni"
+            "value" : "Prova di %lld giorni"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pro を %lld 日間試す"
+            "value" : "%lld日間のトライアル"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld일 동안 Pro 체험하기"
+            "value" : "%lld일 체험판"
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prøv Pro i %lld dager"
+            "value" : "%lld-dagers prøveperiode"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Probeer Pro %lld dagen"
+            "value" : "Proefperiode van %lld dagen"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wypróbuj Pro przez %lld dni"
+            "value" : "%lld-dniowy okres próbny"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Experimente o Pro por %lld dias"
+            "value" : "Teste de %lld dias"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Experimente o Pro durante %lld dias"
+            "value" : "Período experimental de %lld dias"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Попробуйте Pro: %lld дн."
+            "value" : "Пробный период на %lld дней"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prova Pro i %lld dagar"
+            "value" : "%lld dagars provperiod"
           }
         }
       }
@@ -70424,115 +70424,115 @@
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zkušební verze je zdarma a trvá %lld dní. Poté se Bucketeer vrátí k bezplatné verzi a nic se neúčtuje. Pro doživotně je jednorázový nákup za %@."
+            "value" : "Zkušební verze je zdarma a trvá %lld dní. Poté přestanou fungovat výše uvedené funkce Pro, Bucketeer se vrátí k bezplatné verzi a nic se neúčtuje. Pro doživotně je jednorázový nákup za %@."
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prøveperioden er gratis og varer %lld dage. Derefter går Bucketeer tilbage til gratisversionen, og der opkræves intet. Pro Livstid er et engangskøb til %@."
+            "value" : "Prøveperioden er gratis og varer %lld dage. Derefter holder Pro-funktionerne ovenfor op med at virke, Bucketeer går tilbage til gratisversionen, og der opkræves intet. Pro Livstid er et engangskøb til %@."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Die Probezeit ist kostenlos und dauert %lld Tage. Danach läuft Bucketeer in der kostenlosen Version weiter, es wird nichts berechnet. Pro für immer ist ein einmaliger Kauf für %@."
+            "value" : "Die Testversion ist kostenlos und dauert %lld Tage. Danach funktionieren die oben genannten Pro-Funktionen nicht mehr, Bucketeer läuft in der kostenlosen Version weiter und es wird nichts berechnet. Pro für immer ist ein einmaliger Kauf für %@."
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Η δοκιμή είναι δωρεάν και διαρκεί %lld ημέρες. Μετά το Bucketeer επιστρέφει στη δωρεάν έκδοση και δεν γίνεται καμία χρέωση. Το Pro εφ' όρου ζωής είναι εφάπαξ αγορά στην τιμή %@."
+            "value" : "Η δοκιμή είναι δωρεάν και διαρκεί %lld ημέρες. Μετά οι λειτουργίες Pro που αναφέρονται παραπάνω σταματούν να λειτουργούν, το Bucketeer επιστρέφει στη δωρεάν έκδοση και δεν γίνεται καμία χρέωση. Το Pro εφ' όρου ζωής είναι εφάπαξ αγορά στην τιμή %@."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The trial is free and lasts %lld days. Afterwards Bucketeer returns to the free version and nothing is charged. Pro Lifetime is a one-time purchase at %@."
+            "value" : "The trial is free and lasts %lld days. Afterwards the Pro features listed above stop working, Bucketeer returns to the free version and nothing is charged. Pro Lifetime is a one-time purchase at %@."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La prueba es gratuita y dura %lld días. Después, Bucketeer vuelve a la versión gratuita y no se cobra nada. Pro de por vida es una compra única de %@."
+            "value" : "La prueba es gratuita y dura %lld días. Después, las funciones Pro indicadas arriba dejan de funcionar, Bucketeer vuelve a la versión gratuita y no se cobra nada. Pro de por vida es una compra única de %@."
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kokeilu on maksuton ja kestää %lld päivää. Sen jälkeen Bucketeer palaa ilmaisversioon, eikä mitään veloiteta. Elinikäinen Pro on kertaosto hintaan %@."
+            "value" : "Kokeilu on maksuton ja kestää %lld päivää. Sen jälkeen yllä luetellut Pro-ominaisuudet lakkaavat toimimasta, Bucketeer palaa ilmaisversioon eikä mitään veloiteta. Elinikäinen Pro on kertaosto hintaan %@."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "L'essai est gratuit et dure %lld jours. Ensuite, Bucketeer revient à la version gratuite et rien n'est facturé. Pro à vie est un achat unique de %@."
+            "value" : "L'essai est gratuit et dure %lld jours. Ensuite, les fonctions Pro listées ci-dessus cessent de fonctionner, Bucketeer revient à la version gratuite et rien n'est facturé. Pro à vie est un achat unique de %@."
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A próbaidőszak ingyenes, és %lld napig tart. Utána a Bucketeer visszaáll az ingyenes verzióra, és semmit sem kell fizetni. A Pro örök licenc egyszeri vásárlás, ára %@."
+            "value" : "A próbaidőszak ingyenes, és %lld napig tart. Utána a fent felsorolt Pro funkciók nem működnek tovább, a Bucketeer visszaáll az ingyenes verzióra, és semmit sem kell fizetni. A Pro örök licenc egyszeri vásárlás, ára %@."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La prova è gratuita e dura %lld giorni. Poi Bucketeer torna alla versione gratuita e non viene addebitato nulla. Pro a vita è un acquisto unico a %@."
+            "value" : "La prova è gratuita e dura %lld giorni. Poi le funzioni Pro elencate sopra smettono di funzionare, Bucketeer torna alla versione gratuita e non viene addebitato nulla. Pro a vita è un acquisto unico a %@."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "体験は無料で、期間は %lld 日間です。終了後は無料版に戻り、料金は一切かかりません。Pro 永久版は %@ の一回限りの購入です。"
+            "value" : "トライアルは無料で、期間は %lld 日間です。終了後は上記の Pro 機能が使えなくなり、無料版に戻ります。料金は一切かかりません。Pro 永久版は %@ の一回限りの購入です。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "체험은 무료이며 %lld일 동안 이용할 수 있습니다. 체험이 끝나면 Bucketeer는 무료 버전으로 돌아가며 요금이 청구되지 않습니다. Pro 평생은 %@의 일회성 구매입니다."
+            "value" : "체험은 무료이며 %lld일 동안 이용할 수 있습니다. 체험이 끝나면 위에 나열된 Pro 기능이 더 이상 작동하지 않고 Bucketeer는 무료 버전으로 돌아가며 요금이 청구되지 않습니다. Pro 평생은 %@의 일회성 구매입니다."
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prøveperioden er gratis og varer i %lld dager. Deretter går Bucketeer tilbake til gratisversjonen, og ingenting belastes. Pro Livstid er et engangskjøp til %@."
+            "value" : "Prøveperioden er gratis og varer i %lld dager. Deretter slutter Pro-funksjonene ovenfor å virke, Bucketeer går tilbake til gratisversjonen, og ingenting belastes. Pro Livstid er et engangskjøp til %@."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "De proefperiode is gratis en duurt %lld dagen. Daarna gaat Bucketeer terug naar de gratis versie en wordt er niets in rekening gebracht. Pro voor altijd is een eenmalige aankoop van %@."
+            "value" : "De proefperiode is gratis en duurt %lld dagen. Daarna werken de hierboven genoemde Pro-functies niet meer, gaat Bucketeer terug naar de gratis versie en wordt er niets in rekening gebracht. Pro voor altijd is een eenmalige aankoop van %@."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Okres próbny jest bezpłatny i trwa %lld dni. Potem Bucketeer wraca do wersji bezpłatnej i nic nie jest pobierane. Pro na zawsze to jednorazowy zakup za %@."
+            "value" : "Okres próbny jest bezpłatny i trwa %lld dni. Potem wymienione powyżej funkcje Pro przestają działać, Bucketeer wraca do wersji bezpłatnej i nic nie jest pobierane. Pro na zawsze to jednorazowy zakup za %@."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A avaliação é gratuita e dura %lld dias. Depois, o Bucketeer volta para a versão gratuita e nada é cobrado. O Pro Vitalício é uma compra única de %@."
+            "value" : "O teste é gratuito e dura %lld dias. Depois, os recursos Pro listados acima deixam de funcionar, o Bucketeer volta para a versão gratuita e nada é cobrado. O Pro Vitalício é uma compra única de %@."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O período experimental é gratuito e dura %lld dias. Depois, o Bucketeer volta à versão gratuita e nada é cobrado. O Pro Vitalício é uma compra única de %@."
+            "value" : "O período experimental é gratuito e dura %lld dias. Depois, as funções Pro indicadas acima deixam de funcionar, o Bucketeer volta à versão gratuita e nada é cobrado. O Pro Vitalício é uma compra única de %@."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Пробный период бесплатный и длится %lld дн. После этого Bucketeer вернётся к бесплатной версии, никаких списаний не будет. Pro навсегда стоит %@, оплата один раз."
+            "value" : "Пробный период бесплатный и длится %lld дн. После этого перечисленные выше функции Pro перестанут работать, Bucketeer вернётся к бесплатной версии, никаких списаний не будет. Pro навсегда стоит %@, оплата один раз."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Provperioden är gratis och varar i %lld dagar. Därefter återgår Bucketeer till gratisversionen och inget debiteras. Pro Livstid är ett engångsköp för %@."
+            "value" : "Provperioden är gratis och varar i %lld dagar. Därefter slutar Pro-funktionerna ovan att fungera, Bucketeer återgår till gratisversionen och inget debiteras. Pro Livstid är ett engångsköp för %@."
           }
         }
       }
