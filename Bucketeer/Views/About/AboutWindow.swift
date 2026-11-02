@@ -135,10 +135,10 @@ struct AboutWindow: View {
                 .font(.headline)
                 .padding(.top, 6)
             VStack(alignment: .leading, spacing: 2) {
-                Text("DigitalFreedom — a brand of Berger & Rosenstock GbR")
-                Text("Dieselstr. 22e, 61231 Bad Nauheim, Germany")
+                Text("about.publisher.entity")
+                Text(verbatim: "30 N Gould St, Ste N, Sheridan, WY 82801, United States")
                     .foregroundStyle(.secondary)
-                Text("VAT-ID: DE455096022")
+                Text("about.publisher.legalForm")
                     .foregroundStyle(.secondary)
                     .font(.caption)
             }
@@ -175,7 +175,7 @@ struct AboutWindow: View {
     }
     private var copyright: String {
         Bundle.main.object(forInfoDictionaryKey: "NSHumanReadableCopyright") as? String
-            ?? "© 2026 DigitalFreedom — Berger & Rosenstock GbR"
+            ?? "© 2026 DigitalFreedom Global LLC"
     }
 
     private func loadMarkdown(named name: String) -> String {

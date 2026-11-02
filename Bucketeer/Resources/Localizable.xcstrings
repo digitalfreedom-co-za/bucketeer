@@ -4,6 +4,244 @@
     "" : {
 
     },
+    "about.publisher.entity" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DigitalFreedom — značka společnosti DigitalFreedom Global LLC"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DigitalFreedom — et brand under DigitalFreedom Global LLC"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DigitalFreedom — eine Marke der DigitalFreedom Global LLC"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DigitalFreedom — εμπορικό σήμα της DigitalFreedom Global LLC"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DigitalFreedom — a brand of DigitalFreedom Global LLC"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DigitalFreedom — una marca de DigitalFreedom Global LLC"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DigitalFreedom — DigitalFreedom Global LLC:n tuotemerkki"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DigitalFreedom — une marque de DigitalFreedom Global LLC"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DigitalFreedom — a DigitalFreedom Global LLC márkája"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DigitalFreedom — un marchio di DigitalFreedom Global LLC"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DigitalFreedom — DigitalFreedom Global LLC のブランド"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DigitalFreedom — DigitalFreedom Global LLC의 브랜드"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DigitalFreedom — et merke fra DigitalFreedom Global LLC"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DigitalFreedom — een merk van DigitalFreedom Global LLC"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DigitalFreedom — marka DigitalFreedom Global LLC"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DigitalFreedom — uma marca da DigitalFreedom Global LLC"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DigitalFreedom — uma marca da DigitalFreedom Global LLC"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DigitalFreedom — бренд компании DigitalFreedom Global LLC"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DigitalFreedom — ett varumärke från DigitalFreedom Global LLC"
+          }
+        }
+      }
+    },
+    "about.publisher.legalForm" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Společnost s ručením omezeným (LLC) podle práva státu Wyoming, USA"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selskab med begrænset ansvar (LLC) efter lovgivningen i Wyoming, USA"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limited Liability Company nach dem Recht des Bundesstaats Wyoming, USA"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Εταιρεία περιορισμένης ευθύνης (LLC) σύμφωνα με το δίκαιο του Wyoming, ΗΠΑ"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limited liability company under the laws of Wyoming, USA"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sociedad de responsabilidad limitada (LLC) conforme a la legislación de Wyoming, EE. UU."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyomingin osavaltion lain mukainen rajoitetun vastuun yhtiö (LLC), Yhdysvallat"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Société à responsabilité limitée (LLC) de droit du Wyoming, États-Unis"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Korlátolt felelősségű társaság (LLC) Wyoming állam joga szerint, USA"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Società a responsabilità limitata (LLC) secondo il diritto del Wyoming, USA"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "米国ワイオミング州法に基づく有限責任会社(LLC)"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "미국 와이오밍주 법에 따른 유한책임회사(LLC)"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selskap med begrenset ansvar (LLC) etter lovene i Wyoming, USA"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limited liability company (LLC) naar het recht van Wyoming, VS"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spółka z ograniczoną odpowiedzialnością (LLC) prawa stanu Wyoming, USA"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sociedade de responsabilidade limitada (LLC) sob as leis de Wyoming, EUA"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sociedade de responsabilidade limitada (LLC) ao abrigo da lei do Wyoming, EUA"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Общество с ограниченной ответственностью (LLC) по законам штата Вайоминг, США"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bolag med begränsat ansvar (LLC) enligt lagen i Wyoming, USA"
+          }
+        }
+      }
+    },
     "browser.action.rename.exists" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -27065,13 +27303,6 @@
           }
         }
       }
-    },
-    "Dieselstr. 22e, 61231 Bad Nauheim, Germany" : {
-
-    },
-    "DigitalFreedom — a brand of Berger & Rosenstock GbR" : {
-      "comment" : "The name of the company behind Bucketeer.",
-      "isCommentAutoGenerated" : true
     },
     "empty.no-account.message" : {
       "extractionState" : "manual",
@@ -64355,10 +64586,6 @@
           }
         }
       }
-    },
-    "VAT-ID: DE455096022" : {
-      "comment" : "The VAT ID of DigitalFreedom.",
-      "isCommentAutoGenerated" : true
     },
     "versions.action.delete" : {
       "extractionState" : "manual",

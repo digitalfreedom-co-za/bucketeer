@@ -601,7 +601,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Bucketeer;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = YES;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 DigitalFreedom — Berger & Rosenstock GbR";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 DigitalFreedom Global LLC";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -637,7 +637,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Bucketeer;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = YES;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 DigitalFreedom — Berger & Rosenstock GbR";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 DigitalFreedom Global LLC";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",

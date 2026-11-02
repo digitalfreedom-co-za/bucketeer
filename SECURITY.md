@@ -20,7 +20,11 @@ hands.
 
 Send a private report to:
 
-> **security@digitalfreedom.co.za**
+> **security@digitalfreedom.co.za** or the form at
+> <https://security.digitalfreedom.co.za>
+
+Reports are handled by DigitalFreedom Global LLC, the publisher of
+Bucketeer.
 
 Include:
 

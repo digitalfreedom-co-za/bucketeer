@@ -197,7 +197,7 @@ reproduction steps.
 
 ## Publisher
 
-DigitalFreedom — a brand of Berger & Rosenstock GbR
-Dieselstr. 22e, 61231 Bad Nauheim, Germany
+DigitalFreedom — a brand of DigitalFreedom Global LLC
+30 N Gould St, Ste N, Sheridan, WY 82801, United States
 Contact: hello@digitalfreedom.co.za
 Website: https://digitalfreedom.co.za

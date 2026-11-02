@@ -14,7 +14,7 @@ under the same Source-Available License (see `Bucketeer/Resources/Legal/LICENSE.
 |---|---|
 | Bug report or feature request | <https://support.apps.digitalfreedom.co.za/> |
 | Code contribution | GitHub Pull Request against the `development` branch |
-| Security disclosure | `data-protection@digitalfreedom.co.za` (private; please don't open a public issue) |
+| Security disclosure | `security@digitalfreedom.co.za` or <https://security.digitalfreedom.co.za> (private; please don't open a public issue, see `SECURITY.md`) |
 
 GitHub Issues on this repo are **not** the support channel — use the
 support site for that. The repo issue tracker is for development
@@ -195,7 +195,7 @@ Berger` is the only author).
 ## 10. License
 
 By contributing you agree that your contribution is licensed to the
-Publisher (Berger & Rosenstock GbR, trading as DigitalFreedom) under
+Publisher (DigitalFreedom Global LLC, trading as DigitalFreedom) under
 the [Source-Available License](Bucketeer/Resources/Legal/LICENSE.md).
 The canonical binary ships exclusively on the Mac App Store. There is
 no CLA beyond what this paragraph and the License together establish.
