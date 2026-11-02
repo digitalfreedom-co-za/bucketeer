@@ -153,16 +153,15 @@ final class AppContainer {
             modelContainer: encryptionContainer
         )
         let bucketEncryptionGate = BucketEncryptionGate(keyStore: encryptionKeyStore)
-        // Write to the shared keychain access group
-        // so the File Provider extension (which reads from the same
-        // group) can load credentials. Production-signed builds need
-        // the entitlement provisioned at developer.apple.com — local
-        // unsigned debug builds silently fall back to the private
-        // namespace, which is harmless for development.
+        // Write to the shared keychain access group of the
+        // data-protection keychain so the File Provider extension
+        // (which reads from the same group) can load credentials.
+        // Needs a signed build with the access group provisioned at
+        // developer.apple.com.
         //
-        // On first launch with the shared-group code path, copy any
-        // legacy private-namespace entries forward so the user's
-        // existing accounts keep working — see `KeychainStore.migrateToSharedAccessGroupIfNeeded`.
+        // Copy credentials written by earlier builds into the
+        // file-based keychain forward so the user's existing accounts
+        // keep working — see `KeychainStore.migrateFromLegacyFileKeychain`.
         let keychainStore: any KeychainStoring
         if let injected = configuration.keychainStore {
             keychainStore = injected
@@ -173,7 +172,7 @@ final class AppContainer {
             )
             keychainStore = sharedKeychain
             if startsBackgroundWork {
-                Task { await sharedKeychain.migrateFromLegacyPrivateNamespace() }
+                Task { await sharedKeychain.migrateFromLegacyFileKeychain() }
             }
         }
         let accountStore = AccountStore(modelContainer: modelContainer)
