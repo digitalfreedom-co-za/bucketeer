@@ -399,8 +399,14 @@ final class AppContainer {
             keyStore: encryptionKeyStore,
             accountStore: accountStore,
             gate: bucketEncryptionGate,
-            mountController: mountController
+            mountController: mountController,
+            encryptedBucketListURL: stores == .onDisk ? Self.groupContainerURL().map(EncryptedBucketList.url(inGroupContainer:)) : nil
         )
+        if startsBackgroundWork {
+            Task { @MainActor [encryptionKeysViewModel = self.encryptionKeysViewModel] in
+                await encryptionKeysViewModel.reload()
+            }
+        }
 
         // Phase 13.16 — hardware-key unlock.
         self.hardwareKeySettings = HardwareKeySettings()
@@ -449,6 +455,13 @@ final class AppContainer {
         }
     }
 
+    /// Nil when the App Group entitlement is not provisioned.
+    private static func groupContainerURL() -> URL? {
+        FileManager.default.containerURL(
+            forSecurityApplicationGroupIdentifier: AppEnvironment.appGroupIdentifier
+        )
+    }
+
     /// Resolve the SwiftData store URL. When the App Group entitlement
     /// is provisioned the store moves into the shared container so the
     /// File Provider extension (Phase 9) can read account metadata.
@@ -460,9 +473,7 @@ final class AppContainer {
     /// sandbox copy in place as a fallback.
     private static func resolveStoreURL() -> URL {
         let sandboxURL = sandboxStoreURL()
-        guard let groupContainer = FileManager.default.containerURL(
-            forSecurityApplicationGroupIdentifier: AppEnvironment.appGroupIdentifier
-        ) else {
+        guard let groupContainer = groupContainerURL() else {
             return sandboxURL
         }
         let groupURL = groupContainer.appending(path: AppEnvironment.swiftDataStoreFileName)

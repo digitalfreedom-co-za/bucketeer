@@ -98,6 +98,7 @@ final class FileProviderExtension: NSObject, @unchecked Sendable, NSFileProvider
                 return
             }
             do {
+                try container.refuseIfEncrypted(domain.identifier.rawValue)
                 let result = try await FileProviderItemResolver.fetchContents(
                     identifier: itemIdentifier,
                     in: domain,
@@ -142,6 +143,7 @@ final class FileProviderExtension: NSObject, @unchecked Sendable, NSFileProvider
                 return
             }
             do {
+                try container.refuseIfEncrypted(domain.identifier.rawValue)
                 let created = try await FileProviderItemResolver.createItem(
                     template: itemTemplate,
                     contents: url,
@@ -180,6 +182,7 @@ final class FileProviderExtension: NSObject, @unchecked Sendable, NSFileProvider
                 return
             }
             do {
+                try container.refuseIfEncrypted(domain.identifier.rawValue)
                 let modified = try await FileProviderItemResolver.modifyItem(
                     item: item,
                     changedFields: changedFields,
