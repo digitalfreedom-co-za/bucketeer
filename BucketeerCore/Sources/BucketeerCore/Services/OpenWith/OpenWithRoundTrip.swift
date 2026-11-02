@@ -25,9 +25,11 @@ public struct RemoteObjectRef: Sendable, Hashable {
 }
 
 public enum ConditionalUploadResult: Sendable, Equatable {
-    case uploaded
-    /// The server refused the write because the object's ETag no longer
-    /// matched (HTTP 412).
+    /// `etag` is the one the write itself answered with (the version of
+    /// exactly the uploaded bytes); `nil` when the provider sent none.
+    case uploaded(etag: String?)
+    /// The server refused the write because its precondition no longer
+    /// held (HTTP 412, or the object already exists for `.ifAbsent`).
     case preconditionFailed
 }
 
@@ -37,9 +39,13 @@ public enum ConditionalUploadResult: Sendable, Equatable {
 public protocol OpenWithRemote: Sendable {
     /// The object's current ETag, or `nil` when it no longer exists.
     func currentETag(of object: RemoteObjectRef) async throws -> String?
-    /// Uploads `localURL`. With `ifMatch` the server must only accept
-    /// the write while the object still has that ETag (unquoted).
-    func upload(_ localURL: URL, to object: RemoteObjectRef, ifMatch: String?) async throws -> ConditionalUploadResult
+    /// Uploads `localURL`; the server must only accept the write while
+    /// `precondition` holds.
+    func upload(
+        _ localURL: URL,
+        to object: RemoteObjectRef,
+        precondition: WritePrecondition
+    ) async throws -> ConditionalUploadResult
 }
 
 public enum RoundTripOutcome: Sendable, Equatable {
@@ -66,6 +72,7 @@ public actor OpenWithRoundTrip {
     private let remote: any OpenWithRemote
     private let now: @Sendable () -> Date
     private let timeZone: TimeZone
+    private let tag: @Sendable () -> String
     private var sessions: [URL: Session] = [:]
     /// Last sync per file. A new sync waits for it so two saves in a row
     /// never race each other's ETag.
@@ -74,11 +81,13 @@ public actor OpenWithRoundTrip {
     public init(
         remote: any OpenWithRemote,
         now: @escaping @Sendable () -> Date = Date.init,
-        timeZone: TimeZone = .current
+        timeZone: TimeZone = .current,
+        tag: @escaping @Sendable () -> String = ConflictCopyName.randomTag
     ) {
         self.remote = remote
         self.now = now
         self.timeZone = timeZone
+        self.tag = tag
     }
 
     /// Starts tracking a freshly downloaded file. `etag` is the ETag the
@@ -119,21 +128,32 @@ public actor OpenWithRoundTrip {
         let digest = try Self.digest(of: url)
         guard digest != session.digest else { return .unchanged }
 
+        // The next base is the ETag the write answered with. A HEAD
+        // afterwards could already see somebody else's newer version
+        // and would make the next save overwrite it.
         let current = try await remote.currentETag(of: session.object)
         if let base = session.etag, ETag.matches(base: base, current: current),
-           try await remote.upload(url, to: session.object, ifMatch: base) == .uploaded {
-            session.etag = try await remote.currentETag(of: session.object).map(ETag.normalized)
+           case .uploaded(let written) = try await remote.upload(url, to: session.object, precondition: .ifMatch(base)) {
+            session.etag = written.map(ETag.normalized)
             session.digest = digest
             store(session, for: url)
             return .uploaded(key: session.object.key)
         }
 
-        let copy = session.object.withKey(
-            ConflictCopyName.key(for: session.object.key, date: now(), timeZone: timeZone)
-        )
-        _ = try await remote.upload(url, to: copy, ifMatch: nil)
-        session.object = copy
-        session.etag = try await remote.currentETag(of: copy).map(ETag.normalized)
+        let original = session.object
+        let copy = try await ConflictCopyName.create(
+            copyOf: original.key,
+            date: now(),
+            timeZone: timeZone,
+            tag: tag
+        ) { key -> String?? in
+            switch try await remote.upload(url, to: original.withKey(key), precondition: .ifAbsent) {
+            case .uploaded(let written): return .some(written)
+            case .preconditionFailed: return .none
+            }
+        }
+        session.object = original.withKey(copy.key)
+        session.etag = copy.written.map(ETag.normalized)
         session.digest = digest
         store(session, for: url)
         return .conflict(copyKey: copy.key)

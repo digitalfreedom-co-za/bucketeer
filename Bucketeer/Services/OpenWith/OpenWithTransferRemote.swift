@@ -27,35 +27,24 @@ struct OpenWithTransferRemote: OpenWithRemote {
         }
     }
 
-    func upload(_ localURL: URL, to object: RemoteObjectRef, ifMatch: String?) async throws -> ConditionalUploadResult {
+    func upload(
+        _ localURL: URL,
+        to object: RemoteObjectRef,
+        precondition: WritePrecondition
+    ) async throws -> ConditionalUploadResult {
         let account = try await account(for: object)
-        let contentType = UTType(filenameExtension: localURL.pathExtension)?.preferredMIMEType
-        if let ifMatch {
-            switch await transferManager.uploadIfUnchanged(
-                account: account,
-                bucket: object.bucket,
-                key: object.key,
-                localURL: localURL,
-                contentType: contentType,
-                ifMatch: ifMatch
-            ) {
-            case .uploaded: return .uploaded
-            case .preconditionFailed: return .preconditionFailed
-            case .failed(let message): throw BucketeerError.unknown(message: message)
-            case .cancelled: throw BucketeerError.cancelled
-            }
-        }
-        let id = await transferManager.enqueueUpload(
+        switch await transferManager.uploadConditionally(
             account: account,
             bucket: object.bucket,
             key: object.key,
             localURL: localURL,
-            contentType: contentType
-        )
-        switch await transferManager.awaitCompletion(id: id) {
-        case .completed: return .uploaded
+            contentType: UTType(filenameExtension: localURL.pathExtension)?.preferredMIMEType,
+            precondition: precondition
+        ) {
+        case .uploaded(let etag): return .uploaded(etag: etag)
+        case .preconditionFailed: return .preconditionFailed
         case .failed(let message): throw BucketeerError.unknown(message: message)
-        default: throw BucketeerError.cancelled
+        case .cancelled: throw BucketeerError.cancelled
         }
     }
 

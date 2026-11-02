@@ -571,7 +571,9 @@ public struct S3Service: S3Browsing {
         return s
     }
 
-    /// True for an HTTP 412 answer to an If-Match write.
+    /// True for an HTTP 412 answer to an If-Match / If-None-Match write,
+    /// and for the 409 `ConditionalRequestConflict` S3 sends when a
+    /// concurrent conditional write to the same key won.
     public static func isPreconditionFailure(_ error: Error) -> Bool {
         if case .preconditionFailed = error as? BucketeerError { return true }
         if let rawError = error as? AWSRawError {
@@ -580,8 +582,18 @@ public struct S3Service: S3Browsing {
         if let awsError = error as? AWSErrorType {
             return awsError.context?.responseCode.code == 412
                 || awsError.errorCode == "PreconditionFailed"
+                || awsError.errorCode == "ConditionalRequestConflict"
         }
         return false
+    }
+
+    /// The `ifMatch` / `ifNoneMatch` header values for a PutObject.
+    public static func headers(for precondition: WritePrecondition?) -> (ifMatch: String?, ifNoneMatch: String?) {
+        switch precondition {
+        case .ifMatch(let etag): return (ETag.quoted(etag), nil)
+        case .ifAbsent: return (nil, "*")
+        case nil: return (nil, nil)
+        }
     }
 
     /// Map Soto errors into `BucketeerError`. Prefers Soto's typed S3
