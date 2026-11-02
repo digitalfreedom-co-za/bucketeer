@@ -51,18 +51,20 @@ public struct AzureBlobTransporter: Sendable {
 
     /// Upload `localURL` to the supplied blob coordinates. Routes between
     /// single-shot and multipart based on file size. `progress` receives
-    /// `(bytesTransferred, totalBytes)` snapshots. With `ifMatch` the
-    /// write (Put Blob or Put Block List) only succeeds while the blob
-    /// still has that ETag; otherwise it throws `.preconditionFailed`.
+    /// `(bytesTransferred, totalBytes)` snapshots. With a `precondition`
+    /// the write (Put Blob or Put Block List) only succeeds while it
+    /// holds; otherwise it throws `.preconditionFailed`. Returns the
+    /// ETag the write answered with (unquoted).
+    @discardableResult
     public func upload(
         account: S3Account,
         container: String,
         blob: String,
         localURL: URL,
         contentType: String?,
-        ifMatch: String? = nil,
+        precondition: WritePrecondition? = nil,
         progress: @Sendable @escaping (Int64, Int64) async -> Void
-    ) async throws {
+    ) async throws -> String? {
         // An unknown size must not be treated as 0: the single-shot
         // path would PUT an empty blob for a non-empty file.
         guard let size = try? localURL.resourceValues(forKeys: [.fileSizeKey]).fileSize else {
@@ -74,7 +76,7 @@ public struct AzureBlobTransporter: Sendable {
         let builder = AzureRequestBuilder(account: account)
 
         if fileSize < Self.multipartThreshold {
-            try await singleShotUpload(
+            let etag = try await singleShotUpload(
                 builder: builder,
                 signer: signer,
                 container: container,
@@ -82,11 +84,12 @@ public struct AzureBlobTransporter: Sendable {
                 localURL: localURL,
                 fileSize: fileSize,
                 contentType: contentType,
-                ifMatch: ifMatch
+                precondition: precondition
             )
             await progress(fileSize, fileSize)
+            return etag
         } else {
-            try await multipartUpload(
+            return try await multipartUpload(
                 builder: builder,
                 signer: signer,
                 container: container,
@@ -94,7 +97,7 @@ public struct AzureBlobTransporter: Sendable {
                 localURL: localURL,
                 fileSize: fileSize,
                 contentType: contentType,
-                ifMatch: ifMatch,
+                precondition: precondition,
                 progress: progress
             )
         }
@@ -108,8 +111,8 @@ public struct AzureBlobTransporter: Sendable {
         localURL: URL,
         fileSize: Int64,
         contentType: String?,
-        ifMatch: String?
-    ) async throws {
+        precondition: WritePrecondition?
+    ) async throws -> String? {
         let data: Data
         do {
             data = try Data(contentsOf: localURL, options: .mappedIfSafe)
@@ -124,9 +127,7 @@ public struct AzureBlobTransporter: Sendable {
         if let contentType {
             request.setValue(contentType, forHTTPHeaderField: "Content-Type")
         }
-        if let ifMatch {
-            request.setValue(ETag.quoted(ifMatch), forHTTPHeaderField: "If-Match")
-        }
+        Self.apply(precondition, to: &request)
         request.httpBody = data
         signer.sign(&request)
 
@@ -137,11 +138,8 @@ public struct AzureBlobTransporter: Sendable {
         guard let http = response as? HTTPURLResponse else {
             throw BucketeerError.unknown(message: "Azure PUT returned a non-HTTP response.")
         }
-        if let mapped = AzureBlobObjectStore.mapHTTP(
-            http, body: responseData, bucket: container, key: blob
-        ) {
-            throw mapped
-        }
+        try Self.check(http, body: responseData, container: container, blob: blob, precondition: precondition)
+        return Self.etag(of: http)
     }
 
     private func multipartUpload(
@@ -152,9 +150,9 @@ public struct AzureBlobTransporter: Sendable {
         localURL: URL,
         fileSize: Int64,
         contentType: String?,
-        ifMatch: String?,
+        precondition: WritePrecondition?,
         progress: @Sendable @escaping (Int64, Int64) async -> Void
-    ) async throws {
+    ) async throws -> String? {
         let blockSize = Int64(Self.blockSize)
         let blockCount = Int((fileSize + blockSize - 1) / blockSize)
         let blockIDs: [String] = (0..<blockCount).map { AzureRequestBuilder.blockID(index: $0) }
@@ -221,16 +219,17 @@ public struct AzureBlobTransporter: Sendable {
             try await group.waitForAll()
         }
 
-        try await commitBlockList(
+        let etag = try await commitBlockList(
             builder: builder,
             signer: signer,
             container: container,
             blob: blob,
             blockIDs: blockIDs,
             contentType: contentType,
-            ifMatch: ifMatch
+            precondition: precondition
         )
         await progress(fileSize, fileSize)
+        return etag
     }
 
     private static func putBlock(
@@ -268,8 +267,8 @@ public struct AzureBlobTransporter: Sendable {
         blob: String,
         blockIDs: [String],
         contentType: String?,
-        ifMatch: String?
-    ) async throws {
+        precondition: WritePrecondition?
+    ) async throws -> String? {
         let body = AzureRequestBuilder.blockListXML(blockIDs: blockIDs)
         var request = URLRequest(
             url: builder.putBlockListURL(container: container, blob: blob)
@@ -282,9 +281,7 @@ public struct AzureBlobTransporter: Sendable {
         }
         // Staged blocks are invisible until this commit, so the
         // precondition belongs here.
-        if let ifMatch {
-            request.setValue(ETag.quoted(ifMatch), forHTTPHeaderField: "If-Match")
-        }
+        Self.apply(precondition, to: &request)
         request.httpBody = body
         signer.sign(&request)
 
@@ -292,11 +289,43 @@ public struct AzureBlobTransporter: Sendable {
         guard let http = response as? HTTPURLResponse else {
             throw BucketeerError.unknown(message: "Azure Put Block List returned a non-HTTP response.")
         }
-        if let mapped = AzureBlobObjectStore.mapHTTP(
-            http, body: responseData, bucket: container, key: blob
-        ) {
+        try Self.check(http, body: responseData, container: container, blob: blob, precondition: precondition)
+        return Self.etag(of: http)
+    }
+
+    // MARK: - Preconditions
+
+    private static func apply(_ precondition: WritePrecondition?, to request: inout URLRequest) {
+        switch precondition {
+        case .ifMatch(let etag):
+            request.setValue(ETag.quoted(etag), forHTTPHeaderField: "If-Match")
+        case .ifAbsent:
+            request.setValue("*", forHTTPHeaderField: "If-None-Match")
+        case nil:
+            break
+        }
+    }
+
+    /// A create-only write that finds the blob already there answers
+    /// 409 (BlobAlreadyExists) rather than 412; both mean the
+    /// precondition failed.
+    private static func check(
+        _ http: HTTPURLResponse,
+        body: Data?,
+        container: String,
+        blob: String,
+        precondition: WritePrecondition?
+    ) throws {
+        if precondition == .ifAbsent, http.statusCode == 409 || http.statusCode == 412 {
+            throw BucketeerError.preconditionFailed(key: blob)
+        }
+        if let mapped = AzureBlobObjectStore.mapHTTP(http, body: body, bucket: container, key: blob) {
             throw mapped
         }
+    }
+
+    private static func etag(of http: HTTPURLResponse) -> String? {
+        http.value(forHTTPHeaderField: "ETag").map(ETag.normalized)
     }
 
     // MARK: - Download

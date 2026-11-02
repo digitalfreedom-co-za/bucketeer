@@ -245,14 +245,16 @@ final class BucketeerAppDelegate: NSObject, NSApplicationDelegate {
     }
 
     /// Files opened with another app may still have a save waiting to
-    /// be uploaded; finish that and remove the temp copies first.
+    /// be uploaded; finish that and remove the temp copies first. Edits
+    /// that could not be uploaded are kept, and the user may stay to
+    /// deal with them.
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         guard let openWith = AppContainer.shared?.openWithController, openWith.hasOpenFiles else {
             return .terminateNow
         }
         Task {
-            await openWith.flushAndRemoveAll()
-            sender.reply(toApplicationShouldTerminate: true)
+            let kept = await openWith.flushAndRemoveAll()
+            sender.reply(toApplicationShouldTerminate: kept == 0 || openWith.confirmQuit(keeping: kept))
         }
         return .terminateLater
     }

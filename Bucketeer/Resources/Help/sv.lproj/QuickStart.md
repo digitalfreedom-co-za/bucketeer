@@ -35,7 +35,7 @@ Den hemliga nyckeln är dold när du redigerar ett konto. Klicka på **Visa spar
 - Dubbelklicka på en fil, eller högerklicka och välj **Öppna**, för att öppna den i standardappen. **Öppna med** visar andra appar som kan öppna den; med **Annat …** väljer du valfri app.
 - Bucketeer hämtar filen till en tillfällig mapp och bevakar den. Strax efter varje sparning laddas filen upp igen via den vanliga överföringskön, så klientsidig kryptering gäller även här.
 - Om objektet ändrades eller raderades på servern efter att du öppnade det skriver Bucketeer inte över det. Din version laddas upp bredvid som ”namn (conflict datum).filändelse” och Bucketeer visar ett meddelande.
-- Den tillfälliga kopian raderas när du avslutar appen du redigerade i, när du avslutar Bucketeer eller vid nästa start.
+- Den tillfälliga kopian raderas så snart servern har din senaste sparning. Om en sparning inte kunde laddas upp (till exempel offline) behåller Bucketeer filen på den här Macen och erbjuder **Ladda upp igen**, **Spara en kopia …** eller **Släng ändringen** – även vid nästa start, till exempel efter en krasch.
 
 ## Hantera objekt
 

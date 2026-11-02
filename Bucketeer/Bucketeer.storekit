@@ -28,13 +28,13 @@
       "internalID" : "BUCKETEER-PRO-TRIAL-001",
       "localizations" : [
         {
-          "description" : "Try all Pro features free for 14 days.",
-          "displayName" : "Bucketeer Pro Trial",
+          "description" : "All Pro features free for 14 days, then free version.",
+          "displayName" : "14-day Trial",
           "locale" : "en"
         },
         {
-          "description" : "Alle Pro-Funktionen 14 Tage gratis testen.",
-          "displayName" : "Bucketeer Pro Testphase",
+          "description" : "Alle Pro-Funktionen 14 Tage gratis, dann Gratisversion.",
+          "displayName" : "14-tägige Testversion",
           "locale" : "de"
         }
       ],

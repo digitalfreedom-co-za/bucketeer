@@ -35,7 +35,7 @@ Podczas edycji konta klucz tajny jest ukryty. Kliknij **Pokaż zapisane poświad
 - Kliknij dwukrotnie plik albo kliknij go prawym przyciskiem i wybierz **Otwórz**, aby otworzyć go w domyślnej aplikacji. **Otwórz za pomocą** pokazuje inne aplikacje, które mogą go otworzyć; **Inna…** pozwala wybrać dowolną aplikację.
 - Bucketeer pobiera plik do folderu tymczasowego i go obserwuje. Chwilę po każdym zapisie plik jest ponownie wysyłany przez zwykłą kolejkę transferów, więc obowiązuje też szyfrowanie po stronie klienta.
 - Jeśli po otwarciu obiekt zmienił się na serwerze lub został usunięty, Bucketeer go nie nadpisze. Twoja wersja trafia obok jako „nazwa (conflict data).rozszerzenie”, a Bucketeer wyświetla komunikat.
-- Kopia tymczasowa jest usuwana, gdy zamkniesz aplikację, w której ją edytowano, gdy zamkniesz Bucketeer, lub przy następnym uruchomieniu.
+- Kopia tymczasowa jest usuwana, gdy serwer ma już Twój ostatni zapis. Jeśli zapisu nie udało się przesłać (np. bez połączenia), Bucketeer zachowuje plik na tym Macu i proponuje **Prześlij ponownie**, **Zachowaj kopię…** lub **Odrzuć zmianę** — także przy następnym uruchomieniu, np. po awarii.
 
 ## Zarządzanie obiektami
 

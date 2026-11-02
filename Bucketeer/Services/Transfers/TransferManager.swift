@@ -46,13 +46,14 @@ actor TransferManager: Transferring {
         /// Set on the trash restore of a cached envelope: the bytes are
         /// already sealed and must not be sealed a second time.
         var bypassEncryption: Bool = false
-        /// Unquoted ETag the object must still have for the upload to
-        /// replace it (Open With round-trip). `nil` = unconditional.
-        var ifMatch: String? = nil
+        /// Condition the server must check before it accepts the write
+        /// (Open With round-trip). `nil` = unconditional.
+        var precondition: WritePrecondition? = nil
     }
 
     enum ConditionalUploadOutcome: Equatable, Sendable {
-        case uploaded
+        /// `etag` is the one the write answered with (unquoted).
+        case uploaded(etag: String?)
         case preconditionFailed
         case failed(message: String)
         case cancelled
@@ -97,8 +98,11 @@ actor TransferManager: Transferring {
     /// completed. Cleared when the task is removed via `clearTerminal`.
     private var terminalCache: [UUID: TransferState] = [:]
     /// Conditional uploads the server refused with 412. Read once by
-    /// `uploadIfUnchanged` and then dropped.
+    /// `uploadConditionally` and then dropped.
     private var preconditionRefused: Set<UUID> = []
+    /// ETag each conditional upload's write answered with. Read once by
+    /// `uploadConditionally` and then dropped.
+    private var writtenETags: [UUID: String] = [:]
 
     init(
         factory: S3ClientFactory,
@@ -156,7 +160,7 @@ actor TransferManager: Transferring {
         localURL: URL,
         contentType: String?,
         bypassEncryption: Bool,
-        ifMatch: String? = nil
+        precondition: WritePrecondition? = nil
     ) async -> UUID {
         let id = UUID()
         let size = (try? localURL.resourceValues(forKeys: [.fileSizeKey]))?.fileSize
@@ -177,7 +181,7 @@ actor TransferManager: Transferring {
             contentType: contentType,
             fileSize: fileSize,
             bypassEncryption: bypassEncryption,
-            ifMatch: ifMatch
+            precondition: precondition
         )
         order.append(id)
         publish()
@@ -186,15 +190,15 @@ actor TransferManager: Transferring {
     }
 
     /// Uploads through the normal queue (so encryption applies and the
-    /// transfer shows up in the list), but replaces the object only
-    /// while its ETag still equals `ifMatch`. Waits for the result.
-    func uploadIfUnchanged(
+    /// transfer shows up in the list), but the server only accepts the
+    /// write while `precondition` holds. Waits for the result.
+    func uploadConditionally(
         account: S3Account,
         bucket: String,
         key: String,
         localURL: URL,
         contentType: String?,
-        ifMatch: String
+        precondition: WritePrecondition
     ) async -> ConditionalUploadOutcome {
         let id = await enqueueUpload(
             account: account,
@@ -203,13 +207,14 @@ actor TransferManager: Transferring {
             localURL: localURL,
             contentType: contentType,
             bypassEncryption: false,
-            ifMatch: ifMatch
+            precondition: precondition
         )
         let state = await awaitCompletion(id: id)
         let refused = preconditionRefused.remove(id) != nil
+        let etag = writtenETags.removeValue(forKey: id)
         switch state {
         case .completed:
-            return .uploaded
+            return .uploaded(etag: etag)
         case .failed(let message):
             return refused ? .preconditionFailed : .failed(message: message)
         default:
@@ -413,7 +418,7 @@ actor TransferManager: Transferring {
                     ),
                     contentType: item.contentType,
                     fileSize: Int64(envelope.count),
-                    ifMatch: item.ifMatch
+                    precondition: item.precondition
                 )
                 encryptionCleanup = temp
             } catch {
@@ -441,17 +446,20 @@ actor TransferManager: Transferring {
         }
 
         do {
-            if let ifMatch = item.ifMatch {
+            if let precondition = item.precondition {
                 // One PUT carries the precondition; Soto's multipart
-                // helpers cannot attach If-Match to the completion.
+                // helpers cannot attach it to the completion.
                 let data = try Data(contentsOf: item.task.localURL, options: .mappedIfSafe)
-                _ = try await s3.putObject(.init(
+                let headers = S3Service.headers(for: precondition)
+                let output = try await s3.putObject(.init(
                     body: AWSHTTPBody(buffer: ByteBuffer(bytes: data)),
                     bucket: item.task.bucket,
                     contentType: item.contentType,
-                    ifMatch: ETag.quoted(ifMatch),
+                    ifMatch: headers.ifMatch,
+                    ifNoneMatch: headers.ifNoneMatch,
                     key: item.task.key
                 ))
+                recordWrittenETag(output.eTag, id: id)
                 await limiter?.consume(bytes: data.count)
             } else if item.fileSize >= S3ResumableUploader.resumableThreshold,
                let resumableUploader {
@@ -522,6 +530,11 @@ actor TransferManager: Transferring {
                 setState(id: id, state: .failed(message: errorMessage(error)))
             }
         }
+    }
+
+    private func recordWrittenETag(_ etag: String?, id: UUID) {
+        guard let etag else { return }
+        writtenETags[id] = ETag.normalized(etag)
     }
 
     private func markPreconditionRefused(item: QueuedItem) {
@@ -657,13 +670,13 @@ actor TransferManager: Transferring {
         }
         let total = item.fileSize
         do {
-            try await azure.upload(
+            let etag = try await azure.upload(
                 account: item.account,
                 container: item.task.bucket,
                 blob: item.task.key,
                 localURL: item.task.localURL,
                 contentType: item.contentType,
-                ifMatch: item.ifMatch,
+                precondition: item.precondition,
                 progress: { @Sendable [weak self] bytes, totalBytes in
                     await self?.setState(
                         id: id,
@@ -674,6 +687,9 @@ actor TransferManager: Transferring {
                     )
                 }
             )
+            if item.precondition != nil {
+                recordWrittenETag(etag, id: id)
+            }
             setState(id: id, state: .completed)
         } catch is CancellationError {
             setState(id: id, state: .cancelled)

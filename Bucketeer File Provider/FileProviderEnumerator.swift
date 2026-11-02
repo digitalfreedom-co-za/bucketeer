@@ -18,10 +18,14 @@ import BucketeerCore
 ///   `finishEnumerating(upTo:)` with either `nil` (no more pages) or
 ///   the next `NSFileProviderPage` (a continuation cursor).
 /// - Changes are reported by the working-set enumerator: it lists every
-///   folder Finder has opened again and diffs against the last listing
-///   (`FinderChangeTracker`). Folder enumerators answer a change request
-///   with `syncAnchorExpired`, which makes the system list the folder
-///   again. The host signals the working set when the user refreshes.
+///   folder Finder has opened again and diffs against what the system
+///   was given (`FinderChangeTracker`): the last change listing plus
+///   every page an item enumeration delivered since. Recording a page
+///   does not move the working-set anchor; it only widens the baseline
+///   the next change listing is compared with. Folder enumerators answer
+///   a change request with `syncAnchorExpired`, which makes the system
+///   list the folder again. The host signals the working set when the
+///   user refreshes.
 final class FileProviderEnumerator: NSObject, @unchecked Sendable, NSFileProviderEnumerator {
     let domain: NSFileProviderDomain
     let containerIdentifier: NSFileProviderItemIdentifier
@@ -125,9 +129,14 @@ final class FileProviderEnumerator: NSObject, @unchecked Sendable, NSFileProvide
             } else {
                 nextPage = nil
             }
-            if !isWorkingSet {
-                await FinderChangeTracker.shared.track(prefix: prefix, domain: domain.identifier.rawValue)
-            }
+            // Every delivered page joins the change baseline (the root
+            // through the working set, too), so a later deletion of any
+            // of these items is reported.
+            await FinderChangeTracker.shared.record(
+                result.objects,
+                under: prefix,
+                domain: domain.identifier.rawValue
+            )
             publish(token) {
                 obs.value.didEnumerate(items)
                 obs.value.finishEnumerating(upTo: nextPage)

@@ -35,7 +35,7 @@ The secret is hidden when you edit an account. Click **Reveal stored credentials
 - Double-click a file, or right-click it and choose **Open**, to open it in its default app. **Open With** lists the other apps that can open it; **Other…** lets you pick any app.
 - Bucketeer downloads the file into a temporary folder and watches it. A moment after each save, the file is uploaded back through the normal transfer queue, so client-side encryption applies.
 - If the object was changed or deleted on the server after you opened it, Bucketeer does not overwrite it. Your version is uploaded next to it as "name (conflict date).ext" and Bucketeer shows a message.
-- The temporary copy is deleted when you quit the app you edited it in, when you quit Bucketeer, or at the next launch.
+- The temporary copy is deleted once the server has your last save. If a save could not be uploaded (for example while offline), Bucketeer keeps the file on this Mac and asks you to **Upload Again**, **Save a Copy…** or **Discard Edit** — also at the next launch, for example after a crash.
 
 ## Manage objects
 

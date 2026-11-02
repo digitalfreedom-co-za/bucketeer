@@ -242,6 +242,125 @@
         }
       }
     },
+    "account.endpoint.httpWarning" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tato adresa používá http://, takže připojení není šifrované. Názvy objektů, obsah souborů a požadavky lze v síti přečíst. Použijte https://, pokud server není v síti, které důvěřujete."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne adresse bruger http://, så forbindelsen er ikke krypteret. Objektnavne, filindhold og forespørgsler kan læses på netværket. Brug https://, medmindre serveren er på et netværk, du stoler på."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Adresse nutzt http://, die Verbindung ist also nicht verschlüsselt. Objektnamen, Dateiinhalte und Anfragen können im Netzwerk mitgelesen werden. Nutze https://, außer der Server steht in einem Netzwerk, dem du vertraust."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αυτή η διεύθυνση χρησιμοποιεί http://, επομένως η σύνδεση δεν είναι κρυπτογραφημένη. Τα ονόματα αντικειμένων, το περιεχόμενο αρχείων και τα αιτήματα μπορούν να διαβαστούν στο δίκτυο. Χρησιμοποιήστε https://, εκτός αν ο διακομιστής βρίσκεται σε δίκτυο που εμπιστεύεστε."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This address uses http://, so the connection is not encrypted. Object names, file content and requests can be read on the network. Use https:// unless the server is in a network you trust."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta dirección usa http://, así que la conexión no está cifrada. Los nombres de objetos, el contenido de los archivos y las solicitudes se pueden leer en la red. Usa https:// salvo que el servidor esté en una red de confianza."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tämä osoite käyttää http://-muotoa, joten yhteys ei ole salattu. Objektien nimet, tiedostojen sisältö ja pyynnöt voidaan lukea verkossa. Käytä https://-osoitetta, ellei palvelin ole luotetussa verkossa."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette adresse utilise http://, la connexion n'est donc pas chiffrée. Les noms d'objets, le contenu des fichiers et les requêtes peuvent être lus sur le réseau. Utilisez https://, sauf si le serveur se trouve sur un réseau de confiance."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ez a cím http://-t használ, így a kapcsolat nincs titkosítva. Az objektumnevek, a fájlok tartalma és a kérések a hálózaton olvashatók. Használj https://-t, hacsak a szerver nem megbízható hálózatban van."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo indirizzo usa http://, quindi la connessione non è crittografata. Nomi degli oggetti, contenuto dei file e richieste possono essere letti in rete. Usa https://, a meno che il server non si trovi in una rete di cui ti fidi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このアドレスは http:// を使用しているため、接続は暗号化されません。オブジェクト名、ファイルの内容、リクエストはネットワーク上で読み取られる可能性があります。信頼できるネットワーク内のサーバでない限り https:// を使用してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 주소는 http://를 사용하므로 연결이 암호화되지 않습니다. 객체 이름, 파일 내용 및 요청이 네트워크에서 읽힐 수 있습니다. 신뢰할 수 있는 네트워크의 서버가 아니라면 https://를 사용하십시오."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne adressen bruker http://, så tilkoblingen er ikke kryptert. Objektnavn, filinnhold og forespørsler kan leses på nettverket. Bruk https:// med mindre serveren er i et nettverk du stoler på."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dit adres gebruikt http://, dus de verbinding is niet versleuteld. Objectnamen, bestandsinhoud en verzoeken kunnen op het netwerk worden meegelezen. Gebruik https://, tenzij de server in een netwerk staat dat je vertrouwt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ten adres używa http://, więc połączenie nie jest szyfrowane. Nazwy obiektów, zawartość plików i żądania można odczytać w sieci. Używaj https://, chyba że serwer jest w zaufanej sieci."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este endereço usa http://, então a conexão não é criptografada. Nomes de objetos, conteúdo dos arquivos e solicitações podem ser lidos na rede. Use https://, a menos que o servidor esteja em uma rede confiável."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este endereço utiliza http://, pelo que a ligação não é encriptada. Os nomes dos objetos, o conteúdo dos ficheiros e os pedidos podem ser lidos na rede. Utilize https://, exceto se o servidor estiver numa rede de confiança."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Этот адрес использует http://, поэтому соединение не шифруется. Имена объектов, содержимое файлов и запросы могут быть прочитаны в сети. Используйте https://, если сервер не находится в доверенной сети."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den här adressen använder http://, så anslutningen är inte krypterad. Objektnamn, filinnehåll och förfrågningar kan läsas i nätverket. Använd https:// om inte servern finns i ett nätverk du litar på."
+          }
+        }
+      }
+    },
     "browser.action.rename.exists" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1428,6 +1547,1315 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Montering av buckets i Finder kräver macOS 14.1 eller senare."
+          }
+        }
+      }
+    },
+    "openWith.quit.kept.message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upravené soubory, které nebylo možné nahrát: %lld. Zůstávají uložené v tomto Macu a při příštím otevření Bucketeeru vám je znovu nabídneme."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redigerede filer, der ikke kunne uploades: %lld. De gemmes på denne Mac og tilbydes igen, næste gang du åbner Bucketeer."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bearbeitete Dateien, die nicht hochgeladen werden konnten: %lld. Sie bleiben auf diesem Mac und werden dir beim nächsten Öffnen von Bucketeer erneut angeboten."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Επεξεργασμένα αρχεία που δεν ήταν δυνατό να μεταφορτωθούν: %lld. Διατηρούνται σε αυτό το Mac και θα σας προταθούν ξανά την επόμενη φορά που θα ανοίξετε το Bucketeer."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edited files that could not be uploaded: %lld. They are kept on this Mac and offered again the next time you open Bucketeer."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archivos editados que no se pudieron subir: %lld. Se conservan en este Mac y se te ofrecerán de nuevo la próxima vez que abras Bucketeer."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muokatut tiedostot, joita ei voitu lähettää: %lld. Ne säilytetään tässä Macissa ja tarjotaan uudelleen, kun avaat Bucketeerin seuraavan kerran."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fichiers modifiés qui n'ont pas pu être envoyés : %lld. Ils sont conservés sur ce Mac et vous seront proposés à nouveau à la prochaine ouverture de Bucketeer."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Módosított fájlok, amelyeket nem sikerült feltölteni: %lld. Ezen a Macen maradnak, és a Bucketeer következő megnyitásakor ismét felajánljuk őket."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File modificati che non è stato possibile caricare: %lld. Restano su questo Mac e ti verranno riproposti alla prossima apertura di Bucketeer."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップロードできなかった編集済みファイル: %lld。このMacに保持され、次回Bucketeerを開いたときに再度表示されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업로드하지 못한 편집된 파일: %lld개. 이 Mac에 보관되며 다음에 Bucketeer를 열 때 다시 제안됩니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redigerte filer som ikke kunne lastes opp: %lld. De beholdes på denne Macen og tilbys igjen neste gang du åpner Bucketeer."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewerkte bestanden die niet konden worden geüpload: %lld. Ze blijven op deze Mac bewaard en worden opnieuw aangeboden wanneer je Bucketeer de volgende keer opent."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edytowane pliki, których nie udało się przesłać: %lld. Pozostają na tym Macu i zostaną ponownie zaproponowane przy następnym otwarciu Bucketeera."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arquivos editados que não puderam ser enviados: %lld. Eles ficam guardados neste Mac e serão oferecidos novamente na próxima vez que você abrir o Bucketeer."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ficheiros editados que não foi possível carregar: %lld. Ficam guardados neste Mac e serão propostos novamente da próxima vez que abrir o Bucketeer."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отредактированные файлы, которые не удалось загрузить: %lld. Они сохранены на этом Mac и будут предложены снова при следующем открытии Bucketeer."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redigerade filer som inte kunde laddas upp: %lld. De sparas på den här Macen och erbjuds igen nästa gång du öppnar Bucketeer."
+          }
+        }
+      }
+    },
+    "openWith.quit.kept.quit" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ukončit"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afslut"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beenden"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Έξοδος"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quit"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salir"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lopeta"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitter"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kilépés"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esci"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "終了"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "종료"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avslutt"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stop"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zakończ"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encerrar"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sair"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Завершить"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avsluta"
+          }
+        }
+      }
+    },
+    "openWith.quit.kept.stay" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neukončovat"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afslut ikke"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht beenden"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Να μη γίνει έξοδος"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Don't Quit"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No salir"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Älä lopeta"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne pas quitter"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nem lépek ki"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non uscire"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "終了しない"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "종료 안 함"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ikke avslutt"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niet stoppen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie kończ"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não encerrar"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não sair"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не завершать"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avsluta inte"
+          }
+        }
+      }
+    },
+    "openWith.quit.kept.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Některé úpravy nebyly nahrány"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nogle ændringer blev ikke uploadet"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einige Änderungen wurden nicht hochgeladen"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ορισμένες αλλαγές δεν μεταφορτώθηκαν"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Some edits were not uploaded"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Algunos cambios no se subieron"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Joitakin muutoksia ei lähetetty"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Certaines modifications n'ont pas été envoyées"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Néhány módosítás nem lett feltöltve"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alcune modifiche non sono state caricate"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一部の変更がアップロードされていません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일부 변경 사항이 업로드되지 않았습니다"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noen endringer ble ikke lastet opp"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sommige wijzigingen zijn niet geüpload"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niektóre zmiany nie zostały przesłane"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Algumas alterações não foram enviadas"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Algumas alterações não foram carregadas"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Некоторые изменения не были загружены"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vissa ändringar laddades inte upp"
+          }
+        }
+      }
+    },
+    "openWith.recovery.discard" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zahodit úpravu"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kassér ændring"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Änderung verwerfen"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Απόρριψη αλλαγής"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard Edit"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descartar cambio"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hylkää muutos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer la modification"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Módosítás elvetése"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scarta modifica"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "変更を破棄"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "변경 사항 폐기"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forkast endringen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wijziging weggooien"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odrzuć zmianę"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descartar alteração"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descartar alteração"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отменить изменение"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Släng ändringen"
+          }
+        }
+      }
+    },
+    "openWith.recovery.export" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uložit kopii…"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gem en kopi…"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopie sichern …"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αποθήκευση αντιγράφου…"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save a Copy…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar una copia…"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tallenna kopio…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrer une copie…"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Másolat mentése…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salva una copia…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コピーを保存…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사본 저장…"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arkiver en kopi …"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewaar een kopie…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zachowaj kopię…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salvar uma cópia…"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar uma cópia…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохранить копию…"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spara en kopia …"
+          }
+        }
+      }
+    },
+    "openWith.recovery.later" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Později"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Senere"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Später"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αργότερα"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Later"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más tarde"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Myöhemmin"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus tard"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Később"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Più tardi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "後で"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "나중에"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Senere"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Later"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Później"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mais tarde"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mais tarde"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Позже"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Senare"
+          }
+        }
+      }
+    },
+    "openWith.recovery.message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vaše úprava „%1$@“ zůstává v tomto Macu, ale nebyla nahrána. %2$@"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Din ændring af \"%1$@\" er gemt på denne Mac, men blev ikke uploadet. %2$@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deine Änderung an „%1$@“ ist auf diesem Mac gesichert, wurde aber nicht hochgeladen. %2$@"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Η αλλαγή σας στο «%1$@» διατηρείται σε αυτό το Mac, αλλά δεν μεταφορτώθηκε. %2$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your edit of \"%1$@\" is kept on this Mac but was not uploaded. %2$@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu cambio en «%1$@» se conserva en este Mac, pero no se subió. %2$@"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muutoksesi kohteeseen ”%1$@” on tallessa tässä Macissa, mutta sitä ei lähetetty. %2$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Votre modification de « %1$@ » est conservée sur ce Mac, mais n'a pas été envoyée. %2$@"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A(z) „%1$@” módosítása megmaradt ezen a Macen, de nem lett feltöltve. %2$@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La tua modifica di «%1$@» è conservata su questo Mac ma non è stata caricata. %2$@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「%1$@」への変更はこのMacに保持されていますが、アップロードされていません。%2$@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\"%1$@\"의 변경 사항이 이 Mac에 보관되어 있지만 업로드되지 않았습니다. %2$@"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endringen din av «%1$@» er tatt vare på på denne Macen, men ble ikke lastet opp. %2$@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je wijziging van '%1$@' is op deze Mac bewaard, maar niet geüpload. %2$@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Twoja zmiana pliku „%1$@” jest zachowana na tym Macu, ale nie została przesłana. %2$@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sua alteração em \"%1$@\" está guardada neste Mac, mas não foi enviada. %2$@"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A sua alteração a \"%1$@\" está guardada neste Mac, mas não foi carregada. %2$@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ваше изменение «%1$@» сохранено на этом Mac, но не загружено. %2$@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Din ändring av ”%1$@” finns kvar på den här Macen men laddades inte upp. %2$@"
+          }
+        }
+      }
+    },
+    "openWith.recovery.reasonUnknown" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nahrávání nebylo dokončeno."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uploaden blev ikke fuldført."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Upload wurde nicht abgeschlossen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Η μεταφόρτωση δεν ολοκληρώθηκε."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The upload did not finish."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La subida no terminó."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lähetys ei valmistunut."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'envoi ne s'est pas terminé."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A feltöltés nem fejeződött be."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il caricamento non è stato completato."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップロードが完了しませんでした。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업로드가 완료되지 않았습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opplastingen ble ikke fullført."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het uploaden is niet voltooid."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przesyłanie nie zostało ukończone."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O envio não foi concluído."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O carregamento não foi concluído."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загрузка не завершилась."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uppladdningen slutfördes inte."
+          }
+        }
+      }
+    },
+    "openWith.recovery.retry" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nahrát znovu"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upload igen"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erneut hochladen"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Νέα μεταφόρτωση"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upload Again"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volver a subir"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lähetä uudelleen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Envoyer à nouveau"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feltöltés újra"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carica di nuovo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再アップロード"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다시 업로드"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last opp igjen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opnieuw uploaden"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prześlij ponownie"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enviar novamente"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carregar novamente"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загрузить снова"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ladda upp igen"
+          }
+        }
+      }
+    },
+    "openWith.recovery.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Úprava nebyla nahrána"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ændring ikke uploadet"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Änderung nicht hochgeladen"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Η αλλαγή δεν μεταφορτώθηκε"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit not uploaded"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambio no subido"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muutosta ei lähetetty"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modification non envoyée"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A módosítás nincs feltöltve"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifica non caricata"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "変更がアップロードされていません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "변경 사항이 업로드되지 않음"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endringen er ikke lastet opp"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wijziging niet geüpload"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zmiana nie została przesłana"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alteração não enviada"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alteração não carregada"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изменение не загружено"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ändringen har inte laddats upp"
           }
         }
       }
@@ -68877,115 +70305,115 @@
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pro na zkoušku na %lld dní"
+            "value" : "Zkušební verze na %lld dní"
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prøv Pro i %lld dage"
+            "value" : "%lld-dages prøveperiode"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pro %lld Tage lang testen"
+            "value" : "%lld-tägige Testversion"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Δοκίμασε το Pro για %lld ημέρες"
+            "value" : "Δοκιμή %lld ημερών"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Try Pro for %lld days"
+            "value" : "%lld-day Trial"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prueba Pro durante %lld días"
+            "value" : "Prueba de %lld días"
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kokeile Prota %lld päivää"
+            "value" : "%lld päivän kokeilu"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Essayer Pro pendant %lld jours"
+            "value" : "Essai de %lld jours"
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Próbáld ki a Prót %lld napig"
+            "value" : "%lld napos próbaidőszak"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prova Pro per %lld giorni"
+            "value" : "Prova di %lld giorni"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pro を %lld 日間試す"
+            "value" : "%lld日間のトライアル"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld일 동안 Pro 체험하기"
+            "value" : "%lld일 체험판"
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prøv Pro i %lld dager"
+            "value" : "%lld-dagers prøveperiode"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Probeer Pro %lld dagen"
+            "value" : "Proefperiode van %lld dagen"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wypróbuj Pro przez %lld dni"
+            "value" : "%lld-dniowy okres próbny"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Experimente o Pro por %lld dias"
+            "value" : "Teste de %lld dias"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Experimente o Pro durante %lld dias"
+            "value" : "Período experimental de %lld dias"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Попробуйте Pro: %lld дн."
+            "value" : "Пробный период на %lld дней"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prova Pro i %lld dagar"
+            "value" : "%lld dagars provperiod"
           }
         }
       }
@@ -68996,115 +70424,115 @@
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zkušební verze je zdarma a trvá %lld dní. Poté se Bucketeer vrátí k bezplatné verzi a nic se neúčtuje. Pro doživotně je jednorázový nákup za %@."
+            "value" : "Zkušební verze je zdarma a trvá %lld dní. Poté přestanou fungovat výše uvedené funkce Pro, Bucketeer se vrátí k bezplatné verzi a nic se neúčtuje. Pro doživotně je jednorázový nákup za %@."
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prøveperioden er gratis og varer %lld dage. Derefter går Bucketeer tilbage til gratisversionen, og der opkræves intet. Pro Livstid er et engangskøb til %@."
+            "value" : "Prøveperioden er gratis og varer %lld dage. Derefter holder Pro-funktionerne ovenfor op med at virke, Bucketeer går tilbage til gratisversionen, og der opkræves intet. Pro Livstid er et engangskøb til %@."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Die Probezeit ist kostenlos und dauert %lld Tage. Danach läuft Bucketeer in der kostenlosen Version weiter, es wird nichts berechnet. Pro für immer ist ein einmaliger Kauf für %@."
+            "value" : "Die Testversion ist kostenlos und dauert %lld Tage. Danach funktionieren die oben genannten Pro-Funktionen nicht mehr, Bucketeer läuft in der kostenlosen Version weiter und es wird nichts berechnet. Pro für immer ist ein einmaliger Kauf für %@."
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Η δοκιμή είναι δωρεάν και διαρκεί %lld ημέρες. Μετά το Bucketeer επιστρέφει στη δωρεάν έκδοση και δεν γίνεται καμία χρέωση. Το Pro εφ' όρου ζωής είναι εφάπαξ αγορά στην τιμή %@."
+            "value" : "Η δοκιμή είναι δωρεάν και διαρκεί %lld ημέρες. Μετά οι λειτουργίες Pro που αναφέρονται παραπάνω σταματούν να λειτουργούν, το Bucketeer επιστρέφει στη δωρεάν έκδοση και δεν γίνεται καμία χρέωση. Το Pro εφ' όρου ζωής είναι εφάπαξ αγορά στην τιμή %@."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The trial is free and lasts %lld days. Afterwards Bucketeer returns to the free version and nothing is charged. Pro Lifetime is a one-time purchase at %@."
+            "value" : "The trial is free and lasts %lld days. Afterwards the Pro features listed above stop working, Bucketeer returns to the free version and nothing is charged. Pro Lifetime is a one-time purchase at %@."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La prueba es gratuita y dura %lld días. Después, Bucketeer vuelve a la versión gratuita y no se cobra nada. Pro de por vida es una compra única de %@."
+            "value" : "La prueba es gratuita y dura %lld días. Después, las funciones Pro indicadas arriba dejan de funcionar, Bucketeer vuelve a la versión gratuita y no se cobra nada. Pro de por vida es una compra única de %@."
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kokeilu on maksuton ja kestää %lld päivää. Sen jälkeen Bucketeer palaa ilmaisversioon, eikä mitään veloiteta. Elinikäinen Pro on kertaosto hintaan %@."
+            "value" : "Kokeilu on maksuton ja kestää %lld päivää. Sen jälkeen yllä luetellut Pro-ominaisuudet lakkaavat toimimasta, Bucketeer palaa ilmaisversioon eikä mitään veloiteta. Elinikäinen Pro on kertaosto hintaan %@."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "L'essai est gratuit et dure %lld jours. Ensuite, Bucketeer revient à la version gratuite et rien n'est facturé. Pro à vie est un achat unique de %@."
+            "value" : "L'essai est gratuit et dure %lld jours. Ensuite, les fonctions Pro listées ci-dessus cessent de fonctionner, Bucketeer revient à la version gratuite et rien n'est facturé. Pro à vie est un achat unique de %@."
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A próbaidőszak ingyenes, és %lld napig tart. Utána a Bucketeer visszaáll az ingyenes verzióra, és semmit sem kell fizetni. A Pro örök licenc egyszeri vásárlás, ára %@."
+            "value" : "A próbaidőszak ingyenes, és %lld napig tart. Utána a fent felsorolt Pro funkciók nem működnek tovább, a Bucketeer visszaáll az ingyenes verzióra, és semmit sem kell fizetni. A Pro örök licenc egyszeri vásárlás, ára %@."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La prova è gratuita e dura %lld giorni. Poi Bucketeer torna alla versione gratuita e non viene addebitato nulla. Pro a vita è un acquisto unico a %@."
+            "value" : "La prova è gratuita e dura %lld giorni. Poi le funzioni Pro elencate sopra smettono di funzionare, Bucketeer torna alla versione gratuita e non viene addebitato nulla. Pro a vita è un acquisto unico a %@."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "体験は無料で、期間は %lld 日間です。終了後は無料版に戻り、料金は一切かかりません。Pro 永久版は %@ の一回限りの購入です。"
+            "value" : "トライアルは無料で、期間は %lld 日間です。終了後は上記の Pro 機能が使えなくなり、無料版に戻ります。料金は一切かかりません。Pro 永久版は %@ の一回限りの購入です。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "체험은 무료이며 %lld일 동안 이용할 수 있습니다. 체험이 끝나면 Bucketeer는 무료 버전으로 돌아가며 요금이 청구되지 않습니다. Pro 평생은 %@의 일회성 구매입니다."
+            "value" : "체험은 무료이며 %lld일 동안 이용할 수 있습니다. 체험이 끝나면 위에 나열된 Pro 기능이 더 이상 작동하지 않고 Bucketeer는 무료 버전으로 돌아가며 요금이 청구되지 않습니다. Pro 평생은 %@의 일회성 구매입니다."
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prøveperioden er gratis og varer i %lld dager. Deretter går Bucketeer tilbake til gratisversjonen, og ingenting belastes. Pro Livstid er et engangskjøp til %@."
+            "value" : "Prøveperioden er gratis og varer i %lld dager. Deretter slutter Pro-funksjonene ovenfor å virke, Bucketeer går tilbake til gratisversjonen, og ingenting belastes. Pro Livstid er et engangskjøp til %@."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "De proefperiode is gratis en duurt %lld dagen. Daarna gaat Bucketeer terug naar de gratis versie en wordt er niets in rekening gebracht. Pro voor altijd is een eenmalige aankoop van %@."
+            "value" : "De proefperiode is gratis en duurt %lld dagen. Daarna werken de hierboven genoemde Pro-functies niet meer, gaat Bucketeer terug naar de gratis versie en wordt er niets in rekening gebracht. Pro voor altijd is een eenmalige aankoop van %@."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Okres próbny jest bezpłatny i trwa %lld dni. Potem Bucketeer wraca do wersji bezpłatnej i nic nie jest pobierane. Pro na zawsze to jednorazowy zakup za %@."
+            "value" : "Okres próbny jest bezpłatny i trwa %lld dni. Potem wymienione powyżej funkcje Pro przestają działać, Bucketeer wraca do wersji bezpłatnej i nic nie jest pobierane. Pro na zawsze to jednorazowy zakup za %@."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A avaliação é gratuita e dura %lld dias. Depois, o Bucketeer volta para a versão gratuita e nada é cobrado. O Pro Vitalício é uma compra única de %@."
+            "value" : "O teste é gratuito e dura %lld dias. Depois, os recursos Pro listados acima deixam de funcionar, o Bucketeer volta para a versão gratuita e nada é cobrado. O Pro Vitalício é uma compra única de %@."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O período experimental é gratuito e dura %lld dias. Depois, o Bucketeer volta à versão gratuita e nada é cobrado. O Pro Vitalício é uma compra única de %@."
+            "value" : "O período experimental é gratuito e dura %lld dias. Depois, as funções Pro indicadas acima deixam de funcionar, o Bucketeer volta à versão gratuita e nada é cobrado. O Pro Vitalício é uma compra única de %@."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Пробный период бесплатный и длится %lld дн. После этого Bucketeer вернётся к бесплатной версии, никаких списаний не будет. Pro навсегда стоит %@, оплата один раз."
+            "value" : "Пробный период бесплатный и длится %lld дн. После этого перечисленные выше функции Pro перестанут работать, Bucketeer вернётся к бесплатной версии, никаких списаний не будет. Pro навсегда стоит %@, оплата один раз."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Provperioden är gratis och varar i %lld dagar. Därefter återgår Bucketeer till gratisversionen och inget debiteras. Pro Livstid är ett engångsköp för %@."
+            "value" : "Provperioden är gratis och varar i %lld dagar. Därefter slutar Pro-funktionerna ovan att fungera, Bucketeer återgår till gratisversionen och inget debiteras. Pro Livstid är ett engångsköp för %@."
           }
         }
       }

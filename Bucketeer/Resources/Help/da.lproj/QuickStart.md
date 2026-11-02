@@ -35,7 +35,7 @@ Den hemmelige nøgle er skjult, når du redigerer en konto. Klik på **Vis gemte
 - Dobbeltklik på en fil, eller højreklik og vælg **Åbn**, for at åbne den i standardappen. **Åbn med** viser andre apps, der kan åbne den; med **Andet…** kan du vælge en vilkårlig app.
 - Bucketeer henter filen til en midlertidig mappe og holder øje med den. Kort efter hver gemning uploades filen igen via den normale overførselskø, så klientsidekryptering også gælder her.
 - Hvis objektet blev ændret eller slettet på serveren, efter du åbnede det, overskriver Bucketeer det ikke. Din version uploades ved siden af som "navn (conflict dato).endelse", og Bucketeer viser en besked.
-- Den midlertidige kopi slettes, når du afslutter den app, du redigerede i, når du afslutter Bucketeer, eller ved næste start.
+- Den midlertidige kopi slettes, så snart serveren har din seneste lagring. Hvis en lagring ikke kunne uploades (f.eks. offline), beholder Bucketeer filen på denne Mac og tilbyder **Upload igen**, **Gem en kopi…** eller **Kassér ændring** — også ved næste start, f.eks. efter et nedbrud.
 
 ## Administrér objekter
 

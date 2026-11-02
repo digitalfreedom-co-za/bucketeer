@@ -58,7 +58,8 @@ None of the following is sent to the provider.
 | Encryption keys (only if you enable client-side encryption for a bucket) | Key material in the macOS Keychain, key labels in a local database | Encrypt and decrypt objects on your Mac (see section 6) |
 | Settings (bandwidth limit, trash and Spotlight settings, menubar mode, hardware-key preview) | The App's local preferences | Remember your choices |
 | Preview cache | Temporary folder of the App, limited to 2 GiB | Show previews without downloading again |
-| Files you open with another app (Open / Open With) | Temporary folder of the App | Let the other app edit the file and upload your saves; deleted when that app quits, when Bucketeer quits, or at the next launch |
+| Files you open with another app (Open / Open With) | Temporary folder of the App | Let the other app edit the file and upload your saves; deleted once the storage provider has your last save |
+| Edits that could not be uploaded (Open / Open With) | Application Support folder of the App | Keep your unsaved work after a failed upload or a crash; kept until you upload, export or discard it in the App |
 | Downloaded files | The location you choose | Your files, under your control |
 | Finder mount staging files (only for mounted buckets) | System-managed File Provider storage | Required by macOS to show a bucket in Finder |
 | Last listing of the folders you opened in Finder (object names and ETags, only for mounted buckets) | The Finder extension's own container | Show changes made on the server in Finder |
@@ -79,8 +80,13 @@ Keychain Access.
 | Links you open (website, support form, GitHub, Apple refund page) | Only when you click them | Request from your browser | The operator of that page |
 
 The App sends no data to the provider. Requests to your storage
-endpoints go directly from your Mac to the endpoint over TLS; the
-provider is not on that path.
+endpoints go directly from your Mac to the endpoint; the provider is
+not on that path. The built-in provider addresses are reached over TLS
+(https). If you enter an endpoint address yourself (custom S3, MinIO or
+an endpoint override) and it starts with http://, for example a server
+in your own network, the App connects without TLS, as you asked: object names, metadata, file content and the signed
+requests then travel unencrypted and can be read on the network path.
+The App shows a warning when you enter such an address.
 
 ---
 
@@ -242,8 +248,10 @@ therefore does not knowingly process personal data of children.
 - Credentials and encryption keys are kept in the macOS Keychain, only
   available while the Mac is unlocked and not synchronised via iCloud.
   They are not written to log files or shown in error messages.
-- Connections to storage endpoints use TLS. Requests are signed on
-  your Mac (AWS Signature Version 4 or Azure Shared Key).
+- Connections to storage endpoints use TLS, except an endpoint address
+  you enter yourself with http:// (see section 4). Requests are
+  signed on your Mac (AWS Signature Version 4 or Azure Shared Key);
+  the secret key itself is never sent.
 
 No software is free of defects. Please report security issues to
 security@digitalfreedom.co.za.

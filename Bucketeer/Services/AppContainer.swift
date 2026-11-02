@@ -267,7 +267,7 @@ final class AppContainer {
         )
         self.openWithController = openWithController
         if startsBackgroundWork {
-            openWithController.removeLeftovers()
+            openWithController.prepareWorkspace()
         }
         let activationController = AppActivationController()
         self.activationController = activationController

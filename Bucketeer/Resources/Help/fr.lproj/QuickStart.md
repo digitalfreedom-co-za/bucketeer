@@ -35,7 +35,7 @@ Le secret est masqué lorsque vous modifiez un compte. Cliquez sur **Révéler l
 - Double-clique sur un fichier, ou fais un clic droit et choisis **Ouvrir**, pour l'ouvrir dans son app par défaut. **Ouvrir avec** liste les autres apps capables de l'ouvrir ; **Autre…** permet de choisir n'importe quelle app.
 - Bucketeer télécharge le fichier dans un dossier temporaire et le surveille. Peu après chaque enregistrement, le fichier est renvoyé via la file de transferts habituelle, donc le chiffrement côté client s'applique aussi.
 - Si l'objet a été modifié ou supprimé sur le serveur après son ouverture, Bucketeer ne l'écrase pas. Ta version est envoyée à côté sous le nom « nom (conflict date).ext » et Bucketeer affiche un message.
-- La copie temporaire est supprimée quand tu quittes l'app dans laquelle tu l'as modifiée, quand tu quittes Bucketeer ou au lancement suivant.
+- La copie temporaire est supprimée dès que le serveur a ton dernier enregistrement. Si un enregistrement n'a pas pu être envoyé (par exemple hors connexion), Bucketeer conserve le fichier sur ce Mac et te propose **Envoyer à nouveau**, **Enregistrer une copie…** ou **Supprimer la modification**, y compris au lancement suivant, par exemple après un plantage.
 
 ## Gérer les objets
 

@@ -35,7 +35,7 @@ El secreto está oculto cuando editas una cuenta. Haz clic en **Revelar credenci
 - Haz doble clic en un archivo, o haz clic derecho y elige **Abrir**, para abrirlo en su app predeterminada. **Abrir con** muestra otras apps que pueden abrirlo; con **Otra…** eliges cualquier app.
 - Bucketeer descarga el archivo en una carpeta temporal y lo vigila. Poco después de cada guardado, el archivo se vuelve a subir por la cola de transferencias normal, así que el cifrado del lado del cliente también se aplica.
 - Si el objeto se modificó o se eliminó en el servidor después de abrirlo, Bucketeer no lo sobrescribe. Tu versión se sube a su lado como «nombre (conflict fecha).ext» y Bucketeer muestra un aviso.
-- La copia temporal se elimina cuando cierras la app en la que la editaste, cuando cierras Bucketeer o en el siguiente inicio.
+- La copia temporal se elimina en cuanto el servidor tiene tu último guardado. Si un guardado no se pudo subir (por ejemplo, sin conexión), Bucketeer conserva el archivo en este Mac y te ofrece **Volver a subir**, **Guardar una copia…** o **Descartar cambio**, también en el siguiente inicio, por ejemplo tras un cierre inesperado.
 
 ## Gestionar objetos
 
