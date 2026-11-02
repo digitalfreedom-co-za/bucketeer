@@ -181,7 +181,7 @@ struct SyncJobListView: View {
             }
         } else {
             Button("sync.action.runNow", systemImage: "play.fill") {
-                Task { await viewModel.runNow(id: job.id) }
+                guardPro { Task { await viewModel.runNow(id: job.id) } }
             }
         }
         Button("action.edit", systemImage: "pencil") {

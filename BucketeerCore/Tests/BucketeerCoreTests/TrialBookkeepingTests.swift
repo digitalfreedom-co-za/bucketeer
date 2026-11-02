@@ -57,6 +57,15 @@ struct TrialBookkeepingTests {
         #expect(book.daysRemaining(now: mid) == 7)
     }
 
+    @Test("secondsRemaining counts down to the exact expiry, then nil")
+    func secondsRemainingUntilExpiry() {
+        let (book, _) = bookkeeping(trialLength: 100)
+        let t0 = Date(timeIntervalSince1970: 1_000_000)
+        book.start(now: t0)
+        #expect(book.secondsRemaining(now: t0.addingTimeInterval(40)) == 60)
+        #expect(book.secondsRemaining(now: t0.addingTimeInterval(100)) == nil)
+    }
+
     // MARK: - Expiry + consumed marker
 
     @Test("Trial expires after 14 days — daysRemaining returns nil")

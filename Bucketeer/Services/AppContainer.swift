@@ -202,7 +202,14 @@ final class AppContainer {
             accountStore: accountStore,
             entitlements: entitlementManager
         )
-        self.activationController = AppActivationController()
+        let activationController = AppActivationController()
+        self.activationController = activationController
+        // A persisted menubar mode must not outlive the entitlement.
+        entitlementManager.onStateChange = { [weak entitlementManager, activationController] _ in
+            guard let entitlementManager,
+                  !entitlementManager.isUnlocked(.menubarBackground) else { return }
+            activationController.setMenubarMode(false)
+        }
         let mountController = MountController(encryptionKeyStore: encryptionKeyStore)
         self.mountController = mountController
         Task { @MainActor [mountController] in
@@ -217,7 +224,10 @@ final class AppContainer {
             jobStore: syncJobStore,
             browser: router,
             transferManager: transferManager,
-            activityLog: activityLog
+            activityLog: activityLog,
+            isAuthorized: { [entitlementManager] in
+                await entitlementManager.isUnlockedAfterLaunchCheck(.syncEngine)
+            }
         )
         self.syncJobStore = syncJobStore
         self.syncEngine = syncEngine

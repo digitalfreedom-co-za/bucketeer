@@ -83,6 +83,12 @@ public struct TrialBookkeeping: Sendable {
     /// `nil` once the trial has expired (and writes the consumed
     /// marker so future calls short-circuit).
     public func daysRemaining(now: Date = Date()) -> Int? {
+        secondsRemaining(now: now).map { Int(ceil($0 / 86_400)) }
+    }
+
+    /// Exact time left in the trial, or `nil` once it is over. Lets the
+    /// host schedule a refresh at the moment the trial ends.
+    public func secondsRemaining(now: Date = Date()) -> TimeInterval? {
         if store.bool(forKey: Self.trialConsumedKey) { return nil }
 
         // High-watermark: never let the effective clock regress. A
@@ -113,6 +119,6 @@ public struct TrialBookkeeping: Sendable {
             store.setBool(true, forKey: Self.trialConsumedKey)
             return nil
         }
-        return Int(ceil(remaining / 86_400))
+        return remaining
     }
 }
