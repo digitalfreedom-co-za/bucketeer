@@ -313,7 +313,7 @@ enum FileProviderItemResolver {
         }
         do {
             if key.hasSuffix("/") {
-                // Codex high #4: folder identifiers represent a virtual
+                // Folder identifiers represent a virtual
                 // prefix in the bucket. Deleting only the `prefix/`
                 // marker would leave every descendant orphaned in the
                 // bucket while Finder reports success. Recursively
@@ -578,7 +578,7 @@ final class ResolvedItem: NSObject, NSFileProviderItem {
     var capabilities: NSFileProviderItemCapabilities {
         // The root container (the bucket itself) cannot be renamed or
         // deleted via Finder — that would require a `DeleteBucket`
-        // call we do not expose. Codex medium #10: returning the
+        // call we do not expose. Returning the
         // folder capabilities here let Finder offer a Delete that
         // would silently fail.
         if itemIdentifier == .rootContainer {
@@ -589,7 +589,7 @@ final class ResolvedItem: NSObject, NSFileProviderItem {
             // rename would have to copy+delete every descendant.
             // v1 doesn't implement that, and offering the action just
             // to fail (or worse, move only the marker and orphan the
-            // children) is the worst outcome. Codex round-2 finding.
+            // children) is the worst outcome.
             return [.allowsContentEnumerating, .allowsAddingSubItems, .allowsDeleting]
         }
         return [.allowsReading, .allowsWriting, .allowsDeleting, .allowsRenaming]

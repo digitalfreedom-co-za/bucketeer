@@ -49,12 +49,12 @@ actor SyncEngine {
     /// cancelling the orchestrating task and letting the transfers keep
     /// running.
     private var activeTransferIDs: [UUID: Set<UUID>] = [:]
-    /// Codex #7: set on cancellation so a transfer that returned
+    /// Set on cancellation so a transfer that returned
     /// from `enqueue…` *after* the cancel call still gets caught and
     /// torn down. Without this guard the registration-race window
     /// could leak an in-flight transfer past the cancel.
     private var cancelledJobIDs: Set<UUID> = []
-    /// Codex audit R2 (high): watch-folder events that arrive while
+    /// Watch-folder events that arrive while
     /// a job is already running used to be dropped (runNow no-ops
     /// when `runners[id] != nil`). Local file changes could then
     /// stay unsynced until a *future* event nudged the watcher
@@ -70,8 +70,8 @@ actor SyncEngine {
         let watcher: LocalFolderWatcher
         let pumpTask: Task<Void, Never>
         /// The raw bookmark `Data` — used to detect that the user
-        /// re-picked the folder. Codex audit R2 (medium) replaced
-        /// the old `Int` hashValue (which collides) with the full
+        /// re-picked the folder. Compares the full bytes rather than
+        /// the `Int` hashValue (which collides) with the full
         /// bytes; equality is the only correct identity check.
         let bookmarkData: Data
         /// The resolved URL whose security scope was started when the
@@ -125,8 +125,7 @@ actor SyncEngine {
 
     deinit { continuation.finish() }
 
-    /// Tear down every FSEvents watcher + pump task. Codex audit
-    /// R2 (medium): actor deinit can't reach actor-isolated state
+    /// Tear down every FSEvents watcher + pump task. Actor deinit can't reach actor-isolated state
     /// in Swift 6, so we expose an explicit shutdown the host
     /// calls from its own dealloc path (or from a hot-reload
     /// hook in tests). Idempotent.
@@ -206,7 +205,7 @@ actor SyncEngine {
             guard case .localFolder(let bookmark, _) = job.source else { continue }
             keepIDs.insert(job.id)
             // Existing watcher with the same bookmark → leave running.
-            // Codex audit R2 (medium): equality on the raw bytes
+            // Equality on the raw bytes
             // instead of `hashValue`; hashValue collisions would
             // falsely treat an edited bookmark as identical.
             if let existing = watchers[job.id], existing.bookmarkData == bookmark {
@@ -276,7 +275,7 @@ actor SyncEngine {
     /// Run the job immediately. Idempotent — calling while already
     /// running is a no-op for the *current* run but now records a
     /// pending-rerun flag so the job re-fires the moment the
-    /// in-flight run terminates. Codex audit R2 (high): without the
+    /// in-flight run terminates. Without the
     /// rerun bit, watch-folder events that landed mid-run were lost
     /// and only a *future* event triggered another sync.
     func runNow(id: UUID) async {
@@ -310,7 +309,7 @@ actor SyncEngine {
 
     /// Cancel a running job. Idempotent. Cancels the orchestrating
     /// task **and** every transfer-manager task the engine has handed
-    /// to the queue for this job — Codex review #3.
+    /// to the queue for this job.
     func cancel(id: UUID) async {
         cancelledJobIDs.insert(id)
         pendingReruns.remove(id)
@@ -327,7 +326,7 @@ actor SyncEngine {
         }
     }
 
-    /// Codex #7: if the job was cancelled while the transfer was
+    /// If the job was cancelled while the transfer was
     /// being enqueued, the new transfer would otherwise dangle. Catch
     /// it here and tear it down immediately.
     private func registerActiveTransfer(jobID: UUID, transferID: UUID) {
@@ -346,7 +345,7 @@ actor SyncEngine {
 
     private func execute(job: SyncJob, token: UUID) async {
         let start = Date()
-        // Codex audit R2 (high): release the runner slot, then
+        // Release the runner slot, then
         // immediately re-trigger if a watch-folder event landed
         // while we were running. Without this, the rerun bit stays
         // set and is only acted on by the *next* fsevent, which
@@ -412,10 +411,10 @@ actor SyncEngine {
         var completed = 0
         var failed = 0
         /// Tracks which entries actually succeeded so move-mode does
-        /// not delete the source for failed upserts (Codex blocker #1).
+        /// not delete the source for failed upserts.
         var successfulEntries: [SyncPlanner.PlanEntry] = []
 
-        // Upserts: copy or transfer per entry. Codex medium #11 —
+        // Upserts: copy or transfer per entry.
         // honour `job.concurrency` instead of running serially. We
         // use a bounded task group with an inflight cap so the
         // configured parallelism is respected without exhausting
@@ -512,9 +511,9 @@ actor SyncEngine {
         }
 
         // Move mode: delete the source **only** for entries whose
-        // upsert succeeded (Codex blocker #1 — failed copies must not
+        // upsert succeeded (failed copies must not
         // trigger source deletes), and only if the job was not
-        // cancelled mid-flight. Codex medium #9 — count delete
+        // cancelled mid-flight. Count delete
         // failures so the final summary reflects them instead of
         // silently swallowing leftover-source duplicates.
         var moveDeleteFailures = 0
@@ -534,7 +533,7 @@ actor SyncEngine {
         let summary = moveDeleteFailures > 0
             ? "\(completed) ok / \(failed) failed (\(moveDeleteFailures) move-delete) / \(planned) planned"
             : "\(completed) ok / \(failed) failed / \(planned) planned"
-        // Codex R5 (medium): persist *before* publishing the
+        // Persist *before* publishing the
         // terminal status. Observers (`SyncJobDetailWindow` via
         // `SyncStatusBroker`) reload the job from the store on
         // terminal-phase transitions; if we updateStatus first
@@ -603,7 +602,7 @@ actor SyncEngine {
             )
         case .localFolder(let bookmark, let displayPath):
             let resolved = try LocalFolderEnumerator.resolveBookmark(bookmark)
-            // Codex medium #5: a stale bookmark means macOS has
+            // A stale bookmark means macOS has
             // garbage-collected the underlying file identity. The
             // bookmark may still resolve to *a* URL but its security
             // scope is not the one the user originally granted.
@@ -612,7 +611,7 @@ actor SyncEngine {
             if resolved.isStale {
                 throw BucketeerError.sandboxAccessDenied(resolved.url)
             }
-            // Codex medium #6: a failed start means the sandbox
+            // A failed start means the sandbox
             // refused the scope. Continuing would either fail every
             // operation with confusing errors or, worse, succeed only
             // by accident if the URL happens to be inside our container.
@@ -843,7 +842,7 @@ actor SyncEngine {
         destinationAccount: S3Account,
         destinationBucket: String
     ) async throws {
-        // Path-traversal guard (Codex blocker #1): even on the local
+        // Path-traversal guard: even on the local
         // *source* side, a malicious sync-job definition could carry
         // an entry.sourceKey of `../../../etc/passwd`. Refuse to
         // operate outside the chosen sync root.
@@ -886,7 +885,7 @@ actor SyncEngine {
             withIntermediateDirectories: true
         )
         // Atomic replace via temporary intermediate so a failed copy
-        // never leaves a partial file at the destination — Codex #8.
+        // never leaves a partial file at the destination.
         let staging = parent.appending(path: ".bucketeer-sync-staging-" + UUID().uuidString)
         do {
             try FileManager.default.copyItem(at: sourceFile, to: staging)

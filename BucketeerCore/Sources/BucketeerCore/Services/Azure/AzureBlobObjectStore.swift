@@ -219,10 +219,10 @@ public struct AzureBlobObjectStore: S3Browsing {
             builder.absoluteBlobURL(container: fromBucket, blob: fromKey).absoluteString,
             forHTTPHeaderField: "x-ms-copy-source"
         )
-        // Codex R4 (high): copy(...) previously bypassed the
+        // `copy(...)` previously bypassed the
         // header sanitisation that saveMetadata uses. Same
         // hardening here so a hostile metadata value can't fold a
-        // CR/LF into the outbound request. Codex R5 (medium):
+        // CR/LF into the outbound request.
         // tighten validation from RFC 9110 HTTP-token (which
         // would let `abc-123` through) to Azure's C#-identifier
         // metadata-name rule, and reject non-ASCII values which
@@ -245,7 +245,7 @@ public struct AzureBlobObjectStore: S3Browsing {
         // for asynchronous copies (large blobs, cross-storage-account,
         // some sovereign cloud setups). Inspect the response and poll
         // Get Blob Properties on the destination until the copy
-        // finishes — Codex blocker #1: the previous "fire and assume
+        // finishes — the previous "fire and assume
         // success" path caused the rename / move flow to delete the
         // source while the copy was still pending, losing data.
         let (_, response) = try await session.azureData(for: request)
@@ -442,7 +442,7 @@ public struct AzureBlobObjectStore: S3Browsing {
         if let mapped = AzureBlobObjectStore.mapHTTP(http, body: nil, bucket: bucket, key: key) {
             throw mapped
         }
-        // Codex R3 (medium): every non-`success`, non-`pending`
+        // Every non-`success`, non-`pending`
         // status was previously eaten by the default-success
         // branch — `failed` and `aborted` looked like wins.
         let status = (http.value(forHTTPHeaderField: "x-ms-copy-status") ?? "success").lowercased()
@@ -530,7 +530,7 @@ public struct AzureBlobObjectStore: S3Browsing {
         }
 
         // Build the user-metadata dictionary from every x-ms-meta-*
-        // response header. Codex R3 (medium): refuse keys / values
+        // response header. Refuse keys / values
         // that aren't safe to echo back into an outbound request,
         // so a hostile Azure response can't fold a CR/LF into the
         // next saveMetadata call.
@@ -545,7 +545,7 @@ public struct AzureBlobObjectStore: S3Browsing {
             userMetadata[metaKey] = AzureRequestBuilder.sanitiseHeaderValue(stringValue)
         }
 
-        // Tags via a separate GET. Codex R3 (high): only treat a
+        // Tags via a separate GET. Only treat a
         // 404 (`objectNotFound`) as "no tags". Re-throw every other
         // failure so a follow-up saveMetadata doesn't silently
         // overwrite real tags with the empty set.
@@ -584,20 +584,20 @@ public struct AzureBlobObjectStore: S3Browsing {
         let signer = try await credentialsCache.signer(for: account)
         let builder = AzureRequestBuilder(account: account)
 
-        // 1) Set Blob Properties — Codex R3 (high #2). Without this
+        // 1) Set Blob Properties. Without this
         //    RPC every HTTP-section edit (Content-Type, Cache-
         //    Control, Content-Disposition, Content-Encoding) was
         //    silently dropped because Set Metadata + Set Tags
         //    don't touch those fields. Azure uses `x-ms-blob-
         //    content-*` headers (not the bare HTTP headers).
-        // Codex R4 (medium): Set Blob Properties **replaces** the
+        // Set Blob Properties **replaces** the
         // full property set — anything we don't pass gets wiped.
         // ObjectMetadata only models four fields, but Azure also
         // tracks Content-Language and Content-MD5. Re-read them
         // via HEAD and pass them back so an editor save doesn't
         // silently drop properties the user never touched.
         //
-        // Codex R5 (medium): treat HEAD failure as fatal. The
+        // Treat HEAD failure as fatal. The
         // previous "best-effort" path turned a transient 5xx on
         // HEAD followed by a successful Set Blob Properties into
         // silent property loss — exactly the regression R4 was
@@ -649,7 +649,7 @@ public struct AzureBlobObjectStore: S3Browsing {
         var metaRequest = URLRequest(url: builder.setBlobMetadataURL(container: bucket, blob: key))
         metaRequest.httpMethod = "PUT"
         metaRequest.setValue("0", forHTTPHeaderField: "Content-Length")
-        // Codex R5 (medium): align with copy() — use Azure's
+        // Align with copy — use Azure's
         // C#-identifier metadata rules + ASCII-only values
         // instead of generic HTTP-token validation so we surface
         // bad names locally instead of via HTTP 400 round-trip.
@@ -668,7 +668,7 @@ public struct AzureBlobObjectStore: S3Browsing {
 
         // 3) Set Blob Tags — overwrites the entire tag set with the
         //    supplied envelope. xmlEscape strips XML-illegal
-        //    control scalars (Codex R3 low) before escaping.
+        //    control scalars before escaping.
         let body = AzureRequestBuilder.tagsXML(tags: metadata.tags)
         var tagRequest = URLRequest(url: builder.setBlobTagsURL(container: bucket, blob: key))
         tagRequest.httpMethod = "PUT"

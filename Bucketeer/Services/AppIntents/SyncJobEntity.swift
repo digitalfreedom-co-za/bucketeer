@@ -9,8 +9,7 @@ import Foundation
 import AppIntents
 import BucketeerCore
 
-/// AppIntent-facing wrapper for `SyncJob`. Codex audit R2 (low)
-/// follow-up: Shortcuts now picks a job from a typed list keyed on
+/// AppIntent-facing wrapper for `SyncJob`. Shortcuts picks a job from a typed list keyed on
 /// the stable `id`, so a duplicate display name can't make the
 /// runner trigger the wrong one.
 struct SyncJobEntity: AppEntity, Identifiable, Sendable {

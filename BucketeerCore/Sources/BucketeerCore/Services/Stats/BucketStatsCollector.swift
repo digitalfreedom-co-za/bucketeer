@@ -27,7 +27,7 @@ public struct BucketStatsCollector: Sendable {
 
     public init(browser: any S3Browsing, pageCap: Int = 100, largestKeep: Int = 10) {
         self.browser = browser
-        // Codex audit R2 (medium + low): clamp both knobs so a
+        // Clamp both knobs so a
         // negative `largestKeep` can't trap the `reserveCapacity`
         // call below and a zero/negative `pageCap` consistently
         // means "no walk", not "one page with truncated=false".

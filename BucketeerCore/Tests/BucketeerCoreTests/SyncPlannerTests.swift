@@ -205,7 +205,7 @@ struct SyncPlannerTests {
         #expect(plan.deletes == ["orphan.txt"])
     }
 
-    @Test("Mirror deletes respect exclude globs — Codex review #6 regression test")
+    @Test("Mirror deletes respect exclude globs")
     func mirrorDeletesRespectExcludes() {
         let plan = SyncPlanner.makePlan(
             job: job(mode: .mirror, excludeGlobs: ["*.log"], deletePropagation: true),

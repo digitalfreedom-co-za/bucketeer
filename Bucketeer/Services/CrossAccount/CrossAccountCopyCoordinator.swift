@@ -27,8 +27,7 @@ final class CrossAccountCopyCoordinator {
     private let transferManager: TransferManager
     private let activityLog: any ActivityLogging
     /// Optional encryption gate so we can detect "either side has a
-    /// BYOK key" and force the round-trip rewrap path — Codex audit
-    /// fix (high #1). Without it, server-side `CopyObject` would
+    /// BYOK key" and force the round-trip rewrap path. Without it, server-side `CopyObject` would
     /// copy an encrypted envelope under the wrong destination key
     /// or write plaintext into an encrypted-bucket destination.
     private let encryptionGate: BucketEncryptionGate?
@@ -179,7 +178,7 @@ final class CrossAccountCopyCoordinator {
         destinationBucket: String,
         destinationKey: String
     ) async throws {
-        // Codex audit fix (medium #3): keep the plaintext staging
+        // Keep the plaintext staging
         // file inside the App-private Application Support directory
         // and under a `bucketeer-roundtrip-*` prefix so the
         // launch-time scavenger (`CrossAccountCopyCoordinator.scavengeOrphans()`)
@@ -245,8 +244,7 @@ final class CrossAccountCopyCoordinator {
 
     /// Sweep any leftover round-trip staging files. Called by
     /// `AppContainer.init` on every launch so a crash mid-copy
-    /// doesn't leave plaintext on disk indefinitely. Codex audit
-    /// fix (medium #3).
+    /// doesn't leave plaintext on disk indefinitely.
     // nonisolated: pure FileManager work, called from a detached
     // utility task at launch so it never blocks the main actor.
     nonisolated static func scavengeOrphans() {

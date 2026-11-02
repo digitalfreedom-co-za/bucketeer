@@ -80,7 +80,7 @@ actor TransferManager: Transferring {
     private var terminated: Set<UUID> = []
     /// Per-ID waiters created by `awaitCompletion(id:)`. Each entry is
     /// a list of continuations resumed once the task reaches a terminal
-    /// state. Codex review #2 — fixes the race where a fast transfer
+    /// state. Fixes the race where a fast transfer
     /// completed before a sync engine's stream-based waiter observed it.
     private var waiters: [UUID: [CheckedContinuation<TransferState, Never>]] = [:]
     /// Terminal-state cache for waiters that arrive after a transfer
@@ -226,7 +226,7 @@ actor TransferManager: Transferring {
     func cancel(id: UUID) async {
         workers[id]?.cancel()
         // Route through setState so `awaitCompletion(id:)` waiters get
-        // resumed and `terminalCache` is populated — Codex blocker #2:
+        // resumed and `terminalCache` is populated —
         // bypassing setState left sync engine + drag-drop round-trips
         // hung forever after a user-initiated cancel.
         if let item = items[id], !item.task.state.isTerminal {
@@ -263,7 +263,7 @@ actor TransferManager: Transferring {
     /// already terminated before this call, the cached terminal state
     /// is returned immediately. Used by `SyncEngine` to wait on
     /// cross-account round-trip halves without racing the public
-    /// `tasks` stream (Codex review #2).
+    /// `tasks` stream.
     func awaitCompletion(id: UUID) async -> TransferState {
         if let cached = terminalCache[id] { return cached }
         if let item = items[id], item.task.state.isTerminal {

@@ -43,7 +43,7 @@ public enum BucketeerDeepLink: Hashable, Sendable {
 
         switch host {
         case "account":
-            // Codex audit R2 (medium): require an exact 1-component
+            // Require an exact 1-component
             // path so `bucketeer://account/<uuid>/garbage` doesn't
             // route as a valid link with the garbage silently
             // dropped.

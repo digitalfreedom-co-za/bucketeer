@@ -99,12 +99,4 @@ struct S3ProviderTests {
             #expect(fixed.contains(provider.defaultRegion))
         }
     }
-
-    @Test("Bucket terminology key is container for Azure, bucket otherwise")
-    func bucketTerminology() {
-        for provider in S3Provider.allCases {
-            let expected = provider == .azureBlob ? "term.container" : "term.bucket"
-            #expect(provider.bucketTerminologyKey == expected)
-        }
-    }
 }

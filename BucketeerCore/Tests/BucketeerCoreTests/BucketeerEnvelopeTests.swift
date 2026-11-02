@@ -66,7 +66,7 @@ struct BucketeerEnvelopeTests {
         #expect(!BucketeerEnvelope.looksEncrypted(Data()))
     }
 
-    @Test("Empty plaintext round-trips (Codex audit fix low #1)")
+    @Test("Empty plaintext round-trips")
     func emptyPlaintext() throws {
         let key = SymmetricKey(size: .bits256)
         let envelope = try BucketeerEnvelope.seal(plaintext: Data(), key: key)
@@ -81,7 +81,7 @@ struct BucketeerEnvelopeTests {
         let key = SymmetricKey(size: .bits256)
         var envelope = try BucketeerEnvelope.seal(plaintext: Data("payload".utf8), key: key)
         // Flip the version byte. Pre-AAD this passed silently; after
-        // the Codex audit fix the header is authenticated and the
+        // the AAD change the header is authenticated and the
         // tag check fails.
         envelope[envelope.startIndex + 4] = 0x02
         do {

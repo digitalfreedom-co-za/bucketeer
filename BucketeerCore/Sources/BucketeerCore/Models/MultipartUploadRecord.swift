@@ -26,7 +26,7 @@ public final class MultipartUploadRecord {
     public var createdAt: Date
     public var lastTouchedAt: Date
     /// Optional for the SwiftData migration path: rows written
-    /// before the Codex audit fix lack a fingerprint. The store
+    /// before fingerprinting lack a fingerprint. The store
     /// treats `nil` as "no match" so legacy checkpoints get
     /// rebuilt rather than reused incorrectly.
     public var fileFingerprint: String?

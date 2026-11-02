@@ -19,7 +19,7 @@ import BucketeerCore
 /// indexer never indexes object contents, only filenames + bucket /
 /// account context.
 ///
-/// Domain layout (Codex audit R2 low + R3 high #3 follow-ups):
+/// Domain layout:
 /// - Base domain: `za.co.digitalfreedom.bucketeer.spotlight`
 /// - Per-account sub-domain:
 ///   `za.co.digitalfreedom.bucketeer.spotlight.<accountUUID>`
@@ -27,8 +27,7 @@ import BucketeerCore
 /// Items live under their account's sub-domain so
 /// `purgeAccount(_:)` can wipe one account without touching the
 /// rest. `CSSearchableIndex.deleteSearchableItems(withDomainIdentifiers:)`
-/// matches by **exact** domain string (not prefix — Codex R3
-/// caught the wrong assumption), so `purgeAll()` iterates every
+/// matches by **exact** domain string (not prefix), so `purgeAll()` iterates every
 /// sub-domain we've ever indexed plus the base domain.
 ///
 /// The set of indexed-account UUIDs is mirrored to `UserDefaults`
@@ -88,13 +87,13 @@ final class SpotlightIndexer {
         rememberAccountDomain(account.id)
     }
 
-    /// Wipe every Bucketeer Spotlight entry. Codex R3 (high #3):
+    /// Wipe every Bucketeer Spotlight entry.
     /// CSSearchableIndex domain-match is exact, so we explicitly
     /// iterate every sub-domain we've ever touched plus the base
     /// domain (legacy items indexed before the sub-domain layout
     /// landed).
     ///
-    /// Codex R4 (high): only clear the tracking set after the
+    /// Only clear the tracking set after the
     /// delete actually succeeds. A failed delete that still
     /// emptied the tracking set would leave stale Spotlight items
     /// with no way to target them on a re-attempt.
@@ -112,9 +111,9 @@ final class SpotlightIndexer {
 
     /// Remove every indexed item for the given account. Targets only
     /// the account's sub-domain, so the other accounts' items stay
-    /// searchable. Codex audit R2 (low) follow-up.
+    /// searchable.
     ///
-    /// Codex R4 (high): same retry-friendliness as `purgeAll` —
+    /// Same retry-friendliness as `purgeAll` —
     /// the tracking entry only goes away after Spotlight confirms
     /// the delete.
     func purgeAccount(_ accountID: UUID) async {

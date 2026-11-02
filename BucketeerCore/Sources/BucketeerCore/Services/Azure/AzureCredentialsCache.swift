@@ -68,10 +68,6 @@ public actor AzureCredentialsCache {
         cache.removeValue(forKey: accountID)
     }
 
-    public func invalidateAll() async {
-        cache.removeAll()
-    }
-
     /// Raw account-name + base64-key tuple. Used by the SAS-builder
     /// path (Phase 9.9) which signs a different StringToSign layout
     /// than the request signer and therefore can't reuse the cached

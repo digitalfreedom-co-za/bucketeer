@@ -66,11 +66,6 @@ final class BrowserViewModel {
         self.activityLog = activityLog
     }
 
-    /// Public accessor so the share sheet (and other future direct
-    /// callers) can append to the audit log without us threading
-    /// `activityLog` through three layers of constructors.
-    var auditLog: (any ActivityLogging)? { activityLog }
-
     // MARK: - Derived
 
     var filteredObjects: [S3Object] {
@@ -369,7 +364,7 @@ final class BrowserViewModel {
     private func loadBuckets(token: UInt64) async {
         guard let account else { return }
         isLoading = true
-        // Codex medium #12: clear isLoading on every exit path,
+        // Clear isLoading on every exit path,
         // including the stale-token short-circuits. Without this the
         // spinner stuck in the UI after rapid account switches.
         defer { if !isStale(token) { isLoading = false } }
@@ -398,7 +393,7 @@ final class BrowserViewModel {
             hasMore = false
         }
         isLoading = true
-        // Codex medium #12: defer-based isLoading clearing so the
+        // Defer-based isLoading clearing so the
         // spinner stops on every exit path, including the stale-token
         // returns that previously short-circuited before the final
         // `isLoading = false`.

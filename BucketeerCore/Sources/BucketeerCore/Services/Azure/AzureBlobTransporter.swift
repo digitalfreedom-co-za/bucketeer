@@ -467,7 +467,7 @@ public struct AzureBlobTransporter: Sendable {
         ) {
             throw mapped
         }
-        // Codex review #5: a proxy or misbehaving server that ignores
+        // A proxy or misbehaving server that ignores
         // the Range header returns 200 with the full body — writing
         // that into our chunk slot would scramble the file. Demand
         // 206 (Partial Content) and verify the response is exactly
@@ -485,7 +485,7 @@ public struct AzureBlobTransporter: Sendable {
                 message: "Azure ranged GET returned \(data.count) bytes; expected \(length)."
             )
         }
-        // Codex review #4: write failures now propagate so a disk-full
+        // Write failures now propagate so a disk-full
         // or permission error fails the task group instead of leaving
         // a corrupt partial file marked complete.
         try await writer.write(data, at: offset)
@@ -527,7 +527,7 @@ private actor DownloadWriter {
         self.callback = callback
     }
 
-    /// Codex review #4: write failures now propagate to the caller so a
+    /// Write failures now propagate to the caller so a
     /// disk-full, permission, or invalid-handle error fails the outer
     /// throwing task group immediately instead of leaving a corrupt
     /// partial file marked complete.

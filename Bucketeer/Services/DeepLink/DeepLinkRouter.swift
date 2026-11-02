@@ -24,8 +24,7 @@ import BucketeerCore
 final class DeepLinkRouter {
     private let browser: BrowserViewModel
     private let accountStore: any AccountStoring
-    /// Monotonically increasing route token — Codex audit R2
-    /// (medium): when the user pastes several `bucketeer://` URLs
+    /// Monotonically increasing route token: when the user pastes several `bucketeer://` URLs
     /// rapidly, each spawns an async load. Without a token, the
     /// loads can resolve out of order and leave the browser on a
     /// stale destination. Every async navigation checks its

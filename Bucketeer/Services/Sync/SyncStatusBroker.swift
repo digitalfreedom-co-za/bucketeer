@@ -10,7 +10,7 @@ import Observation
 import BucketeerCore
 
 /// Single-subscriber → many-observer broadcast for SyncEngine
-/// status updates. Codex audit R4 (high): `SyncEngine.statuses` is
+/// status updates. `SyncEngine.statuses` is
 /// an `AsyncStream`, which delivers each yielded value to exactly
 /// one waiting iterator. Two consumers (the list view model + the
 /// new sync-job detail window) racing on the same stream would

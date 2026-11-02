@@ -18,7 +18,7 @@ final class SyncJobListViewModel {
     private let jobStore: any SyncJobStoring
     private let engine: SyncEngine
     private let accountStore: any AccountStoring
-    /// Phase 14 / Codex R4 (high): read status snapshots from the
+    /// Read status snapshots from the
     /// multicast broker instead of subscribing to
     /// `SyncEngine.statuses` directly. AsyncStream delivers each
     /// value to one waiter, so racing the sync-job detail window

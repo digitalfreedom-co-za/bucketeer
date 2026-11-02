@@ -10,8 +10,7 @@ import CryptoKit
 import Testing
 @testable import BucketeerCore
 
-/// Extra coverage for the AAD-authenticated envelope (Codex R1
-/// medium #1). The original `BucketeerEnvelopeTests` covered the
+/// Extra coverage for the AAD-authenticated envelope. The original `BucketeerEnvelopeTests` covered the
 /// header tamper paths; this suite probes a wider set of edge
 /// cases that came up during the audit follow-ups.
 @Suite("BucketeerEnvelope (AAD + edges)")

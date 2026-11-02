@@ -9,9 +9,7 @@ import SwiftUI
 import BucketeerCore
 
 enum SidebarSelection: Hashable {
-    case accountsRoot
     case account(UUID)
-    case mountedRoot
     case syncRoot
     case transfersRoot
 }

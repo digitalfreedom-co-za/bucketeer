@@ -104,7 +104,7 @@ public struct S3Service: S3Browsing {
 
     /// S3 caps `DeleteObjects` at 1000 keys per request (per API spec).
     /// Chunk recursive deletes / large multi-selects accordingly —
-    /// Codex high #6: without batching the operation would fail
+    /// Without batching the operation would fail
     /// outright instead of completing in slices.
     private static let deleteObjectsBatchSize = 1000
 
