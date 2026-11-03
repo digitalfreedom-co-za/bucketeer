@@ -1,6 +1,6 @@
 # Bucketeer-ohje
 
-Bucketeer on Mac-appi objektitallennukseen: Amazon S3, S3-yhteensopivat palveluntarjoajat ja Azure Blob Storage. Tämä opas käy läpi kaikki ominaisuudet ensimmäisestä tilistä Finder-asemiin ja synkronointitehtäviin.
+Bucketeer on Mac-appi objektitallennukseen: Amazon S3, S3-yhteensopivat palveluntarjoajat ja Azure Blob Storage. Tämä opas käy läpi kaikki ominaisuudet ensimmäisestä tilistä Finder-asemiin ja synkronointitöihin.
 
 ## Lisää tili
 
@@ -32,7 +32,7 @@ Salainen avain on piilotettu, kun muokkaat tiliä. Klikkaa **Näytä tallennetut
 
 ## Tiedostojen avaaminen muissa apeissa
 
-- Kaksoisosoita tiedostoa tai osoita sitä oikealla ja valitse **Avaa**, niin se avautuu oletusapissa. **Avaa sovelluksella** näyttää muut apit, jotka voivat avata sen; **Muu…** antaa valita minkä tahansa apin.
+- Kaksoisklikkaa tiedostoa tai klikkaa sitä hiiren oikealla painikkeella ja valitse **Avaa**, niin se avautuu oletusapissa. **Avaa sovelluksella** näyttää muut apit, jotka voivat avata sen; **Muu…** antaa valita minkä tahansa apin.
 - Bucketeer lataa tiedoston väliaikaiseen kansioon ja seuraa sitä. Hetki jokaisen tallennuksen jälkeen tiedosto lähetetään takaisin tavallisen siirtojonon kautta, joten myös asiakaspuolen salaus on käytössä.
 - Jos objektia muutettiin tai se poistettiin palvelimelta avaamisen jälkeen, Bucketeer ei korvaa sitä. Versiosi lähetetään sen viereen nimellä ”nimi (conflict päivämäärä).pääte”, ja Bucketeer näyttää ilmoituksen.
 - Väliaikainen kopio poistetaan, kun palvelimella on viimeisin tallennuksesi. Jos tallennusta ei voitu lähettää (esimerkiksi ilman yhteyttä), Bucketeer säilyttää tiedoston tässä Macissa ja tarjoaa vaihtoehdot **Lähetä uudelleen**, **Tallenna kopio…** tai **Hylkää muutos** – myös seuraavalla käynnistyskerralla, esimerkiksi kaatumisen jälkeen.
@@ -82,19 +82,19 @@ Tärkeää: jos kadotat avaimen, kukaan ei voi purkaa näiden objektien salausta
 
 ## Pikakomennot ja Siri
 
-Bucketeer lisää toimintoja Pikakomennot-appiin: bucketien luettelointi, tiedoston lähettäminen, jakolinkin luominen ja synkronointitehtävän suorittaminen. Käytä niitä omissa pikakomennoissasi tai pyydä Siriä.
+Bucketeer lisää toimintoja Pikakomennot-appiin: bucketien luettelointi, tiedoston lähettäminen, jakolinkin luominen ja synkronointityön suorittaminen. Käytä niitä omissa pikakomennoissasi tai pyydä Siriä.
 
 ## Pro-ominaisuudet
 
 Nämä ominaisuudet edellyttävät Bucketeer Prota:
 
-- **Liitä asemaksi**: klikkaa bucketia hiiren oikealla painikkeella ja valitse **Liitä asemaksi**, niin voit käyttää sitä Finderissa kuin levyä. Vaatii macOS 14.1:n tai uudemman. Liitetyt asemat näkyvät sivupalkin kohdassa **Liitetyt asemat**; klikkaa hiiren oikealla painikkeella ja valitse **Poista liitos**. Bucketeja, joissa on asiakaspuolen salaus, ei voi liittää. Palvelimella tehdyt muutokset näkyvät Finderissa, kun päivität bucketin Bucketeerissa. Jos Finderissa muokkaamaasi tiedostoa on sillä välin muutettu palvelimella, versiosi tallennetaan sen viereen ristiriitakopiona.
-- **Synkronointitehtävät**: luo osiossa **Synkronointi** tehtävä, joka kopioi, siirtää tai peilaa kahden bucketin välillä, tilien ja palveluntarjoajien välillä tai paikallisen kansion ja bucketin välillä. Suorita se käsin, käynnistyksen yhteydessä, N minuutin välein tai kun paikallinen kansio muuttuu.
+- **Liitä asemaksi**: klikkaa bucketia hiiren oikealla painikkeella ja valitse **Liitä asemaksi**, niin voit käyttää sitä Finderissa kuin levyä. Vaatii macOS 14.1:n tai uudemman. Liitetyt asemat näkyvät sivupalkin kohdassa **Liitetyt asemat**; klikkaa hiiren oikealla painikkeella ja valitse **Irrota**. Bucketeja, joissa on asiakaspuolen salaus, ei voi liittää. Palvelimella tehdyt muutokset näkyvät Finderissa, kun päivität bucketin Bucketeerissa. Jos Finderissa muokkaamaasi tiedostoa on sillä välin muutettu palvelimella, versiosi tallennetaan sen viereen ristiriitakopiona.
+- **Synkronointityöt**: luo osiossa **Synkronointi** työ, joka kopioi, siirtää tai peilaa kahden bucketin välillä, tilien ja palveluntarjoajien välillä tai paikallisen kansion ja bucketin välillä. Suorita se käsin, käynnistyksen yhteydessä, N minuutin välein tai kun paikallinen kansio muuttuu.
 - **Valvotut kansiot**: **Uusi valvottu kansio…** lähettää jokaisen paikallisen kansion uuden tiedoston bucketiin.
 - **Kopioi toiselle tilille…**: kopioi objekteja toiselle tilille tai palveluntarjoajalle. Kun molemmat osapuolet sallivat sen, kopiointi tapahtuu palvelimella eikä data kulje Macisi kautta.
-- **Valikkorivitila**: **Asetukset → Yleiset** pitää Bucketeerin käynnissä valikkorivillä, jotta asemat ja synkronointitehtävät pysyvät aktiivisina, kun pääikkuna on suljettu.
+- **Valikkorivitila**: **Asetukset → Yleiset** pitää Bucketeerin käynnissä valikkorivillä, jotta asemat ja synkronointityöt pysyvät aktiivisina, kun pääikkuna on suljettu.
 
-Kaikki muu on käytettävissä Free-tasolla.
+Kaikki muu on käytettävissä ilmaisversiossa.
 
 ## Bucketeer Pro, kokeilujakso ja osto
 

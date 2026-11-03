@@ -38,6 +38,96 @@
           "description" : "Alle Pro-Funktionen 14 Tage gratis testen.",
           "displayName" : "14-Tage-Testphase",
           "locale" : "de_DE"
+        },
+        {
+          "description" : "Všechny funkce Pro zdarma na 14 dní.",
+          "displayName" : "14denní zkušební verze",
+          "locale" : "cs_CZ"
+        },
+        {
+          "description" : "Alle Pro-funktioner gratis i 14 dage.",
+          "displayName" : "14 dages prøveperiode",
+          "locale" : "da_DK"
+        },
+        {
+          "description" : "Όλες οι λειτουργίες Pro δωρεάν για 14 ημέρες.",
+          "displayName" : "Δοκιμή 14 ημερών",
+          "locale" : "el_GR"
+        },
+        {
+          "description" : "Try all Pro features free for 14 days.",
+          "displayName" : "14-day Trial",
+          "locale" : "en_GB"
+        },
+        {
+          "description" : "Todas las funciones Pro gratis 14 días.",
+          "displayName" : "Prueba de 14 días",
+          "locale" : "es_ES"
+        },
+        {
+          "description" : "Kaikki Pro-ominaisuudet 14 päivää ilmaiseksi.",
+          "displayName" : "14 päivän kokeilu",
+          "locale" : "fi_FI"
+        },
+        {
+          "description" : "Toutes les fonctions Pro gratuites 14 jours.",
+          "displayName" : "Essai de 14 jours",
+          "locale" : "fr_FR"
+        },
+        {
+          "description" : "Minden Pro funkció 14 napig ingyen.",
+          "displayName" : "14 napos próbaidőszak",
+          "locale" : "hu_HU"
+        },
+        {
+          "description" : "Tutte le funzioni Pro gratis per 14 giorni.",
+          "displayName" : "Prova di 14 giorni",
+          "locale" : "it_IT"
+        },
+        {
+          "description" : "すべてのPro機能を14日間無料でお試し。",
+          "displayName" : "14日間の無料体験",
+          "locale" : "ja_JP"
+        },
+        {
+          "description" : "모든 Pro 기능을 14일간 무료로 사용해 보세요.",
+          "displayName" : "14일 체험판",
+          "locale" : "ko_KR"
+        },
+        {
+          "description" : "Alle Pro-funksjoner gratis i 14 dager.",
+          "displayName" : "14 dagers prøveperiode",
+          "locale" : "nb_NO"
+        },
+        {
+          "description" : "Alle Pro-functies 14 dagen gratis.",
+          "displayName" : "Proefperiode van 14 dagen",
+          "locale" : "nl_NL"
+        },
+        {
+          "description" : "Wszystkie funkcje Pro za darmo przez 14 dni.",
+          "displayName" : "14-dniowy okres próbny",
+          "locale" : "pl_PL"
+        },
+        {
+          "description" : "Todos os recursos Pro grátis por 14 dias.",
+          "displayName" : "Teste de 14 dias",
+          "locale" : "pt_BR"
+        },
+        {
+          "description" : "Todas as funções Pro grátis durante 14 dias.",
+          "displayName" : "Teste de 14 dias",
+          "locale" : "pt_PT"
+        },
+        {
+          "description" : "Все функции Pro бесплатно 14 дней.",
+          "displayName" : "14-дневный пробный период",
+          "locale" : "ru_RU"
+        },
+        {
+          "description" : "Alla Pro-funktioner gratis i 14 dagar.",
+          "displayName" : "14 dagars provperiod",
+          "locale" : "sv_SE"
         }
       ],
       "productID" : "za.co.digitalfreedom.bucketeer.pro.trial",

@@ -35,7 +35,7 @@ Den hemmelige nøkkelen er skjult når du redigerer en konto. Klikk på **Vis la
 - Dobbeltklikk på en fil, eller høyreklikk og velg **Åpne**, for å åpne den i standardappen. **Åpne med** viser andre apper som kan åpne den; med **Annet …** kan du velge en hvilken som helst app.
 - Bucketeer laster ned filen til en midlertidig mappe og følger med på den. Kort etter hver lagring lastes filen opp igjen via den vanlige overføringskøen, så klientsidekryptering gjelder også her.
 - Hvis objektet ble endret eller slettet på serveren etter at du åpnet det, overskriver ikke Bucketeer det. Din versjon lastes opp ved siden av som «navn (conflict dato).filtype», og Bucketeer viser en melding.
-- Den midlertidige kopien slettes så snart serveren har den siste lagringen din. Hvis en lagring ikke kunne lastes opp (for eksempel uten nett), beholder Bucketeer filen på denne Macen og tilbyr **Last opp igjen**, **Arkiver en kopi …** eller **Forkast endringen** – også ved neste oppstart, for eksempel etter et krasj.
+- Den midlertidige kopien slettes så snart serveren har den siste lagringen din. Hvis en lagring ikke kunne lastes opp (for eksempel uten nett), beholder Bucketeer filen på denne Macen og tilbyr **Last opp igjen**, **Lagre en kopi …** eller **Forkast endringen** – også ved neste oppstart, for eksempel etter et krasj.
 
 ## Administrer objekter
 
@@ -88,13 +88,13 @@ Bucketeer legger til handlinger i Snarveier-appen: vis buckets, last opp en fil,
 
 Disse funksjonene krever Bucketeer Pro:
 
-- **Monter som disk**: høyreklikk på en bucket og velg **Monter som disk** for å bruke den i Finder som en disk. Krever macOS 14.1 eller nyere. Monterte disker vises under **Monterte disker** i sidepanelet; høyreklikk for å **Avmonter**. Buckets med kryptering på klientsiden kan ikke monteres. Endringer på serveren vises i Finder når du oppdaterer bucketen i Bucketeer. Hvis en fil du redigerer i Finder er endret på serveren i mellomtiden, lagres din versjon ved siden av som en konfliktkopi.
+- **Monter som disk**: høyreklikk på en bucket og velg **Monter som disk** for å bruke den i Finder som en disk. Krever macOS 14.1 eller nyere. Monterte disker vises under **Monterte disker** i sidepanelet; høyreklikk og velg **Avmonter** for å fjerne dem. Buckets med kryptering på klientsiden kan ikke monteres. Endringer på serveren vises i Finder når du oppdaterer bucketen i Bucketeer. Hvis en fil du redigerer i Finder er endret på serveren i mellomtiden, lagres din versjon ved siden av som en konfliktkopi.
 - **Synkroniseringsjobber**: i delen **Synkronisering** oppretter du en jobb som kopierer, flytter eller speiler mellom to buckets, på tvers av kontoer og leverandører, eller mellom en lokal mappe og en bucket. Kjør den manuelt, ved oppstart, hvert N. minutt eller når den lokale mappen endres.
 - **Overvåkede mapper**: **Ny overvåket mappe…** laster opp hver nye fil i en lokal mappe til en bucket.
 - **Kopier til annen konto…**: kopierer objekter til en annen konto eller leverandør. Når begge sider tillater det, skjer kopieringen på serveren, og dataene går ikke gjennom Macen din.
 - **Menylinjemodus**: **Innstillinger → Generelt** holder Bucketeer i gang i menylinjen, slik at disker og synkroniseringsjobber forblir aktive når hovedvinduet er lukket.
 
-Alt annet er tilgjengelig i Free-nivået.
+Alt annet er tilgjengelig i gratisversjonen.
 
 ## Bucketeer Pro, prøveperiode og kjøp
 
