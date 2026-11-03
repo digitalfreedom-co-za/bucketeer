@@ -62,9 +62,9 @@ Högerklicka på en fil och välj **Metadata och taggar…** för att redigera H
 
 Klicka på **Översikt** i verktygsfältet för en öppen bucket. Den visar antal objekt, total storlek, de största objekten, en grov uppskattning av månadskostnaden samt bucketens livscykelregler, CORS-konfiguration och bucket-policy (skrivskyddat).
 
-## Papperskorg
+## Papperskorgen
 
-När du raderar objekt kan Bucketeer spara en lokal kopia på den här datorn (**Inställningar → Överföringar → Papperskorg**). Öppna papperskorgen med **Fönster → Papperskorg** (**⇧⌘⌫**) och klicka på **Återställ** för att ladda upp en sparad kopia till dess ursprungliga plats. Objektet hos leverantören raderas direkt; bara den lokala kopian kan återställas. Poster tas bort automatiskt efter den lagringstid du har valt.
+När du raderar objekt kan Bucketeer spara en lokal kopia på den här datorn (**Inställningar → Överföringar → Papperskorgen**). Öppna papperskorgen med **Fönster → Papperskorgen** (**⇧⌘⌫**) och klicka på **Återställ** för att ladda upp en sparad kopia till dess ursprungliga plats. Objektet hos leverantören raderas direkt; bara den lokala kopian kan återställas. Poster tas bort automatiskt efter den lagringstid du har valt.
 
 ## Aktivitetslogg
 
@@ -94,7 +94,7 @@ Dessa funktioner kräver Bucketeer Pro:
 - **Kopiera till annat konto…**: kopierar objekt till ett annat konto eller en annan leverantör. När båda sidor tillåter det sker kopieringen på servern och data passerar inte genom din Mac.
 - **Menyradsläge**: **Inställningar → Allmänt** håller Bucketeer igång i menyraden så att enheter och synkjobb förblir aktiva när huvudfönstret är stängt.
 
-Allt annat finns i Free-nivån.
+Allt annat finns i gratisversionen.
 
 ## Bucketeer Pro, provperiod och köp
 
@@ -110,7 +110,7 @@ Du kan prova Bucketeer Pro gratis i 14 dagar. Innan du startar visar köpsidan p
 - **⌘U**: Ladda upp filer
 - **⇧⌘N**: Ny mapp
 - **⌥⌘0**: Aktivitetslogg
-- **⇧⌘⌫**: Papperskorg
+- **⇧⌘⌫**: Papperskorgen
 - **⌘?**: Bucketeer Hjälp
 - **⌘,**: Inställningar
 

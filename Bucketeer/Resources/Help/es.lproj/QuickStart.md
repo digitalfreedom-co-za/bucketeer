@@ -1,6 +1,6 @@
 # Ayuda de Bucketeer
 
-Bucketeer es una app para Mac de almacenamiento de objetos: Amazon S3, proveedores compatibles con S3 y Azure Blob Storage. Esta guía cubre todas las funciones, desde la primera cuenta hasta las unidades en el Finder y las sincronizaciones.
+Bucketeer es una app para Mac de almacenamiento de objetos: Amazon S3, proveedores compatibles con S3 y Azure Blob Storage. Esta guía cubre todas las funciones, desde la primera cuenta hasta las unidades en el Finder y las tareas de sincronización.
 
 ## Añadir una cuenta
 
@@ -82,17 +82,17 @@ Importante: si pierdes la clave, nadie puede descifrar esos objetos, ni siquiera
 
 ## Atajos y Siri
 
-Bucketeer añade acciones a la app Atajos: listar buckets, subir un archivo, crear un enlace para compartir y ejecutar una sincronización. Úsalas en tus propios atajos o pídeselo a Siri.
+Bucketeer añade acciones a la app Atajos: listar buckets, subir un archivo, crear un enlace para compartir y ejecutar una tarea de sincronización. Úsalas en tus propios atajos o pídeselo a Siri.
 
 ## Funciones Pro
 
 Estas funciones requieren Bucketeer Pro:
 
 - **Montar como unidad**: haz clic con el botón derecho en un bucket y elige **Montar como unidad** para usarlo en el Finder como un disco. Requiere macOS 14.1 o posterior. Las unidades montadas aparecen en **Unidades montadas** en la barra lateral; haz clic con el botón derecho para **Desmontar**. Los buckets con cifrado del lado del cliente no se pueden montar. Los cambios hechos en el servidor aparecen en el Finder cuando actualizas el bucket en Bucketeer. Si un archivo que editas en el Finder cambió mientras tanto en el servidor, tu versión se guarda a su lado como copia en conflicto.
-- **Sincronizaciones**: en la sección **Sincronización**, crea una tarea que copie, mueva o refleje entre dos buckets, entre cuentas y proveedores, o entre una carpeta local y un bucket. Ejecútala manualmente, al abrir la app, cada N minutos o cuando cambie la carpeta local.
+- **Tareas de sincronización**: en la sección **Sincronización**, crea una tarea que copie, mueva o refleje entre dos buckets, entre cuentas y proveedores, o entre una carpeta local y un bucket. Ejecútala manualmente, al abrir la app, cada N minutos o cuando cambie la carpeta local.
 - **Carpetas vigiladas**: **Nueva carpeta vigilada…** sube a un bucket cada archivo nuevo de una carpeta local.
 - **Copiar a otra cuenta…**: copia objetos a otra cuenta u otro proveedor. Cuando ambos lados lo permiten, la copia se hace en el servidor y los datos no pasan por tu Mac.
-- **Modo barra de menús**: **Ajustes → General** mantiene Bucketeer en ejecución en la barra de menús para que las unidades y las sincronizaciones sigan activas cuando la ventana principal está cerrada.
+- **Modo barra de menús**: **Ajustes → General** mantiene Bucketeer en ejecución en la barra de menús para que las unidades y las tareas de sincronización sigan activas cuando la ventana principal está cerrada.
 
 Todo lo demás está disponible en el nivel gratuito.
 

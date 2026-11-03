@@ -1,6 +1,6 @@
 # Bucketeer-Hilfe
 
-Bucketeer ist eine Mac-App für Objektspeicher: Amazon S3, S3-kompatible Anbieter und Azure Blob Storage. Diese Anleitung beschreibt alle Funktionen, vom ersten Konto bis zu Finder-Laufwerken und Sync-Jobs.
+Bucketeer ist eine Mac-App für Objektspeicher: Amazon S3, S3-kompatible Anbieter und Azure Blob Storage. Diese Anleitung beschreibt alle Funktionen, vom ersten Konto bis zu Finder-Laufwerken und Sync-Aufträgen.
 
 ## Konto hinzufügen
 
@@ -56,7 +56,7 @@ Klicke mit der rechten Maustaste auf eine Datei und wähle **Versionen anzeigen�
 
 Klicke mit der rechten Maustaste auf eine Datei und wähle **Metadaten & Tags…**, um HTTP-Header (Content-Type, Cache-Control und andere), Benutzer-Metadaten und Tags zu bearbeiten und die Speicherklasse zu sehen. Manche Anbieter unterstützen nicht jedes Feld; Bucketeer sagt dir, wenn das der Fall ist.
 
-**Einstellungen → Regeln** enthält Regeln für automatisches Taggen: Sie fügen neuen Uploads, die zu einem Dateinamenmuster oder einem MIME-Typ passen, Tags und Metadaten hinzu.
+**Einstellungen → Regeln** enthält Regeln für automatisches Taggen: Diese Regeln fügen neuen Uploads, die zu einem Dateinamenmuster oder einem MIME-Typ passen, Tags und Metadaten hinzu.
 
 ## Bucket-Dashboard
 
@@ -82,25 +82,25 @@ Wichtig: Wenn du den Schlüssel verlierst, kann niemand diese Objekte entschlüs
 
 ## Kurzbefehle und Siri
 
-Bucketeer fügt der Kurzbefehle-App Aktionen hinzu: Buckets auflisten, eine Datei hochladen, einen Teilen-Link erstellen und einen Sync-Job ausführen. Nutze sie in deinen eigenen Kurzbefehlen oder frag Siri.
+Bucketeer fügt der Kurzbefehle-App Aktionen hinzu: Buckets auflisten, eine Datei hochladen, einen Teilen-Link erstellen und einen Sync-Auftrag ausführen. Nutze sie in deinen eigenen Kurzbefehlen oder frag Siri.
 
 ## Pro-Funktionen
 
 Diese Funktionen brauchen Bucketeer Pro:
 
-- **Als Laufwerk einbinden**: Klicke mit der rechten Maustaste auf einen Bucket und wähle **Als Laufwerk einbinden**, um ihn im Finder wie eine Festplatte zu nutzen. Erfordert macOS 14.1 oder neuer. Eingebundene Laufwerke erscheinen unter **Eingehängte Laufwerke** in der Seitenleiste; mit einem Rechtsklick wählst du **Auswerfen**. Buckets mit clientseitiger Verschlüsselung können nicht eingebunden werden. Änderungen auf dem Server erscheinen im Finder, wenn du den Bucket in Bucketeer aktualisierst. Wurde eine Datei, die du im Finder bearbeitest, inzwischen auf dem Server geändert, wird deine Version daneben als Konfliktkopie gesichert.
-- **Sync-Jobs**: Erstelle im Bereich **Sync** einen Job, der zwischen zwei Buckets kopiert, verschiebt oder spiegelt, auch über Konten und Anbieter hinweg, oder zwischen einem lokalen Ordner und einem Bucket. Starte ihn von Hand, beim Programmstart, alle N Minuten oder wenn sich der lokale Ordner ändert.
+- **Als Laufwerk einbinden**: Klicke mit der rechten Maustaste auf einen Bucket und wähle **Als Laufwerk einbinden**, um ihn im Finder wie eine Festplatte zu nutzen. Erfordert macOS 14.1 oder neuer. Eingebundene Laufwerke erscheinen unter **Eingebundene Laufwerke** in der Seitenleiste; mit einem Rechtsklick wählst du **Auswerfen**. Buckets mit clientseitiger Verschlüsselung können nicht eingebunden werden. Änderungen auf dem Server erscheinen im Finder, wenn du den Bucket in Bucketeer aktualisierst. Wurde eine Datei, die du im Finder bearbeitest, inzwischen auf dem Server geändert, wird deine Version daneben als Konfliktkopie gesichert.
+- **Sync-Aufträge**: Erstelle im Bereich **Sync** einen Auftrag, der zwischen zwei Buckets kopiert, verschiebt oder spiegelt, auch über Konten und Anbieter hinweg, oder zwischen einem lokalen Ordner und einem Bucket. Starte ihn von Hand, beim Programmstart, alle N Minuten oder wenn sich der lokale Ordner ändert.
 - **Beobachtete Ordner**: **Neuer beobachteter Ordner…** lädt jede neue Datei in einem lokalen Ordner in einen Bucket hoch.
 - **In anderes Konto kopieren…**: Kopiert Objekte in ein anderes Konto oder zu einem anderen Anbieter. Wenn beide Seiten es erlauben, läuft die Kopie serverseitig, und die Daten gehen nicht über deinen Mac.
-- **Menüleisten-Modus**: **Einstellungen → Allgemein** lässt Bucketeer in der Menüleiste weiterlaufen, damit Laufwerke und Sync-Jobs aktiv bleiben, wenn das Hauptfenster geschlossen ist.
+- **Menüleisten-Modus**: **Einstellungen → Allgemein** lässt Bucketeer in der Menüleiste weiterlaufen, damit Laufwerke und Sync-Aufträge aktiv bleiben, wenn das Hauptfenster geschlossen ist.
 
 Alles andere ist in der kostenlosen Stufe enthalten.
 
-## Bucketeer Pro, Probezeit und Kauf
+## Bucketeer Pro, Testphase und Kauf
 
 Bucketeer Pro ist ein einmaliger In-App-Kauf über den App Store, ohne Abo. Öffne **Einstellungen → Pro** oder eine beliebige Pro-Funktion, um den Preis in deiner Währung zu sehen und zu kaufen.
 
-Du kannst Bucketeer Pro 14 Tage lang kostenlos testen. Vor dem Start zeigt die Kaufseite die Dauer der Probezeit, was danach passiert und den Preis von Pro für immer; dann klickst du auf **Probezeit starten**. Wenn die Probezeit endet, läuft Bucketeer in der kostenlosen Stufe weiter, und es wird nichts berechnet. Die Probezeit lässt sich einmal pro Apple-ID starten, und beim Wiederherstellen von Käufen kommt eine laufende Probezeit auch auf einem anderen Mac zurück.
+Du kannst Bucketeer Pro 14 Tage lang kostenlos testen. Vor dem Start zeigt die Kaufseite die Dauer der Testphase, was danach passiert und den Preis von Pro für immer; dann klickst du auf **Testphase starten**. Wenn die Testphase endet, läuft Bucketeer in der kostenlosen Stufe weiter, und es wird nichts berechnet. Die Testphase lässt sich einmal pro Apple-ID starten, und beim Wiederherstellen von Käufen kommt eine laufende Testphase auch auf einem anderen Mac zurück.
 
 - **Kauf wiederherstellen** holt Pro auf einem anderen Mac oder nach einer Neuinstallation zurück.
 - **Code einlösen** (macOS 15 oder neuer) öffnet Apples Fenster für Angebotscodes.
