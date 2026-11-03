@@ -1,21 +1,23 @@
 {
-  "identifier" : "0F4B1A2C-BB22-4E11-9F7B-BUCKETEER0001",
-  "nonRenewingSubscriptions" : [],
+  "identifier" : "297F4C87-61DD-4C94-8BFD-BC2D9A6485AC",
+  "nonRenewingSubscriptions" : [
+
+  ],
   "products" : [
     {
       "displayPrice" : "14.99",
       "familyShareable" : true,
-      "internalID" : "BUCKETEER-PRO-LIFETIME-001",
+      "internalID" : "6787543222",
       "localizations" : [
         {
-          "description" : "Unlock Mount as Drive, Sync Engine, cross-provider copy and Menubar background mode forever. One-time purchase, no subscription.",
+          "description" : "Unlock Mount, Sync and more — one-time purchase.",
           "displayName" : "Bucketeer Pro (Lifetime)",
-          "locale" : "en"
+          "locale" : "en_US"
         },
         {
-          "description" : "Schaltet Mount, Sync, providerübergreifendes Kopieren und Menüleisten-Modus für immer frei. Einmaliger Kauf, kein Abo.",
+          "description" : "Schaltet Mount, Sync und mehr frei — einmaliger Kauf.",
           "displayName" : "Bucketeer Pro (für immer)",
-          "locale" : "de"
+          "locale" : "de_DE"
         }
       ],
       "productID" : "za.co.digitalfreedom.bucketeer.pro.lifetime",
@@ -25,33 +27,127 @@
     {
       "displayPrice" : "0.0",
       "familyShareable" : false,
-      "internalID" : "BUCKETEER-PRO-TRIAL-001",
+      "internalID" : "6829791884",
       "localizations" : [
         {
-          "description" : "All Pro features free for 14 days, then free version.",
+          "description" : "Try all Pro features free for 14 days.",
           "displayName" : "14-day Trial",
-          "locale" : "en"
+          "locale" : "en_US"
         },
         {
-          "description" : "Alle Pro-Funktionen 14 Tage gratis, dann Gratisversion.",
-          "displayName" : "14-tägige Testversion",
-          "locale" : "de"
+          "description" : "Alle Pro-Funktionen 14 Tage gratis testen.",
+          "displayName" : "14-Tage-Testphase",
+          "locale" : "de_DE"
+        },
+        {
+          "description" : "Všechny funkce Pro zdarma na 14 dní.",
+          "displayName" : "14denní zkušební verze",
+          "locale" : "cs_CZ"
+        },
+        {
+          "description" : "Alle Pro-funktioner gratis i 14 dage.",
+          "displayName" : "14 dages prøveperiode",
+          "locale" : "da_DK"
+        },
+        {
+          "description" : "Όλες οι λειτουργίες Pro δωρεάν για 14 ημέρες.",
+          "displayName" : "Δοκιμή 14 ημερών",
+          "locale" : "el_GR"
+        },
+        {
+          "description" : "Try all Pro features free for 14 days.",
+          "displayName" : "14-day Trial",
+          "locale" : "en_GB"
+        },
+        {
+          "description" : "Todas las funciones Pro gratis 14 días.",
+          "displayName" : "Prueba de 14 días",
+          "locale" : "es_ES"
+        },
+        {
+          "description" : "Kaikki Pro-ominaisuudet 14 päivää ilmaiseksi.",
+          "displayName" : "14 päivän kokeilu",
+          "locale" : "fi_FI"
+        },
+        {
+          "description" : "Toutes les fonctions Pro gratuites 14 jours.",
+          "displayName" : "Essai de 14 jours",
+          "locale" : "fr_FR"
+        },
+        {
+          "description" : "Minden Pro funkció 14 napig ingyen.",
+          "displayName" : "14 napos próbaidőszak",
+          "locale" : "hu_HU"
+        },
+        {
+          "description" : "Tutte le funzioni Pro gratis per 14 giorni.",
+          "displayName" : "Prova di 14 giorni",
+          "locale" : "it_IT"
+        },
+        {
+          "description" : "すべてのPro機能を14日間無料でお試し。",
+          "displayName" : "14日間の無料体験",
+          "locale" : "ja_JP"
+        },
+        {
+          "description" : "모든 Pro 기능을 14일간 무료로 사용해 보세요.",
+          "displayName" : "14일 체험판",
+          "locale" : "ko_KR"
+        },
+        {
+          "description" : "Alle Pro-funksjoner gratis i 14 dager.",
+          "displayName" : "14 dagers prøveperiode",
+          "locale" : "nb_NO"
+        },
+        {
+          "description" : "Alle Pro-functies 14 dagen gratis.",
+          "displayName" : "Proefperiode van 14 dagen",
+          "locale" : "nl_NL"
+        },
+        {
+          "description" : "Wszystkie funkcje Pro za darmo przez 14 dni.",
+          "displayName" : "14-dniowy okres próbny",
+          "locale" : "pl_PL"
+        },
+        {
+          "description" : "Todos os recursos Pro grátis por 14 dias.",
+          "displayName" : "Teste de 14 dias",
+          "locale" : "pt_BR"
+        },
+        {
+          "description" : "Todas as funções Pro grátis durante 14 dias.",
+          "displayName" : "Teste de 14 dias",
+          "locale" : "pt_PT"
+        },
+        {
+          "description" : "Все функции Pro бесплатно 14 дней.",
+          "displayName" : "14-дневный пробный период",
+          "locale" : "ru_RU"
+        },
+        {
+          "description" : "Alla Pro-funktioner gratis i 14 dagar.",
+          "displayName" : "14 dagars provperiod",
+          "locale" : "sv_SE"
         }
       ],
       "productID" : "za.co.digitalfreedom.bucketeer.pro.trial",
-      "referenceName" : "Pro Trial (14 days)",
+      "referenceName" : "Bucketeer Pro 14-day Trial",
       "type" : "NonConsumable"
     }
   ],
   "settings" : {
-    "_applicationInternalID" : "1",
+    "_applicationInternalID" : "6787542659",
     "_developerTeamID" : "7TSZJCJY88",
     "_failTransactionsEnabled" : false,
     "_locale" : "en_US",
-    "_storefront" : "USA",
-    "_storeKitErrors" : []
+    "_storefront" : "DEU",
+    "_storeKitErrors" : [
+
+    ]
   },
-  "subscriptionGroups" : [],
+  "subscriptionGroups" : [
+
+  ],
   "version" : {
     "major" : 4,
     "minor" : 0

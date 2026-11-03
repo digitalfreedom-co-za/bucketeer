@@ -9,6 +9,10 @@ import SwiftUI
 import AppKit
 import BucketeerCore
 
+enum SettingsTab: Hashable {
+    case general, transfers, rules, encryption, security, pro
+}
+
 /// Settings shell — General (incl. menubar toggle, gated by Pro) plus
 /// the Pro tab that surfaces the entitlement state and the buy / restore
 /// affordances.
@@ -16,45 +20,60 @@ struct SettingsView: View {
     @State private var restoreError: String?
     @Environment(AppContainer.self) private var container
     @State private var showingPaywall: Bool = false
+    @State private var selectedTab: SettingsTab = .general
 
     var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             generalTab
                 .tabItem {
                     Label("settings.tab.general", systemImage: "gearshape")
                 }
+                .tag(SettingsTab.general)
             transfersTab
                 .tabItem {
                     Label("settings.tab.transfers", systemImage: "arrow.up.arrow.down.circle")
                 }
+                .tag(SettingsTab.transfers)
             // Phase 13.8 — auto-tagging rules.
             AutoTagRulesView()
                 .environment(container)
                 .tabItem {
                     Label("settings.tab.rules", systemImage: "tag")
                 }
+                .tag(SettingsTab.rules)
             // Phase 13.15 — per-bucket BYOK encryption keys.
             EncryptionKeysView()
                 .environment(container)
                 .tabItem {
                     Label("settings.tab.encryption", systemImage: "lock.shield")
                 }
+                .tag(SettingsTab.encryption)
             // Phase 13.16 — hardware-key (CryptoTokenKit) unlock.
             HardwareKeyView()
                 .environment(container)
                 .tabItem {
                     Label("settings.tab.security", systemImage: "key.fill")
                 }
+                .tag(SettingsTab.security)
             proTab
                 .tabItem {
                     Label("settings.tab.pro", systemImage: "shippingbox.and.arrow.backward.fill")
                 }
+                .tag(SettingsTab.pro)
         }
         .frame(minWidth: 520, minHeight: 360)
         .sheet(isPresented: $showingPaywall) {
             PaywallSheet(feature: nil)
                 .environment(container)
         }
+        #if DEBUG
+        .modifier(ScreenshotDemoWindow(size: nil))
+        .task(id: container.screenshotDemo?.stage?.settingsTab) {
+            if let tab = container.screenshotDemo?.stage?.settingsTab {
+                selectedTab = tab
+            }
+        }
+        #endif
     }
 
     /// Phase 13.2 — global bandwidth throttle. Honest about scope: the

@@ -70,6 +70,7 @@
 		CF398B902FC08D2B00363696 /* Exceptions for "Bucketeer" folder in "Bucketeer" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Bucketeer.storekit,
 				Info.plist,
 			);
 			target = CF398B712FC08D2B00363696 /* Bucketeer */;
