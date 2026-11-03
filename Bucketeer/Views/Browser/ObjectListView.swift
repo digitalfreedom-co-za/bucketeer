@@ -287,7 +287,7 @@ struct ObjectListView: View {
             TableColumn("table.column.name") { object in
                 HStack(spacing: 8) {
                     Image(systemName: object.isFolder ? "folder.fill" : iconName(for: object))
-                        .foregroundStyle(object.isFolder ? Color.accentColor : .secondary)
+                        .foregroundStyle(object.isFolder ? Color.accentInk : .secondary)
                     Text(object.displayName)
                 }
                 .onTapGesture(count: 2) { handleOpen(object) }
@@ -325,7 +325,7 @@ struct ObjectListView: View {
                 Button("action.loadMore") {
                     Task { await viewModel.loadMore() }
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.honeyProminent)
                 .padding(.bottom, 8)
             }
         }

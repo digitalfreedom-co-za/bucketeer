@@ -40,7 +40,7 @@ struct SidebarView: View {
                         }
                     } icon: {
                         Image(systemName: account.provider.iconSystemName)
-                            .foregroundStyle(.tint)
+                            .foregroundStyle(.accentInk)
                     }
                     .tag(SidebarSelection.account(account.id))
                     .contextMenu {
@@ -190,7 +190,7 @@ struct SidebarView: View {
         case .pro:
             HStack(spacing: 8) {
                 Image(systemName: "checkmark.seal.fill")
-                    .foregroundStyle(.tint)
+                    .foregroundStyle(.accentInk)
                 Text("paywall.badge.pro")
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -202,7 +202,7 @@ struct SidebarView: View {
             } label: {
                 HStack(spacing: 8) {
                     Image(systemName: "clock.badge.checkmark")
-                        .foregroundStyle(.tint)
+                        .foregroundStyle(.accentInk)
                     Text("paywall.badge.trial \(days)")
                         .font(.caption)
                     Spacer()
@@ -218,7 +218,7 @@ struct SidebarView: View {
             } label: {
                 HStack(spacing: 8) {
                     Image(systemName: "lock.open")
-                        .foregroundStyle(.tint)
+                        .foregroundStyle(.accentInk)
                     Text("paywall.badge.upgrade")
                         .font(.caption)
                     Spacer()

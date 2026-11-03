@@ -184,7 +184,7 @@ struct SettingsView: View {
                     switch entitlement.state {
                     case .pro:
                         Label("settings.pro.status.pro", systemImage: "checkmark.seal.fill")
-                            .foregroundStyle(.tint)
+                            .foregroundStyle(.accentInk)
                     case .trial(let days):
                         Text("settings.pro.status.trial \(days)")
                     case .free:
@@ -199,7 +199,7 @@ struct SettingsView: View {
                     Button("settings.pro.buy") {
                         showingPaywall = true
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.honeyProminent)
                     Button("settings.pro.restore") {
                         Task {
                             restoreError = nil

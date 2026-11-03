@@ -126,7 +126,7 @@ struct ObjectDetailView: View {
         HStack(spacing: 12) {
             Image(systemName: object.isFolder ? "folder.fill" : "doc.fill")
                 .font(.system(size: 36))
-                .foregroundStyle(.tint)
+                .foregroundStyle(.accentInk)
             VStack(alignment: .leading, spacing: 2) {
                 Text(object.displayName)
                     .font(.title3)
@@ -233,7 +233,7 @@ private struct PreviewArea: View {
             Button("preview.large.action") {
                 Task { await load(force: true) }
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.honeyProminent)
         }
         .padding()
     }

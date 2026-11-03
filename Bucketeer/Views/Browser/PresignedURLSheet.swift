@@ -199,7 +199,7 @@ struct PresignedURLSheet: View {
                     copyToClipboard(url.absoluteString)
                     dismiss()
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.honeyProminent)
                 .keyboardShortcut(.defaultAction)
             }
         }
