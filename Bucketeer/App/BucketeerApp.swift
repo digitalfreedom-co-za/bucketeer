@@ -56,6 +56,7 @@ struct BucketeerApp: App {
             // properties).
             DeepLinkAwareContent()
                 .environment(container)
+                .honeyAccent()
         }
         .windowResizability(.contentMinSize)
         .commands {
@@ -65,6 +66,7 @@ struct BucketeerApp: App {
         MenuBarExtra {
             MenuBarContent()
                 .environment(container)
+                .honeyAccent()
         } label: {
             Image(systemName: "externaldrive.connected.to.line.below")
                 .accessibilityLabel(Text("app.name"))
@@ -73,12 +75,14 @@ struct BucketeerApp: App {
 
         Window("about.title", id: "about") {
             AboutWindow()
+                .honeyAccent()
         }
         .windowResizability(.contentSize)
         .defaultPosition(.center)
 
         Window("help.title", id: "help") {
             HelpWindow()
+                .honeyAccent()
         }
         .defaultSize(width: 800, height: 700)
         .defaultPosition(.center)
@@ -90,6 +94,7 @@ struct BucketeerApp: App {
                 .modifier(ScreenshotDemoWindow(size: ScreenshotDemoDirector.mainWindowSize))
                 #endif
                 .environment(container)
+                .honeyAccent()
         }
         .defaultSize(width: 1000, height: 600)
         .defaultPosition(.center)
@@ -98,6 +103,7 @@ struct BucketeerApp: App {
             TrashView()
                 .environment(container)
                 .frame(minWidth: 900, minHeight: 480)
+                .honeyAccent()
         }
         .defaultSize(width: 1000, height: 580)
         .defaultPosition(.center)
@@ -110,6 +116,7 @@ struct BucketeerApp: App {
             if let jobID {
                 SyncJobDetailWindow(jobID: jobID)
                     .environment(container)
+                    .honeyAccent()
             } else {
                 ContentUnavailableView(
                     "syncDetail.error.title",
@@ -123,6 +130,7 @@ struct BucketeerApp: App {
         Settings {
             SettingsView()
                 .environment(container)
+                .honeyAccent()
         }
     }
 }

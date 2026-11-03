@@ -197,9 +197,9 @@ struct SyncJobDetailWindow: View {
         let (label, colour): (LocalizedStringKey, Color) = {
             switch phase {
             case .idle:                 return ("sync.status.idle", .secondary)
-            case .planning:             return ("sync.status.planning", .blue)
+            case .planning:             return ("sync.status.planning", .accentInk)
             case .awaitingConfirmation: return ("sync.status.awaiting", .yellow)
-            case .running:              return ("sync.status.running", .blue)
+            case .running:              return ("sync.status.running", .accentInk)
             case .finished:             return ("sync.status.finished", .green)
             case .failed:               return ("sync.status.failed", .red)
             case .cancelled:            return ("sync.status.cancelled", .orange)

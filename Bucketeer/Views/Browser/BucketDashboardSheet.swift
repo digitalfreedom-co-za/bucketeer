@@ -69,7 +69,7 @@ struct BucketDashboardSheet: View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: viewModel.account.provider.iconSystemName)
                 .font(.title)
-                .foregroundStyle(.tint)
+                .foregroundStyle(.accentInk)
             VStack(alignment: .leading, spacing: 4) {
                 Text(viewModel.bucket).font(.title2.bold())
                 Text("\(viewModel.account.name) · \(viewModel.account.provider.displayName)")
@@ -322,7 +322,7 @@ struct BucketDashboardSheet: View {
         GroupBox {
             HStack(alignment: .top, spacing: 10) {
                 Image(systemName: icon)
-                    .foregroundStyle(.tint)
+                    .foregroundStyle(.accentInk)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
                         .font(.caption)

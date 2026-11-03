@@ -58,7 +58,7 @@ private struct TransferRow: View {
                 Image(systemName: task.direction == .upload
                       ? "arrow.up.circle.fill"
                       : "arrow.down.circle.fill")
-                    .foregroundStyle(task.direction == .upload ? Color.blue : Color.green)
+                    .foregroundStyle(task.direction == .upload ? Color.accentInk : Color.green)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(task.localURL.lastPathComponent)
                         .font(.callout)
@@ -111,6 +111,7 @@ private struct TransferRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 ProgressView(value: fraction)
                     .progressViewStyle(.linear)
+                    .tint(.accentInk)
                 Text(verbatim: "\(format(bytes)) / \(format(total))")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
