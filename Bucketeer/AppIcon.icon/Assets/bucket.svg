@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <g transform="matrix(1.242718 0 0 1.242718 -124.2718 -124.2718)" fill="#262030">
+    <path d="M278,402 C278,153 746,153 746,402" fill="none" stroke="#262030" stroke-width="44" stroke-linecap="round"/>
+    <path d="M272,410 L752,410 L689,777 Q686,802 660,802 L364,802 Q338,802 335,777 Z"/>
+    <rect x="238" y="370" width="548" height="72" rx="36"/>
+  </g>
+</svg>
