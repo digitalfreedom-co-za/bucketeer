@@ -230,6 +230,7 @@ struct SyncJobListView: View {
             case .awaitingConfirmation:
                 Label("sync.status.awaiting", systemImage: "exclamationmark.bubble")
                     .font(.caption)
+                    .foregroundStyle(Color.syncAwaiting)
             case .idle:
                 Label("sync.status.idle", systemImage: "circle")
                     .font(.caption)

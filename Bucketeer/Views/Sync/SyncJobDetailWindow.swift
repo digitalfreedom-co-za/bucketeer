@@ -198,7 +198,7 @@ struct SyncJobDetailWindow: View {
             switch phase {
             case .idle:                 return ("sync.status.idle", .secondary)
             case .planning:             return ("sync.status.planning", .accentInk)
-            case .awaitingConfirmation: return ("sync.status.awaiting", .yellow)
+            case .awaitingConfirmation: return ("sync.status.awaiting", .syncAwaiting)
             case .running:              return ("sync.status.running", .accentInk)
             case .finished:             return ("sync.status.finished", .green)
             case .failed:               return ("sync.status.failed", .red)
