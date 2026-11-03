@@ -80,7 +80,7 @@ struct BucketListView: View {
             HStack {
                 Image(systemName: "tray.full.fill")
                     .font(.system(size: 32))
-                    .foregroundStyle(.tint)
+                    .foregroundStyle(.accentInk)
                 Spacer()
             }
             Text(bucket.name)
