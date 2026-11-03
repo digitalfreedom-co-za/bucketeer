@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="0.2" y2="1">
+      <stop stop-color="#FFDA61"/><stop offset="1" stop-color="#EDAA24"/>
+    </linearGradient>
+    <linearGradient id="ink" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#282131"/><stop offset="1" stop-color="#201C2A"/>
+    </linearGradient>
+    <path id="tile" d="M340,100 L684,100 C859.5,100 924,164.5 924,340 L924,684 C924,859.5 859.5,924 684,924 L340,924 C164.5,924 100,859.5 100,684 L100,340 C100,164.5 164.5,100 340,100 Z"/>
+    
+    <mask id="sync" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <rect width="1024" height="1024" fill="white"/>
+      <g transform="" fill="black">
+        <path d="M401.1,579.6 A118,118 0 0 1 602.4,544.2" fill="none" stroke="black" stroke-width="56" stroke-linecap="round"/>
+        <path d="M626,498 L652,604 L550,560 Z"/>
+        <path d="M622.9,660.4 A118,118 0 0 1 421.6,695.8" fill="none" stroke="black" stroke-width="56" stroke-linecap="round"/>
+        <path d="M398,742 L372,636 L474,680 Z"/>
+      </g>
+    </mask>
+  </defs>
+  <use href="#tile" fill="url(#background)"/>
+  
+  <g fill="url(#ink)" mask="url(#sync)">
+    <path d="M278,402 C278,153 746,153 746,402" fill="none" stroke="#282131" stroke-width="44" stroke-linecap="round"/>
+    <path d="M272,410 L752,410 L689,777 Q686,802 660,802 L364,802 Q338,802 335,777 Z"/>
+    <rect x="238" y="370" width="548" height="72" rx="36"/>
+  </g>
+  <use href="#tile" fill="none" stroke="white" stroke-opacity="0.32" stroke-width="3"/>
+</svg>
