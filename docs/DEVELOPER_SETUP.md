@@ -117,8 +117,12 @@ bktreview() {
 
 ## 5. Scheme situation
 
-No `.xcscheme` files are committed. Xcode auto-generates schemes from
-target names, so `-scheme Bucketeer` is canonical.
+One shared scheme is committed:
+`Bucketeer.xcodeproj/xcshareddata/xcschemes/Bucketeer.xcscheme`, so
+`-scheme Bucketeer` is canonical. It builds the app, its Test action
+runs `BucketeerTests`, and only its Debug Run action carries the
+StoreKit configuration (section 8). Profile and Archive use Release
+without it.
 
 There's a leftover `S3 Browser.xcscheme_^#shared#^_` entry in
 `xcuserdata/.../xcschememanagement.plist` from before the rename. No
@@ -171,10 +175,28 @@ production builds will see them:
 - `za.co.digitalfreedom.bucketeer.pro.lifetime` (paid, Family Sharing on)
 - `za.co.digitalfreedom.bucketeer.pro.trial` (price Free, Family Sharing off)
 
-Local testing uses `Bucketeer/Bucketeer.storekit`, which the scheme
-references (Xcode → Edit Scheme → Run → Options → StoreKit
-Configuration). Reset the local entitlement via Xcode → Debug →
+Local testing uses `Bucketeer/Bucketeer.storekit`, which the shared
+scheme's Debug Run action references (Edit Scheme → Run → Options →
+StoreKit Configuration). Reset the local entitlement via Xcode → Debug →
 StoreKit → Manage Transactions during runs.
+
+The file mirrors App Store Connect: `internalID`s are the ASC IAP ids,
+names and descriptions are the en-US / de-DE texts, the price is €14.99
+on the German storefront. Two rules keep it working and out of the
+release:
+
+- Localization locales must be full identifiers (`en_US`, `de_DE`).
+  With bare `en` / `de` the local StoreKit server returns zero
+  products, and the paywall only shows "Buy Bucketeer Pro".
+- The file is excluded from the app target's membership in
+  `project.pbxproj` (exception of the synchronized `Bucketeer` folder),
+  so it never lands in the app bundle. The test bundle keeps it.
+
+`SheetRenderTests.testPaywallWithStoreKitProducts` renders the paywall
+with these products off screen (also the source of the in-app purchase
+review screenshot). storekitagent refuses an `SKTestSession` for the
+`xctest` tool itself, so the test skips under `xcodebuild test` and
+needs a runner process with its own bundle id.
 
 The trial is not stored locally. It runs for 14 days from the trial
 transaction's original purchase date (`ProAccessResolver` in Core). To
