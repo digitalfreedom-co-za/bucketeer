@@ -43,7 +43,7 @@ struct PaywallSheet: View {
         VStack(spacing: 6) {
             Image(systemName: "shippingbox.and.arrow.backward.fill")
                 .font(.system(size: 48))
-                .foregroundStyle(.tint)
+                .foregroundStyle(.accentInk)
             Text("paywall.title")
                 .font(.title)
                 .bold()
@@ -80,7 +80,7 @@ struct PaywallSheet: View {
     private func bullet(_ key: LocalizedStringKey, icon: String) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
             Image(systemName: icon)
-                .foregroundStyle(.tint)
+                .foregroundStyle(.accentInk)
                 .frame(width: 22)
             Text(key)
         }
@@ -104,7 +104,7 @@ struct PaywallSheet: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 6)
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.honeyProminent)
             .controlSize(.large)
             .disabled(entitlement.purchaseInProgress)
 

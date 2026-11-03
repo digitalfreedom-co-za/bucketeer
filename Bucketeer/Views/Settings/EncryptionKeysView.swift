@@ -96,7 +96,7 @@ struct EncryptionKeysView: View {
     private func keyRow(_ key: BucketEncryptionKey, viewModel: EncryptionKeysViewModel) -> some View {
         HStack(spacing: 12) {
             Image(systemName: "lock.fill")
-                .foregroundStyle(.tint)
+                .foregroundStyle(.accentInk)
             VStack(alignment: .leading, spacing: 2) {
                 Text(key.label).font(.callout.weight(.medium))
                 Text("\(viewModel.accountName(for: key.accountID)) · \(key.bucket)")
