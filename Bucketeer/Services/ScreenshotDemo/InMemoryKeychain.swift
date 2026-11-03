@@ -1,15 +1,16 @@
 //
 //  InMemoryKeychain.swift
-//  BucketeerTests
+//  Bucketeer
 //
 //  Created by Marcel R. G. Berger on 02.11.26.
 //
 
+#if DEBUG
 import Foundation
 import BucketeerCore
 
-/// `KeychainStoring` without the Keychain — tests never read or write
-/// real credentials.
+/// `KeychainStoring` without the Keychain — tests and the screenshot
+/// demo mode never read or write real credentials.
 actor InMemoryKeychain: KeychainStoring {
     private var items: [UUID: AccountCredentials] = [:]
 
@@ -26,3 +27,4 @@ actor InMemoryKeychain: KeychainStoring {
         items[accountID] = nil
     }
 }
+#endif

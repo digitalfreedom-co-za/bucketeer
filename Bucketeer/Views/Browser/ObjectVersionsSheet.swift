@@ -102,7 +102,7 @@ struct ObjectVersionsSheet: View {
                 ))
             }
         }
-        .frame(minWidth: 680, minHeight: 460)
+        .frame(minWidth: 860, minHeight: 460)
     }
 
     private var versionTable: some View {
@@ -162,7 +162,8 @@ struct ObjectVersionsSheet: View {
                     }
                 }
             }
-            .width(min: 200, ideal: 220)
+            // Wide enough for both labels in the longer locales (de, fi, hu, el, ru).
+            .width(min: 300, ideal: 320)
         }
     }
 

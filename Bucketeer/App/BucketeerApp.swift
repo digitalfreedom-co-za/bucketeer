@@ -18,7 +18,7 @@ struct BucketeerApp: App {
     init() {
         let container: AppContainer
         do {
-            container = try AppContainer()
+            container = try Self.makeContainer()
         } catch {
             fatalError("Failed to initialise AppContainer: \(error)")
         }
@@ -35,6 +35,17 @@ struct BucketeerApp: App {
         // applied at launch and the "quit after last window closed"
         // logic always saw `false`.
         BucketeerAppDelegate.installedActivationController = container.activationController
+    }
+
+    /// Debug builds of the QA copy launched with `-BucketeerScreenshotDemo YES`
+    /// get a seeded in-memory demo container instead of the user's data.
+    private static func makeContainer() throws -> AppContainer {
+        #if DEBUG
+        if let launch = ScreenshotDemoLaunch.current {
+            return try ScreenshotDemoDirector.makeContainer(for: launch)
+        }
+        #endif
+        return try AppContainer()
     }
 
     var body: some Scene {
@@ -74,8 +85,11 @@ struct BucketeerApp: App {
 
         Window("activity.window.title", id: "activity") {
             ActivityLogView()
-                .environment(container)
                 .frame(minWidth: 880, minHeight: 480)
+                #if DEBUG
+                .modifier(ScreenshotDemoWindow(size: ScreenshotDemoDirector.mainWindowSize))
+                #endif
+                .environment(container)
         }
         .defaultSize(width: 1000, height: 600)
         .defaultPosition(.center)

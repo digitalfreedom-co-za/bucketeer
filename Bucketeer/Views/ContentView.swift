@@ -39,6 +39,9 @@ struct ContentView: View {
             paywallFeature = note.object as? EntitlementManager.ProFeature
             showingPaywall = true
         }
+        #if DEBUG
+        .modifier(ScreenshotDemoMainWindow(sidebarSelection: $sidebarSelection, showingPaywall: $showingPaywall))
+        #endif
         .alert(
             "browser.action.errorTitle",
             isPresented: Binding(
