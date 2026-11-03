@@ -42,7 +42,7 @@ Il segreto è nascosto quando modifichi un account. Fai clic su **Rivela le cred
 - **Nuova cartella**: pulsante nella barra degli strumenti o **⇧⌘N**.
 - **Rinomina…**: fai clic con il tasto destro su un oggetto. Rinominare è una copia lato server seguita da un'eliminazione.
 - **Elimina**: seleziona uno o più oggetti, fai clic sul pulsante del cestino e conferma.
-- **Copia link profondo**: copia un link `bucketeer://` all'oggetto, che lo apre in Bucketeer da qualsiasi punto del tuo Mac.
+- **Copia link diretto**: copia un link `bucketeer://` all'oggetto, che lo apre in Bucketeer da qualsiasi punto del tuo Mac.
 
 ## Link di condivisione
 
@@ -91,7 +91,7 @@ Queste funzioni richiedono Bucketeer Pro:
 - **Monta come unità**: fai clic con il tasto destro su un bucket e scegli **Monta come unità** per usarlo nel Finder come un disco. Richiede macOS 14.1 o versioni successive. Le unità montate compaiono in **Unità montate** nella barra laterale; fai clic con il tasto destro per **Smonta**. I bucket con crittografia lato client non possono essere montati. Le modifiche fatte sul server compaiono nel Finder quando aggiorni il bucket in Bucketeer. Se un file che modifichi nel Finder è cambiato nel frattempo sul server, la tua versione viene salvata accanto come copia in conflitto.
 - **Job di sincronizzazione**: nella sezione **Sincronizzazione**, crea un job che copia, sposta o replica tra due bucket, tra account e provider, oppure tra una cartella locale e un bucket. Eseguilo manualmente, all'avvio, ogni N minuti o quando la cartella locale cambia.
 - **Cartelle sorvegliate**: **Nuova cartella sorvegliata…** carica in un bucket ogni nuovo file di una cartella locale.
-- **Copia in altro account…**: copia oggetti in un altro account o provider. Quando entrambe le parti lo consentono, la copia avviene lato server e i dati non passano dal tuo Mac.
+- **Copia in un altro account…**: copia oggetti in un altro account o provider. Quando entrambe le parti lo consentono, la copia avviene lato server e i dati non passano dal tuo Mac.
 - **Modalità barra dei menu**: **Impostazioni → Generale** mantiene Bucketeer in esecuzione nella barra dei menu, così le unità e i job di sincronizzazione restano attivi quando la finestra principale è chiusa.
 
 Tutto il resto è disponibile nel livello gratuito.

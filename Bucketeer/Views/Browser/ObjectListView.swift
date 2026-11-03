@@ -94,13 +94,7 @@ struct ObjectListView: View {
             // Phase 13.5 — Bucket dashboard.
             ToolbarItem(placement: .primaryAction) {
                 Button {
-                    if let account = viewModel.account, let bucket = viewModel.bucket {
-                        dashboardViewModel = BucketDashboardViewModel(
-                            account: account,
-                            bucket: bucket,
-                            browser: container.s3Browser
-                        )
-                    }
+                    showDashboard()
                 } label: {
                     Label("browser.action.dashboard", systemImage: "chart.bar.doc.horizontal")
                 }
@@ -240,6 +234,11 @@ struct ObjectListView: View {
         } message: { error in
             Text(error.errorDescription ?? "")
         }
+        #if DEBUG
+        .task(id: container.screenshotDemo?.stage?.objectSheet) {
+            showScreenshotDemoSheet(container.screenshotDemo?.stage?.objectSheet)
+        }
+        #endif
         .focusable()
         .onKeyPress(.space) {
             guard let object = resolvedSingleSelection(), !object.isFolder else {
@@ -412,14 +411,7 @@ struct ObjectListView: View {
                 // S3 family; Azure surfaces a clear "not supported"
                 // banner inside the sheet if the user lands there.
                 Button("versions.menu.show", systemImage: "clock.arrow.circlepath") {
-                    if let account = viewModel.account, let bucket = viewModel.bucket {
-                        versionsViewModel = ObjectVersionsViewModel(
-                            account: account,
-                            bucket: bucket,
-                            key: object.key,
-                            browser: container.s3Browser
-                        )
-                    }
+                    showVersions(of: object.key)
                 }
                 // Phase 13.11 — copy a `bucketeer://object/…` deep
                 // link to the clipboard so it can be shared in
@@ -439,14 +431,7 @@ struct ObjectListView: View {
                 }
                 // Phase 13.7 — metadata + tags editor.
                 Button("metadata.menu.edit", systemImage: "tag") {
-                    if let account = viewModel.account, let bucket = viewModel.bucket {
-                        metadataViewModel = ObjectMetadataViewModel(
-                            account: account,
-                            bucket: bucket,
-                            key: object.key,
-                            browser: container.s3Browser
-                        )
-                    }
+                    showMetadata(of: object.key)
                 }
             }
             Button("action.rename", systemImage: "pencil") {
@@ -521,6 +506,32 @@ struct ObjectListView: View {
     }
 
     // MARK: - Actions
+
+    private func showDashboard() {
+        guard let account = viewModel.account, let bucket = viewModel.bucket else { return }
+        dashboardViewModel = BucketDashboardViewModel(account: account, bucket: bucket, browser: container.s3Browser)
+    }
+
+    private func showVersions(of key: String) {
+        guard let account = viewModel.account, let bucket = viewModel.bucket else { return }
+        versionsViewModel = ObjectVersionsViewModel(account: account, bucket: bucket, key: key, browser: container.s3Browser)
+    }
+
+    private func showMetadata(of key: String) {
+        guard let account = viewModel.account, let bucket = viewModel.bucket else { return }
+        metadataViewModel = ObjectMetadataViewModel(account: account, bucket: bucket, key: key, browser: container.s3Browser)
+    }
+
+    #if DEBUG
+    private func showScreenshotDemoSheet(_ sheet: ScreenshotDemoStage.ObjectSheet?) {
+        switch sheet {
+        case .dashboard: showDashboard()
+        case .versions(let key): showVersions(of: key)
+        case .metadata(let key): showMetadata(of: key)
+        case nil: break
+        }
+    }
+    #endif
 
     private func uploadFiles() async {
         guard let account = viewModel.account, let bucket = viewModel.bucket else { return }

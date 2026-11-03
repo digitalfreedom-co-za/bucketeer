@@ -13,7 +13,7 @@ Je inloggegevens worden in de sleutelhanger van macOS op deze Mac bewaard. Bucke
 
 ## Een account wijzigen
 
-Het geheim is verborgen als je een account wijzigt. Klik op **Toon opgeslagen referenties** en bevestig met Touch ID of je Mac-wachtwoord om het te zien. Als je bewaart zonder het geheim aan te raken, blijft het opgeslagen geheim ongewijzigd.
+Het geheim is verborgen als je een account wijzigt. Klik op **Toon opgeslagen inloggegevens** en bevestig met Touch ID of je Mac-wachtwoord om het te zien. Als je bewaart zonder het geheim aan te raken, blijft het opgeslagen geheim ongewijzigd.
 
 ## Buckets en objecten bekijken
 
@@ -41,12 +41,12 @@ Het geheim is verborgen als je een account wijzigt. Klik op **Toon opgeslagen re
 
 - **Nieuwe map**: knop in de knoppenbalk of **⇧⌘N**.
 - **Hernoem…**: klik met de rechtermuisknop op een object. Hernoemen is een kopie op de server, gevolgd door een verwijdering.
-- **Verwijder**: selecteer een of meer objecten, klik op de prullenbakknop en bevestig.
-- **Diep-link kopiëren**: kopieert een `bucketeer://`-link naar het object, die het object vanaf elke plek op je Mac in Bucketeer opent.
+- **Verwijder**: selecteer een of meer objecten, klik op de prullenmandknop en bevestig.
+- **Deeplink kopiëren**: kopieert een `bucketeer://`-link naar het object, die het object vanaf elke plek op je Mac in Bucketeer opent.
 
-## Deelkoppelingen
+## Deellinks
 
-Klik met de rechtermuisknop op een bestand en kies **Deelkoppeling ophalen…**. Kies hoe lang de koppeling geldig blijft en kopieer of deel hem daarna. De koppeling wordt op je Mac met je inloggegevens ondertekend; iedereen die hem heeft, kan het bestand downloaden tot hij verloopt.
+Klik met de rechtermuisknop op een bestand en kies **Deellink maken…**. Kies hoe lang de link geldig blijft en kopieer of deel hem daarna. De link wordt op je Mac met je inloggegevens ondertekend; iedereen die hem heeft, kan het bestand downloaden tot hij verloopt.
 
 ## Versies
 
@@ -62,13 +62,13 @@ Klik met de rechtermuisknop op een bestand en kies **Metadata & tags…** om HTT
 
 Klik op **Dashboard** in de knoppenbalk van een geopende bucket. Je ziet het aantal objecten, de totale grootte, de grootste objecten, een ruwe schatting van de maandelijkse kosten en de levenscyclusregels, de CORS-configuratie en het bucketbeleid (alleen-lezen).
 
-## Prullenbak
+## Prullenmand
 
-Als je objecten verwijdert, kan Bucketeer een lokale kopie op deze Mac bewaren (**Instellingen → Overdrachten → Prullenbak**). Open de prullenbak via **Venster → Prullenbak** (**⇧⌘⌫**) en klik op **Herstellen** om een kopie uit de cache terug te uploaden naar de oorspronkelijke plek. Het object bij de aanbieder wordt meteen verwijderd; alleen de lokale kopie kan worden hersteld. Onderdelen worden automatisch verwijderd na de bewaartermijn die je instelt.
+Als je objecten verwijdert, kan Bucketeer een lokale kopie op deze Mac bewaren (**Instellingen → Overdrachten → Prullenmand**). Open de prullenmand via **Venster → Prullenmand** (**⇧⌘⌫**) en klik op **Herstellen** om een kopie uit de cache terug te uploaden naar de oorspronkelijke plek. Het object bij de aanbieder wordt meteen verwijderd; alleen de lokale kopie kan worden hersteld. Onderdelen worden automatisch verwijderd na de bewaartermijn die je instelt.
 
 ## Activiteitenlog
 
-**Venster → Activiteitenlog** (**⌥⌘0**) toont uploads, downloads, verwijderingen, synchronisaties, deelkoppelingen en accountwijzigingen. Je kunt de lijst filteren, doorzoeken en als CSV exporteren. Onderdelen blijven 180 dagen op deze Mac bewaard.
+**Venster → Activiteitenlog** (**⌥⌘0**) toont uploads, downloads, verwijderingen, synchronisaties, deellinks en accountwijzigingen. Je kunt de lijst filteren, doorzoeken en als CSV exporteren. Onderdelen blijven 180 dagen op deze Mac bewaard.
 
 ## Versleuteling aan de clientzijde
 
@@ -82,7 +82,7 @@ Belangrijk: als je de sleutel kwijtraakt, kan niemand die objecten ontsleutelen,
 
 ## Opdrachten en Siri
 
-Bucketeer voegt taken toe aan de Opdrachten-app: buckets weergeven, een bestand uploaden, een deelkoppeling aanmaken en een synchronisatie uitvoeren. Gebruik ze in je eigen opdrachten of vraag het aan Siri.
+Bucketeer voegt taken toe aan de Opdrachten-app: buckets weergeven, een bestand uploaden, een deellink maken en een synchronisatie uitvoeren. Gebruik ze in je eigen opdrachten of vraag het aan Siri.
 
 ## Pro-functies
 
@@ -110,7 +110,7 @@ Je kunt Bucketeer Pro 14 dagen gratis proberen. Voordat je begint, toont de aank
 - **⌘U**: Bestanden uploaden
 - **⇧⌘N**: Nieuwe map
 - **⌥⌘0**: Activiteitenlog
-- **⇧⌘⌫**: Prullenbak
+- **⇧⌘⌫**: Prullenmand
 - **⌘?**: Bucketeer-help
 - **⌘,**: Instellingen
 

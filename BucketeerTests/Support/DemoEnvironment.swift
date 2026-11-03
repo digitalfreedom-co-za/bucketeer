@@ -24,8 +24,10 @@ struct DemoEnvironment {
 
     var accounts: [S3Account] { [aws, azure] }
 
+    /// `entitlement: nil` derives the state from StoreKit, e.g. an
+    /// `SKTestSession` on `Bucketeer.storekit`.
     static func make(
-        entitlement: EntitlementManager.State = .pro,
+        entitlement: EntitlementManager.State? = .pro,
         withAccounts: Bool = true
     ) async throws -> DemoEnvironment {
         let browser = InMemoryS3Browser()
