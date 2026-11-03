@@ -39,7 +39,7 @@ struct MenuBarContent: View {
         HStack(spacing: 10) {
             Image(systemName: "externaldrive.connected.to.line.below")
                 .font(.title3)
-                .foregroundStyle(.tint)
+                .foregroundStyle(.accentInk)
             VStack(alignment: .leading, spacing: 2) {
                 Text("app.name")
                     .font(.headline)
@@ -89,6 +89,7 @@ struct MenuBarContent: View {
                 if let fraction = task.state.progressFraction {
                     ProgressView(value: fraction)
                         .controlSize(.small)
+                        .tint(.accentInk)
                 } else if case .queued = task.state {
                     Text("transfer.state.queued")
                         .font(.caption2)

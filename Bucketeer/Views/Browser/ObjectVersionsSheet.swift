@@ -115,8 +115,8 @@ struct ObjectVersionsSheet: View {
                         Text("versions.tag.latest")
                             .font(.caption2.weight(.semibold))
                             .padding(.horizontal, 6).padding(.vertical, 1)
-                            .background(Capsule().fill(Color.accentColor.opacity(0.18)))
-                            .foregroundStyle(.tint)
+                            .background(Capsule().fill(Color.honey.opacity(0.22)))
+                            .foregroundStyle(.accentInk)
                     }
                 }
             }
