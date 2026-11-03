@@ -100,6 +100,7 @@ struct AboutWindow: View {
                          destination: URL(string: "https://support.apps.digitalfreedom.co.za/")!)
                 }
                 .font(.callout)
+                .foregroundStyle(Color.accentInk)
             }
             Spacer(minLength: 0)
         }
