@@ -177,6 +177,7 @@ struct PaywallSheet: View {
                 .buttonStyle(.link)
             }
             .font(.footnote)
+            .foregroundStyle(Color.accentInk)
             if let purchaseError {
                 Text(purchaseError)
                     .font(.caption)
