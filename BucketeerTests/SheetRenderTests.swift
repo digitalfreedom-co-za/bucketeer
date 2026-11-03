@@ -7,6 +7,7 @@
 
 import XCTest
 import SwiftUI
+import StoreKitTest
 import BucketeerCore
 
 /// Sheets of the browser and account flows. Sheets without an error
@@ -173,5 +174,38 @@ final class SheetRenderTests: XCTestCase {
         let demo = try await DemoEnvironment.make(entitlement: .pro)
         try await renderAndAssert(PaywallSheet(feature: nil).environment(demo.container),
                                   name: "PaywallSheet_pro", size: sheetSize, shows: ["Bucketeer Pro"])
+    }
+
+    /// The paywall as App Review sees it: products from the local
+    /// StoreKit configuration (German storefront), trial not yet claimed.
+    /// The PNG doubles as the in-app purchase review screenshot.
+    ///
+    /// storekitagent refuses a test session for the `xctest` tool itself
+    /// (no Launch Services record for its bundle id), so this bundle
+    /// unhosted under `xcodebuild test` can never load products. It runs
+    /// in a runner process with its own bundle id instead.
+    func testPaywallWithStoreKitProducts() async throws {
+        try XCTSkipIf(ProcessInfo.processInfo.processName == "xctest",
+                      "StoreKit test sessions need a process with its own bundle id")
+        let configuration = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "Bucketeer", withExtension: "storekit"))
+        let session = try SKTestSession(contentsOf: configuration)
+        session.disableDialogs = true
+        session.storefront = "DEU"
+        session.locale = Locale(identifier: "en_US")
+        session.clearTransactions()
+        let demo = try await DemoEnvironment.make(entitlement: nil)
+        let entitlement = demo.container.entitlementManager
+        await entitlement.bootstrap()
+        XCTAssertEqual(entitlement.product?.displayPrice, "€14.99")
+        XCTAssertNotNil(entitlement.trialProduct)
+        XCTAssertTrue(entitlement.isTrialAvailable)
+        // Drawn like the key window it is in the app; the off-screen
+        // window never becomes key and would grey out the buy button.
+        try await renderAndAssert(PaywallSheet(feature: nil).environment(demo.container)
+                                    .environment(\.controlActiveState, .key),
+                                  name: "PaywallSheet_storeKit", size: CGSize(width: 480, height: 780),
+                                  shows: ["Pro Lifetime — €14.99", "14-day Trial", "Start trial",
+                                          "Restore purchase", "Redeem Code"])
+        session.clearTransactions()
     }
 }

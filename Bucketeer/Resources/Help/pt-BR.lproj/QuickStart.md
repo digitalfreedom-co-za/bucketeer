@@ -42,7 +42,7 @@ O segredo fica oculto quando você edita uma conta. Clique em **Mostrar credenci
 - **Nova pasta**: botão da barra de ferramentas ou **⇧⌘N**.
 - **Renomear…**: clique com o botão direito em um objeto. Renomear é uma cópia no servidor seguida de uma exclusão.
 - **Excluir**: selecione um ou mais objetos, clique no botão da lixeira e confirme.
-- **Copiar link profundo**: copia um link `bucketeer://` para o objeto, que o abre no Bucketeer de qualquer lugar do seu Mac.
+- **Copiar deep link**: copia um link `bucketeer://` para o objeto, que o abre no Bucketeer de qualquer lugar do seu Mac.
 
 ## Links de compartilhamento
 
@@ -90,7 +90,7 @@ Estes recursos precisam do Bucketeer Pro:
 
 - **Montar como unidade**: clique com o botão direito em um bucket e escolha **Montar como unidade** para usá-lo no Finder como um disco. Requer macOS 14.1 ou posterior. As unidades montadas aparecem em **Unidades montadas** na barra lateral; clique com o botão direito para **Desmontar**. Buckets com criptografia no lado do cliente não podem ser montados. As alterações feitas no servidor aparecem no Finder quando você atualiza o bucket no Bucketeer. Se um arquivo que você edita no Finder foi alterado no servidor nesse meio tempo, sua versão é salva ao lado como cópia em conflito.
 - **Tarefas de sincronização**: na seção **Sincronização**, crie uma tarefa que copia, move ou espelha entre dois buckets, entre contas e provedores, ou entre uma pasta local e um bucket. Execute-a manualmente, ao abrir o app, a cada N minutos ou quando a pasta local mudar.
-- **Pastas vigiadas**: **Nova pasta vigiada…** faz upload para um bucket de cada arquivo novo em uma pasta local.
+- **Pastas monitoradas**: **Nova pasta monitorada…** faz upload para um bucket de cada arquivo novo em uma pasta local.
 - **Copiar para outra conta…**: copia objetos para outra conta ou outro provedor. Quando os dois lados permitem, a cópia é feita no servidor e os dados não passam pelo seu Mac.
 - **Modo barra de menus**: **Ajustes → Geral** mantém o Bucketeer em execução na barra de menus para que as unidades e as tarefas de sincronização continuem ativas quando a janela principal estiver fechada.
 

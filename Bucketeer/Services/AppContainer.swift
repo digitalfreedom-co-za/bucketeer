@@ -116,6 +116,10 @@ final class AppContainer {
     let syncJobListViewModel: SyncJobListViewModel
     let activityLogViewModel: ActivityLogViewModel
     let trashViewModel: TrashViewModel
+    #if DEBUG
+    /// Set only in the App Store screenshot demo mode.
+    var screenshotDemo: ScreenshotDemoDirector? = nil
+    #endif
 
     convenience init() throws {
         try self.init(configuration: .production)

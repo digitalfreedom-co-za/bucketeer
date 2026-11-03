@@ -80,7 +80,7 @@ actor PreviewCache {
             entries[hash]?.lastAccess = Date()
             return existing.url
         }
-        let url = fileURL(for: hash)
+        let url = fileURL(for: hash, key: key)
         if FileManager.default.fileExists(atPath: url.path) {
             let size = (try? FileManager.default
                 .attributesOfItem(atPath: url.path)[.size] as? NSNumber)?.int64Value ?? 0
@@ -116,7 +116,7 @@ actor PreviewCache {
         ) {
             return cached
         }
-        let url = fileURL(for: hash)
+        let url = fileURL(for: hash, key: object.key)
         let downloader = self.downloader
         let task = Task { () throws -> URL in
             // Download beside the final path and move on success: a
@@ -194,7 +194,9 @@ actor PreviewCache {
         return digest.map { String(format: "%02x", $0) }.joined()
     }
 
-    private func fileURL(for hash: String) -> URL {
+    /// Keeps the object's file extension: Quick Look picks the preview
+    /// type from it and shows a blank document icon without one.
+    private func fileURL(for hash: String, key: String) -> URL {
         // Use the SHA-256 prefix as a subdirectory to keep any single
         // directory under a few thousand files even for heavy users.
         let prefix = String(hash.prefix(2))
@@ -203,6 +205,8 @@ actor PreviewCache {
             at: dir,
             withIntermediateDirectories: true
         )
-        return dir.appending(path: hash, directoryHint: .notDirectory)
+        let file = dir.appending(path: hash, directoryHint: .notDirectory)
+        let fileExtension = (key as NSString).pathExtension
+        return fileExtension.isEmpty ? file : file.appendingPathExtension(fileExtension)
     }
 }

@@ -90,7 +90,7 @@ Estas funcionalidades precisam do Bucketeer Pro:
 
 - **Montar como disco**: clique com o botão direito num bucket e escolha **Montar como disco** para o usar no Finder como um disco. Requer macOS 14.1 ou posterior. Os discos montados aparecem em **Discos montados** na barra lateral; clique com o botão direito para **Desmontar**. Os buckets com encriptação do lado do cliente não podem ser montados. As alterações feitas no servidor aparecem no Finder quando atualiza o bucket no Bucketeer. Se um ficheiro que está a editar no Finder foi entretanto alterado no servidor, a sua versão é guardada ao lado como cópia em conflito.
 - **Tarefas de sincronização**: na secção **Sincronização**, crie uma tarefa que copia, move ou espelha entre dois buckets, entre contas e fornecedores, ou entre uma pasta local e um bucket. Execute-a manualmente, ao iniciar, a cada N minutos ou quando a pasta local mudar.
-- **Pastas vigiadas**: **Nova pasta vigiada…** carrega para um bucket cada ficheiro novo de uma pasta local.
+- **Pastas monitorizadas**: **Nova pasta monitorizada…** carrega para um bucket cada ficheiro novo de uma pasta local.
 - **Copiar para outra conta…**: copia objetos para outra conta ou outro fornecedor. Quando ambos os lados o permitem, a cópia é feita do lado do servidor e os dados não passam pelo seu Mac.
 - **Modo da barra de menus**: **Definições → Geral** mantém o Bucketeer em execução na barra de menus, para que os discos e as tarefas de sincronização continuem ativos quando a janela principal está fechada.
 
