@@ -43,6 +43,14 @@ struct ProviderCapabilitiesTests {
         #expect(expectation.provider.conditionalRequests == expectation.conditions)
     }
 
+    @Test("Object tags are skipped where the provider documents no tagging")
+    func objectTagging() {
+        let without: Set<S3Provider> = [.cloudflareR2, .backblazeB2]
+        for provider in S3Provider.allCases {
+            #expect(provider.supportsObjectTagging == !without.contains(provider))
+        }
+    }
+
     @Test("R2 always signs for region auto, whatever was stored")
     func r2SignsForAuto() {
         #expect(S3Provider.cloudflareR2.signingRegion(for: "weur") == "auto")

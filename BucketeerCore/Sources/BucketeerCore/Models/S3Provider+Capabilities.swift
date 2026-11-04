@@ -56,6 +56,13 @@ extension S3Provider {
         }
     }
 
+    /// False where object tagging is documented as missing: R2 does not
+    /// implement it, B2 rejects tags. Tags are then neither read nor
+    /// written, so metadata editing still works.
+    public var supportsObjectTagging: Bool {
+        self != .cloudflareR2 && self != .backblazeB2
+    }
+
     /// The SigV4 region for requests. R2 accepts only `auto`; earlier
     /// builds offered its location hints as regions.
     public func signingRegion(for region: String) -> String {

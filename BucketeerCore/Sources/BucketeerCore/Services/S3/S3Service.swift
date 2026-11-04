@@ -469,13 +469,10 @@ public struct S3Service: S3Browsing {
         let s3 = try await factory.client(for: account)
         do {
             async let headResponse = s3.headObject(.init(bucket: bucket, key: key))
-            async let tagResponse = s3.getObjectTagging(.init(bucket: bucket, key: key))
+            async let tagResponse = Self.tags(s3: s3, bucket: bucket, key: key,
+                                              supported: account.provider.supportsObjectTagging)
             let head = try await headResponse
-            let tagging = try await tagResponse
-            var tags: [String: String] = [:]
-            for entry in tagging.tagSet {
-                tags[entry.key] = entry.value
-            }
+            let tags = try await tagResponse
             return ObjectMetadata(
                 contentType: head.contentType ?? "",
                 cacheControl: head.cacheControl ?? "",
@@ -528,6 +525,7 @@ public struct S3Service: S3Browsing {
         }
         // PutObjectTagging — clears the existing set and replaces
         // with the supplied one.
+        guard account.provider.supportsObjectTagging else { return }
         let tagSet: [S3.Tag] = metadata.tags.map { (k, v) in
             S3.Tag(key: k, value: v)
         }
@@ -540,6 +538,12 @@ public struct S3Service: S3Browsing {
         } catch {
             throw Self.map(error, bucket: bucket, key: key)
         }
+    }
+
+    private static func tags(s3: S3, bucket: String, key: String, supported: Bool) async throws -> [String: String] {
+        guard supported else { return [:] }
+        let tagging = try await s3.getObjectTagging(.init(bucket: bucket, key: key))
+        return Dictionary(tagging.tagSet.map { ($0.key, $0.value) }, uniquingKeysWith: { _, last in last })
     }
 
     // MARK: - Bucket insights (Phase 13.9)
