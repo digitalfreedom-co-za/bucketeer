@@ -159,6 +159,26 @@ public enum LocalFolderWriter {
         try FileManager.default.removeItem(at: target)
     }
 
+    /// Deletes the file only while it still has `fingerprint`, i.e. was
+    /// not saved again since it was listed. Returns `false` and keeps
+    /// the file when it changed; `true` when deleted or already gone.
+    public static func deleteIfUnchanged(
+        relativeKey: String,
+        under root: URL,
+        fingerprint: LocalFileFingerprint
+    ) throws -> Bool {
+        let target = try safeChildURL(root: root, relativeKey: relativeKey)
+        guard FileManager.default.fileExists(atPath: target.path) else { return true }
+        let values = try target.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey])
+        let current = LocalFileFingerprint(
+            size: Int64(values.fileSize ?? 0),
+            modified: values.contentModificationDate ?? .distantPast
+        )
+        guard current == fingerprint else { return false }
+        try FileManager.default.removeItem(at: target)
+        return true
+    }
+
     /// Confine every write/delete to paths whose
     /// resolved form lives inside `root`. Rejects absolute paths,
     /// `.`/`..` components, and the empty string. Both `root` and the

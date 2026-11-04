@@ -80150,6 +80150,256 @@
           }
         }
       }
+    },
+    "sync.summary.keptSources %lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld zdrojů ponecháno: během přesunu se změnily"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld kilder beholdt: ændret under flytningen"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Quellen behalten: während des Verschiebens geändert"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld πηγές διατηρήθηκαν: άλλαξαν κατά τη μετακίνηση"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld sources kept: changed during the move"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld sources kept: changed during the move"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld orígenes conservados: cambiaron durante el traslado"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld lähdettä säilytettiin: muuttuivat siirron aikana"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld sources conservées : modifiées pendant le déplacement"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld forrás megtartva: az áthelyezés közben megváltozott"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld origini conservate: modificate durante lo spostamento"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 件のソースを保持：移動中に変更されました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "원본 %lld개 유지: 이동 중에 변경됨"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld kilder beholdt: endret under flyttingen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld bronnen behouden: gewijzigd tijdens het verplaatsen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zachowano %lld źródeł: zmieniły się podczas przenoszenia"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld origens mantidas: alteradas durante a movimentação"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld origens mantidas: alteradas durante a deslocação"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохранено источников: %lld — изменились во время перемещения"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld källor behölls: ändrades under flytten"
+          }
+        }
+      }
+    },
+    "sync.error.sourceChangedDuringMove" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopie byla vytvořena, ale originál se během přesunu změnil, a proto byl ponechán místo smazání. Zkontrolujte obě verze."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopien blev lavet, men originalen ændrede sig under flytningen, så den blev beholdt i stedet for at blive slettet. Kontrollér begge versioner."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Kopie wurde erstellt, aber das Original hat sich während des Verschiebens geändert und wurde deshalb behalten statt gelöscht. Prüfe beide Versionen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το αντίγραφο δημιουργήθηκε, αλλά το πρωτότυπο άλλαξε κατά τη μετακίνηση, γι’ αυτό διατηρήθηκε αντί να διαγραφεί. Ελέγξτε και τις δύο εκδόσεις."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The copy was made, but the original changed while it was being moved, so it was kept instead of deleted. Check both versions."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The copy was made, but the original changed while it was being moved, so it was kept instead of deleted. Check both versions."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se creó la copia, pero el original cambió mientras se trasladaba, así que se conservó en lugar de eliminarse. Revisa ambas versiones."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopio tehtiin, mutta alkuperäinen muuttui siirron aikana, joten se säilytettiin poistamisen sijaan. Tarkista molemmat versiot."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La copie a été créée, mais l’original a changé pendant le déplacement : il a donc été conservé au lieu d’être supprimé. Vérifiez les deux versions."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A másolat elkészült, de az eredeti az áthelyezés közben megváltozott, ezért törlés helyett megmaradt. Ellenőrizze mindkét verziót."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La copia è stata creata, ma l’originale è cambiato durante lo spostamento, quindi è stato conservato invece di essere eliminato. Controlla entrambe le versioni."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コピーは作成されましたが、移動中に元のファイルが変更されたため、削除せずに保持しました。両方のバージョンを確認してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사본은 만들어졌지만 이동 중에 원본이 변경되어 삭제하지 않고 유지했습니다. 두 버전을 모두 확인하세요."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopien ble laget, men originalen endret seg under flyttingen, så den ble beholdt i stedet for å bli slettet. Kontroller begge versjonene."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De kopie is gemaakt, maar het origineel is tijdens het verplaatsen gewijzigd en is daarom behouden in plaats van verwijderd. Controleer beide versies."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopia została utworzona, ale oryginał zmienił się podczas przenoszenia, dlatego został zachowany zamiast usunięty. Sprawdź obie wersje."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A cópia foi criada, mas o original mudou durante a movimentação, por isso foi mantido em vez de apagado. Confira as duas versões."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A cópia foi criada, mas o original mudou durante a deslocação, por isso foi mantido em vez de eliminado. Verifique as duas versões."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Копия создана, но оригинал изменился во время перемещения, поэтому он сохранён, а не удалён. Проверьте обе версии."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopian skapades, men originalet ändrades under flytten och behölls därför i stället för att raderas. Kontrollera båda versionerna."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

@@ -189,6 +189,18 @@ public struct AzureBlobObjectStore: S3Browsing {
         }
     }
 
+    public func delete(account: S3Account, bucket: String, key: String, ifMatch etag: String) async throws {
+        let signer = try await credentialsCache.signer(for: account)
+        try await Self.deleteOne(
+            builder: AzureRequestBuilder(account: account),
+            signer: signer,
+            session: session,
+            bucket: bucket,
+            key: key,
+            ifMatch: etag
+        )
+    }
+
     /// Maximum total wait for an asynchronous Azure copy before we
     /// give up and throw `.providerError(statusCode: 504)`. Tuned
     /// generously enough that the cross-storage-account copy of a
@@ -743,11 +755,15 @@ public struct AzureBlobObjectStore: S3Browsing {
         signer: AzureSharedKeySigner,
         session: URLSession,
         bucket: String,
-        key: String
+        key: String,
+        ifMatch etag: String? = nil
     ) async throws {
         var request = URLRequest(url: builder.deleteBlobURL(container: bucket, blob: key))
         request.httpMethod = "DELETE"
         request.setValue("include", forHTTPHeaderField: "x-ms-delete-snapshots")
+        if let etag {
+            request.setValue(ETag.quoted(etag), forHTTPHeaderField: "If-Match")
+        }
         signer.sign(&request)
 
         let (_, response) = try await session.azureData(for: request)

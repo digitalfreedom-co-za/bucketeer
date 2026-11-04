@@ -81,6 +81,11 @@ final class CrossAccountCopyCoordinator {
                 prefix: destinationPrefix
             )
             do {
+                // The version a move may delete afterwards: anything
+                // written to the source meanwhile is newer than the copy.
+                let movedVersion = keepSource ? nil : try await browser.head(
+                    account: sourceAccount, bucket: sourceBucket, key: key
+                ).etag
                 if canServerCopy {
                     try await browser.copy(
                         account: destinationAccount,
@@ -100,12 +105,10 @@ final class CrossAccountCopyCoordinator {
                         destinationKey: destinationKey
                     )
                 }
-                if !keepSource {
-                    try await browser.delete(
-                        account: sourceAccount,
-                        bucket: sourceBucket,
-                        keys: [key]
-                    )
+                if let movedVersion, try await !browser.deleteIfUnchanged(
+                    account: sourceAccount, bucket: sourceBucket, key: key, etag: movedVersion
+                ) {
+                    throw BucketeerError.unknown(message: String(localized: "sync.error.sourceChangedDuringMove"))
                 }
                 await activityLog.record(
                     ActivityEntry(

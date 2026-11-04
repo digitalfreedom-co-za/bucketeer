@@ -19,6 +19,7 @@ actor InMemoryS3Browser: S3Browsing {
     private var failure: BucketeerError?
     private var holdsNextCopy = false
     private var heldCopy: CheckedContinuation<Void, Never>?
+    private var revision = 0
 
     init(pageSize: Int = 1_000) {
         self.pageSize = pageSize
@@ -44,6 +45,15 @@ actor InMemoryS3Browser: S3Browsing {
     func put(bucket: String, key: String, size: Int64 = 0, lastModified: Date = Date(timeIntervalSince1970: 1_800_000_000)) {
         buckets[bucket, default: [:]][key] = S3Object(
             key: key, size: size, lastModified: lastModified, etag: "etag-\(key)"
+        )
+    }
+
+    /// Replaces the object's contents: same key and size, new ETag.
+    func rewrite(bucket: String, key: String) {
+        guard let object = buckets[bucket]?[key] else { return }
+        revision += 1
+        buckets[bucket]?[key] = S3Object(
+            key: key, size: object.size, lastModified: object.lastModified, etag: "etag-\(key)-v\(revision)"
         )
     }
 
@@ -96,6 +106,13 @@ actor InMemoryS3Browser: S3Browsing {
     func delete(account: S3Account, bucket: String, keys: [String]) async throws {
         try check()
         for key in keys { buckets[bucket]?[key] = nil }
+    }
+
+    func delete(account: S3Account, bucket: String, key: String, ifMatch etag: String) async throws {
+        try check()
+        guard let object = buckets[bucket]?[key] else { throw BucketeerError.objectNotFound(key: key) }
+        guard ETag.matches(base: etag, current: object.etag) else { throw BucketeerError.preconditionFailed(key: key) }
+        buckets[bucket]?[key] = nil
     }
 
     func copy(account: S3Account, fromBucket: String, fromKey: String, toBucket: String, toKey: String, metadata: [String: String]?) async throws {

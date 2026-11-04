@@ -152,6 +152,17 @@ public struct S3Service: S3Browsing {
         }
     }
 
+    public func delete(account: S3Account, bucket: String, key: String, ifMatch etag: String) async throws {
+        let s3 = try await factory.client(for: account)
+        do {
+            _ = try await s3.deleteObject(.init(bucket: bucket, ifMatch: ETag.quoted(etag), key: key))
+        } catch where Self.isPreconditionFailure(error) {
+            throw BucketeerError.preconditionFailed(key: key)
+        } catch {
+            throw Self.map(error, bucket: bucket, key: key)
+        }
+    }
+
     /// Server-side single-request copy. Limited to source objects up to
     /// 5 GB; objects larger than that require `UploadPartCopy` and are
     /// out of v1 scope (tracked for v1.1 in the design spec).

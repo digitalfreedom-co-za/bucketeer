@@ -552,11 +552,16 @@ actor SyncEngine {
         // cancelled mid-flight. Count delete
         // failures so the final summary reflects them instead of
         // silently swallowing leftover-source duplicates.
+        // A source that changed after it was listed is newer than the
+        // copy: it stays and is reported instead of being deleted.
         var moveDeleteFailures = 0
+        var keptSources: [String] = []
         if job.mode == .move && !Task.isCancelled {
             for entry in successfulEntries where !Task.isCancelled {
                 do {
-                    try await deleteKey(entry.sourceKey, from: job.source, context: context.source)
+                    if try await !deleteSourceIfUnchanged(entry, from: job.source, context: context.source) {
+                        keptSources.append(entry.sourceKey)
+                    }
                 } catch {
                     moveDeleteFailures += 1
                 }
@@ -565,13 +570,17 @@ actor SyncEngine {
                 failed += moveDeleteFailures
             }
         }
+        recordKeptSources(keptSources, job: job)
 
-        failed += plan.collisions.count
+        failed += plan.collisions.count + keptSources.count
         var summary = moveDeleteFailures > 0
             ? "\(completed) ok / \(failed) failed (\(moveDeleteFailures) move-delete) / \(planned) planned"
             : "\(completed) ok / \(failed) failed / \(planned) planned"
         if !plan.collisions.isEmpty {
             summary += " · " + String(localized: "sync.summary.collisions \(plan.collisions.count)")
+        }
+        if !keptSources.isEmpty {
+            summary += " · " + String(localized: "sync.summary.keptSources \(keptSources.count)")
         }
         // Persist *before* publishing the
         // terminal status. Observers (`SyncJobDetailWindow` via
@@ -703,8 +712,15 @@ actor SyncEngine {
     /// One activity row per skipped key, so the user can see which
     /// objects need renaming.
     private func recordCollisions(_ keys: [String], job: SyncJob) {
+        recordFailures(keys, message: String(localized: "sync.error.nameCollision"), job: job)
+    }
+
+    private func recordKeptSources(_ keys: [String], job: SyncJob) {
+        recordFailures(keys, message: String(localized: "sync.error.sourceChangedDuringMove"), job: job)
+    }
+
+    private func recordFailures(_ keys: [String], message: String, job: SyncJob) {
         guard let activityLog, !keys.isEmpty else { return }
-        let message = String(localized: "sync.error.nameCollision")
         let entries = keys.map {
             ActivityEntry(kind: .copy, status: .failure, key: $0, errorMessage: message,
                           syncJobID: job.id, syncJobName: job.name)
@@ -992,8 +1008,7 @@ actor SyncEngine {
         }
     }
 
-    /// Endpoint-aware delete used by mirror-delete and move-mode
-    /// source removal. Routes to the right transport based on the
+    /// Endpoint-aware delete used by mirror-delete. Routes to the right transport based on the
     /// endpoint kind. Local-folder deletes are idempotent (missing
     /// files succeed).
     private func deleteKey(
@@ -1012,6 +1027,32 @@ actor SyncEngine {
                 throw BucketeerError.unknown(message: "Local folder root unavailable.")
             }
             try LocalFolderWriter.delete(relativeKey: key, under: root)
+        }
+    }
+
+    /// Move-mode source removal, guarded on the version the entry was
+    /// planned with: the ETag for object stores, size and date for
+    /// local files. Returns `false` when the source changed and stays.
+    private func deleteSourceIfUnchanged(
+        _ entry: SyncPlanner.PlanEntry,
+        from endpoint: SyncEndpoint,
+        context: EndpointContext
+    ) async throws -> Bool {
+        switch endpoint {
+        case .s3(_, let bucket, _):
+            guard let account = context.account else {
+                throw BucketeerError.unknown(message: "Sync context incomplete.")
+            }
+            return try await browser.deleteIfUnchanged(
+                account: account, bucket: bucket, key: entry.sourceKey, etag: entry.source.etag
+            )
+        case .localFolder:
+            guard let root = context.localRoot else {
+                throw BucketeerError.unknown(message: "Local folder root unavailable.")
+            }
+            return try LocalFolderWriter.deleteIfUnchanged(
+                relativeKey: entry.sourceKey, under: root, fingerprint: LocalFileFingerprint(entry.source)
+            )
         }
     }
 
