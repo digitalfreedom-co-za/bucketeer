@@ -21,19 +21,29 @@ public struct S3Service: S3Browsing {
 
     public func listBuckets(account: S3Account) async throws -> [S3Bucket] {
         let s3 = try await factory.client(for: account)
-        do {
-            let response = try await s3.listBuckets()
-            return (response.buckets ?? []).compactMap { bucket in
-                guard let name = bucket.name else { return nil }
-                return S3Bucket(
-                    name: name,
-                    createdAt: bucket.creationDate,
-                    region: nil
-                )
+        return try await Self.discoverBuckets(s3: s3, account: account)
+    }
+
+    /// ListBuckets, or a one-key listing of the account's named bucket
+    /// (an error body, unlike HeadBucket, so a refusal can be told apart).
+    static func discoverBuckets(s3: S3, account: S3Account) async throws -> [S3Bucket] {
+        try await S3BucketDiscovery.buckets(
+            for: account,
+            listAll: {
+                let response = try await s3.listBuckets()
+                return (response.buckets ?? []).compactMap { bucket in
+                    guard let name = bucket.name else { return nil }
+                    return S3Bucket(
+                        name: name,
+                        createdAt: bucket.creationDate,
+                        region: nil
+                    )
+                }
+            },
+            probe: { name in
+                _ = try await s3.listObjectsV2(.init(bucket: name, maxKeys: 1))
             }
-        } catch {
-            throw Self.map(error)
-        }
+        )
     }
 
     // MARK: - Objects
@@ -631,7 +641,14 @@ public struct S3Service: S3Browsing {
     // Internal (not private): S3ResumableUploader shares the same
     // Soto-error → BucketeerError translation so the service-layer
     // contract holds on the multipart path too.
-    static func map(_ error: Error, bucket: String? = nil, key: String? = nil) -> BucketeerError {
+    /// `account` lets an unknown access key name the region it was
+    /// tried in.
+    static func map(
+        _ error: Error,
+        bucket: String? = nil,
+        key: String? = nil,
+        account: S3Account? = nil
+    ) -> BucketeerError {
         if let existing = error as? BucketeerError { return existing }
         if error is CancellationError { return .cancelled }
         if let urlError = error as? URLError, urlError.code == .cancelled { return .cancelled }
@@ -677,9 +694,11 @@ public struct S3Service: S3Browsing {
             let status = Int(awsError.context?.responseCode.code ?? 0)
             let message = awsError.context?.message ?? awsError.errorCode
             switch awsError.errorCode {
-            case "InvalidAccessKeyId",
-                 "SignatureDoesNotMatch",
-                 "ExpiredToken",
+            case "InvalidAccessKeyId":
+                return .accessKeyNotRecognized(provider: account?.provider, region: account?.region)
+            case "SignatureDoesNotMatch":
+                return .secretKeyMismatch
+            case "ExpiredToken",
                  "TokenRefreshRequired":
                 return .authenticationFailed
             case "RequestTimeout", "SlowDown", "ServiceUnavailable":
