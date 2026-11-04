@@ -38,8 +38,8 @@ struct ObjectMetadataSheet: View {
                 } else {
                     Form {
                         httpSection(vm: $vm)
-                        userMetadataSection(vm: $vm)
-                        tagsSection(vm: $vm)
+                        userMetadataSection()
+                        tagsSection()
                         if let storageClass = viewModel.metadata.storageClass {
                             Section("metadata.section.storageClass") {
                                 LabeledContent("metadata.storageClass.label") {
@@ -91,7 +91,7 @@ struct ObjectMetadataSheet: View {
     }
 
     @ViewBuilder
-    private func userMetadataSection(vm: Bindable<ObjectMetadataViewModel>) -> some View {
+    private func userMetadataSection() -> some View {
         Section("metadata.section.userMetadata") {
             ForEach(viewModel.metadata.userMetadata.keys.sorted(), id: \.self) { key in
                 HStack {
@@ -135,7 +135,7 @@ struct ObjectMetadataSheet: View {
     }
 
     @ViewBuilder
-    private func tagsSection(vm: Bindable<ObjectMetadataViewModel>) -> some View {
+    private func tagsSection() -> some View {
         Section("metadata.section.tags") {
             ForEach(viewModel.metadata.tags.keys.sorted(), id: \.self) { key in
                 HStack {

@@ -279,14 +279,12 @@ private final class ErrorDelegate: NSObject, XMLParserDelegate {
     var code: String?
     var message: String?
 
-    private var current: String = ""
     private var buffer: String = ""
 
     func parser(_ parser: XMLParser, didStartElement elementName: String,
                 namespaceURI: String?, qualifiedName qName: String?,
                 attributes attributeDict: [String: String] = [:]) {
         if elementName == "Error" { sawErrorRoot = true }
-        current = elementName
         buffer = ""
     }
 
@@ -302,7 +300,6 @@ private final class ErrorDelegate: NSObject, XMLParserDelegate {
         case "Message":  message = trimmed
         default:         break
         }
-        current = ""
         buffer = ""
     }
 }

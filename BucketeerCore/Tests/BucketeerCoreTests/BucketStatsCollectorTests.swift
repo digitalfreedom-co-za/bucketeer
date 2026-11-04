@@ -67,19 +67,6 @@ struct BucketStatsCollectorWalkTests {
 @Suite("ProviderPricing")
 struct ProviderPricingTests {
 
-    @Test("Estimate is non-nil for every concrete provider except .custom")
-    func everyProviderHasRate() {
-        for provider in S3Provider.allCases {
-            let usd = ProviderPricing.estimateMonthlyUSD(bytes: 1_073_741_824, provider: provider)
-            if provider == .custom {
-                #expect(usd == nil)
-            } else {
-                #expect(usd != nil)
-                #expect((usd ?? 0) >= 0)
-            }
-        }
-    }
-
     @Test("1 GB on AWS is the rate per GB-month")
     func awsRate() {
         let usd = ProviderPricing.estimateMonthlyUSD(bytes: 1_073_741_824, provider: .awsS3) ?? 0

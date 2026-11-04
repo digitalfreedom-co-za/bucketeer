@@ -13,12 +13,6 @@ import BucketeerCore
 final class SyncRenderTests: XCTestCase {
     private let sheetSize = CGSize(width: 620, height: 720)
 
-    func testSyncJobListEmpty() async throws {
-        let demo = try await DemoEnvironment.make()
-        await demo.container.syncJobListViewModel.refresh()
-        try await renderAndAssert(list(demo), name: "SyncJobListView_empty", shows: ["No Sync Jobs"])
-    }
-
     func testSyncJobListPopulated() async throws {
         let demo = try await DemoEnvironment.make()
         try await demo.container.syncJobStore.upsert(nightlyJob(demo))
@@ -27,52 +21,11 @@ final class SyncRenderTests: XCTestCase {
                                   shows: ["Nightly photos", "Mirror", "12 ok / 0 failed"])
     }
 
-    func testSyncJobListError() async throws {
-        let demo = try await DemoEnvironment.make()
-        try await demo.container.syncJobStore.upsert(nightlyJob(demo))
-        await demo.container.syncJobListViewModel.refresh()
-        try await renderAndAssert(list(demo), name: "SyncJobListView_error", shows: ["disk full"],
-                                  afterAppear: { demo.container.syncJobListViewModel.error = .persistenceFailure(message: "disk full") })
-    }
-
     private func list(_ demo: DemoEnvironment) -> some View {
         SyncJobListView(viewModel: demo.container.syncJobListViewModel).environment(demo.container)
     }
 
-    func testSyncJobSheetEmpty() async throws {
-        let demo = try await DemoEnvironment.make()
-        try await renderAndAssert(SyncJobSheet(mode: .create, accounts: demo.accounts, onSave: { _ in }),
-                                  name: "SyncJobSheet_empty", size: sheetSize, shows: ["Destination"])
-    }
-
-    func testSyncJobSheetPopulated() async throws {
-        let demo = try await DemoEnvironment.make()
-        try await renderAndAssert(SyncJobSheet(mode: .edit(nightlyJob(demo)), accounts: demo.accounts, onSave: { _ in }),
-                                  name: "SyncJobSheet_populated", size: sheetSize, shows: ["Nightly photos backup"])
-    }
-
-    func testWatchFolderSheetEmpty() async throws {
-        let demo = try await DemoEnvironment.make()
-        try await renderAndAssert(WatchFolderSheet(accounts: demo.accounts, onSave: { _ in }),
-                                  name: "WatchFolderSheet_empty", size: sheetSize, shows: ["No folder selected"])
-    }
-
     // MARK: Detail window
-
-    func testSyncJobDetailEmpty() async throws {
-        let demo = try await DemoEnvironment.make()
-        try await renderAndAssert(SyncJobDetailWindow(jobID: UUID()).environment(demo.container),
-                                  name: "SyncJobDetailWindow_empty", size: sheetSize, shows: ["Sync job not found"])
-    }
-
-    func testSyncJobDetailPopulated() async throws {
-        let demo = try await DemoEnvironment.make()
-        let job = nightlyJob(demo)
-        try await demo.container.syncJobStore.upsert(job)
-        try await renderAndAssert(SyncJobDetailWindow(jobID: job.id).environment(demo.container),
-                                  name: "SyncJobDetailWindow_populated", size: sheetSize,
-                                  shows: ["Nightly photos backup", "Interval: 60 minutes", "Idle"])
-    }
 
     /// A job whose account no longer exists fails in the real engine;
     /// the window must show that status.

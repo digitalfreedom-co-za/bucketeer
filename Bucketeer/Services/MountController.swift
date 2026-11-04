@@ -175,17 +175,6 @@ final class MountController {
         NSFileProviderDomainIdentifier(rawValue: "\(accountID.uuidString)::\(bucket)")
     }
 
-    /// Parse the colon-separated identifier the extension hands us on
-    /// `init(domain:)`.
-    static func parse(_ identifier: NSFileProviderDomainIdentifier) -> (accountID: UUID, bucket: String)? {
-        let raw = identifier.rawValue
-        guard let separatorRange = raw.range(of: "::") else { return nil }
-        let idPart = String(raw[..<separatorRange.lowerBound])
-        let bucket = String(raw[separatorRange.upperBound...])
-        guard let uuid = UUID(uuidString: idPart) else { return nil }
-        return (uuid, bucket)
-    }
-
     private func mapMountError(_ error: Error) -> BucketeerError {
         let nsError = error as NSError
         if nsError.domain == NSFileProviderErrorDomain {

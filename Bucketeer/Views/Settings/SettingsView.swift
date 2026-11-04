@@ -7,7 +7,6 @@
 
 import SwiftUI
 import AppKit
-import BucketeerCore
 
 enum SettingsTab: Hashable {
     case general, transfers, rules, encryption, security, pro

@@ -41,15 +41,15 @@ struct QuickLookPreviewView: NSViewRepresentable {
 }
 
 /// Spacebar-driven full-window Quick Look panel. Owns a single shared
-/// `QLPreviewPanel` data source and toggles it open/close on demand.
+/// `QLPreviewPanel` data source and opens it on demand.
 ///
 /// `QLPreviewPanelDataSource` is an `@objc` protocol with no actor
 /// isolation. The panel only ever calls back on the main thread (it's
 /// part of AppKit), so we mark the conformance methods `nonisolated`
 /// and back the storage with `nonisolated(unsafe)` — accesses to
-/// `current` go through `show` / `close`, both of which are called from
-/// SwiftUI view code (i.e. the main actor) and from AppKit's main-loop
-/// dispatch back into the data source.
+/// `current` go through `show`, which is called from SwiftUI view code
+/// (i.e. the main actor), and from AppKit's main-loop dispatch back into
+/// the data source.
 @MainActor
 final class QuickLookPanelController: NSObject, QLPreviewPanelDataSource, QLPreviewPanelDelegate {
     static let shared = QuickLookPanelController()
@@ -69,12 +69,6 @@ final class QuickLookPanelController: NSObject, QLPreviewPanelDataSource, QLPrev
         } else {
             panel.makeKeyAndOrderFront(nil)
         }
-    }
-
-    func close() {
-        _current = nil
-        guard let panel = QLPreviewPanel.shared(), panel.isVisible else { return }
-        panel.orderOut(nil)
     }
 
     // MARK: - QLPreviewPanelDataSource
