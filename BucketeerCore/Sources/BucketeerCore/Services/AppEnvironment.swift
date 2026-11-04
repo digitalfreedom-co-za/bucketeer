@@ -54,6 +54,10 @@ public enum AppEnvironment {
     /// Phase 13.10.
     public static let checkpointStoreFileName = "BucketeerCheckpoints.store"
 
+    /// Filename of the host-only store of the local-file fingerprints
+    /// each sync job last synced.
+    public static let syncFingerprintStoreFileName = "BucketeerSyncFingerprints.store"
+
     /// Filename of the host-only encryption key metadata store.
     /// Phase 13.15. The 256-bit key material itself lives in the
     /// Keychain under `keychainServiceEncryption`.

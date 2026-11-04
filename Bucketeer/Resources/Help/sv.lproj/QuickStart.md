@@ -40,7 +40,7 @@ Den hemliga nyckeln är dold när du redigerar ett konto. Klicka på **Visa spar
 ## Hantera objekt
 
 - **Ny mapp**: knappen i verktygsfältet eller **⇧⌘N**.
-- **Byt namn…**: högerklicka på ett objekt. Ett namnbyte är en kopia på servern följd av en radering.
+- **Byt namn…**: högerklicka på ett objekt. Ett namnbyte är en kopia på servern följd av en radering. Att byta namn på eller radera en mapp gäller allt i den, och ett namnbyte ersätter aldrig ett befintligt namn.
 - **Radera**: markera ett eller flera objekt, klicka på papperskorgsknappen och bekräfta.
 - **Kopiera djuplänk**: kopierar en `bucketeer://`-länk till objektet som öppnar det i Bucketeer var som helst på din Mac.
 
@@ -88,7 +88,7 @@ Bucketeer lägger till åtgärder i appen Genvägar: lista buckets, ladda upp en
 
 Dessa funktioner kräver Bucketeer Pro:
 
-- **Montera som enhet**: högerklicka på en bucket och välj **Montera som enhet** för att använda den i Finder som en disk. Kräver macOS 14.1 eller senare. Monterade enheter visas under **Monterade enheter** i sidofältet; högerklicka för att **Avmontera**. Buckets med kryptering på klientsidan kan inte monteras. Ändringar på servern visas i Finder när du uppdaterar bucketen i Bucketeer. Om en fil som du redigerar i Finder har ändrats på servern under tiden sparas din version bredvid som en konfliktkopia.
+- **Montera som enhet**: högerklicka på en bucket och välj **Montera som enhet** för att använda den i Finder som en disk. Monterade enheter visas under **Monterade enheter** i sidofältet; högerklicka för att **Avmontera**. Buckets med kryptering på klientsidan kan inte monteras. Ändringar på servern visas i Finder när du uppdaterar bucketen i Bucketeer. Om en fil som du redigerar i Finder har ändrats på servern under tiden sparas din version bredvid som en konfliktkopia.
 - **Synkjobb**: i avsnittet **Synkronisering** skapar du ett jobb som kopierar, flyttar eller speglar mellan två buckets, mellan konton och leverantörer, eller mellan en lokal mapp och en bucket. Kör det manuellt, vid start, var N:e minut eller när den lokala mappen ändras.
 - **Bevakade mappar**: **Ny bevakad mapp…** laddar upp varje ny fil i en lokal mapp till en bucket.
 - **Kopiera till annat konto…**: kopierar objekt till ett annat konto eller en annan leverantör. När båda sidor tillåter det sker kopieringen på servern och data passerar inte genom din Mac.
@@ -103,7 +103,7 @@ Bucketeer Pro är ett engångsköp i appen via App Store, utan prenumeration. Ö
 Du kan prova Bucketeer Pro gratis i 14 dagar. Innan du startar visar köpsidan provperiodens längd, vad som händer efteråt och priset för Pro Livstid; klicka sedan på **Starta provperiod**. När provperioden är slut fortsätter Bucketeer i gratisversionen och inget debiteras. Provperioden kan startas en gång per Apple-ID, och när du återställer köp kommer en pågående provperiod tillbaka även på en annan Mac.
 
 - **Återställ köp** ger dig Pro igen på en annan Mac eller efter en ominstallation.
-- **Lös in kod** (macOS 15 eller senare) öppnar Apples fönster för erbjudandekoder.
+- **Lös in kod** öppnar Apples fönster för erbjudandekoder.
 
 ## Kortkommandon
 

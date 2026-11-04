@@ -102,6 +102,9 @@ actor SyncEngine {
     private let isAuthorized: @Sendable () async -> Bool
     /// Decides whether a same-account copy may stay server-side.
     private let encryptionGate: BucketEncryptionGate?
+    /// What each job's local source looked like when it last synced,
+    /// so same-size edits are noticed.
+    private let fingerprintStore: (any SyncFingerprintStoring)?
 
     init(
         accountStore: any AccountStoring,
@@ -110,9 +113,11 @@ actor SyncEngine {
         transferManager: TransferManager,
         activityLog: (any ActivityLogging)? = nil,
         encryptionGate: BucketEncryptionGate? = nil,
+        fingerprintStore: (any SyncFingerprintStoring)? = nil,
         isAuthorized: @escaping @Sendable () async -> Bool = { true }
     ) {
         self.encryptionGate = encryptionGate
+        self.fingerprintStore = fingerprintStore
         self.accountStore = accountStore
         self.jobStore = jobStore
         self.browser = browser
@@ -154,9 +159,10 @@ actor SyncEngine {
         let all = try await jobStore.all()
         jobs.removeAll()
         for job in all { jobs[job.id] = job }
-        // Drop statuses of deleted jobs.
+        // Drop statuses and fingerprints of deleted jobs.
         current = current.filter { jobs[$0.key] != nil }
         publish()
+        try? await fingerprintStore?.removeAll(except: Set(jobs.keys))
         // Reconcile FSEvents watchers for `.onLocalChange` jobs whose
         // source is a local folder. Phase 9.10.
         reconcileLocalChangeWatchers(against: all)
@@ -395,6 +401,14 @@ actor SyncEngine {
         let sourceList: [S3Object]
         let destList: [S3Object]
         do {
+            try SyncEndpointOverlap.validate(
+                source: job.source,
+                destination: job.destination,
+                sourceAccount: context.source.account,
+                destinationAccount: context.destination.account,
+                sourceRoot: context.source.localRoot,
+                destinationRoot: context.destination.localRoot
+            )
             async let s = enumerate(endpoint: job.source, context: context.source)
             async let d = enumerate(endpoint: job.destination, context: context.destination)
             sourceList = try await s
@@ -409,11 +423,15 @@ actor SyncEngine {
             return
         }
 
+        let acknowledged = await acknowledgedFingerprints(for: job)
         let plan = SyncPlanner.makePlan(
             job: job,
             source: sourceList,
-            destination: destList
+            destination: destList,
+            destinationNaming: Self.naming(of: context.destination),
+            acknowledged: acknowledged
         )
+        recordCollisions(plan.collisions, job: job)
         let planned = plan.upserts.count + (job.mode == .mirror && job.deletePropagation ? plan.deletes.count : 0)
         updateStatus(
             id: job.id,
@@ -507,6 +525,8 @@ actor SyncEngine {
             return
         }
 
+        await acknowledge(plan: plan, transferred: successfulEntries, job: job)
+
         // Mirror deletes (only when explicitly enabled).
         if job.mode == .mirror && job.deletePropagation {
             for key in plan.deletes {
@@ -534,11 +554,16 @@ actor SyncEngine {
         // cancelled mid-flight. Count delete
         // failures so the final summary reflects them instead of
         // silently swallowing leftover-source duplicates.
+        // A source that changed after it was listed is newer than the
+        // copy: it stays and is reported instead of being deleted.
         var moveDeleteFailures = 0
+        var keptSources: [String] = []
         if job.mode == .move && !Task.isCancelled {
             for entry in successfulEntries where !Task.isCancelled {
                 do {
-                    try await deleteKey(entry.sourceKey, from: job.source, context: context.source)
+                    if try await !deleteSourceIfUnchanged(entry, from: job.source, context: context.source) {
+                        keptSources.append(entry.sourceKey)
+                    }
                 } catch {
                     moveDeleteFailures += 1
                 }
@@ -547,10 +572,18 @@ actor SyncEngine {
                 failed += moveDeleteFailures
             }
         }
+        recordKeptSources(keptSources, job: job)
 
-        let summary = moveDeleteFailures > 0
+        failed += plan.collisions.count + keptSources.count
+        var summary = moveDeleteFailures > 0
             ? "\(completed) ok / \(failed) failed (\(moveDeleteFailures) move-delete) / \(planned) planned"
             : "\(completed) ok / \(failed) failed / \(planned) planned"
+        if !plan.collisions.isEmpty {
+            summary += " · " + String(localized: "sync.summary.collisions \(plan.collisions.count)")
+        }
+        if !keptSources.isEmpty {
+            summary += " · " + String(localized: "sync.summary.keptSources \(keptSources.count)")
+        }
         // Persist *before* publishing the
         // terminal status. Observers (`SyncJobDetailWindow` via
         // `SyncStatusBroker`) reload the job from the store on
@@ -646,6 +679,56 @@ actor SyncEngine {
                 localRoot: resolved.url,
                 didStartSecurityScope: true
             )
+        }
+    }
+
+    // MARK: - Local fingerprints
+
+    private func acknowledgedFingerprints(for job: SyncJob) async -> [String: LocalFileFingerprint] {
+        guard job.schedule == .onLocalChange, let fingerprintStore else { return [:] }
+        return (try? await fingerprintStore.fingerprints(jobID: job.id)) ?? [:]
+    }
+
+    /// Remembers the local files this run found current or transferred,
+    /// each with the fingerprint it had at planning time — a file edited
+    /// during its upload therefore goes up again next run. Failed
+    /// entries lose their fingerprint for the same reason.
+    private func acknowledge(plan: SyncPlanner.Plan, transferred: [SyncPlanner.PlanEntry], job: SyncJob) async {
+        guard job.schedule == .onLocalChange, case .localFolder = job.source, let fingerprintStore else { return }
+        let synced = plan.unchanged + transferred.map(\.source)
+        let fingerprints = Dictionary(
+            synced.map { ($0.key, LocalFileFingerprint($0)) },
+            uniquingKeysWith: { _, last in last }
+        )
+        try? await fingerprintStore.replace(jobID: job.id, with: fingerprints)
+    }
+
+    /// A local destination compares names the way its volume does;
+    /// unknown volumes count as case-insensitive, the macOS default.
+    private static func naming(of context: EndpointContext) -> SyncPlanner.DestinationNaming {
+        guard let root = context.localRoot else { return .exact }
+        let values = try? root.resourceValues(forKeys: [.volumeSupportsCaseSensitiveNamesKey])
+        return .fileSystem(caseSensitive: values?.volumeSupportsCaseSensitiveNames ?? false)
+    }
+
+    /// One activity row per skipped key, so the user can see which
+    /// objects need renaming.
+    private func recordCollisions(_ keys: [String], job: SyncJob) {
+        recordFailures(keys, message: String(localized: "sync.error.nameCollision"), job: job)
+    }
+
+    private func recordKeptSources(_ keys: [String], job: SyncJob) {
+        recordFailures(keys, message: String(localized: "sync.error.sourceChangedDuringMove"), job: job)
+    }
+
+    private func recordFailures(_ keys: [String], message: String, job: SyncJob) {
+        guard let activityLog, !keys.isEmpty else { return }
+        let entries = keys.map {
+            ActivityEntry(kind: .copy, status: .failure, key: $0, errorMessage: message,
+                          syncJobID: job.id, syncJobName: job.name)
+        }
+        Task { [activityLog] in
+            for entry in entries { await activityLog.record(entry) }
         }
     }
 
@@ -927,8 +1010,7 @@ actor SyncEngine {
         }
     }
 
-    /// Endpoint-aware delete used by mirror-delete and move-mode
-    /// source removal. Routes to the right transport based on the
+    /// Endpoint-aware delete used by mirror-delete. Routes to the right transport based on the
     /// endpoint kind. Local-folder deletes are idempotent (missing
     /// files succeed).
     private func deleteKey(
@@ -947,6 +1029,32 @@ actor SyncEngine {
                 throw BucketeerError.unknown(message: "Local folder root unavailable.")
             }
             try LocalFolderWriter.delete(relativeKey: key, under: root)
+        }
+    }
+
+    /// Move-mode source removal, guarded on the version the entry was
+    /// planned with: the ETag for object stores, size and date for
+    /// local files. Returns `false` when the source changed and stays.
+    private func deleteSourceIfUnchanged(
+        _ entry: SyncPlanner.PlanEntry,
+        from endpoint: SyncEndpoint,
+        context: EndpointContext
+    ) async throws -> Bool {
+        switch endpoint {
+        case .s3(_, let bucket, _):
+            guard let account = context.account else {
+                throw BucketeerError.unknown(message: "Sync context incomplete.")
+            }
+            return try await browser.deleteIfUnchanged(
+                account: account, bucket: bucket, key: entry.sourceKey, etag: entry.source.etag
+            )
+        case .localFolder:
+            guard let root = context.localRoot else {
+                throw BucketeerError.unknown(message: "Local folder root unavailable.")
+            }
+            return try LocalFolderWriter.deleteIfUnchanged(
+                relativeKey: entry.sourceKey, under: root, fingerprint: LocalFileFingerprint(entry.source)
+            )
         }
     }
 

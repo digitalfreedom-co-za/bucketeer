@@ -14,9 +14,8 @@ import BucketeerCore
 /// Concurrent upload / download queue. Wraps Soto's multipart helpers
 /// for large files; uses single-shot `putObject` / `getObject` for
 /// anything below the multipart threshold (5 MB). Progress flows out
-/// through an `AsyncStream<[TransferTask]>` that emits the full task
-/// snapshot on every state change. Callers observe via the
-/// `TransferQueueViewModel`.
+/// through `taskUpdates()`, one stream of full task snapshots per
+/// observer, and every terminal state through `completions()`.
 actor TransferManager: Transferring {
 
     // MARK: - Configuration
@@ -25,10 +24,22 @@ actor TransferManager: Transferring {
     private static let multipartPartSize: Int = 8 * 1024 * 1024
     private let maxConcurrent: Int = 4
 
-    // MARK: - Public stream
+    // MARK: - Public streams
 
-    nonisolated let tasks: AsyncStream<[TransferTask]>
-    private let continuation: AsyncStream<[TransferTask]>.Continuation
+    /// Snapshots of the whole queue, one independent stream per observer
+    /// (transfer list, menu bar, …).
+    private let snapshots = Broadcast<[TransferTask]>(delivery: .snapshots)
+    /// Every task once, when it reaches its terminal state — for work
+    /// that must not miss a completion (auto-tagging).
+    private let terminalEvents = Broadcast<TransferTask>(delivery: .events)
+
+    nonisolated func taskUpdates() -> AsyncStream<[TransferTask]> {
+        snapshots.subscribe()
+    }
+
+    nonisolated func completions() -> AsyncStream<TransferTask> {
+        terminalEvents.subscribe()
+    }
 
     // MARK: - State
 
@@ -49,6 +60,29 @@ actor TransferManager: Transferring {
         /// Condition the server must check before it accepts the write
         /// (Open With round-trip). `nil` = unconditional.
         var precondition: WritePrecondition? = nil
+
+        /// The same transfer against another local file (an encrypted
+        /// envelope, a download staging file).
+        func with(localURL: URL, fileSize: Int64? = nil) -> QueuedItem {
+            QueuedItem(
+                account: account,
+                task: TransferTask(
+                    id: task.id,
+                    direction: task.direction,
+                    accountID: task.accountID,
+                    bucket: task.bucket,
+                    key: task.key,
+                    localURL: localURL,
+                    state: task.state,
+                    startedAt: task.startedAt
+                ),
+                contentType: contentType,
+                fileSize: fileSize ?? self.fileSize,
+                bypassDecryption: bypassDecryption,
+                bypassEncryption: bypassEncryption,
+                precondition: precondition
+            )
+        }
     }
 
     enum ConditionalUploadOutcome: Equatable, Sendable {
@@ -89,6 +123,9 @@ actor TransferManager: Transferring {
     /// callback or a delayed completion cannot bring a cancelled task
     /// back to life.
     private var terminated: Set<UUID> = []
+    /// Terminal states a still-running worker reported; applied once
+    /// the worker returns (`workerDidFinish`).
+    private var pendingTerminal: [UUID: TransferState] = [:]
     /// Per-ID waiters created by `awaitCompletion(id:)`. Each entry is
     /// a list of continuations resumed once the task reaches a terminal
     /// state. Fixes the race where a fast transfer
@@ -118,15 +155,11 @@ actor TransferManager: Transferring {
         self.limiter = limiter
         self.resumableUploader = resumableUploader
         self.encryptionGate = encryptionGate
-        let (stream, continuation) = AsyncStream<[TransferTask]>.makeStream(
-            bufferingPolicy: .bufferingNewest(1)
-        )
-        self.tasks = stream
-        self.continuation = continuation
     }
 
     deinit {
-        continuation.finish()
+        snapshots.finish()
+        terminalEvents.finish()
     }
 
     // MARK: - Transferring
@@ -275,8 +308,15 @@ actor TransferManager: Transferring {
         return id
     }
 
+    /// Requests cancellation. A queued task without a worker ends right
+    /// away; a running one ends — and resumes `awaitCompletion` waiters —
+    /// only once its worker returned, because callers free the files
+    /// and security scopes the worker may still be using.
     func cancel(id: UUID) async {
-        workers[id]?.cancel()
+        if let worker = workers[id] {
+            worker.cancel()
+            return
+        }
         // Route through setState so `awaitCompletion(id:)` waiters get
         // resumed and `terminalCache` is populated —
         // bypassing setState left sync engine + drag-drop round-trips
@@ -362,8 +402,12 @@ actor TransferManager: Transferring {
         workers[id] = task
     }
 
+    /// The worker has returned: nothing touches the task's files any
+    /// more, so its terminal state may now reach waiters and observers.
     private func workerDidFinish(id: UUID) {
         workers.removeValue(forKey: id)
+        let outcome = pendingTerminal.removeValue(forKey: id) ?? .cancelled
+        setState(id: id, state: outcome)
         pump()
     }
 
@@ -404,22 +448,7 @@ actor TransferManager: Transferring {
                 let temp = FileManager.default.temporaryDirectory
                     .appendingPathComponent("bucketeer-enc-\(UUID().uuidString).bin")
                 try envelope.write(to: temp, options: .atomic)
-                item = QueuedItem(
-                    account: item.account,
-                    task: TransferTask(
-                        id: item.task.id,
-                        direction: item.task.direction,
-                        accountID: item.task.accountID,
-                        bucket: item.task.bucket,
-                        key: item.task.key,
-                        localURL: temp,
-                        state: item.task.state,
-                        startedAt: item.task.startedAt
-                    ),
-                    contentType: item.contentType,
-                    fileSize: Int64(envelope.count),
-                    precondition: item.precondition
-                )
+                item = item.with(localURL: temp, fileSize: Int64(envelope.count))
                 encryptionCleanup = temp
             } catch {
                 setState(id: id, state: .failed(message: errorMessage(error)))
@@ -447,20 +476,22 @@ actor TransferManager: Transferring {
 
         do {
             if let precondition = item.precondition {
-                // One PUT carries the precondition; Soto's multipart
-                // helpers cannot attach it to the completion.
-                let data = try Data(contentsOf: item.task.localURL, options: .mappedIfSafe)
-                let headers = S3Service.headers(for: precondition)
-                let output = try await s3.putObject(.init(
-                    body: AWSHTTPBody(buffer: ByteBuffer(bytes: data)),
+                // Streams large files part by part; the precondition
+                // guards the completion (Soto's helpers cannot carry it).
+                let total = item.fileSize
+                let etag = try await S3ConditionalUpload.upload(
+                    fileAt: item.task.localURL,
                     bucket: item.task.bucket,
+                    key: item.task.key,
                     contentType: item.contentType,
-                    ifMatch: headers.ifMatch,
-                    ifNoneMatch: headers.ifNoneMatch,
-                    key: item.task.key
-                ))
-                recordWrittenETag(output.eTag, id: id)
-                await limiter?.consume(bytes: data.count)
+                    precondition: precondition,
+                    writer: SotoObjectWriter(s3: s3),
+                    progress: { @Sendable [weak self] bytes in
+                        await self?.setState(id: id, state: .running(bytesTransferred: bytes, totalBytes: total))
+                        await self?.chargeMultipartLimiter(id: id, observedBytes: bytes)
+                    }
+                )
+                recordWrittenETag(etag, id: id)
             } else if item.fileSize >= S3ResumableUploader.resumableThreshold,
                let resumableUploader {
                 // Phase 13.10 — files large enough that an interruption
@@ -557,104 +588,91 @@ actor TransferManager: Transferring {
             }
         }
 
-        if item.account.provider.family == .azureBlob {
-            await performAzureDownload(item: item)
-            return
-        }
-
-        let s3: S3
+        // The bytes land in a staging file; the destination is replaced
+        // only once download and decryption succeeded, so every failure
+        // leaves the existing file as it was.
+        let staging = StagedDownload.stagingURL(for: url)
+        let staged = item.with(localURL: staging)
         do {
-            s3 = try await factory.client(for: item.account)
+            if item.account.provider.family == .azureBlob {
+                try await downloadFromAzure(item: staged)
+            } else {
+                try await downloadFromS3(item: staged)
+            }
+            if let failure = await finalizeDownloadDecryption(item: staged) {
+                StagedDownload.discard(staging)
+                setState(id: id, state: .failed(message: failure))
+                return
+            }
+            // A cancel during decryption must not replace the file.
+            try Task.checkCancellation()
+            try StagedDownload.publish(staging, to: url)
+            setState(id: id, state: .completed)
         } catch {
-            setState(id: id, state: .failed(message: errorMessage(error)))
-            return
+            StagedDownload.discard(staging)
+            if error is CancellationError || Task.isCancelled {
+                setState(id: id, state: .cancelled)
+            } else {
+                setState(id: id, state: .failed(message: errorMessage(error)))
+            }
         }
+    }
+
+    private func downloadFromS3(item: QueuedItem) async throws {
+        let id = item.task.id
+        let s3 = try await factory.client(for: item.account)
 
         // Pre-flight HEAD so we have a real total to report progress
         // against. multipartDownload internally does the same, but its
         // progress callback only gives us a fraction; we also use the
         // size to pick the right transfer path (zero / single-shot /
         // multipart).
-        let total: Int64
-        do {
-            let head = try await s3.headObject(.init(
+        let head = try await s3.headObject(.init(
+            bucket: item.task.bucket,
+            key: item.task.key
+        ))
+        let total = head.contentLength ?? 0
+        setState(id: id, state: .running(bytesTransferred: 0, totalBytes: total))
+
+        if total == 0 {
+            // Soto's multipartDownload refuses zero-length objects;
+            // create the expected empty file ourselves.
+            try Data().write(to: item.task.localURL)
+            return
+        }
+
+        if total < Self.multipartThreshold {
+            // Small objects: single-shot getObject — cheaper and
+            // sidesteps the multipart path entirely.
+            let response = try await s3.getObject(.init(
                 bucket: item.task.bucket,
                 key: item.task.key
             ))
-            total = head.contentLength ?? 0
-        } catch {
-            setState(id: id, state: .failed(message: errorMessage(error)))
+            let buffer = try await response.body.collect(upTo: Int(total) + 1)
+            let fileData = Data(buffer.readableBytesView)
+            try fileData.write(to: item.task.localURL)
+            // Phase 13.2 — post-charge small GETs as one chunk.
+            await limiter?.consume(bytes: fileData.count)
+            setState(
+                id: id,
+                state: .running(bytesTransferred: total, totalBytes: total)
+            )
             return
         }
-        setState(id: id, state: .running(bytesTransferred: 0, totalBytes: total))
 
-        do {
-            // Truncate any pre-existing file at the target so we never
-            // leave trailing bytes from a previous version.
-            try? FileManager.default.removeItem(at: item.task.localURL)
-
-            if total == 0 {
-                // Soto's multipartDownload refuses zero-length objects;
-                // create the expected empty file ourselves.
-                FileManager.default.createFile(
-                    atPath: item.task.localURL.path,
-                    contents: nil
-                )
-                setState(id: id, state: .completed)
-                return
-            }
-
-            if total < Self.multipartThreshold {
-                // Small objects: single-shot getObject — cheaper and
-                // sidesteps the multipart path entirely.
-                let response = try await s3.getObject(.init(
-                    bucket: item.task.bucket,
-                    key: item.task.key
-                ))
-                let buffer = try await response.body.collect(upTo: Int(total) + 1)
-                let fileData = Data(buffer.readableBytesView)
-                try fileData.write(to: item.task.localURL)
-                // Phase 13.2 — post-charge small GETs as one chunk.
-                await limiter?.consume(bytes: fileData.count)
-                setState(
+        _ = try await s3.multipartDownload(
+            .init(bucket: item.task.bucket, key: item.task.key),
+            partSize: Self.multipartPartSize,
+            filename: item.task.localURL.path,
+            progress: { @Sendable [weak self] fraction in
+                let bytes = Int64(Double(total) * fraction)
+                await self?.setState(
                     id: id,
-                    state: .running(bytesTransferred: total, totalBytes: total)
+                    state: .running(bytesTransferred: bytes, totalBytes: total)
                 )
-                if let failure = await finalizeDownloadDecryption(item: item) {
-                    setState(id: id, state: .failed(message: failure))
-                } else {
-                    setState(id: id, state: .completed)
-                }
-                return
+                await self?.chargeMultipartLimiter(id: id, observedBytes: bytes)
             }
-
-            _ = try await s3.multipartDownload(
-                .init(bucket: item.task.bucket, key: item.task.key),
-                partSize: Self.multipartPartSize,
-                filename: item.task.localURL.path,
-                progress: { @Sendable [weak self] fraction in
-                    let bytes = Int64(Double(total) * fraction)
-                    await self?.setState(
-                        id: id,
-                        state: .running(bytesTransferred: bytes, totalBytes: total)
-                    )
-                    await self?.chargeMultipartLimiter(id: id, observedBytes: bytes)
-                }
-            )
-            if let failure = await finalizeDownloadDecryption(item: item) {
-                setState(id: id, state: .failed(message: failure))
-            } else {
-                setState(id: id, state: .completed)
-            }
-        } catch is CancellationError {
-            setState(id: id, state: .cancelled)
-        } catch {
-            if Task.isCancelled {
-                setState(id: id, state: .cancelled)
-            } else {
-                setState(id: id, state: .failed(message: errorMessage(error)))
-            }
-        }
+        )
     }
 
     // MARK: - Azure transports
@@ -704,51 +722,31 @@ actor TransferManager: Transferring {
         }
     }
 
-    private func performAzureDownload(item: QueuedItem) async {
+    private func downloadFromAzure(item: QueuedItem) async throws {
         let id = item.task.id
         guard let azure else {
-            setState(
-                id: id,
-                state: .failed(message: "Azure transport not configured.")
-            )
-            return
+            throw BucketeerError.unknown(message: "Azure transport not configured.")
         }
-        do {
-            try await azure.download(
-                account: item.account,
-                container: item.task.bucket,
-                blob: item.task.key,
-                localURL: item.task.localURL,
-                progress: { @Sendable [weak self] bytes, total in
-                    await self?.setState(
-                        id: id,
-                        state: .running(bytesTransferred: bytes, totalBytes: total)
-                    )
-                }
-            )
-            if let failure = await finalizeDownloadDecryption(item: item) {
-                setState(id: id, state: .failed(message: failure))
-            } else {
-                setState(id: id, state: .completed)
+        try await azure.download(
+            account: item.account,
+            container: item.task.bucket,
+            blob: item.task.key,
+            localURL: item.task.localURL,
+            progress: { @Sendable [weak self] bytes, total in
+                await self?.setState(
+                    id: id,
+                    state: .running(bytesTransferred: bytes, totalBytes: total)
+                )
             }
-        } catch is CancellationError {
-            setState(id: id, state: .cancelled)
-        } catch {
-            if Task.isCancelled {
-                setState(id: id, state: .cancelled)
-            } else {
-                setState(id: id, state: .failed(message: errorMessage(error)))
-            }
-        }
+        )
     }
 
     // MARK: - Encryption finalisation (Phase 13.15)
 
-    /// Inspect the just-downloaded file. If it starts with the
+    /// Inspect the just-downloaded staging file. If it starts with the
     /// Bucketeer envelope magic AND we have a key for the
-    /// (account, bucket) pair, decrypt in place. On a `failed`
-    /// terminal state, this is a no-op — the caller's failure path
-    /// stays untouched.
+    /// (account, bucket) pair, decrypt it in place before it is
+    /// published to the destination.
     ///
     /// Called from every download completion site so encryption is
     /// transparent regardless of single-shot vs multipart path.
@@ -805,10 +803,9 @@ actor TransferManager: Transferring {
             try plaintext.write(to: url, options: .atomic)
             return nil
         } catch {
-            // Leave the envelope on disk so the user can inspect /
-            // re-attempt, but report the failure — the caller marks
-            // the transfer `.failed` so the queue doesn't show a
-            // green checkmark on a file that is still ciphertext.
+            // Report the failure — the caller discards the staging
+            // file and marks the transfer `.failed`, so neither
+            // ciphertext nor a green checkmark reaches the destination.
             let message = "Decryption failed: \(error.localizedDescription)"
             await activityLog?.record(
                 ActivityEntry(
@@ -848,6 +845,16 @@ actor TransferManager: Transferring {
         // further writes. Soto's progress callbacks and completion
         // returns can otherwise arrive after a user-initiated cancel.
         guard !terminated.contains(id), var item = items[id] else { return }
+        // A worker still running (it may be unwinding a cancel) holds its
+        // result back until `workerDidFinish`; progress after a
+        // cancellation request is dropped.
+        if workers[id] != nil {
+            if state.isTerminal {
+                pendingTerminal[id] = pendingTerminal[id] ?? state
+                return
+            }
+            if workers[id]?.isCancelled == true || pendingTerminal[id] != nil { return }
+        }
         item.task.state = state
         items[id] = item
         if state.isTerminal {
@@ -868,6 +875,7 @@ actor TransferManager: Transferring {
             // here (not at the call sites) so every code path that
             // reaches a terminal state is recorded exactly once.
             recordTerminal(item: item, state: state)
+            terminalEvents.publish(item.task)
         }
         publish()
     }
@@ -907,8 +915,7 @@ actor TransferManager: Transferring {
     }
 
     private func publish() {
-        let snapshot = order.compactMap { items[$0]?.task }
-        continuation.yield(snapshot)
+        snapshots.publish(order.compactMap { items[$0]?.task })
     }
 
     private func errorMessage(_ error: Error) -> String {

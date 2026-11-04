@@ -159,46 +159,131 @@ public enum LocalFolderWriter {
         try FileManager.default.removeItem(at: target)
     }
 
+    /// Deletes the file only while it still has `fingerprint`, i.e. was
+    /// not saved again since it was listed. Returns `false` and keeps
+    /// the file when it changed; `true` when deleted or already gone.
+    public static func deleteIfUnchanged(
+        relativeKey: String,
+        under root: URL,
+        fingerprint: LocalFileFingerprint
+    ) throws -> Bool {
+        let target = try safeChildURL(root: root, relativeKey: relativeKey)
+        guard FileManager.default.fileExists(atPath: target.path) else { return true }
+        // Take the file out of reach first (a rename is atomic), then
+        // check the file that was actually taken: a save that replaced
+        // it between check and delete can no longer be the one deleted.
+        let claimed = target.deletingLastPathComponent()
+            .appendingPathComponent(".bucketeer-deleting-\(UUID().uuidString)")
+        do {
+            try FileManager.default.moveItem(at: target, to: claimed)
+        } catch where !FileManager.default.fileExists(atPath: target.path) {
+            return true
+        }
+        do {
+            let values = try claimed.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey])
+            let current = LocalFileFingerprint(
+                size: Int64(values.fileSize ?? 0),
+                modified: values.contentModificationDate ?? .distantPast
+            )
+            if current == fingerprint {
+                try FileManager.default.removeItem(at: claimed)
+                return true
+            }
+        } catch {
+            // The claimed name is hidden from every listing; whatever is
+            // left of the item has to go back where the user had it.
+            try? restore(claimed, to: target)
+            throw error
+        }
+        try restore(claimed, to: target)
+        return false
+    }
+
+    /// Symlinks resolved in the part of the path that exists; the
+    /// missing tail (a file about to be written) is appended unchanged.
+    private static func resolvedPath(of url: URL) -> String {
+        var existing = url
+        var tail: [String] = []
+        while !FileManager.default.fileExists(atPath: existing.path), existing.pathComponents.count > 1 {
+            tail.insert(existing.lastPathComponent, at: 0)
+            existing.deleteLastPathComponent()
+        }
+        return ([existing.resolvingSymlinksInPath().path] + tail).joined(separator: "/")
+    }
+
+    /// Puts a changed file back; if its name was taken meanwhile, it
+    /// becomes a conflict copy beside it instead of replacing anything.
+    private static func restore(_ claimed: URL, to target: URL) throws {
+        do {
+            try FileManager.default.moveItem(at: claimed, to: target)
+        } catch {
+            let name = ConflictCopyName.key(for: target.lastPathComponent, date: Date(), tag: ConflictCopyName.randomTag())
+            try FileManager.default.moveItem(at: claimed, to: target.deletingLastPathComponent().appendingPathComponent(name))
+        }
+    }
+
     /// Confine every write/delete to paths whose
     /// resolved form lives inside `root`. Rejects absolute paths,
     /// `.`/`..` components, and the empty string. Both `root` and the
     /// resolved destination are `standardized` (symlinks resolved,
     /// `..` normalised) so a key like `subdir/../../../etc/passwd`
     /// cannot land outside the chosen folder.
+    ///
+    /// The key is used byte for byte: ` report.txt` stays a different
+    /// file from `report.txt`. Empty or blank components (`a//b`,
+    /// `a/`) are rejected, because the file system would collapse them
+    /// onto another key.
     public static func safeChildURL(
         root: URL,
         relativeKey: String
     ) throws -> URL {
-        let trimmed = relativeKey.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else {
+        guard !relativeKey.isEmpty else {
             throw BucketeerError.providerError(
                 statusCode: 400,
                 message: "Empty relative key — refusing to operate on the folder root itself."
             )
         }
         // Reject absolute paths outright.
-        if trimmed.hasPrefix("/") || trimmed.hasPrefix("\\") {
+        if relativeKey.hasPrefix("/") || relativeKey.hasPrefix("\\") {
             throw BucketeerError.providerError(
                 statusCode: 400,
-                message: "Relative key resolves to an absolute path: \(trimmed)"
+                message: "Relative key resolves to an absolute path: \(relativeKey)"
             )
         }
         // Reject any path component that's `.` or `..` — even one
         // such component anywhere in the path means the key tries to
         // climb out.
-        let components = trimmed.split(separator: "/", omittingEmptySubsequences: false)
+        let components = relativeKey.split(separator: "/", omittingEmptySubsequences: false)
         for component in components where component == ".." || component == "." {
             throw BucketeerError.providerError(
                 statusCode: 400,
-                message: "Relative key contains a path-traversal component: \(trimmed)"
+                message: "Relative key contains a path-traversal component: \(relativeKey)"
             )
         }
-        let candidate = root.appending(path: trimmed).standardizedFileURL
+        if components.contains(where: { $0.allSatisfy(\.isWhitespace) }) {
+            throw BucketeerError.providerError(
+                statusCode: 400,
+                message: "Relative key contains an empty path component: \(relativeKey)"
+            )
+        }
+        let candidate = root.appending(path: relativeKey).standardizedFileURL
         let rootStandard = root.standardizedFileURL
         guard candidate.path.hasPrefix(rootStandard.path + "/") || candidate.path == rootStandard.path else {
             throw BucketeerError.providerError(
                 statusCode: 400,
-                message: "Relative key escapes the sync root: \(trimmed)"
+                message: "Relative key escapes the sync root: \(relativeKey)"
+            )
+        }
+        // A symlink inside the root would let two keys (or a key and a
+        // path outside the root) reach the same file.
+        // Compared without case and normalisation, which the file system
+        // may report in its own spelling.
+        let expected = (resolvedPath(of: rootStandard) + "/" + relativeKey).precomposedStringWithCanonicalMapping
+        let resolved = resolvedPath(of: candidate).precomposedStringWithCanonicalMapping
+        guard resolved.caseInsensitiveCompare(expected) == .orderedSame else {
+            throw BucketeerError.providerError(
+                statusCode: 400,
+                message: "Relative key passes through a symbolic link: \(relativeKey)"
             )
         }
         return candidate

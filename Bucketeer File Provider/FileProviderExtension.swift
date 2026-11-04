@@ -91,6 +91,8 @@ final class FileProviderExtension: NSObject, @unchecked Sendable, NSFileProvider
     ) -> Progress {
         let progress = Progress(totalUnitCount: 100)
         let ch = UncheckedSendable(value: completionHandler)
+        // Content versions are the ETag bytes.
+        let requestedETag = requestedVersion.flatMap { String(data: $0.contentVersion, encoding: .utf8) }
         let task = Task {
             let completionHandler = ch.value
             guard let container = container else {
@@ -101,6 +103,7 @@ final class FileProviderExtension: NSObject, @unchecked Sendable, NSFileProvider
                 try container.refuseIfEncrypted(domain.identifier.rawValue)
                 let result = try await FileProviderItemResolver.fetchContents(
                     identifier: itemIdentifier,
+                    requestedVersion: requestedETag,
                     in: domain,
                     container: container,
                     progress: progress
@@ -147,6 +150,7 @@ final class FileProviderExtension: NSObject, @unchecked Sendable, NSFileProvider
                 let created = try await FileProviderItemResolver.createItem(
                     template: itemTemplate,
                     contents: url,
+                    options: options,
                     in: domain,
                     container: container,
                     progress: progress
@@ -223,6 +227,7 @@ final class FileProviderExtension: NSObject, @unchecked Sendable, NSFileProvider
             do {
                 try await FileProviderItemResolver.deleteItem(
                     identifier: identifier,
+                    baseVersion: version,
                     in: domain,
                     container: container
                 )

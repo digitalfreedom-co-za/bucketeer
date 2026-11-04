@@ -13,6 +13,44 @@ before that is internal phase work on the `development` branch.
 
 ## [Unreleased] — `development` branch
 
+### Requires macOS 15.8 (2026-11-04)
+- Bucketeer, its File Provider extension and BucketeerCore now require
+  macOS 15.8, the latest macOS 15 release. Mount as Drive and Redeem
+  Code are therefore always available; their version checks, fallback
+  menu item and "requires a newer macOS" texts are gone.
+
+### Never overwrite silently: sync, transfers, Finder (2026-11-04)
+- A failed or cancelled download keeps the existing file: bytes land in
+  a staging file on the destination's volume and replace the file only
+  after the download and decryption succeeded.
+- Sync jobs with a local source notice edits that keep the file size
+  (size and modification date per file, stored in
+  `BucketeerSyncFingerprints.store`).
+- Move jobs and cross-account moves delete a source only while it is
+  still the version that was copied; a source changed meanwhile stays
+  and is reported.
+- Sync jobs whose source and destination contain each other are refused
+  before planning.
+- Keys that would land on one local file (letter case, Unicode
+  spelling, surrounding spaces are kept as they are) are skipped and
+  reported instead of overwriting each other.
+- The transfer list and auto-tagging each get their own update stream;
+  auto-tagging no longer misses uploads. Cancelling a transfer finishes
+  only after its worker stopped using the file.
+- Account edits reach the Finder extension's credential caches; a
+  lookup that was in flight during an edit can no longer bring back the
+  old credentials or an outdated "not encrypted" answer.
+- Finder: new files never replace an object created meanwhile (conflict
+  copy instead); renames and deletes apply only to the version Finder
+  knew; downloaded bytes always match the reported version. Each
+  conflict appears in Notification Center.
+- Finder edits and Open With saves of large S3 files are streamed as a
+  conditional multipart upload instead of one in-memory PUT.
+- Folder rows in the browser: delete, rename and cross-account copy
+  now apply to everything in the folder.
+- The move of the store into the App Group publishes only a complete,
+  integrity-checked copy and retries on the next launch otherwise.
+
 ### Data-integrity fixes and cleanup (2026-11-04)
 - Azure multipart uploads give their block IDs a per-upload session
   part. Blocks are staged per blob, so two uploads of the same blob

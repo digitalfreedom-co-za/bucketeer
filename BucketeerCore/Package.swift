@@ -13,7 +13,7 @@ import PackageDescription
 let package = Package(
     name: "BucketeerCore",
     platforms: [
-        .macOS(.v14)
+        .macOS("15.8")
     ],
     products: [
         .library(
