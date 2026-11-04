@@ -49,8 +49,9 @@ enum S3DirectFetch {
 
     /// With a `precondition` the write only succeeds while it holds; a
     /// refusal surfaces as `BucketeerError.preconditionFailed`.
-    /// Conditional writes always use one PUT, because Soto's multipart
-    /// helper cannot carry the precondition to the completion request.
+    /// Conditional writes stream large files as a multipart upload with
+    /// the precondition on the completion (`S3ConditionalUpload`), so
+    /// the extension never holds a whole file in memory.
     /// Returns the ETag the write answered with (unquoted).
     @discardableResult
     static func upload(
@@ -65,22 +66,15 @@ enum S3DirectFetch {
         let s3 = try await factory.client(for: account)
         let size = (try? localURL.resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0
         let fileSize = Int64(size)
-        if precondition != nil {
-            let data = try Data(contentsOf: localURL, options: .mappedIfSafe)
-            let headers = S3Service.headers(for: precondition)
-            do {
-                let output = try await s3.putObject(.init(
-                    body: AWSHTTPBody(buffer: ByteBuffer(bytes: data)),
-                    bucket: bucket,
-                    contentType: contentType,
-                    ifMatch: headers.ifMatch,
-                    ifNoneMatch: headers.ifNoneMatch,
-                    key: key
-                ))
-                return output.eTag.map(ETag.normalized)
-            } catch where S3Service.isPreconditionFailure(error) {
-                throw BucketeerError.preconditionFailed(key: key)
-            }
+        if let precondition {
+            return try await S3ConditionalUpload.upload(
+                fileAt: localURL,
+                bucket: bucket,
+                key: key,
+                contentType: contentType,
+                precondition: precondition,
+                writer: SotoObjectWriter(s3: s3)
+            )
         } else if fileSize >= multipartThreshold {
             let output = try await s3.multipartUpload(
                 .init(

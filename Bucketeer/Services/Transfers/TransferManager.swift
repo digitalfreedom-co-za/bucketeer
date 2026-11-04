@@ -476,20 +476,22 @@ actor TransferManager: Transferring {
 
         do {
             if let precondition = item.precondition {
-                // One PUT carries the precondition; Soto's multipart
-                // helpers cannot attach it to the completion.
-                let data = try Data(contentsOf: item.task.localURL, options: .mappedIfSafe)
-                let headers = S3Service.headers(for: precondition)
-                let output = try await s3.putObject(.init(
-                    body: AWSHTTPBody(buffer: ByteBuffer(bytes: data)),
+                // Streams large files part by part; the precondition
+                // guards the completion (Soto's helpers cannot carry it).
+                let total = item.fileSize
+                let etag = try await S3ConditionalUpload.upload(
+                    fileAt: item.task.localURL,
                     bucket: item.task.bucket,
+                    key: item.task.key,
                     contentType: item.contentType,
-                    ifMatch: headers.ifMatch,
-                    ifNoneMatch: headers.ifNoneMatch,
-                    key: item.task.key
-                ))
-                recordWrittenETag(output.eTag, id: id)
-                await limiter?.consume(bytes: data.count)
+                    precondition: precondition,
+                    writer: SotoObjectWriter(s3: s3),
+                    progress: { @Sendable [weak self] bytes in
+                        await self?.setState(id: id, state: .running(bytesTransferred: bytes, totalBytes: total))
+                        await self?.chargeMultipartLimiter(id: id, observedBytes: bytes)
+                    }
+                )
+                recordWrittenETag(etag, id: id)
             } else if item.fileSize >= S3ResumableUploader.resumableThreshold,
                let resumableUploader {
                 // Phase 13.10 — files large enough that an interruption
