@@ -7707,131 +7707,6 @@
         }
       }
     },
-    "account.field.defaultBucket" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Výchozí bucket (volitelné)"
-          }
-        },
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Standard-bucket (valgfrit)"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Standard-Bucket (optional)"
-          }
-        },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Προεπιλεγμένο bucket (προαιρετικό)"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Default Bucket (optional)"
-          }
-        },
-        "en-GB" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Default Bucket (optional)"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bucket predeterminado (opcional)"
-          }
-        },
-        "fi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Oletus-bucket (valinnainen)"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bucket par défaut (facultatif)"
-          }
-        },
-        "hu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alapértelmezett bucket (nem kötelező)"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bucket predefinito (opzionale)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "デフォルトバケット（任意）"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "기본 버킷(선택)"
-          }
-        },
-        "nb" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Standard-bucket (valgfritt)"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Standaardbucket (optioneel)"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Domyślny bucket (opcjonalnie)"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bucket padrão (opcional)"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bucket predefinido (opcional)"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Бакет по умолчанию (необязательно)"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Standardbucket (valfritt)"
-          }
-        }
-      }
-    },
     "account.field.endpoint" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -80647,6 +80522,1006 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "”%@” ändrades på servern och raderades därför inte. Finder visar den nyare versionen igen."
+          }
+        }
+      }
+    },
+    "account.field.bucket" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucket (volitelné)"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucket (valgfrit)"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucket (optional)"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucket (προαιρετικό)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucket (optional)"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucket (optional)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucket (opcional)"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucket (valinnainen)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucket (facultatif)"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucket (nem kötelező)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucket (opzionale)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バケット（任意）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "버킷(선택)"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucket (valgfritt)"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucket (optioneel)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucket (opcjonalnie)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucket (opcional)"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucket (opcional)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Бакет (необязательно)"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucket (valfritt)"
+          }
+        }
+      }
+    },
+    "account.note.bucket" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vyplňte, pokud má klíč přístup jen k jednomu bucketu. Účet pak zobrazí pouze tento bucket."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Udfyld, hvis nøglen kun har adgang til én bucket. Kontoen viser så kun denne bucket."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausfüllen, wenn der Schlüssel nur auf einen Bucket zugreifen darf. Das Konto zeigt dann nur diesen Bucket."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Συμπληρώστε το, αν το κλειδί έχει πρόσβαση μόνο σε ένα bucket. Ο λογαριασμός θα εμφανίζει τότε μόνο αυτό το bucket."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter it if the key can only access one bucket. The account then shows only this bucket."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter it if the key can only access one bucket. The account then shows only this bucket."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rellénalo si la clave solo tiene acceso a un bucket. La cuenta mostrará entonces solo ese bucket."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Täytä, jos avaimella on pääsy vain yhteen bucketiin. Tili näyttää silloin vain tämän bucketin."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À renseigner si la clé n’a accès qu’à un seul bucket. Le compte n’affiche alors que ce bucket."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Töltse ki, ha a kulcs csak egy buckethez fér hozzá. A fiók ekkor csak ezt a bucketet mutatja."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compilalo se la chiave ha accesso a un solo bucket. L’account mostrerà allora solo questo bucket."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キーが 1 つのバケットにしかアクセスできない場合に入力します。アカウントにはそのバケットだけが表示されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "키가 버킷 하나에만 접근할 수 있으면 입력하세요. 그러면 계정에 이 버킷만 표시됩니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fyll ut hvis nøkkelen bare har tilgang til én bucket. Kontoen viser da bare denne bucketen."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vul dit in als de sleutel maar bij één bucket kan. Het account toont dan alleen deze bucket."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wypełnij, jeśli klucz ma dostęp tylko do jednego bucketu. Konto pokaże wtedy tylko ten bucket."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preencha se a chave só tiver acesso a um bucket. A conta passa a mostrar apenas esse bucket."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preencha se a chave só tiver acesso a um bucket. A conta passa a mostrar apenas esse bucket."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Укажите, если ключ даёт доступ только к одному бакету. Тогда учётная запись покажет только этот бакет."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fyll i om nyckeln bara har åtkomst till en bucket. Kontot visar då bara den bucketen."
+          }
+        }
+      }
+    },
+    "error.credentialsMissing" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přihlašovací údaje tohoto účtu chybí. Upravte účet a znovu zadejte přístupový a tajný klíč."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Legitimationsoplysningerne til denne konto mangler. Rediger kontoen, og indtast adgangsnøglen og den hemmelige nøgle igen."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Zugangsdaten dieses Kontos fehlen. Bearbeite das Konto und gib Zugriffsschlüssel und geheimen Schlüssel erneut ein."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Τα διαπιστευτήρια αυτού του λογαριασμού λείπουν. Επεξεργαστείτε τον λογαριασμό και εισαγάγετε ξανά το κλειδί πρόσβασης και το μυστικό κλειδί."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The credentials for this account are missing. Edit the account and enter the access key and secret key again."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The credentials for this account are missing. Edit the account and enter the access key and secret key again."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faltan las credenciales de esta cuenta. Edita la cuenta y vuelve a introducir la clave de acceso y la clave secreta."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tämän tilin tunnistetiedot puuttuvat. Muokkaa tiliä ja anna käyttöavain ja salainen avain uudelleen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les identifiants de ce compte sont manquants. Modifiez le compte et saisissez à nouveau la clé d’accès et la clé secrète."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A fiók hitelesítő adatai hiányoznak. Szerkessze a fiókot, és adja meg újra a hozzáférési kulcsot és a titkos kulcsot."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le credenziali di questo account mancano. Modifica l’account e inserisci di nuovo la chiave di accesso e la chiave segreta."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このアカウントの認証情報がありません。アカウントを編集し、アクセスキーとシークレットキーをもう一度入力してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 계정의 자격 증명이 없습니다. 계정을 편집하고 액세스 키와 비밀 키를 다시 입력하세요."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Påloggingsinformasjonen for denne kontoen mangler. Rediger kontoen og skriv inn tilgangsnøkkelen og den hemmelige nøkkelen på nytt."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De inloggegevens van dit account ontbreken. Wijzig het account en voer de toegangssleutel en de geheime sleutel opnieuw in."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brakuje danych logowania tego konta. Edytuj konto i ponownie wpisz klucz dostępu oraz klucz tajny."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As credenciais desta conta estão faltando. Edite a conta e insira novamente a chave de acesso e a chave secreta."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As credenciais desta conta estão em falta. Edite a conta e introduza novamente a chave de acesso e a chave secreta."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Учётные данные этой учётной записи отсутствуют. Измените учётную запись и снова введите ключ доступа и секретный ключ."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inloggningsuppgifterna för det här kontot saknas. Redigera kontot och ange åtkomstnyckeln och den hemliga nyckeln igen."
+          }
+        }
+      }
+    },
+    "error.accessKeyNotRecognized" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přístupový klíč v této oblasti není rozpoznán. Zkontrolujte přístupový klíč a oblast."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adgangsnøglen genkendes ikke i denne region. Kontrollér adgangsnøglen og regionen."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Zugriffsschlüssel ist in dieser Region nicht bekannt. Prüfe Zugriffsschlüssel und Region."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το κλειδί πρόσβασης δεν αναγνωρίζεται σε αυτή την περιοχή. Ελέγξτε το κλειδί πρόσβασης και την περιοχή."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The access key is not recognized in this region. Check the access key and the region."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The access key is not recognised in this region. Check the access key and the region."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La clave de acceso no se reconoce en esta región. Comprueba la clave de acceso y la región."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Käyttöavainta ei tunnisteta tällä alueella. Tarkista käyttöavain ja alue."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La clé d’accès n’est pas reconnue dans cette région. Vérifiez la clé d’accès et la région."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A hozzáférési kulcs ebben a régióban nem ismert. Ellenőrizze a hozzáférési kulcsot és a régiót."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La chiave di accesso non è riconosciuta in questa regione. Controlla la chiave di accesso e la regione."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このリージョンではアクセスキーが認識されません。アクセスキーとリージョンを確認してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 리전에서는 액세스 키를 인식할 수 없습니다. 액세스 키와 리전을 확인하세요."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilgangsnøkkelen gjenkjennes ikke i denne regionen. Kontroller tilgangsnøkkelen og regionen."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De toegangssleutel wordt in deze regio niet herkend. Controleer de toegangssleutel en de regio."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klucz dostępu nie jest rozpoznawany w tym regionie. Sprawdź klucz dostępu i region."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A chave de acesso não é reconhecida nesta região. Verifique a chave de acesso e a região."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A chave de acesso não é reconhecida nesta região. Verifique a chave de acesso e a região."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ключ доступа не распознан в этом регионе. Проверьте ключ доступа и регион."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Åtkomstnyckeln känns inte igen i den här regionen. Kontrollera åtkomstnyckeln och regionen."
+          }
+        }
+      }
+    },
+    "error.accessKeyNotRecognized.region" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přístupový klíč není v oblasti %@ rozpoznán. Zkontrolujte přístupový klíč a oblast."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adgangsnøglen genkendes ikke i regionen %@. Kontrollér adgangsnøglen og regionen."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Zugriffsschlüssel ist in der Region %@ nicht bekannt. Prüfe Zugriffsschlüssel und Region."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το κλειδί πρόσβασης δεν αναγνωρίζεται στην περιοχή %@. Ελέγξτε το κλειδί πρόσβασης και την περιοχή."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The access key is not recognized in region %@. Check the access key and the region."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The access key is not recognised in region %@. Check the access key and the region."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La clave de acceso no se reconoce en la región %@. Comprueba la clave de acceso y la región."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Käyttöavainta ei tunnisteta alueella %@. Tarkista käyttöavain ja alue."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La clé d’accès n’est pas reconnue dans la région %@. Vérifiez la clé d’accès et la région."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A hozzáférési kulcs a(z) %@ régióban nem ismert. Ellenőrizze a hozzáférési kulcsot és a régiót."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La chiave di accesso non è riconosciuta nella regione %@. Controlla la chiave di accesso e la regione."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リージョン %@ ではアクセスキーが認識されません。アクセスキーとリージョンを確認してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 리전에서는 액세스 키를 인식할 수 없습니다. 액세스 키와 리전을 확인하세요."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilgangsnøkkelen gjenkjennes ikke i regionen %@. Kontroller tilgangsnøkkelen og regionen."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De toegangssleutel wordt in regio %@ niet herkend. Controleer de toegangssleutel en de regio."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klucz dostępu nie jest rozpoznawany w regionie %@. Sprawdź klucz dostępu i region."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A chave de acesso não é reconhecida na região %@. Verifique a chave de acesso e a região."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A chave de acesso não é reconhecida na região %@. Verifique a chave de acesso e a região."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ключ доступа не распознан в регионе %@. Проверьте ключ доступа и регион."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Åtkomstnyckeln känns inte igen i regionen %@. Kontrollera åtkomstnyckeln och regionen."
+          }
+        }
+      }
+    },
+    "error.accessKeyNotRecognized.civo" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Civo tento přístupový klíč v oblasti %@ nezná. Klíče Civo fungují jen v oblasti, ve které byly vytvořeny – zkontrolujte oblast v nastavení účtu."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Civo kender ikke denne adgangsnøgle i regionen %@. Civo-nøgler virker kun i den region, de blev oprettet i – kontrollér regionen i kontoindstillingerne."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Civo kennt diesen Zugriffsschlüssel in der Region %@ nicht. Civo-Schlüssel gelten nur in der Region, in der sie erstellt wurden – prüfe die Region in den Kontoeinstellungen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το Civo δεν αναγνωρίζει αυτό το κλειδί πρόσβασης στην περιοχή %@. Τα κλειδιά Civo λειτουργούν μόνο στην περιοχή όπου δημιουργήθηκαν — ελέγξτε την περιοχή στις ρυθμίσεις του λογαριασμού."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Civo does not recognize this access key in region %@. Civo keys only work in the region they were created in — check the region in the account settings."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Civo does not recognise this access key in region %@. Civo keys only work in the region they were created in — check the region in the account settings."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Civo no reconoce esta clave de acceso en la región %@. Las claves de Civo solo funcionan en la región en la que se crearon: comprueba la región en los ajustes de la cuenta."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Civo ei tunnista tätä käyttöavainta alueella %@. Civo-avaimet toimivat vain alueella, jolla ne luotiin – tarkista alue tilin asetuksista."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Civo ne reconnaît pas cette clé d’accès dans la région %@. Les clés Civo ne fonctionnent que dans la région où elles ont été créées – vérifiez la région dans les réglages du compte."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A Civo nem ismeri ezt a hozzáférési kulcsot a(z) %@ régióban. A Civo-kulcsok csak abban a régióban működnek, ahol létrehozták őket – ellenőrizze a régiót a fiók beállításaiban."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Civo non riconosce questa chiave di accesso nella regione %@. Le chiavi Civo funzionano solo nella regione in cui sono state create: controlla la regione nelle impostazioni dell’account."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Civo はリージョン %@ でこのアクセスキーを認識できません。Civo のキーは作成したリージョンでのみ使えます。アカウント設定のリージョンを確認してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Civo가 %@ 리전에서 이 액세스 키를 인식하지 못합니다. Civo 키는 생성된 리전에서만 작동합니다. 계정 설정의 리전을 확인하세요."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Civo kjenner ikke igjen denne tilgangsnøkkelen i regionen %@. Civo-nøkler fungerer bare i regionen de ble opprettet i – kontroller regionen i kontoinnstillingene."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Civo herkent deze toegangssleutel niet in regio %@. Civo-sleutels werken alleen in de regio waarin ze zijn aangemaakt – controleer de regio in de accountinstellingen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Civo nie rozpoznaje tego klucza dostępu w regionie %@. Klucze Civo działają tylko w regionie, w którym zostały utworzone – sprawdź region w ustawieniach konta."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Civo não reconhece esta chave de acesso na região %@. As chaves do Civo só funcionam na região em que foram criadas — verifique a região nos ajustes da conta."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Civo não reconhece esta chave de acesso na região %@. As chaves do Civo só funcionam na região em que foram criadas — verifique a região nas definições da conta."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Civo не распознаёт этот ключ доступа в регионе %@. Ключи Civo работают только в регионе, где они были созданы, — проверьте регион в настройках учётной записи."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Civo känner inte igen den här åtkomstnyckeln i regionen %@. Civo-nycklar fungerar bara i regionen där de skapades – kontrollera regionen i kontoinställningarna."
+          }
+        }
+      }
+    },
+    "error.secretKeyMismatch" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tajný klíč neodpovídá přístupovému klíči. Zadejte tajný klíč znovu."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den hemmelige nøgle passer ikke til adgangsnøglen. Indtast den hemmelige nøgle igen."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der geheime Schlüssel passt nicht zum Zugriffsschlüssel. Gib den geheimen Schlüssel erneut ein."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το μυστικό κλειδί δεν αντιστοιχεί στο κλειδί πρόσβασης. Εισαγάγετε ξανά το μυστικό κλειδί."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The secret key does not match the access key. Enter the secret key again."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The secret key does not match the access key. Enter the secret key again."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La clave secreta no corresponde a la clave de acceso. Vuelve a introducir la clave secreta."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salainen avain ei vastaa käyttöavainta. Anna salainen avain uudelleen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La clé secrète ne correspond pas à la clé d’accès. Saisissez à nouveau la clé secrète."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A titkos kulcs nem egyezik a hozzáférési kulccsal. Adja meg újra a titkos kulcsot."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La chiave segreta non corrisponde alla chiave di accesso. Inserisci di nuovo la chiave segreta."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "シークレットキーがアクセスキーと一致しません。シークレットキーをもう一度入力してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "비밀 키가 액세스 키와 일치하지 않습니다. 비밀 키를 다시 입력하세요."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den hemmelige nøkkelen passer ikke til tilgangsnøkkelen. Skriv inn den hemmelige nøkkelen på nytt."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De geheime sleutel hoort niet bij de toegangssleutel. Voer de geheime sleutel opnieuw in."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klucz tajny nie pasuje do klucza dostępu. Wpisz klucz tajny ponownie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A chave secreta não corresponde à chave de acesso. Insira a chave secreta novamente."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A chave secreta não corresponde à chave de acesso. Introduza novamente a chave secreta."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Секретный ключ не соответствует ключу доступа. Введите секретный ключ ещё раз."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den hemliga nyckeln matchar inte åtkomstnyckeln. Ange den hemliga nyckeln igen."
+          }
+        }
+      }
+    },
+    "error.bucketListingDenied" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tento klíč nesmí vypisovat buckety. Upravte účet a zadejte název bucketu."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne nøgle må ikke vise buckets. Rediger kontoen, og indtast navnet på din bucket."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Schlüssel darf keine Buckets auflisten. Bearbeite das Konto und gib den Namen des Buckets ein."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αυτό το κλειδί δεν μπορεί να εμφανίσει λίστα buckets. Επεξεργαστείτε τον λογαριασμό και εισαγάγετε το όνομα του bucket."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This key can’t list buckets. Edit the account and enter the bucket name."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This key can’t list buckets. Edit the account and enter the bucket name."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta clave no puede listar buckets. Edita la cuenta e introduce el nombre del bucket."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tällä avaimella ei voi luetella bucketeja. Muokkaa tiliä ja anna bucketin nimi."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette clé ne peut pas lister les buckets. Modifiez le compte et saisissez le nom du bucket."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ezzel a kulccsal nem lehet bucketeket listázni. Szerkessze a fiókot, és adja meg a bucket nevét."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa chiave non può elencare i bucket. Modifica l’account e inserisci il nome del bucket."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このキーではバケットを一覧表示できません。アカウントを編集し、バケット名を入力してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 키로는 버킷 목록을 볼 수 없습니다. 계정을 편집하고 버킷 이름을 입력하세요."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne nøkkelen kan ikke vise buckets. Rediger kontoen og skriv inn navnet på bucketen."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Met deze sleutel kunnen geen buckets worden weergegeven. Wijzig het account en voer de naam van de bucket in."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ten klucz nie może wyświetlać listy bucketów. Edytuj konto i wpisz nazwę bucketu."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta chave não pode listar buckets. Edite a conta e insira o nome do bucket."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta chave não pode listar buckets. Edite a conta e introduza o nome do bucket."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Этот ключ не может получать список бакетов. Измените учётную запись и укажите имя бакета."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den här nyckeln kan inte lista buckets. Redigera kontot och ange bucketens namn."
           }
         }
       }

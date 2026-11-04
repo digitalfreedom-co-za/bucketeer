@@ -76,7 +76,7 @@ final class MainWindowRenderTests: XCTestCase {
         await demo.openPhotosBucket()
         demo.container.browserViewModel.selection = ["report.pdf"]
         try await renderAndAssert(objectDetail(demo), name: "ObjectDetailView_error", size: detailSize,
-                                  shows: ["Preview failed", "Authentication failed", "840 KB"])
+                                  shows: ["Preview failed", "credentials", "840 KB"])
     }
 
     private let detailSize = CGSize(width: 360, height: 640)
