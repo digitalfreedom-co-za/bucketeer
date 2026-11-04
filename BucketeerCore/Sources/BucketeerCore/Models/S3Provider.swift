@@ -96,25 +96,32 @@ public enum S3Provider: String, Codable, CaseIterable, Sendable {
             "eu-north-1", "eu-south-1", "eu-south-2",
             // Middle East / Africa
             "af-south-1", "il-central-1", "me-central-1", "me-south-1",
+            // Mexico
+            "mx-central-1",
             // Asia Pacific
-            "ap-east-1",
+            "ap-east-1", "ap-east-2",
             "ap-south-1", "ap-south-2",
             "ap-northeast-1", "ap-northeast-2", "ap-northeast-3",
             "ap-southeast-1", "ap-southeast-2", "ap-southeast-3",
-            "ap-southeast-4", "ap-southeast-5", "ap-southeast-7",
+            "ap-southeast-4", "ap-southeast-5", "ap-southeast-6", "ap-southeast-7",
             // Independent regions (different partitions still reach via
             // standard S3 — listed here for completeness)
             "cn-north-1", "cn-northwest-1",
             "us-gov-east-1", "us-gov-west-1"
         ]
-        case .civo:               return ["fra1", "lon1", "nyc1", "phx1"]
-        case .cloudflareR2:       return ["auto", "wnam", "enam", "weur", "eeur", "apac", "oc"]
-        case .backblazeB2:        return ["us-west-001", "us-west-002", "us-west-004", "eu-central-003"]
-        case .wasabi:             return ["us-east-1", "us-east-2", "us-central-1", "us-west-1",
+        case .civo:               return ["fra1", "lon1", "nyc1", "mum1"]
+        // R2 signs every request for `auto`; location hints (wnam, weur, …)
+        // apply only when a bucket is created, which the app does not do.
+        case .cloudflareR2:       return ["auto"]
+        // B2 publishes no region list; each account lives in one region.
+        case .backblazeB2:        return ["us-west-001", "us-west-002", "us-west-004", "us-east-005", "eu-central-003"]
+        case .wasabi:             return ["us-east-1", "us-east-2", "us-central-1", "us-west-1", "us-west-2",
                                           "eu-central-1", "eu-central-2", "eu-west-1", "eu-west-2",
+                                          "eu-west-3", "eu-south-1",
                                           "ap-northeast-1", "ap-northeast-2", "ap-southeast-1",
                                           "ap-southeast-2", "ca-central-1"]
-        case .digitalOceanSpaces: return ["nyc3", "sfo2", "sfo3", "ams3", "sgp1", "fra1", "syd1", "blr1", "tor1"]
+        case .digitalOceanSpaces: return ["nyc3", "sfo2", "sfo3", "ams3", "sgp1", "lon1", "fra1", "syd1",
+                                          "blr1", "tor1", "atl1", "ric1", "mkc1"]
         case .storj:              return ["global"]
         case .azureBlob:          return ["auto"]
         case .custom:             return nil
