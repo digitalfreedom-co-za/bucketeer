@@ -33,6 +33,9 @@ before that is internal phase work on the `development` branch.
   tags, Content-Language and Expires are kept. Where a provider offers
   none of these (Backblaze B2 and Wasabi without versioning, Storj,
   custom servers) such a copy is refused with an explanation instead.
+  Editing the metadata of such an object no longer overwrites a version
+  written meanwhile, restoring an older "null" version copies that
+  version, and the copy keeps the properties of the version it read.
 - AWS accounts in the China regions (cn-north-1, cn-northwest-1) use the
   `amazonaws.com.cn` endpoints.
 - Cloudflare R2 always signs for region `auto`; region lists for AWS,
