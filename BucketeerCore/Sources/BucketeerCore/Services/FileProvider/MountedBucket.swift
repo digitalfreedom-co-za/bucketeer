@@ -130,10 +130,11 @@ public struct MountedBucket: Sendable {
     }
 
     /// Deletes everything below `prefix`, each object only while it is
-    /// still the version listed for it. Deletes page by page, so a huge
-    /// folder never sits in memory. An object that changed meanwhile is
-    /// kept together with every folder marker, and the delete refused.
-    public func deleteFolder(_ prefix: String) async throws {
+    /// still the version Finder knew (`knownVersions`, key → ETag). An
+    /// object Finder never saw, or one that changed since, is kept
+    /// together with every folder marker, and the delete refused.
+    /// Deletes page by page, so a huge folder never sits in memory.
+    public func deleteFolder(_ prefix: String, knownVersions: [String: String]) async throws {
         var folders = [prefix]
         var queue = [prefix]
         var keptChanged = false
@@ -147,8 +148,11 @@ public struct MountedBucket: Sendable {
                     if object.isFolder {
                         folders.append(object.key)
                         queue.append(object.key)
-                    } else if try await !browser.deleteIfUnchanged(account: account, bucket: bucket,
-                                                                   key: object.key, etag: object.etag) {
+                    } else if let known = knownVersions[object.key],
+                              try await browser.deleteIfUnchanged(account: account, bucket: bucket,
+                                                                  key: object.key, etag: known) {
+                        continue
+                    } else {
                         keptChanged = true
                     }
                 }
