@@ -26,7 +26,15 @@ before that is internal phase work on the `development` branch.
   `aws-chunked` parts Civo rejects are gone.
 - Files above 78 GiB (S3) and 390 GiB (Azure) upload in larger parts
   instead of failing at the part limit; objects above 5 GB are copied in
-  ranged parts, so renaming and moving them works.
+  ranged parts, so renaming, moving, restoring a version and editing
+  metadata work for them. Every part is bound to the version that was
+  read (version ID, copy-source condition, or a ranged download with
+  If-Match), so a source changed during the copy is never mixed into it;
+  tags, Content-Language and Expires are kept. Where a provider offers
+  none of these (Backblaze B2 and Wasabi without versioning, Storj,
+  custom servers) such a copy is refused with an explanation instead.
+- AWS accounts in the China regions (cn-north-1, cn-northwest-1) use the
+  `amazonaws.com.cn` endpoints.
 - Cloudflare R2 always signs for region `auto`; region lists for AWS,
   Civo, Backblaze B2, Wasabi and DigitalOcean Spaces follow the
   providers' documentation.
