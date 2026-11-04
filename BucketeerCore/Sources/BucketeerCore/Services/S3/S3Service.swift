@@ -180,9 +180,8 @@ public struct S3Service: S3Browsing {
         }
     }
 
-    /// Server-side single-request copy. Limited to source objects up to
-    /// 5 GB; objects larger than that require `UploadPartCopy` and are
-    /// out of v1 scope (tracked for v1.1 in the design spec).
+    /// Server-side copy: one CopyObject, or ranged parts for objects
+    /// above the provider's single-request limit (`S3MultipartCopy`).
     public func copy(
         account: S3Account,
         fromBucket: String,
@@ -193,6 +192,15 @@ public struct S3Service: S3Browsing {
     ) async throws {
         let s3 = try await factory.client(for: account)
         do {
+            let head = try await head(account: account, bucket: fromBucket, key: fromKey)
+            if S3MultipartCopy.needsParts(size: head.size, provider: account.provider) {
+                let source = S3MultipartCopy.Source(bucket: fromBucket, key: fromKey, etag: head.etag,
+                                                    size: head.size, metadata: metadata)
+                _ = try await S3MultipartCopy.copy(source, toBucket: toBucket, toKey: toKey, ifAbsent: false,
+                                                   enforced: account.provider.conditionalRequests,
+                                                   copier: SotoObjectWriter(s3: s3))
+                return
+            }
             let source = "\(fromBucket)/\(fromKey)"
             let encodedSource = source.addingPercentEncoding(
                 withAllowedCharacters: .urlPathAllowed
@@ -216,9 +224,15 @@ public struct S3Service: S3Browsing {
         let enforced = account.provider.conditionalRequests
         let source = "\(bucket)/\(fromKey)"
         do {
-            if !enforced.contains(.copySourceIfMatch) {
-                let current = try await Self.currentETag(s3: s3, bucket: bucket, key: fromKey)
-                try PreconditionCheck.verify(.ifMatch(sourceETag), current: current, key: toKey)
+            let head = try await head(account: account, bucket: bucket, key: fromKey)
+            try PreconditionCheck.verify(.ifMatch(sourceETag), current: head.etag, key: toKey)
+            if S3MultipartCopy.needsParts(size: head.size, provider: account.provider) {
+                _ = try await S3MultipartCopy.copy(
+                    S3MultipartCopy.Source(bucket: bucket, key: fromKey, etag: sourceETag, size: head.size),
+                    toBucket: bucket, toKey: toKey, ifAbsent: true, enforced: enforced,
+                    copier: SotoObjectWriter(s3: s3)
+                )
+                return
             }
             if !enforced.contains(.copyIfAbsent) {
                 let current = try await Self.currentETag(s3: s3, bucket: bucket, key: toKey)

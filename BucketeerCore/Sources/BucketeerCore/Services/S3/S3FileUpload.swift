@@ -155,7 +155,7 @@ public enum S3FileUpload {
 
 /// `S3ObjectWriting` on a Soto `S3` client.
 public struct SotoObjectWriter: S3ObjectWriting {
-    private let s3: S3
+    let s3: S3
 
     public init(s3: S3) {
         self.s3 = s3
