@@ -70,7 +70,8 @@ private actor RangeReader: S3RangeReading {
         self.replacedAfter = replacedAfter
     }
 
-    func read(bucket: String, key: String, range: ClosedRange<Int64>, ifMatch: String) async throws -> Data {
+    func read(bucket: String, key: String, versionId: String?, range: ClosedRange<Int64>,
+              ifMatch: String) async throws -> Data {
         requests.append(Request(range: "bytes=\(range.lowerBound)-\(range.upperBound)", ifMatch: ifMatch))
         if requests.count - 1 == replacedAfter { etag = "v2" }
         guard ETag.matches(base: ifMatch, current: etag) else { throw BucketeerError.preconditionFailed(key: key) }
