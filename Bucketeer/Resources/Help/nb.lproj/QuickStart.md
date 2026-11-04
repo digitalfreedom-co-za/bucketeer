@@ -40,7 +40,7 @@ Den hemmelige nøkkelen er skjult når du redigerer en konto. Klikk på **Vis la
 ## Administrer objekter
 
 - **Ny mappe**: knappen i verktøylinjen eller **⇧⌘N**.
-- **Gi nytt navn…**: høyreklikk på et objekt. Et navnebytte er en kopi på serveren etterfulgt av en sletting.
+- **Gi nytt navn…**: høyreklikk på et objekt. Et navnebytte er en kopi på serveren etterfulgt av en sletting. Å gi nytt navn til eller slette en mappe gjelder alt i den, og en navneendring erstatter aldri et eksisterende navn.
 - **Slett**: marker ett eller flere objekter, klikk på papirkurv-knappen og bekreft.
 - **Kopier dyplenke**: kopierer en `bucketeer://`-lenke til objektet som åpner det i Bucketeer fra hvor som helst på Macen.
 

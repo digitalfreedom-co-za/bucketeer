@@ -40,7 +40,7 @@ Podczas edycji konta klucz tajny jest ukryty. Kliknij **Pokaż zapisane poświad
 ## Zarządzanie obiektami
 
 - **Nowy folder**: przycisk na pasku narzędzi lub **⇧⌘N**.
-- **Zmień nazwę…**: kliknij obiekt prawym przyciskiem. Zmiana nazwy to kopia po stronie serwera, po której następuje usunięcie.
+- **Zmień nazwę…**: kliknij obiekt prawym przyciskiem. Zmiana nazwy to kopia po stronie serwera, po której następuje usunięcie. Zmiana nazwy lub usunięcie folderu dotyczy całej jego zawartości, a zmiana nazwy nigdy nie zastępuje istniejącej nazwy.
 - **Usuń**: zaznacz jeden lub więcej obiektów, kliknij przycisk kosza i potwierdź.
 - **Kopiuj link bezpośredni**: kopiuje link `bucketeer://` do obiektu, który otwiera go w Bucketeer z dowolnego miejsca na Twoim Macu.
 

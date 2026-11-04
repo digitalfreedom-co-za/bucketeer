@@ -40,7 +40,7 @@ Den hemliga nyckeln är dold när du redigerar ett konto. Klicka på **Visa spar
 ## Hantera objekt
 
 - **Ny mapp**: knappen i verktygsfältet eller **⇧⌘N**.
-- **Byt namn…**: högerklicka på ett objekt. Ett namnbyte är en kopia på servern följd av en radering.
+- **Byt namn…**: högerklicka på ett objekt. Ett namnbyte är en kopia på servern följd av en radering. Att byta namn på eller radera en mapp gäller allt i den, och ett namnbyte ersätter aldrig ett befintligt namn.
 - **Radera**: markera ett eller flera objekt, klicka på papperskorgsknappen och bekräfta.
 - **Kopiera djuplänk**: kopierar en `bucketeer://`-länk till objektet som öppnar det i Bucketeer var som helst på din Mac.
 

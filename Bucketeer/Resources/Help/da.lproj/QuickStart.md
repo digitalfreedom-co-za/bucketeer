@@ -40,7 +40,7 @@ Den hemmelige nøgle er skjult, når du redigerer en konto. Klik på **Vis gemte
 ## Administrér objekter
 
 - **Ny mappe**: knappen i værktøjslinjen eller **⇧⌘N**.
-- **Omdøb…**: højreklik på et objekt. En omdøbning er en kopi på serveren efterfulgt af en sletning.
+- **Omdøb…**: højreklik på et objekt. En omdøbning er en kopi på serveren efterfulgt af en sletning. Omdøbning eller sletning af en mappe gælder alt i den, og en omdøbning erstatter aldrig et eksisterende navn.
 - **Slet**: vælg et eller flere objekter, klik på papirkurv-knappen, og bekræft.
 - **Kopiér deeplink**: kopierer et `bucketeer://`-link til objektet, som åbner det i Bucketeer hvor som helst på din Mac.
 

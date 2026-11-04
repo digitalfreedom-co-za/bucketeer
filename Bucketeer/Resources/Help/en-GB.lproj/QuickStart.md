@@ -40,7 +40,7 @@ The secret is hidden when you edit an account. Click **Reveal stored credentials
 ## Manage objects
 
 - **New Folder**: toolbar button or **⇧⌘N**.
-- **Rename…**: right-click an object. A rename is a server-side copy followed by a delete.
+- **Rename…**: right-click an object. A rename is a server-side copy followed by a delete. Renaming or deleting a folder applies to everything in it, and a rename never replaces an existing name.
 - **Delete**: select one or more objects, click the trash button and confirm.
 - **Copy Deep Link**: copies a `bucketeer://` link to the object, which opens it in Bucketeer from anywhere on your Mac.
 

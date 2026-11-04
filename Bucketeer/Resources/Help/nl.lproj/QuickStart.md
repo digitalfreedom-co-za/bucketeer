@@ -40,7 +40,7 @@ Het geheim is verborgen als je een account wijzigt. Klik op **Toon opgeslagen in
 ## Objecten beheren
 
 - **Nieuwe map**: knop in de knoppenbalk of **⇧⌘N**.
-- **Hernoem…**: klik met de rechtermuisknop op een object. Hernoemen is een kopie op de server, gevolgd door een verwijdering.
+- **Hernoem…**: klik met de rechtermuisknop op een object. Hernoemen is een kopie op de server, gevolgd door een verwijdering. Een map hernoemen of verwijderen geldt voor alles daarin, en een naamswijziging vervangt nooit een bestaande naam.
 - **Verwijder**: selecteer een of meer objecten, klik op de prullenmandknop en bevestig.
 - **Deeplink kopiëren**: kopieert een `bucketeer://`-link naar het object, die het object vanaf elke plek op je Mac in Bucketeer opent.
 

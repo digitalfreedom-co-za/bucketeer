@@ -40,7 +40,7 @@ O segredo fica oculto quando edita uma conta. Clique em **Revelar credenciais gu
 ## Gerir objetos
 
 - **Nova pasta**: botão da barra de ferramentas ou **⇧⌘N**.
-- **Mudar o nome…**: clique com o botão direito num objeto. Mudar o nome é uma cópia do lado do servidor seguida de uma eliminação.
+- **Mudar o nome…**: clique com o botão direito num objeto. Mudar o nome é uma cópia do lado do servidor seguida de uma eliminação. Mudar o nome ou eliminar uma pasta aplica-se a todo o conteúdo, e uma mudança de nome nunca substitui um nome existente.
 - **Eliminar**: selecione um ou mais objetos, clique no botão do lixo e confirme.
 - **Copiar ligação direta**: copia uma ligação `bucketeer://` para o objeto, que o abre no Bucketeer a partir de qualquer lugar do seu Mac.
 

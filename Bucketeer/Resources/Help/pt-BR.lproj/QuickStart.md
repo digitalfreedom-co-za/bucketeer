@@ -40,7 +40,7 @@ O segredo fica oculto quando você edita uma conta. Clique em **Mostrar credenci
 ## Gerenciar objetos
 
 - **Nova pasta**: botão da barra de ferramentas ou **⇧⌘N**.
-- **Renomear…**: clique com o botão direito em um objeto. Renomear é uma cópia no servidor seguida de uma exclusão.
+- **Renomear…**: clique com o botão direito em um objeto. Renomear é uma cópia no servidor seguida de uma exclusão. Renomear ou apagar uma pasta vale para todo o conteúdo dela, e uma renomeação nunca substitui um nome existente.
 - **Excluir**: selecione um ou mais objetos, clique no botão da lixeira e confirme.
 - **Copiar deep link**: copia um link `bucketeer://` para o objeto, que o abre no Bucketeer de qualquer lugar do seu Mac.
 

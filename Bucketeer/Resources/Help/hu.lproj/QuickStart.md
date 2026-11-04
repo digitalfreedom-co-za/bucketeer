@@ -40,7 +40,7 @@ Fiók szerkesztésekor a titkos kulcs rejtve van. Kattintson a **Mentett hiteles
 ## Objektumok kezelése
 
 - **Új mappa**: az eszközsor gombja vagy **⇧⌘N**.
-- **Átnevezés…**: kattintson jobb gombbal egy objektumra. Az átnevezés egy szerveroldali másolás, amelyet törlés követ.
+- **Átnevezés…**: kattintson jobb gombbal egy objektumra. Az átnevezés egy szerveroldali másolás, amelyet törlés követ. Mappa átnevezése vagy törlése a teljes tartalmára vonatkozik, és az átnevezés soha nem ír felül egy meglévő nevet.
 - **Törlés**: jelöljön ki egy vagy több objektumot, kattintson a kuka gombra, és erősítse meg.
 - **Deep link másolása**: egy `bucketeer://` linket másol az objektumhoz, amely a Mac bármely pontjáról megnyitja azt a Bucketeerben.
 

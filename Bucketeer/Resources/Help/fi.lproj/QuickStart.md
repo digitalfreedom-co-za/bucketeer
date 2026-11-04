@@ -40,7 +40,7 @@ Salainen avain on piilotettu, kun muokkaat tiliä. Klikkaa **Näytä tallennetut
 ## Hallitse objekteja
 
 - **Uusi kansio**: työkalupalkin painike tai **⇧⌘N**.
-- **Nimeä uudelleen…**: klikkaa objektia hiiren oikealla painikkeella. Uudelleennimeäminen on palvelimella tehtävä kopio, jota seuraa poisto.
+- **Nimeä uudelleen…**: klikkaa objektia hiiren oikealla painikkeella. Uudelleennimeäminen on palvelimella tehtävä kopio, jota seuraa poisto. Kansion nimeäminen uudelleen tai poistaminen koskee kaikkea sen sisältöä, eikä nimeäminen koskaan korvaa olemassa olevaa nimeä.
 - **Poista**: valitse yksi tai useampi objekti, klikkaa roskakoripainiketta ja vahvista.
 - **Kopioi syvälinkki**: kopioi objektiin `bucketeer://`-linkin, joka avaa sen Bucketeerissa mistä tahansa Macillasi.
 

@@ -40,7 +40,7 @@ El secreto está oculto cuando editas una cuenta. Haz clic en **Revelar credenci
 ## Gestionar objetos
 
 - **Nueva carpeta**: botón de la barra de herramientas o **⇧⌘N**.
-- **Renombrar…**: haz clic con el botón derecho en un objeto. Renombrar es una copia en el servidor seguida de una eliminación.
+- **Renombrar…**: haz clic con el botón derecho en un objeto. Renombrar es una copia en el servidor seguida de una eliminación. Cambiar el nombre de una carpeta o eliminarla afecta a todo su contenido, y un cambio de nombre nunca sustituye un nombre existente.
 - **Eliminar**: selecciona uno o varios objetos, haz clic en el botón de la papelera y confirma.
 - **Copiar enlace profundo**: copia un enlace `bucketeer://` al objeto, que lo abre en Bucketeer desde cualquier lugar de tu Mac.
 

@@ -40,7 +40,7 @@ Le secret est masqué lorsque vous modifiez un compte. Cliquez sur **Révéler l
 ## Gérer les objets
 
 - **Nouveau dossier** : bouton de la barre d’outils ou **⇧⌘N**.
-- **Renommer…** : faites un clic droit sur un objet. Un renommage est une copie côté serveur suivie d’une suppression.
+- **Renommer…** : faites un clic droit sur un objet. Un renommage est une copie côté serveur suivie d’une suppression. Renommer ou supprimer un dossier s’applique à tout son contenu, et un renommage ne remplace jamais un nom existant.
 - **Supprimer** : sélectionnez un ou plusieurs objets, cliquez sur le bouton corbeille et confirmez.
 - **Copier le lien profond** : copie un lien `bucketeer://` vers l’objet, qui l’ouvre dans Bucketeer depuis n’importe où sur votre Mac.
 

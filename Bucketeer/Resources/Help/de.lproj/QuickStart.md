@@ -40,7 +40,7 @@ Beim Bearbeiten eines Kontos ist das Secret verborgen. Klicke auf **Gespeicherte
 ## Objekte verwalten
 
 - **Neuer Ordner**: Taste in der Symbolleiste oder **⇧⌘N**.
-- **Umbenennen…**: Klicke mit der rechten Maustaste auf ein Objekt. Umbenennen ist eine serverseitige Kopie mit anschließendem Löschen.
+- **Umbenennen…**: Klicke mit der rechten Maustaste auf ein Objekt. Umbenennen ist eine serverseitige Kopie mit anschließendem Löschen. Umbenennen oder Löschen eines Ordners gilt für alles darin, und Umbenennen ersetzt nie einen vorhandenen Namen.
 - **Löschen**: Wähle ein oder mehrere Objekte aus, klicke auf die Papierkorb-Taste und bestätige.
 - **Deep-Link kopieren**: Kopiert einen `bucketeer://`-Link zum Objekt, der es von überall auf deinem Mac in Bucketeer öffnet.
 

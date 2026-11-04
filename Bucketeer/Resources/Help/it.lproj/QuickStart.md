@@ -40,7 +40,7 @@ Il segreto è nascosto quando modifichi un account. Fai clic su **Rivela le cred
 ## Gestire gli oggetti
 
 - **Nuova cartella**: pulsante nella barra degli strumenti o **⇧⌘N**.
-- **Rinomina…**: fai clic con il tasto destro su un oggetto. Rinominare è una copia lato server seguita da un'eliminazione.
+- **Rinomina…**: fai clic con il tasto destro su un oggetto. Rinominare è una copia lato server seguita da un'eliminazione. Rinominare o eliminare una cartella vale per tutto il suo contenuto, e una ridenominazione non sostituisce mai un nome esistente.
 - **Elimina**: seleziona uno o più oggetti, fai clic sul pulsante del cestino e conferma.
 - **Copia link diretto**: copia un link `bucketeer://` all'oggetto, che lo apre in Bucketeer da qualsiasi punto del tuo Mac.
 

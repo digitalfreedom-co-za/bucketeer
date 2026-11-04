@@ -40,7 +40,7 @@ Při úpravě účtu je tajný klíč skrytý. Klikněte na **Zobrazit uložené
 ## Správa objektů
 
 - **Nová složka**: tlačítko na panelu nástrojů nebo **⇧⌘N**.
-- **Přejmenovat…**: klikněte na objekt pravým tlačítkem. Přejmenování je kopie na straně serveru, po které následuje smazání.
+- **Přejmenovat…**: klikněte na objekt pravým tlačítkem. Přejmenování je kopie na straně serveru, po které následuje smazání. Přejmenování nebo smazání složky se týká všeho, co obsahuje, a přejmenování nikdy nenahradí existující název.
 - **Smazat**: vyberte jeden nebo více objektů, klikněte na tlačítko koše a potvrďte.
 - **Kopírovat deep link**: zkopíruje odkaz `bucketeer://` na objekt, který ho odkudkoli na vašem Macu otevře v aplikaci Bucketeer.
 
