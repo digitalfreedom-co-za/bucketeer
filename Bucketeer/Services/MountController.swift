@@ -30,13 +30,6 @@ final class MountController {
     var mountedDomains: [NSFileProviderDomainIdentifier] = []
     var lastError: BucketeerError?
 
-    /// The File Provider extension's deployment target is macOS 14.1
-    /// while the host runs on 14.0, so Mount is unavailable on 14.0.
-    static var isSupportedOnThisSystem: Bool {
-        if #available(macOS 14.1, *) { return true }
-        return false
-    }
-
     private let encryptionKeyStore: any EncryptionKeyStoring
     private let registry: any FileProviderDomainRegistry
     /// Buckets with a mount or an encryption change in flight. Both
@@ -69,13 +62,6 @@ final class MountController {
     /// bytes, so Finder uploads would bypass client-side encryption.
     /// A failed key lookup also refuses (fail closed).
     func mount(account: S3Account, bucket: String) async {
-        guard Self.isSupportedOnThisSystem else {
-            lastError = .unknown(message: String(
-                localized: "mount.error.requiresNewerMacOS",
-                defaultValue: "Mounting buckets in Finder requires macOS 14.1 or later."
-            ))
-            return
-        }
         let identifier = Self.domainIdentifier(accountID: account.id, bucket: bucket)
         guard reserve(identifier) else {
             lastError = Self.busyError
@@ -184,8 +170,7 @@ final class MountController {
                     defaultValue: "The File Provider extension is not yet provisioned. App Group entitlement and the extension target must be set up first."
                 ))
             }
-            if #available(macOS 14.1, *),
-               nsError.code == NSFileProviderError.providerDomainNotFound.rawValue {
+            if nsError.code == NSFileProviderError.providerDomainNotFound.rawValue {
                 return .unknown(message: String(
                     localized: "mount.error.notFound",
                     defaultValue: "That mounted bucket no longer exists."

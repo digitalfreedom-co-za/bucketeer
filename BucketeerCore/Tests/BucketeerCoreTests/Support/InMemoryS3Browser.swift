@@ -5,6 +5,7 @@
 //  Created by Marcel R. G. Berger on 02.11.26.
 //
 
+import CryptoKit
 import Foundation
 import BucketeerCore
 
@@ -19,6 +20,10 @@ actor InMemoryS3Browser: S3Browsing {
     private var failure: BucketeerError?
     private var holdsNextCopy = false
     private var heldCopy: CheckedContinuation<Void, Never>?
+    private var revision = 0
+    private var pendingRewrite: String?
+    private var pendingPut: (trigger: String, key: String)?
+    private var contents: [String: [String: Data]] = [:]
 
     init(pageSize: Int = 1_000) {
         self.pageSize = pageSize
@@ -45,6 +50,58 @@ actor InMemoryS3Browser: S3Browsing {
         buckets[bucket, default: [:]][key] = S3Object(
             key: key, size: size, lastModified: lastModified, etag: "etag-\(key)"
         )
+    }
+
+    /// Stores `data` under `key` like a PUT would, ETag = MD5 of the
+    /// bytes (as S3 does for single-part uploads), honouring the
+    /// precondition. Returns the new ETag.
+    func write(bucket: String, key: String, data: Data, precondition: WritePrecondition?) throws -> String {
+        let existing = buckets[bucket]?[key]
+        switch precondition {
+        case .ifAbsent where existing != nil:
+            throw BucketeerError.preconditionFailed(key: key)
+        case .ifMatch(let etag) where !ETag.matches(base: etag, current: existing?.etag):
+            throw BucketeerError.preconditionFailed(key: key)
+        default:
+            break
+        }
+        let etag = Insecure.MD5.hash(data: data).map { String(format: "%02x", $0) }.joined()
+        buckets[bucket, default: [:]][key] = S3Object(
+            key: key, size: Int64(data.count), lastModified: Date(timeIntervalSince1970: 1_800_000_000), etag: etag
+        )
+        contents[bucket, default: [:]][key] = data
+        return etag
+    }
+
+    /// Bytes stored through `write`, while the object exists.
+    func data(bucket: String, key: String) -> Data? {
+        buckets[bucket]?[key] == nil ? nil : contents[bucket]?[key]
+    }
+
+    /// Every stored key, folder markers included.
+    func storedKeys(in bucket: String) -> Set<String> {
+        Set(buckets[bucket, default: [:]].keys)
+    }
+
+    /// Replaces the object's contents: same key and size, new ETag.
+    func rewrite(bucket: String, key: String) {
+        guard let object = buckets[bucket]?[key] else { return }
+        revision += 1
+        buckets[bucket]?[key] = S3Object(
+            key: key, size: object.size, lastModified: object.lastModified, etag: "etag-\(key)-v\(revision)"
+        )
+    }
+
+    /// Rewrites `key` just before the next HEAD of it, like a writer that
+    /// lands after a listing but before the operation acting on it.
+    func rewriteBeforeNextHead(of key: String) {
+        pendingRewrite = key
+    }
+
+    /// Creates `key` (size 7) just before the next HEAD of `trigger`,
+    /// like another client writing between a check and a write.
+    func putBeforeNextHead(of trigger: String, key: String) {
+        pendingPut = (trigger, key)
     }
 
     func fail(with error: BucketeerError?) {
@@ -89,6 +146,14 @@ actor InMemoryS3Browser: S3Browsing {
 
     func head(account: S3Account, bucket: String, key: String) async throws -> S3Object {
         try check()
+        if pendingRewrite == key {
+            pendingRewrite = nil
+            rewrite(bucket: bucket, key: key)
+        }
+        if let put = pendingPut, put.trigger == key {
+            pendingPut = nil
+            self.put(bucket: bucket, key: put.key, size: 7)
+        }
         guard let object = buckets[bucket]?[key] else { throw BucketeerError.objectNotFound(key: key) }
         return object
     }
@@ -96,6 +161,13 @@ actor InMemoryS3Browser: S3Browsing {
     func delete(account: S3Account, bucket: String, keys: [String]) async throws {
         try check()
         for key in keys { buckets[bucket]?[key] = nil }
+    }
+
+    func delete(account: S3Account, bucket: String, key: String, ifMatch etag: String) async throws {
+        try check()
+        guard let object = buckets[bucket]?[key] else { throw BucketeerError.objectNotFound(key: key) }
+        guard ETag.matches(base: etag, current: object.etag) else { throw BucketeerError.preconditionFailed(key: key) }
+        buckets[bucket]?[key] = nil
     }
 
     func copy(account: S3Account, fromBucket: String, fromKey: String, toBucket: String, toKey: String, metadata: [String: String]?) async throws {
@@ -106,6 +178,17 @@ actor InMemoryS3Browser: S3Browsing {
         }
         guard let source = buckets[fromBucket]?[fromKey] else { throw BucketeerError.objectNotFound(key: fromKey) }
         put(bucket: toBucket, key: toKey, size: source.size, lastModified: source.lastModified)
+    }
+
+    func copyIfAbsent(account: S3Account, bucket: String, fromKey: String, sourceETag: String, toKey: String) async throws {
+        try check()
+        guard let source = buckets[bucket]?[fromKey] else { throw BucketeerError.objectNotFound(key: fromKey) }
+        guard ETag.matches(base: sourceETag, current: source.etag), buckets[bucket]?[toKey] == nil else {
+            throw BucketeerError.preconditionFailed(key: toKey)
+        }
+        buckets[bucket]?[toKey] = S3Object(key: toKey, size: source.size, lastModified: source.lastModified, etag: source.etag)
+        let bytes = contents[bucket]?[fromKey]
+        contents[bucket]?[toKey] = bytes
     }
 
     func createFolder(account: S3Account, bucket: String, prefix: String) async throws {

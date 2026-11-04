@@ -64,6 +64,16 @@ public struct ProviderRouter: S3Browsing {
         )
     }
 
+    public func copyIfAbsent(account: S3Account, bucket: String, fromKey: String, sourceETag: String, toKey: String) async throws {
+        try await backend(for: account).copyIfAbsent(
+            account: account, bucket: bucket, fromKey: fromKey, sourceETag: sourceETag, toKey: toKey
+        )
+    }
+
+    public func delete(account: S3Account, bucket: String, key: String, ifMatch etag: String) async throws {
+        try await backend(for: account).delete(account: account, bucket: bucket, key: key, ifMatch: etag)
+    }
+
     public func copy(
         account: S3Account,
         fromBucket: String,

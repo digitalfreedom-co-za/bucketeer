@@ -40,7 +40,7 @@ Het geheim is verborgen als je een account wijzigt. Klik op **Toon opgeslagen in
 ## Objecten beheren
 
 - **Nieuwe map**: knop in de knoppenbalk of **⇧⌘N**.
-- **Hernoem…**: klik met de rechtermuisknop op een object. Hernoemen is een kopie op de server, gevolgd door een verwijdering.
+- **Hernoem…**: klik met de rechtermuisknop op een object. Hernoemen is een kopie op de server, gevolgd door een verwijdering. Een map hernoemen of verwijderen geldt voor alles daarin, en een naamswijziging vervangt nooit een bestaande naam.
 - **Verwijder**: selecteer een of meer objecten, klik op de prullenmandknop en bevestig.
 - **Deeplink kopiëren**: kopieert een `bucketeer://`-link naar het object, die het object vanaf elke plek op je Mac in Bucketeer opent.
 
@@ -88,7 +88,7 @@ Bucketeer voegt taken toe aan de Opdrachten-app: buckets weergeven, een bestand 
 
 Voor deze functies heb je Bucketeer Pro nodig:
 
-- **Koppelen als volume**: klik met de rechtermuisknop op een bucket en kies **Koppelen als volume** om hem in de Finder als schijf te gebruiken. Vereist macOS 14.1 of nieuwer. Gekoppelde volumes verschijnen onder **Gekoppelde volumes** in de navigatiekolom; klik met de rechtermuisknop om te **Ontkoppelen**. Buckets met versleuteling aan de clientzijde kunnen niet worden gekoppeld. Wijzigingen op de server verschijnen in de Finder als je de bucket in Bucketeer vernieuwt. Als een bestand dat je in de Finder bewerkt intussen op de server is gewijzigd, wordt jouw versie ernaast bewaard als conflictkopie.
+- **Koppelen als volume**: klik met de rechtermuisknop op een bucket en kies **Koppelen als volume** om hem in de Finder als schijf te gebruiken. Gekoppelde volumes verschijnen onder **Gekoppelde volumes** in de navigatiekolom; klik met de rechtermuisknop om te **Ontkoppelen**. Buckets met versleuteling aan de clientzijde kunnen niet worden gekoppeld. Wijzigingen op de server verschijnen in de Finder als je de bucket in Bucketeer vernieuwt. Als een bestand dat je in de Finder bewerkt intussen op de server is gewijzigd, wordt jouw versie ernaast bewaard als conflictkopie.
 - **Synchronisaties**: maak in het gedeelte **Synchronisatie** een taak aan die kopieert, verplaatst of spiegelt tussen twee buckets, over accounts en aanbieders heen, of tussen een lokale map en een bucket. Voer hem handmatig uit, bij het opstarten, elke N minuten of wanneer de lokale map verandert.
 - **Bewaakte mappen**: **Nieuwe bewaakte map…** uploadt elk nieuw bestand in een lokale map naar een bucket.
 - **Naar ander account kopiëren…**: kopieert objecten naar een ander account of een andere aanbieder. Als beide kanten het toestaan, gebeurt de kopie op de server en gaan de gegevens niet via je Mac.
@@ -103,7 +103,7 @@ Bucketeer Pro is een eenmalige aankoop in de app via de App Store, zonder abonne
 Je kunt Bucketeer Pro 14 dagen gratis proberen. Voordat je begint, toont de aankooppagina hoe lang de proefperiode duurt, wat er daarna gebeurt en de prijs van Pro voor altijd; klik daarna op **Proefperiode starten**. Als de proefperiode afloopt, gaat Bucketeer verder in de gratis versie en wordt er niets in rekening gebracht. De proefperiode kan één keer per Apple ID worden gestart, en het herstellen van aankopen brengt een lopende proefperiode ook op een andere Mac terug.
 
 - **Aankoop herstellen** haalt Pro terug op een andere Mac of na een herinstallatie.
-- **Code inwisselen** (macOS 15 of nieuwer) opent het venster van Apple voor aanbiedingscodes.
+- **Code inwisselen** opent het venster van Apple voor aanbiedingscodes.
 
 ## Toetscombinaties
 

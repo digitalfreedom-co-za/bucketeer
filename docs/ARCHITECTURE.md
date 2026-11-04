@@ -34,7 +34,7 @@ flowchart LR
     end
 
     subgraph Pro["Bucketeer Pro"]
-        Mount["Mount as Drive<br/>File Provider, macOS 14.1+<br/>server changes, conflict copies"]
+        Mount["Mount as Drive<br/>File Provider<br/>server changes, conflict copies"]
         Sync["Sync jobs and watch folders"]
         Cross["Copy to other account<br/>server-side when possible"]
         Menubar["Menu bar mode"]
@@ -546,7 +546,6 @@ sequenceDiagram
         UI->>UI: post showBucketeerPaywall
     else unlocked
         UI->>MC: mount(account, bucket)
-        MC->>MC: macOS 14.1+ check
         MC->>MC: reserve bucket in bucketsInFlight
         alt already reserved
             MC-->>UI: lastError mount.error.busy
@@ -768,7 +767,7 @@ sequenceDiagram
     SK->>Apple: sign-in if needed
     Ent->>Ent: refresh()
 
-    User->>Pay: Redeem Code, macOS 15+ only
+    User->>Pay: Redeem Code
     Pay->>SK: offerCodeRedemption(isPresented:)
     SK->>Apple: Apple redemption sheet
     SK-->>Pay: completion .success

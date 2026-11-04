@@ -40,7 +40,7 @@ Den hemmelige nøgle er skjult, når du redigerer en konto. Klik på **Vis gemte
 ## Administrér objekter
 
 - **Ny mappe**: knappen i værktøjslinjen eller **⇧⌘N**.
-- **Omdøb…**: højreklik på et objekt. En omdøbning er en kopi på serveren efterfulgt af en sletning.
+- **Omdøb…**: højreklik på et objekt. En omdøbning er en kopi på serveren efterfulgt af en sletning. Omdøbning eller sletning af en mappe gælder alt i den, og en omdøbning erstatter aldrig et eksisterende navn.
 - **Slet**: vælg et eller flere objekter, klik på papirkurv-knappen, og bekræft.
 - **Kopiér deeplink**: kopierer et `bucketeer://`-link til objektet, som åbner det i Bucketeer hvor som helst på din Mac.
 
@@ -88,7 +88,7 @@ Bucketeer tilføjer handlinger til appen Genveje: vis buckets, upload en fil, op
 
 Disse funktioner kræver Bucketeer Pro:
 
-- **Montér som drev**: højreklik på en bucket, og vælg **Montér som drev** for at bruge den i Finder som en disk. Kræver macOS 14.1 eller nyere. Monterede drev vises under **Monterede drev** i sidepanelet; højreklik, og vælg **Afmontér** for at fjerne dem. Buckets med kryptering på klientsiden kan ikke monteres. Ændringer på serveren vises i Finder, når du opdaterer bucketen i Bucketeer. Hvis en fil, du redigerer i Finder, er blevet ændret på serveren i mellemtiden, gemmes din version ved siden af som en konfliktkopi.
+- **Montér som drev**: højreklik på en bucket, og vælg **Montér som drev** for at bruge den i Finder som en disk. Monterede drev vises under **Monterede drev** i sidepanelet; højreklik, og vælg **Afmontér** for at fjerne dem. Buckets med kryptering på klientsiden kan ikke monteres. Ændringer på serveren vises i Finder, når du opdaterer bucketen i Bucketeer. Hvis en fil, du redigerer i Finder, er blevet ændret på serveren i mellemtiden, gemmes din version ved siden af som en konfliktkopi.
 - **Synkroniseringsjob**: i sektionen **Synkronisering** opretter du et job, der kopierer, flytter eller spejler mellem to buckets, på tværs af konti og udbydere, eller mellem en lokal mappe og en bucket. Kør det manuelt, ved opstart, hvert N. minut eller når den lokale mappe ændres.
 - **Overvågede mapper**: **Ny overvåget mappe…** uploader hver ny fil i en lokal mappe til en bucket.
 - **Kopiér til anden konto…**: kopierer objekter til en anden konto eller udbyder. Når begge sider tillader det, kører kopieringen på serveren, og dataene passerer ikke gennem din Mac.
@@ -103,7 +103,7 @@ Bucketeer Pro er et engangskøb i appen via App Store, uden abonnement. Åbn **I
 Du kan prøve Bucketeer Pro gratis i 14 dage. Før du starter, viser købssiden prøveperiodens længde, hvad der sker bagefter, og prisen på Pro Livstid; klik derefter på **Start prøveperiode**. Når prøveperioden slutter, fortsætter Bucketeer i gratisversionen, og der opkræves intet. Prøveperioden kan startes én gang pr. Apple-id, og gendannelse af køb henter også en igangværende prøveperiode tilbage på en anden Mac.
 
 - **Gendan køb** henter Pro tilbage på en anden Mac eller efter en geninstallation.
-- **Indløs kode** (macOS 15 eller nyere) åbner Apples vindue til tilbudskoder.
+- **Indløs kode** åbner Apples vindue til tilbudskoder.
 
 ## Tastaturgenveje
 

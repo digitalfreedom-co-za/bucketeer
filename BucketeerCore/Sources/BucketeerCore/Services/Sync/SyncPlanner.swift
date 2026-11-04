@@ -19,13 +19,16 @@ import Foundation
 public enum SyncPlanner {
 
     public struct PlanEntry: Hashable, Sendable {
-        public let sourceKey: String
-        public let sourceSize: Int64
+        /// The source as listed at planning time: its ETag (object
+        /// stores) or size and date (local files) identify the version
+        /// the entry transfers.
+        public let source: S3Object
         public let destinationKey: String
 
-        public init(sourceKey: String, sourceSize: Int64, destinationKey: String) {
-            self.sourceKey = sourceKey
-            self.sourceSize = sourceSize
+        public var sourceKey: String { source.key }
+
+        public init(source: S3Object, destinationKey: String) {
+            self.source = source
             self.destinationKey = destinationKey
         }
     }
@@ -36,10 +39,36 @@ public enum SyncPlanner {
         /// the source. Only populated for mirror jobs with
         /// `deletePropagation == true`.
         public let deletes: [String]
+        /// Source keys left alone because the destination would store
+        /// them under the same name as another key.
+        public let collisions: [String]
+        /// Source objects whose destination copy is already current.
+        public let unchanged: [S3Object]
 
-        public init(upserts: [PlanEntry], deletes: [String]) {
+        public init(upserts: [PlanEntry], deletes: [String], collisions: [String] = [], unchanged: [S3Object] = []) {
             self.upserts = upserts
             self.deletes = deletes
+            self.collisions = collisions
+            self.unchanged = unchanged
+        }
+    }
+
+    /// How the destination tells two names apart.
+    public enum DestinationNaming: Sendable {
+        /// Object keys: byte for byte.
+        case exact
+        /// A local folder: APFS ignores Unicode normalisation, and most
+        /// volumes also ignore case.
+        case fileSystem(caseSensitive: Bool)
+
+        func identity(of name: String) -> String {
+            switch self {
+            case .exact:
+                return name
+            case .fileSystem(let caseSensitive):
+                let normalized = name.precomposedStringWithCanonicalMapping
+                return caseSensitive ? normalized : normalized.folding(options: .caseInsensitive, locale: nil)
+            }
         }
     }
 
@@ -49,36 +78,66 @@ public enum SyncPlanner {
     /// enumerates each side into a `[S3Object]` (local folders use
     /// `LocalFolderEnumerator` with empty `etag` and relative-path
     /// keys; S3 / Azure use the existing recursive listing).
+    ///
+    /// `acknowledged` holds the fingerprints a watched local source had
+    /// when the job last synced it. A local file has no ETag, so an
+    /// equal size cannot tell an edit apart: a watched file counts as
+    /// synced only while it still has its acknowledged fingerprint, and
+    /// a file without one goes up again.
     public static func makePlan(
         job: SyncJob,
         source: [S3Object],
-        destination: [S3Object]
+        destination: [S3Object],
+        destinationNaming naming: DestinationNaming = .exact,
+        acknowledged: [String: LocalFileFingerprint] = [:]
     ) -> Plan {
+        // Watch folders promise to upload every save. Other jobs keep the
+        // comparison the user chose (size only for `.nameAndSize`).
+        let checksFingerprints = if case .localFolder = job.source { job.schedule == .onLocalChange } else { false }
         let sourcePrefix = prefix(for: job.source)
         let destinationPrefix = prefix(for: job.destination)
 
         let destIndex: [String: S3Object] = Dictionary(
             uniqueKeysWithValues: destination.map { ($0.key, $0) }
         )
+        let destinationNames = Dictionary(
+            destination.filter { !$0.isFolder }.map { (naming.identity(of: $0.key), [$0.key]) },
+            uniquingKeysWith: +
+        )
+
+        let candidates = source.filter { s in
+            guard !s.isFolder else { return false }
+            let relative = relativeKey(s.key, under: sourcePrefix)
+            return !relative.isEmpty
+                && matches(relative, includes: job.includeGlobs, excludes: job.excludeGlobs)
+        }
+        let candidatesPerName = Dictionary(
+            grouping: candidates,
+            by: { naming.identity(of: destinationPrefix + relativeKey($0.key, under: sourcePrefix)) }
+        )
 
         var upserts: [PlanEntry] = []
-        for s in source where !s.isFolder {
-            let relative = relativeKey(s.key, under: sourcePrefix)
-            guard !relative.isEmpty else { continue }
-            guard matches(relative, includes: job.includeGlobs, excludes: job.excludeGlobs) else {
+        var collisions: [String] = []
+        var unchanged: [S3Object] = []
+        for s in candidates {
+            let destKey = destinationPrefix + relativeKey(s.key, under: sourcePrefix)
+            let name = naming.identity(of: destKey)
+            // Two source keys, or a source key and a differently spelled
+            // destination file, would land on one file: writing either
+            // would silently replace the other.
+            let sharesName = candidatesPerName[name, default: []].count > 1
+                || destinationNames[name, default: []].contains { $0 != destKey }
+            if sharesName {
+                collisions.append(s.key)
                 continue
             }
-            let destKey = destinationPrefix + relative
-            if let existing = destIndex[destKey], isUnchanged(
-                source: s, dest: existing, strategy: job.diffStrategy
-            ) {
+            if let existing = destIndex[destKey],
+               isUnchanged(source: s, dest: existing, strategy: job.diffStrategy),
+               !checksFingerprints || acknowledged[s.key] == LocalFileFingerprint(s) {
+                unchanged.append(s)
                 continue
             }
-            upserts.append(PlanEntry(
-                sourceKey: s.key,
-                sourceSize: s.size,
-                destinationKey: destKey
-            ))
+            upserts.append(PlanEntry(source: s, destinationKey: destKey))
         }
 
         var deletes: [String] = []
@@ -86,24 +145,25 @@ public enum SyncPlanner {
             // Destination-side keys whose corresponding relative path is
             // absent from the source. Filtered by the same include/exclude
             // globs as the upsert side so a mirror job for `*.jpg`
-            // never deletes unrelated files in the destination.
+            // never deletes unrelated files in the destination. A file
+            // the source names in another spelling is not an orphan.
             let sourceRelatives = Set(
                 source
                     .filter { !$0.isFolder }
-                    .map { relativeKey($0.key, under: sourcePrefix) }
+                    .map { naming.identity(of: relativeKey($0.key, under: sourcePrefix)) }
             )
             for d in destination where !d.isFolder {
                 let relative = relativeKey(d.key, under: destinationPrefix)
                 guard matches(relative, includes: job.includeGlobs, excludes: job.excludeGlobs) else {
                     continue
                 }
-                if !sourceRelatives.contains(relative) {
+                if !sourceRelatives.contains(naming.identity(of: relative)) {
                     deletes.append(d.key)
                 }
             }
         }
 
-        return Plan(upserts: upserts, deletes: deletes)
+        return Plan(upserts: upserts, deletes: deletes, collisions: collisions, unchanged: unchanged)
     }
 
     /// Effective prefix for a sync endpoint. S3 endpoints carry an

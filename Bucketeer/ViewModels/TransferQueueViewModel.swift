@@ -23,7 +23,7 @@ final class TransferQueueViewModel {
 
     func startObserving() {
         guard observerTask == nil else { return }
-        let stream = transferManager.tasks
+        let stream = transferManager.taskUpdates()
         observerTask = Task { [weak self] in
             for await snapshot in stream {
                 self?.tasks = snapshot
