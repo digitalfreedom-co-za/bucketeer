@@ -81,6 +81,21 @@ struct LocalFolderSafeChildURLTests {
         #expect(resolved.lastPathComponent == " report.txt ")
     }
 
+    @Test("A key that passes through a symlink inside the root is rejected")
+    func symlinkedPathIsRejected() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("SafeChildURLTests-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: root.appendingPathComponent("real"), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try FileManager.default.createSymbolicLink(at: root.appendingPathComponent("alias"),
+                                                   withDestinationURL: root.appendingPathComponent("real"))
+
+        #expect(throws: BucketeerError.self) {
+            _ = try LocalFolderWriter.safeChildURL(root: root, relativeKey: "alias/report.txt")
+        }
+        _ = try LocalFolderWriter.safeChildURL(root: root, relativeKey: "real/report.txt")
+    }
+
     @Test("Empty path components are rejected instead of collapsing onto another key")
     func emptyComponentsRejected() {
         for badKey in ["subdir//file.txt", "subdir/", "a/ /b.txt"] {

@@ -169,14 +169,50 @@ public enum LocalFolderWriter {
     ) throws -> Bool {
         let target = try safeChildURL(root: root, relativeKey: relativeKey)
         guard FileManager.default.fileExists(atPath: target.path) else { return true }
-        let values = try target.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey])
+        // Take the file out of reach first (a rename is atomic), then
+        // check the file that was actually taken: a save that replaced
+        // it between check and delete can no longer be the one deleted.
+        let claimed = target.deletingLastPathComponent()
+            .appendingPathComponent(".bucketeer-deleting-\(UUID().uuidString)")
+        do {
+            try FileManager.default.moveItem(at: target, to: claimed)
+        } catch where !FileManager.default.fileExists(atPath: target.path) {
+            return true
+        }
+        let values = try claimed.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey])
         let current = LocalFileFingerprint(
             size: Int64(values.fileSize ?? 0),
             modified: values.contentModificationDate ?? .distantPast
         )
-        guard current == fingerprint else { return false }
-        try FileManager.default.removeItem(at: target)
-        return true
+        if current == fingerprint {
+            try FileManager.default.removeItem(at: claimed)
+            return true
+        }
+        try restore(claimed, to: target)
+        return false
+    }
+
+    /// Symlinks resolved in the part of the path that exists; the
+    /// missing tail (a file about to be written) is appended unchanged.
+    private static func resolvedPath(of url: URL) -> String {
+        var existing = url
+        var tail: [String] = []
+        while !FileManager.default.fileExists(atPath: existing.path), existing.pathComponents.count > 1 {
+            tail.insert(existing.lastPathComponent, at: 0)
+            existing.deleteLastPathComponent()
+        }
+        return ([existing.resolvingSymlinksInPath().path] + tail).joined(separator: "/")
+    }
+
+    /// Puts a changed file back; if its name was taken meanwhile, it
+    /// becomes a conflict copy beside it instead of replacing anything.
+    private static func restore(_ claimed: URL, to target: URL) throws {
+        do {
+            try FileManager.default.moveItem(at: claimed, to: target)
+        } catch {
+            let name = ConflictCopyName.key(for: target.lastPathComponent, date: Date(), tag: ConflictCopyName.randomTag())
+            try FileManager.default.moveItem(at: claimed, to: target.deletingLastPathComponent().appendingPathComponent(name))
+        }
     }
 
     /// Confine every write/delete to paths whose
@@ -229,6 +265,18 @@ public enum LocalFolderWriter {
             throw BucketeerError.providerError(
                 statusCode: 400,
                 message: "Relative key escapes the sync root: \(relativeKey)"
+            )
+        }
+        // A symlink inside the root would let two keys (or a key and a
+        // path outside the root) reach the same file.
+        // Compared without case and normalisation, which the file system
+        // may report in its own spelling.
+        let expected = (resolvedPath(of: rootStandard) + "/" + relativeKey).precomposedStringWithCanonicalMapping
+        let resolved = resolvedPath(of: candidate).precomposedStringWithCanonicalMapping
+        guard resolved.caseInsensitiveCompare(expected) == .orderedSame else {
+            throw BucketeerError.providerError(
+                statusCode: 400,
+                message: "Relative key passes through a symbolic link: \(relativeKey)"
             )
         }
         return candidate
