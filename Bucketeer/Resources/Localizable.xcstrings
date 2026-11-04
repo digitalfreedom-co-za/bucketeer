@@ -80025,6 +80025,131 @@
           }
         }
       }
+    },
+    "sync.error.overlappingEndpoints" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zdroj a cíl této synchronizační úlohy se navzájem obsahují. Zvolte oddělené složky, aby úloha nekopírovala sama do sebe ani nemazala vlastní zdroj."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kilden og destinationen for dette synkroniseringsjob indeholder hinanden. Vælg adskilte mapper, så jobbet hverken kopierer ind i sig selv eller sletter sin egen kilde."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quelle und Ziel dieses Sync-Auftrags enthalten einander. Wähle getrennte Ordner, damit der Auftrag weder in sich selbst kopiert noch seine eigene Quelle löscht."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Η πηγή και ο προορισμός αυτής της εργασίας συγχρονισμού περιέχουν ο ένας τον άλλον. Επιλέξτε ξεχωριστούς φακέλους, ώστε η εργασία να μην αντιγράφει στον εαυτό της ούτε να διαγράφει την ίδια της την πηγή."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The source and the destination of this sync job contain each other. Choose folders that are separate, so the job neither copies into itself nor deletes its own source."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The source and the destination of this sync job contain each other. Choose folders that are separate, so the job neither copies into itself nor deletes its own source."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El origen y el destino de esta tarea de sincronización se contienen entre sí. Elige carpetas separadas para que la tarea no se copie dentro de sí misma ni elimine su propio origen."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tämän synkronointityön lähde ja kohde sisältävät toisensa. Valitse erilliset kansiot, jotta työ ei kopioi itseensä eikä poista omaa lähdettään."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La source et la destination de cette tâche de synchronisation se contiennent mutuellement. Choisissez des dossiers distincts pour que la tâche ne se copie pas en elle-même et ne supprime pas sa propre source."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A szinkronizálási feladat forrása és célja tartalmazza egymást. Válasszon különálló mappákat, hogy a feladat ne másoljon önmagába, és ne törölje a saját forrását."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’origine e la destinazione di questa attività di sincronizzazione si contengono a vicenda. Scegli cartelle separate, così l’attività non copia dentro sé stessa né elimina la propria origine."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この同期ジョブのソースと保存先が互いに含み合っています。ジョブが自身の中にコピーしたり、自身のソースを削除したりしないよう、別々のフォルダを選択してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 동기화 작업의 원본과 대상이 서로를 포함합니다. 작업이 자기 자신 안으로 복사하거나 원본을 삭제하지 않도록 서로 분리된 폴더를 선택하세요."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kilden og målet for denne synkroniseringsjobben inneholder hverandre. Velg atskilte mapper, slik at jobben verken kopierer inn i seg selv eller sletter sin egen kilde."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De bron en de bestemming van deze synchronisatietaak bevatten elkaar. Kies gescheiden mappen, zodat de taak niet in zichzelf kopieert en haar eigen bron niet verwijdert."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Źródło i miejsce docelowe tego zadania synchronizacji zawierają się nawzajem. Wybierz rozdzielne foldery, aby zadanie nie kopiowało do samego siebie ani nie usuwało własnego źródła."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A origem e o destino desta tarefa de sincronização contêm um ao outro. Escolha pastas separadas para que a tarefa não copie para dentro de si mesma nem apague a própria origem."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A origem e o destino desta tarefa de sincronização contêm-se mutuamente. Escolha pastas separadas para que a tarefa não copie para dentro de si própria nem elimine a sua origem."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Источник и место назначения этого задания синхронизации содержат друг друга. Выберите раздельные папки, чтобы задание не копировало само в себя и не удаляло собственный источник."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Källan och målet för det här synkjobbet innehåller varandra. Välj åtskilda mappar så att jobbet varken kopierar in i sig självt eller raderar sin egen källa."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

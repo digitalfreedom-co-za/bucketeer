@@ -395,6 +395,12 @@ actor SyncEngine {
         let sourceList: [S3Object]
         let destList: [S3Object]
         do {
+            try SyncEndpointOverlap.validate(
+                source: job.source,
+                destination: job.destination,
+                sourceRoot: context.source.localRoot,
+                destinationRoot: context.destination.localRoot
+            )
             async let s = enumerate(endpoint: job.source, context: context.source)
             async let d = enumerate(endpoint: job.destination, context: context.destination)
             sourceList = try await s
