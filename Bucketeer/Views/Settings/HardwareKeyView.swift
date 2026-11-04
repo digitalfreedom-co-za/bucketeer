@@ -12,7 +12,8 @@ import SwiftUI
 /// hardware-key unlock into the secret-reveal path.
 struct HardwareKeyView: View {
     @Environment(AppContainer.self) private var container
-    @State private var availability = HardwareKeyAvailability()
+
+    private var availability: HardwareKeyAvailability { container.hardwareKeyAvailability }
 
     var body: some View {
         @Bindable var settings = container.hardwareKeySettings
