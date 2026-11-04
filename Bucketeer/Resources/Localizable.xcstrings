@@ -79775,6 +79775,256 @@
           }
         }
       }
+    },
+    "sync.summary.collisions %lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld přeskočeno: název se v cíli už používá"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld sprunget over: navnet bruges allerede i destinationen"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld übersprungen: Name im Ziel bereits vergeben"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld παραλείφθηκαν: το όνομα χρησιμοποιείται ήδη στον προορισμό"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld skipped: name already used in the destination"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld skipped: name already used in the destination"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld omitidos: el nombre ya existe en el destino"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld ohitettu: nimi on jo käytössä kohteessa"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld ignorés : nom déjà utilisé dans la destination"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld kihagyva: a név már foglalt a célhelyen"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld saltati: nome già in uso nella destinazione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 件をスキップ：保存先で同じ名前が使われています"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld개 건너뜀: 대상에서 이미 사용 중인 이름"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld hoppet over: navnet er allerede brukt i målet"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld overgeslagen: naam al in gebruik op de bestemming"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pominięto %lld: nazwa jest już używana w miejscu docelowym"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld ignorados: nome já usado no destino"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld ignorados: nome já utilizado no destino"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пропущено %lld: имя уже занято в месте назначения"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld hoppades över: namnet används redan i målet"
+          }
+        }
+      }
+    },
+    "sync.error.nameCollision" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přeskočeno: v cílové složce se tento název shoduje s jinou položkou (liší se jen velikostí písmen nebo diakritikou). Přejmenujte jednu z nich, aby se synchronizovaly obě."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprunget over: i destinationsmappen svarer navnet til et andet element (kun store/små bogstaver eller accenter er forskellige). Omdøb et af dem for at synkronisere begge."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Übersprungen: Im Zielordner entspricht dieser Name einem anderen Objekt (nur Groß-/Kleinschreibung oder Akzente unterscheiden sich). Benenne eines davon um, damit beide synchronisiert werden."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Παραλείφθηκε: στον φάκελο προορισμού αυτό το όνομα ταυτίζεται με άλλο στοιχείο (διαφέρουν μόνο πεζά/κεφαλαία ή τόνοι). Μετονομάστε ένα από τα δύο για να συγχρονιστούν και τα δύο."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skipped: in the destination folder this name matches another item (only letter case or accents differ). Rename one of them to sync both."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skipped: in the destination folder this name matches another item (only letter case or accents differ). Rename one of them to sync both."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omitido: en la carpeta de destino este nombre coincide con otro elemento (solo cambian mayúsculas o acentos). Cambia el nombre de uno para sincronizar ambos."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ohitettu: kohdekansiossa tämä nimi vastaa toista kohdetta (vain kirjainkoko tai aksentit eroavat). Nimeä toinen uudelleen, niin molemmat synkronoidaan."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignoré : dans le dossier de destination, ce nom correspond à un autre élément (seules la casse ou les accents diffèrent). Renommez l’un des deux pour synchroniser les deux."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kihagyva: a célmappában ez a név egy másik elemmel egyezik (csak a kis- és nagybetűk vagy az ékezetek különböznek). Nevezze át az egyiket, hogy mindkettő szinkronizálódjon."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saltato: nella cartella di destinazione questo nome coincide con un altro elemento (cambiano solo maiuscole o accenti). Rinomina uno dei due per sincronizzarli entrambi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スキップしました：保存先フォルダでは、この名前が別の項目と一致します（大文字小文字やアクセントの違いのみ）。両方を同期するには、どちらかの名前を変更してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "건너뜀: 대상 폴더에서 이 이름이 다른 항목과 같습니다(대소문자나 악센트만 다름). 둘 다 동기화하려면 하나의 이름을 변경하세요."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoppet over: i målmappen tilsvarer dette navnet et annet element (bare store/små bokstaver eller aksenter er ulike). Gi et av dem nytt navn for å synkronisere begge."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overgeslagen: in de doelmap komt deze naam overeen met een ander onderdeel (alleen hoofdletters of accenten verschillen). Wijzig de naam van een van beide om ze allebei te synchroniseren."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pominięto: w folderze docelowym ta nazwa pokrywa się z innym elementem (różnią się tylko wielkością liter lub akcentami). Zmień nazwę jednego z nich, aby zsynchronizować oba."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignorado: na pasta de destino, este nome coincide com outro item (só mudam maiúsculas ou acentos). Renomeie um deles para sincronizar os dois."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignorado: na pasta de destino, este nome coincide com outro item (só mudam maiúsculas ou acentos). Mude o nome de um deles para sincronizar os dois."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пропущено: в папке назначения это имя совпадает с другим объектом (различаются только регистр букв или диакритика). Переименуйте один из них, чтобы синхронизировать оба."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoppades över: i målmappen motsvarar namnet ett annat objekt (bara versaler/gemener eller accenter skiljer sig). Byt namn på ett av dem för att synkronisera båda."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

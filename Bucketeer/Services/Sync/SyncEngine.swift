@@ -412,8 +412,10 @@ actor SyncEngine {
         let plan = SyncPlanner.makePlan(
             job: job,
             source: sourceList,
-            destination: destList
+            destination: destList,
+            destinationNaming: Self.naming(of: context.destination)
         )
+        recordCollisions(plan.collisions, job: job)
         let planned = plan.upserts.count + (job.mode == .mirror && job.deletePropagation ? plan.deletes.count : 0)
         updateStatus(
             id: job.id,
@@ -548,9 +550,13 @@ actor SyncEngine {
             }
         }
 
-        let summary = moveDeleteFailures > 0
+        failed += plan.collisions.count
+        var summary = moveDeleteFailures > 0
             ? "\(completed) ok / \(failed) failed (\(moveDeleteFailures) move-delete) / \(planned) planned"
             : "\(completed) ok / \(failed) failed / \(planned) planned"
+        if !plan.collisions.isEmpty {
+            summary += " · " + String(localized: "sync.summary.collisions \(plan.collisions.count)")
+        }
         // Persist *before* publishing the
         // terminal status. Observers (`SyncJobDetailWindow` via
         // `SyncStatusBroker`) reload the job from the store on
@@ -646,6 +652,28 @@ actor SyncEngine {
                 localRoot: resolved.url,
                 didStartSecurityScope: true
             )
+        }
+    }
+
+    /// A local destination compares names the way its volume does;
+    /// unknown volumes count as case-insensitive, the macOS default.
+    private static func naming(of context: EndpointContext) -> SyncPlanner.DestinationNaming {
+        guard let root = context.localRoot else { return .exact }
+        let values = try? root.resourceValues(forKeys: [.volumeSupportsCaseSensitiveNamesKey])
+        return .fileSystem(caseSensitive: values?.volumeSupportsCaseSensitiveNames ?? false)
+    }
+
+    /// One activity row per skipped key, so the user can see which
+    /// objects need renaming.
+    private func recordCollisions(_ keys: [String], job: SyncJob) {
+        guard let activityLog, !keys.isEmpty else { return }
+        let message = String(localized: "sync.error.nameCollision")
+        let entries = keys.map {
+            ActivityEntry(kind: .copy, status: .failure, key: $0, errorMessage: message,
+                          syncJobID: job.id, syncJobName: job.name)
+        }
+        Task { [activityLog] in
+            for entry in entries { await activityLog.record(entry) }
         }
     }
 

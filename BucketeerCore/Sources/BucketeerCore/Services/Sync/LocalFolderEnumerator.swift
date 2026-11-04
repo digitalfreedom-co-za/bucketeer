@@ -165,40 +165,50 @@ public enum LocalFolderWriter {
     /// resolved destination are `standardized` (symlinks resolved,
     /// `..` normalised) so a key like `subdir/../../../etc/passwd`
     /// cannot land outside the chosen folder.
+    ///
+    /// The key is used byte for byte: ` report.txt` stays a different
+    /// file from `report.txt`. Empty or blank components (`a//b`,
+    /// `a/`) are rejected, because the file system would collapse them
+    /// onto another key.
     public static func safeChildURL(
         root: URL,
         relativeKey: String
     ) throws -> URL {
-        let trimmed = relativeKey.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else {
+        guard !relativeKey.isEmpty else {
             throw BucketeerError.providerError(
                 statusCode: 400,
                 message: "Empty relative key — refusing to operate on the folder root itself."
             )
         }
         // Reject absolute paths outright.
-        if trimmed.hasPrefix("/") || trimmed.hasPrefix("\\") {
+        if relativeKey.hasPrefix("/") || relativeKey.hasPrefix("\\") {
             throw BucketeerError.providerError(
                 statusCode: 400,
-                message: "Relative key resolves to an absolute path: \(trimmed)"
+                message: "Relative key resolves to an absolute path: \(relativeKey)"
             )
         }
         // Reject any path component that's `.` or `..` — even one
         // such component anywhere in the path means the key tries to
         // climb out.
-        let components = trimmed.split(separator: "/", omittingEmptySubsequences: false)
+        let components = relativeKey.split(separator: "/", omittingEmptySubsequences: false)
         for component in components where component == ".." || component == "." {
             throw BucketeerError.providerError(
                 statusCode: 400,
-                message: "Relative key contains a path-traversal component: \(trimmed)"
+                message: "Relative key contains a path-traversal component: \(relativeKey)"
             )
         }
-        let candidate = root.appending(path: trimmed).standardizedFileURL
+        if components.contains(where: { $0.allSatisfy(\.isWhitespace) }) {
+            throw BucketeerError.providerError(
+                statusCode: 400,
+                message: "Relative key contains an empty path component: \(relativeKey)"
+            )
+        }
+        let candidate = root.appending(path: relativeKey).standardizedFileURL
         let rootStandard = root.standardizedFileURL
         guard candidate.path.hasPrefix(rootStandard.path + "/") || candidate.path == rootStandard.path else {
             throw BucketeerError.providerError(
                 statusCode: 400,
-                message: "Relative key escapes the sync root: \(trimmed)"
+                message: "Relative key escapes the sync root: \(relativeKey)"
             )
         }
         return candidate

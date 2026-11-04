@@ -75,13 +75,18 @@ struct LocalFolderSafeChildURLTests {
         }
     }
 
-    @Test("Symlink-style relative keys are still anchored to root via standardization")
-    func resolvedPathStaysUnderRoot() throws {
-        // A key with multiple internal slashes still resolves under root.
-        let resolved = try LocalFolderWriter.safeChildURL(
-            root: root,
-            relativeKey: "subdir//file.txt"
-        )
-        #expect(resolved.path.hasPrefix(root.standardizedFileURL.path + "/"))
+    @Test("Surrounding whitespace is part of the file name")
+    func whitespaceIsPreserved() throws {
+        let resolved = try LocalFolderWriter.safeChildURL(root: root, relativeKey: "docs/ report.txt ")
+        #expect(resolved.lastPathComponent == " report.txt ")
+    }
+
+    @Test("Empty path components are rejected instead of collapsing onto another key")
+    func emptyComponentsRejected() {
+        for badKey in ["subdir//file.txt", "subdir/", "a/ /b.txt"] {
+            #expect(throws: BucketeerError.self) {
+                _ = try LocalFolderWriter.safeChildURL(root: root, relativeKey: badKey)
+            }
+        }
     }
 }
