@@ -44,8 +44,8 @@ public protocol S3Browsing: Sendable {
     func head(account: S3Account, bucket: String, key: String) async throws -> S3Object
     func delete(account: S3Account, bucket: String, keys: [String]) async throws
     /// Deletes `key` only while its ETag is still `etag`; throws
-    /// `.preconditionFailed` otherwise. Prefer `deleteIfUnchanged`,
-    /// which also covers providers that ignore the condition.
+    /// `.preconditionFailed` otherwise. Where the provider ignores the
+    /// condition, implementations compare with a HEAD right before.
     func delete(account: S3Account, bucket: String, key: String, ifMatch etag: String) async throws
     func copy(
         account: S3Account,
@@ -58,6 +58,7 @@ public protocol S3Browsing: Sendable {
     /// Server-side copy inside one bucket that reads `fromKey` only while
     /// it still has `sourceETag` and creates `toKey` only if nothing is
     /// there. Throws `.preconditionFailed` when either condition fails.
+    /// Conditions the provider ignores are checked with a HEAD before.
     func copyIfAbsent(account: S3Account, bucket: String, fromKey: String, sourceETag: String, toKey: String) async throws
     func createFolder(account: S3Account, bucket: String, prefix: String) async throws
 
@@ -134,8 +135,8 @@ public protocol S3Browsing: Sendable {
 
 extension S3Browsing {
     /// Deletes `key` only while it is still the version with `etag`.
-    /// Compares a HEAD first, because some S3-compatible providers
-    /// ignore `If-Match` on deletes, then deletes conditionally.
+    /// A HEAD first tells a changed object from one already gone; the
+    /// delete itself is conditional again.
     /// Returns `false` and keeps the object when it changed (or when
     /// `etag` is unknown); `true` when deleted or already gone.
     public func deleteIfUnchanged(account: S3Account, bucket: String, key: String, etag: String) async throws -> Bool {
