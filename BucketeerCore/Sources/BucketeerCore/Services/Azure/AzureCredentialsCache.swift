@@ -46,7 +46,9 @@ public actor AzureCredentialsCache {
             let credentials = try await keychainStore.load(for: account.id)
             // Invalidated while the Keychain answered: these
             // credentials may be the ones just replaced.
-            guard generations[account.id, default: 0] == generation else { continue }
+            guard generations[account.id, default: 0] == generation,
+                  revision?.current(for: account.id) ?? 0 == currentRevision
+            else { continue }
             // Actor reentrancy guard — mirrors the pattern in S3ClientFactory.
             if let cached = cache[account.id], cached.revision == currentRevision { return cached.signer }
             guard let signer = Self.makeSigner(account: account, credentials: credentials) else {

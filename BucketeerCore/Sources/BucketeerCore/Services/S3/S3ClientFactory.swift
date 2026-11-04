@@ -48,7 +48,9 @@ public actor S3ClientFactory {
             let credentials = try await keychainStore.load(for: account.id)
             // Invalidated while the Keychain answered: these credentials
             // may be the ones just replaced.
-            guard generations[account.id, default: 0] == generation else { continue }
+            guard generations[account.id, default: 0] == generation,
+                  revision?.current(for: account.id) ?? 0 == currentRevision
+            else { continue }
             // Actor reentrancy: another concurrent `client(for:)` call may
             // have populated the cache while we were awaiting the
             // Keychain. Re-check before constructing a duplicate

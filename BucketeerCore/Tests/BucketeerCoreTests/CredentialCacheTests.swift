@@ -66,6 +66,22 @@ struct CredentialCacheTests {
 
         #expect(try await cache.signer(for: account).accountKeyData == Self.newKey)
     }
+
+    @Test("A revision bumped while the Keychain answers is not ignored by that lookup")
+    func revisionBumpDuringLookupReloads() async throws {
+        let suite = "BucketeerCoreTests.CredentialsRevision.\(UUID().uuidString)"
+        defer { UserDefaults().removePersistentDomain(forName: suite) }
+        let keychain = GatedKeychain(secret: Self.oldKey)
+        let cache = AzureCredentialsCache(keychainStore: keychain, revision: CredentialsRevision(suiteName: suite))
+        let pending = Task { [account] in try await cache.signer(for: account) }
+        await keychain.waitUntilHolding()
+
+        await keychain.rotate(to: Self.newKey)
+        CredentialsRevision(suiteName: suite).bump(for: account.id)
+        await keychain.release()
+
+        #expect(try await pending.value.accountKeyData == Self.newKey)
+    }
 }
 
 /// Keychain double whose first `load` parks until `release()`, and
