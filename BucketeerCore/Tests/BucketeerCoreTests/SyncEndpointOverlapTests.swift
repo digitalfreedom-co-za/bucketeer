@@ -37,7 +37,24 @@ struct SyncEndpointOverlapTests {
     func separateScopesAreAccepted() throws {
         try SyncEndpointOverlap.validate(source: s3("a/"), destination: s3("b/"))
         try SyncEndpointOverlap.validate(source: s3("a/"), destination: s3("a/", bucket: "other"))
-        try SyncEndpointOverlap.validate(source: s3("a/"), destination: s3("a/", account: UUID()))
+        let civo = S3Account(name: "Civo", provider: .civo, region: "fra1")
+        let wasabi = S3Account(name: "Wasabi", provider: .wasabi)
+        try SyncEndpointOverlap.validate(
+            source: s3("a/", account: civo.id), destination: s3("a/", account: wasabi.id),
+            sourceAccount: civo, destinationAccount: wasabi
+        )
+    }
+
+    @Test("Two accounts for the same storage still overlap")
+    func sameStorageThroughTwoAccountsOverlaps() {
+        let first = S3Account(name: "Work", provider: .civo, region: "fra1")
+        let second = S3Account(name: "Work (read-only key)", provider: .civo, region: "fra1")
+        #expect(throws: BucketeerError.self) {
+            try SyncEndpointOverlap.validate(
+                source: s3("photos/", account: first.id), destination: s3("photos/2026/", account: second.id),
+                sourceAccount: first, destinationAccount: second
+            )
+        }
     }
 
     @Test("Local folders overlap after resolving symlinks, and siblings do not")

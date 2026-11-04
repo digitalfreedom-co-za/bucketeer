@@ -404,6 +404,8 @@ actor SyncEngine {
             try SyncEndpointOverlap.validate(
                 source: job.source,
                 destination: job.destination,
+                sourceAccount: context.source.account,
+                destinationAccount: context.destination.account,
                 sourceRoot: context.source.localRoot,
                 destinationRoot: context.destination.localRoot
             )
@@ -683,7 +685,7 @@ actor SyncEngine {
     // MARK: - Local fingerprints
 
     private func acknowledgedFingerprints(for job: SyncJob) async -> [String: LocalFileFingerprint] {
-        guard case .localFolder = job.source, let fingerprintStore else { return [:] }
+        guard job.schedule == .onLocalChange, let fingerprintStore else { return [:] }
         return (try? await fingerprintStore.fingerprints(jobID: job.id)) ?? [:]
     }
 
@@ -692,7 +694,7 @@ actor SyncEngine {
     /// during its upload therefore goes up again next run. Failed
     /// entries lose their fingerprint for the same reason.
     private func acknowledge(plan: SyncPlanner.Plan, transferred: [SyncPlanner.PlanEntry], job: SyncJob) async {
-        guard case .localFolder = job.source, let fingerprintStore else { return }
+        guard job.schedule == .onLocalChange, case .localFolder = job.source, let fingerprintStore else { return }
         let synced = plan.unchanged + transferred.map(\.source)
         let fingerprints = Dictionary(
             synced.map { ($0.key, LocalFileFingerprint($0)) },

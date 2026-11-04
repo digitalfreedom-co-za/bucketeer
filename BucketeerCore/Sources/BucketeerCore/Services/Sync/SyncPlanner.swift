@@ -79,8 +79,11 @@ public enum SyncPlanner {
     /// `LocalFolderEnumerator` with empty `etag` and relative-path
     /// keys; S3 / Azure use the existing recursive listing).
     ///
-    /// `acknowledged` holds the fingerprints a local source had when the
-    /// job last synced it (empty for a job that never recorded any).
+    /// `acknowledged` holds the fingerprints a watched local source had
+    /// when the job last synced it. A local file has no ETag, so an
+    /// equal size cannot tell an edit apart: a watched file counts as
+    /// synced only while it still has its acknowledged fingerprint, and
+    /// a file without one goes up again.
     public static func makePlan(
         job: SyncJob,
         source: [S3Object],
@@ -88,7 +91,9 @@ public enum SyncPlanner {
         destinationNaming naming: DestinationNaming = .exact,
         acknowledged: [String: LocalFileFingerprint] = [:]
     ) -> Plan {
-        let sourceIsLocal = if case .localFolder = job.source { true } else { false }
+        // Watch folders promise to upload every save. Other jobs keep the
+        // comparison the user chose (size only for `.nameAndSize`).
+        let checksFingerprints = if case .localFolder = job.source { job.schedule == .onLocalChange } else { false }
         let sourcePrefix = prefix(for: job.source)
         let destinationPrefix = prefix(for: job.destination)
 
@@ -128,7 +133,7 @@ public enum SyncPlanner {
             }
             if let existing = destIndex[destKey],
                isUnchanged(source: s, dest: existing, strategy: job.diffStrategy),
-               !sourceIsLocal || isAcknowledged(s, copy: existing, acknowledged: acknowledged[s.key]) {
+               !checksFingerprints || acknowledged[s.key] == LocalFileFingerprint(s) {
                 unchanged.append(s)
                 continue
             }
@@ -159,19 +164,6 @@ public enum SyncPlanner {
         }
 
         return Plan(upserts: upserts, deletes: deletes, collisions: collisions, unchanged: unchanged)
-    }
-
-    /// A local file has no ETag, so an equal size alone cannot tell an
-    /// edit apart. It counts as synced only if it still has the
-    /// fingerprint the job acknowledged — or, before any fingerprint
-    /// was recorded, if it is not newer than its copy.
-    static func isAcknowledged(
-        _ file: S3Object,
-        copy: S3Object,
-        acknowledged: LocalFileFingerprint?
-    ) -> Bool {
-        if let acknowledged { return acknowledged == LocalFileFingerprint(file) }
-        return file.lastModified <= copy.lastModified
     }
 
     /// Effective prefix for a sync endpoint. S3 endpoints carry an

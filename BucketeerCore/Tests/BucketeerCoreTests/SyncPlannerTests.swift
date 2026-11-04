@@ -311,9 +311,15 @@ struct SyncPlannerTests {
         LocalFileFingerprint(size: 4, modified: Date(timeIntervalSince1970: modified))
     }
 
-    @Test("A local file saved without changing its size is uploaded again")
+    private var watchJob: SyncJob {
+        var job = self.job(source: localEndpoint(), destination: endpoint(prefix: ""))
+        job.schedule = .onLocalChange
+        return job
+    }
+
+    @Test("A watched file saved without changing its size is uploaded again")
     func sameSizeEditIsUploaded() {
-        let job = self.job(source: localEndpoint(), destination: endpoint(prefix: ""))
+        let job = watchJob
         let plan = SyncPlanner.makePlan(
             job: job,
             source: [file("edited.txt", modified: 200), file("same.txt", modified: 100)],
@@ -324,17 +330,26 @@ struct SyncPlannerTests {
         #expect(plan.unchanged.map(\.key) == ["same.txt"])
     }
 
-    @Test("Without an acknowledged fingerprint a local file newer than its copy is uploaded")
-    func newerFileWithoutFingerprintIsUploaded() {
-        let job = self.job(source: localEndpoint(), destination: endpoint(prefix: ""))
+    @Test("A watched file without an acknowledged fingerprint is uploaded, since its content is unverified")
+    func unacknowledgedWatchedFileIsUploaded() {
         let plan = SyncPlanner.makePlan(
-            job: job,
+            job: watchJob,
             source: [file("newer.txt", modified: 200), file("older.txt", modified: 100)],
             destination: [file("newer.txt", modified: 150), file("older.txt", modified: 150)],
             acknowledged: [:]
         )
-        #expect(plan.upserts.map(\.sourceKey) == ["newer.txt"])
-        #expect(plan.unchanged.map(\.key) == ["older.txt"])
+        #expect(plan.upserts.map(\.sourceKey) == ["newer.txt", "older.txt"])
+    }
+
+    @Test("An ordinary local job keeps the size-only comparison the user chose")
+    func ordinaryJobKeepsSizeComparison() {
+        let plan = SyncPlanner.makePlan(
+            job: job(source: localEndpoint(), destination: endpoint(prefix: "")),
+            source: [file("edited.txt", modified: 200)],
+            destination: [file("edited.txt", modified: 150)],
+            acknowledged: [:]
+        )
+        #expect(plan.upserts.isEmpty)
     }
 
     // MARK: - Name collisions on the destination file system
