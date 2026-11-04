@@ -36,6 +36,7 @@ public protocol S3ObjectWriting: Sendable {
 public enum S3ConditionalUpload {
 
     public static let defaultPartSize = 8 * 1024 * 1024
+    public static let maximumPartCount = 10_000
 
     /// Returns the ETag the write answered with (unquoted).
     public static func upload(
@@ -57,6 +58,9 @@ public enum S3ConditionalUpload {
             await progress(size)
             return etag.map(ETag.normalized)
         }
+        // S3 accepts at most `maximumPartCount` parts; larger files get
+        // larger parts instead of a failure after gigabytes were sent.
+        let partSize = max(partSize, Int((size + Int64(maximumPartCount) - 1) / Int64(maximumPartCount)))
         let uploadID = try await writer.createMultipartUpload(bucket: bucket, key: key, contentType: contentType)
         do {
             let parts = try await uploadParts(of: url, size: size, partSize: partSize, bucket: bucket, key: key,

@@ -42,6 +42,21 @@ struct S3ConditionalUploadTests {
         #expect(await writer.assembled == (try Data(contentsOf: url)))
     }
 
+    @Test("A file that would need more than 10,000 parts goes up in larger parts")
+    func partSizeGrowsToStayWithinPartLimit() async throws {
+        let (folder, url) = try file(size: 20_001)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let writer = RecordingWriter()
+
+        _ = try await S3ConditionalUpload.upload(
+            fileAt: url, bucket: "b", key: "edited.bin", contentType: nil,
+            precondition: .ifAbsent, writer: writer, partSize: 1
+        )
+
+        #expect(await writer.partSizes.count <= 10_000)
+        #expect(await writer.assembled == (try Data(contentsOf: url)))
+    }
+
     @Test("A refused completion aborts the upload and reports the precondition")
     func refusedCompletionAborts() async throws {
         let (folder, url) = try file(size: 25)
