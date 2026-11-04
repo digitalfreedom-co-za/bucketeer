@@ -75,11 +75,16 @@ final class CrossAccountCopyCoordinator {
             from: sourceAccount,
             to: destinationAccount
         )
-        for key in keys {
-            let destinationKey = Self.composeDestinationKey(
-                sourceKey: key,
-                prefix: destinationPrefix
+        let transfers: [(key: String, destinationKey: String)]
+        do {
+            transfers = try await expandFolders(
+                keys, account: sourceAccount, bucket: sourceBucket, destinationPrefix: destinationPrefix
             )
+        } catch {
+            let failure = error as? BucketeerError ?? .unknown(message: error.localizedDescription)
+            return keys.map { ($0, failure) }
+        }
+        for (key, destinationKey) in transfers {
             do {
                 // The version a move may delete afterwards: anything
                 // written to the source meanwhile is newer than the copy.
@@ -155,6 +160,32 @@ final class CrossAccountCopyCoordinator {
     }
 
     // MARK: - Private
+
+    /// Pairs every key with its destination. A folder key (`prefix/`)
+    /// stands for each object below it; the folder keeps its name and
+    /// inner structure under `destinationPrefix`.
+    private func expandFolders(
+        _ keys: [String],
+        account: S3Account,
+        bucket: String,
+        destinationPrefix: String
+    ) async throws -> [(key: String, destinationKey: String)] {
+        var transfers: [(key: String, destinationKey: String)] = []
+        for key in keys {
+            guard key.hasSuffix("/") else {
+                transfers.append((key, Self.composeDestinationKey(sourceKey: key, prefix: destinationPrefix)))
+                continue
+            }
+            let folder = Self.composeDestinationKey(sourceKey: String(key.dropLast()), prefix: destinationPrefix) + "/"
+            let contents = try await FolderOperations.contents(
+                of: key, browser: browser, account: account, bucket: bucket
+            )
+            for file in contents.files {
+                transfers.append((file.key, folder + file.key.dropFirst(key.count)))
+            }
+        }
+        return transfers
+    }
 
     /// Heuristic for "the destination account can issue a single
     /// `CopyObject` that pulls from the source bucket". Requires the

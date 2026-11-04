@@ -48,6 +48,11 @@ actor InMemoryS3Browser: S3Browsing {
         )
     }
 
+    /// Every stored key, folder markers included.
+    func storedKeys(in bucket: String) -> Set<String> {
+        Set(buckets[bucket, default: [:]].keys)
+    }
+
     /// Replaces the object's contents: same key and size, new ETag.
     func rewrite(bucket: String, key: String) {
         guard let object = buckets[bucket]?[key] else { return }

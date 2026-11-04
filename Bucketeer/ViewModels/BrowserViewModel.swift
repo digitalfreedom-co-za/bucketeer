@@ -171,26 +171,37 @@ final class BrowserViewModel {
 
     // MARK: - Object actions
 
-    /// Deletes the listed keys. After completion the current listing
-    /// is refreshed and any selection that referenced removed keys is
-    /// cleared. The caller is responsible for confirming with the user
-    /// first.
+    /// Deletes the listed keys; a folder key (`prefix/`) deletes the
+    /// folder with everything in it. After completion the current
+    /// listing is refreshed and any selection that referenced removed
+    /// keys is cleared. The caller is responsible for confirming with
+    /// the user first.
     func delete(keys: [String]) async {
         guard let account, let bucket, !keys.isEmpty else { return }
         isPerformingAction = true
         defer { isPerformingAction = false }
-        // Phase 13.4 — snapshot the objects into the soft-delete bin
-        // BEFORE the provider delete so the cached copy is guaranteed
-        // to be the pre-delete bytes. Best-effort; never block on it.
-        if let trashCoordinator {
-            await trashCoordinator.recordDeletion(
-                account: account,
-                bucket: bucket,
-                keys: keys
-            )
-        }
         do {
-            try await s3Browser.delete(account: account, bucket: bucket, keys: keys)
+            let fileKeys = keys.filter { !$0.hasSuffix("/") }
+            var folders: [FolderOperations.Contents] = []
+            for folder in keys where folder.hasSuffix("/") {
+                folders.append(try await FolderOperations.contents(
+                    of: folder, browser: s3Browser, account: account, bucket: bucket
+                ))
+            }
+            // Phase 13.4 — snapshot the objects into the soft-delete bin
+            // BEFORE the provider delete so the cached copy is guaranteed
+            // to be the pre-delete bytes. Best-effort; never block on it.
+            if let trashCoordinator {
+                await trashCoordinator.recordDeletion(
+                    account: account,
+                    bucket: bucket,
+                    keys: fileKeys + folders.flatMap { $0.files.map(\.key) }
+                )
+            }
+            try await s3Browser.delete(account: account, bucket: bucket, keys: fileKeys)
+            for folder in folders {
+                try await FolderOperations.delete(folder, browser: s3Browser, account: account, bucket: bucket)
+            }
             selection.subtract(keys)
             actionError = nil
             for key in keys {
@@ -225,16 +236,23 @@ final class BrowserViewModel {
             )
             return
         }
-        // Compose the new key by replacing the last path segment.
+        // Compose the new key by replacing the last path segment; a
+        // folder key keeps its trailing slash.
+        let isFolder = key.hasSuffix("/")
+        let path = isFolder ? String(key.dropLast()) : key
         let parent: String = {
-            guard let lastSlash = key.lastIndex(of: "/") else { return "" }
-            return String(key[..<key.index(after: lastSlash)])
+            guard let lastSlash = path.lastIndex(of: "/") else { return "" }
+            return String(path[..<path.index(after: lastSlash)])
         }()
-        let newKey = parent + trimmed
+        let newKey = parent + trimmed + (isFolder ? "/" : "")
         guard newKey != key else { return }
 
         isPerformingAction = true
         defer { isPerformingAction = false }
+        if isFolder {
+            await renameFolder(key, to: newKey, account: account, bucket: bucket)
+            return
+        }
         do {
             // Rename is copy + delete; the copy would silently replace an
             // existing object (without a trash capture) under the new name.
@@ -269,6 +287,35 @@ final class BrowserViewModel {
         } catch {
             actionError = .unknown(message: error.localizedDescription)
             await record(.copy, status: .failure, key: key, errorMessage: error.localizedDescription)
+        }
+    }
+
+    /// Moves every object below `prefix` to `newPrefix`. Refuses an
+    /// existing destination; a file changed meanwhile keeps its old key
+    /// and is reported.
+    private func renameFolder(_ prefix: String, to newPrefix: String, account: S3Account, bucket: String) async {
+        do {
+            let contents = try await FolderOperations.contents(
+                of: prefix, browser: s3Browser, account: account, bucket: bucket
+            )
+            let kept = try await FolderOperations.move(
+                contents, to: newPrefix, browser: s3Browser, account: account, bucket: bucket
+            )
+            selection.remove(prefix)
+            actionError = kept.isEmpty ? nil : .unknown(message: String(localized: "sync.error.sourceChangedDuringMove"))
+            await record(.copy, status: kept.isEmpty ? .success : .failure, key: newPrefix, message: "Renamed from \(prefix)")
+            await loadObjectsResetting()
+        } catch BucketeerError.preconditionFailed {
+            actionError = .unknown(message: String(
+                localized: "browser.action.rename.exists",
+                defaultValue: "An object with that name already exists in this folder."
+            ))
+        } catch let error as BucketeerError {
+            actionError = error
+            await record(.copy, status: .failure, key: prefix, errorMessage: error.errorDescription)
+        } catch {
+            actionError = .unknown(message: error.localizedDescription)
+            await record(.copy, status: .failure, key: prefix, errorMessage: error.localizedDescription)
         }
     }
 
