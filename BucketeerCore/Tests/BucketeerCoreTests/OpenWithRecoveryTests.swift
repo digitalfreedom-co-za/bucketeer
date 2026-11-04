@@ -148,6 +148,52 @@ struct OpenWithRecoveryTests {
         #expect(!FileManager.default.fileExists(atPath: crashed.sessionFolder.path))
     }
 
+    @Test("Launch cleanup never deletes a survivor it could not move to recovery")
+    func unmovableSurvivorIsKept() async throws {
+        let remote = Remote(etags: ["docs/report.txt": "base"])
+        let crashed = workspace(session: "crashed")
+        let trip = OpenWithRoundTrip(remote: remote, workspace: crashed)
+        let dirty = try await openFile(trip, in: crashed)
+        try Data("unsaved work".utf8).write(to: dirty)
+        // A file where the recovery folder belongs makes every move fail.
+        try Data().write(to: root.appendingPathComponent("recovery"))
+
+        workspace(session: "next").scavengeLeftovers()
+
+        #expect(try contents(dirty) == "unsaved work")
+    }
+
+    @Test("Launch cleanup never deletes a survivor it could not read")
+    func unreadableSurvivorIsKept() async throws {
+        let remote = Remote(etags: ["docs/report.txt": "base"])
+        let crashed = workspace(session: "crashed")
+        let trip = OpenWithRoundTrip(remote: remote, workspace: crashed)
+        let dirty = try await openFile(trip, in: crashed)
+        try Data("unsaved work".utf8).write(to: dirty)
+        try FileManager.default.setAttributes([.posixPermissions: 0], ofItemAtPath: dirty.path)
+        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: dirty.path) }
+
+        workspace(session: "next").scavengeLeftovers()
+
+        #expect(FileManager.default.fileExists(atPath: dirty.path))
+    }
+
+    @Test("Launch cleanup never deletes a survivor whose manifest it could not read")
+    func unreadableManifestIsKept() async throws {
+        let remote = Remote(etags: ["docs/report.txt": "base"])
+        let crashed = workspace(session: "crashed")
+        let trip = OpenWithRoundTrip(remote: remote, workspace: crashed)
+        let dirty = try await openFile(trip, in: crashed)
+        try Data("unsaved work".utf8).write(to: dirty)
+        let manifest = dirty.deletingLastPathComponent().appendingPathComponent(OpenWithWorkspace.manifestName)
+        try FileManager.default.setAttributes([.posixPermissions: 0], ofItemAtPath: manifest.path)
+        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: manifest.path) }
+
+        workspace(session: "next").scavengeLeftovers()
+
+        #expect(try contents(dirty) == "unsaved work")
+    }
+
     @Test("A synced file is not mistaken for a crash survivor")
     func syncedSurvivorIsRemoved() async throws {
         let remote = Remote(etags: ["docs/report.txt": "base"])
