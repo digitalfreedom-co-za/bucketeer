@@ -85,21 +85,22 @@ public enum FolderOperations {
             throw BucketeerError.preconditionFailed(key: newPrefix)
         }
         let relocate = { (key: String) in newPrefix + key.dropFirst(contents.prefix.count) }
+        // Every copy is create-only, so an object that appears at the
+        // destination during the move is never replaced.
         for file in contents.files {
             try Task.checkCancellation()
-            try await browser.copy(
-                account: account, fromBucket: bucket, fromKey: file.key,
-                toBucket: bucket, toKey: relocate(file.key), metadata: nil
-            )
+            try await copyCreateOnly(file.key, etag: file.etag, to: relocate(file.key),
+                                     browser: browser, account: account, bucket: bucket)
         }
         for folder in contents.folders {
             do {
-                try await browser.copy(
-                    account: account, fromBucket: bucket, fromKey: folder,
-                    toBucket: bucket, toKey: relocate(folder), metadata: nil
-                )
+                let marker = try await browser.head(account: account, bucket: bucket, key: folder)
+                try await browser.copyIfAbsent(account: account, bucket: bucket, fromKey: folder,
+                                               sourceETag: marker.etag, toKey: relocate(folder))
             } catch BucketeerError.objectNotFound {
                 // A folder that exists only through its objects.
+            } catch BucketeerError.preconditionFailed {
+                // The marker is already there; an empty marker holds no data.
             }
         }
         var kept: [String] = []
@@ -110,6 +111,29 @@ public enum FolderOperations {
         }
         try await deleteMarkers(contents.folders.reversed(), browser: browser, account: account, bucket: bucket)
         return kept
+    }
+
+    /// Copies the listed version, or — if the file changed since the
+    /// listing — its current version, which the later conditional
+    /// delete then keeps at the old key. A taken destination aborts.
+    private static func copyCreateOnly(
+        _ key: String,
+        etag: String,
+        to destination: String,
+        browser: any S3Browsing,
+        account: S3Account,
+        bucket: String
+    ) async throws {
+        do {
+            try await browser.copyIfAbsent(account: account, bucket: bucket, fromKey: key, sourceETag: etag, toKey: destination)
+        } catch BucketeerError.preconditionFailed {
+            if try await exists(destination, browser: browser, account: account, bucket: bucket) {
+                throw BucketeerError.preconditionFailed(key: destination)
+            }
+            let current = try await browser.head(account: account, bucket: bucket, key: key)
+            try await browser.copyIfAbsent(account: account, bucket: bucket, fromKey: key,
+                                           sourceETag: current.etag, toKey: destination)
+        }
     }
 
     private static func deleteMarkers(

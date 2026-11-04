@@ -76,4 +76,19 @@ struct FolderOperationsTests {
         #expect(try await keys(in: browser).contains("docs/sub/b.txt"))
         #expect(try await keys(in: browser).contains("papers/sub/b.txt"))
     }
+
+    @Test("An object created at the destination during a rename is never replaced")
+    func renameNeverReplacesLateDestinationObject() async throws {
+        let browser = await bucket()
+        let contents = try await FolderOperations.contents(of: "docs/", browser: browser, account: account, bucket: "b")
+        await browser.putBeforeNextHead(of: "papers/", key: "papers/sub/b.txt")
+
+        await #expect(throws: BucketeerError.self) {
+            _ = try await FolderOperations.move(contents, to: "papers/", browser: browser, account: account, bucket: "b")
+        }
+
+        let intruder = try await browser.head(account: account, bucket: "b", key: "papers/sub/b.txt")
+        #expect(intruder.size == 7)
+        #expect(try await keys(in: browser).contains("docs/sub/b.txt"))
+    }
 }

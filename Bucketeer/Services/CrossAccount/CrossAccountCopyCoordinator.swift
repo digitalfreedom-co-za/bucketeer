@@ -76,8 +76,9 @@ final class CrossAccountCopyCoordinator {
             to: destinationAccount
         )
         let transfers: [(key: String, destinationKey: String)]
+        let markers: [(key: String, destinationKey: String)]
         do {
-            transfers = try await expandFolders(
+            (transfers, markers) = try await expandFolders(
                 keys, account: sourceAccount, bucket: sourceBucket, destinationPrefix: destinationPrefix
             )
         } catch {
@@ -156,6 +157,18 @@ final class CrossAccountCopyCoordinator {
                 )
             }
         }
+        let moveSucceeded = !keepSource && results.allSatisfy { $0.error == nil }
+        for (marker, destinationMarker) in markers {
+            do {
+                try await carryFolderMarker(
+                    marker, to: destinationMarker,
+                    from: (sourceAccount, sourceBucket), to: (destinationAccount, destinationBucket),
+                    removingSource: moveSucceeded
+                )
+            } catch {
+                results.append((marker, error as? BucketeerError ?? .unknown(message: error.localizedDescription)))
+            }
+        }
         return results
     }
 
@@ -163,14 +176,16 @@ final class CrossAccountCopyCoordinator {
 
     /// Pairs every key with its destination. A folder key (`prefix/`)
     /// stands for each object below it; the folder keeps its name and
-    /// inner structure under `destinationPrefix`.
+    /// inner structure under `destinationPrefix`. `markers` are the
+    /// folder prefixes, deepest first, so empty folders survive too.
     private func expandFolders(
         _ keys: [String],
         account: S3Account,
         bucket: String,
         destinationPrefix: String
-    ) async throws -> [(key: String, destinationKey: String)] {
+    ) async throws -> (transfers: [(key: String, destinationKey: String)], markers: [(key: String, destinationKey: String)]) {
         var transfers: [(key: String, destinationKey: String)] = []
+        var markers: [(key: String, destinationKey: String)] = []
         for key in keys {
             guard key.hasSuffix("/") else {
                 transfers.append((key, Self.composeDestinationKey(sourceKey: key, prefix: destinationPrefix)))
@@ -183,8 +198,32 @@ final class CrossAccountCopyCoordinator {
             for file in contents.files {
                 transfers.append((file.key, folder + file.key.dropFirst(key.count)))
             }
+            for prefix in contents.folders.reversed() {
+                markers.append((prefix, folder + prefix.dropFirst(key.count)))
+            }
         }
-        return transfers
+        return (transfers, markers)
+    }
+
+    /// Recreates a source folder marker at the destination and, after a
+    /// complete move, removes it from the source. Folders without a
+    /// marker exist only through their objects and need neither.
+    private func carryFolderMarker(
+        _ marker: String,
+        to destinationMarker: String,
+        from source: (account: S3Account, bucket: String),
+        to destination: (account: S3Account, bucket: String),
+        removingSource: Bool
+    ) async throws {
+        do {
+            _ = try await browser.head(account: source.account, bucket: source.bucket, key: marker)
+        } catch BucketeerError.objectNotFound {
+            return
+        }
+        try await browser.createFolder(account: destination.account, bucket: destination.bucket, prefix: destinationMarker)
+        if removingSource {
+            try await browser.delete(account: source.account, bucket: source.bucket, keys: [marker])
+        }
     }
 
     /// Heuristic for "the destination account can issue a single
