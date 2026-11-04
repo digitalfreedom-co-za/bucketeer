@@ -493,9 +493,11 @@ final class AppContainer {
     /// Falls back to the sandbox Application Support path otherwise.
     ///
     /// A one-shot migration copies the legacy sandbox store into the
-    /// group container the first time both paths are available. Idempotent
-    /// — if the group store already exists we just use it and leave the
-    /// sandbox copy in place as a fallback.
+    /// group container the first time both paths are available. The
+    /// group store appears only as a complete, integrity-checked copy
+    /// (`SQLiteStoreMigration`); if the copy fails, this launch keeps
+    /// using the sandbox store and the next launch retries. The sandbox
+    /// copy always stays in place as a fallback.
     private static func resolveStoreURL() -> URL {
         let sandboxURL = sandboxStoreURL()
         guard let groupContainer = groupContainerURL() else {
@@ -504,20 +506,10 @@ final class AppContainer {
         let groupURL = groupContainer.appending(path: AppEnvironment.swiftDataStoreFileName)
         if !FileManager.default.fileExists(atPath: groupURL.path),
            FileManager.default.fileExists(atPath: sandboxURL.path) {
-            // Copy the legacy store into the group container so the
-            // extension sees the user's existing accounts.
-            try? FileManager.default.copyItem(at: sandboxURL, to: groupURL)
-            // The store has two sidecar files (`-shm`, `-wal`) when SQLite
-            // is in WAL mode — copy them if present so the migration is
-            // atomic from SwiftData's perspective.
-            for suffix in ["-shm", "-wal"] {
-                let src = sandboxURL.deletingLastPathComponent()
-                    .appending(path: AppEnvironment.swiftDataStoreFileName + suffix)
-                let dst = groupContainer
-                    .appending(path: AppEnvironment.swiftDataStoreFileName + suffix)
-                if FileManager.default.fileExists(atPath: src.path) {
-                    try? FileManager.default.copyItem(at: src, to: dst)
-                }
+            do {
+                try SQLiteStoreMigration.migrate(from: sandboxURL, to: groupURL)
+            } catch {
+                return sandboxURL
             }
         }
         return groupURL
