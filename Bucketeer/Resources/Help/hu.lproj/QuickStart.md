@@ -88,7 +88,7 @@ A Bucketeer műveleteket ad a Parancsok apphoz: bucketek listázása, fájl felt
 
 Ezekhez a funkciókhoz Bucketeer Pro szükséges:
 
-- **Csatolás meghajtóként**: kattintson jobb gombbal egy bucketre, és válassza a **Csatolás meghajtóként** lehetőséget, hogy a Finderben lemezként használja. macOS 14.1 vagy újabb szükséges. A csatolt meghajtók az oldalsáv **Csatolt meghajtók** részében jelennek meg; jobb gombbal kattintva válassza a **Leválasztás** lehetőséget. Az ügyféloldali titkosítással rendelkező bucketek nem csatolhatók. A szerveren végzett módosítások akkor jelennek meg a Finderben, amikor frissíti a bucketet a Bucketeerben. Ha egy Finderben szerkesztett fájl közben megváltozott a szerveren, az Ön verziója mellé kerül ütközési másolatként.
+- **Csatolás meghajtóként**: kattintson jobb gombbal egy bucketre, és válassza a **Csatolás meghajtóként** lehetőséget, hogy a Finderben lemezként használja. A csatolt meghajtók az oldalsáv **Csatolt meghajtók** részében jelennek meg; jobb gombbal kattintva válassza a **Leválasztás** lehetőséget. Az ügyféloldali titkosítással rendelkező bucketek nem csatolhatók. A szerveren végzett módosítások akkor jelennek meg a Finderben, amikor frissíti a bucketet a Bucketeerben. Ha egy Finderben szerkesztett fájl közben megváltozott a szerveren, az Ön verziója mellé kerül ütközési másolatként.
 - **Szinkronizálási feladatok**: a **Szinkronizálás** részben olyan feladatot hozhat létre, amely két bucket között másol, áthelyez vagy tükröz, fiókok és szolgáltatók között is, vagy egy helyi mappa és egy bucket között. Futtathatja kézzel, indításkor, N percenként vagy amikor a helyi mappa megváltozik.
 - **Figyelt mappák**: az **Új figyelt mappa…** egy helyi mappa minden új fájlját feltölti egy bucketbe.
 - **Másolás másik fiókba…**: objektumokat másol egy másik fiókba vagy szolgáltatóhoz. Ha mindkét oldal engedi, a másolás szerveroldalon fut, és az adatok nem haladnak át az Ön Macén.
@@ -103,7 +103,7 @@ A Bucketeer Pro egyszeri, alkalmazáson belüli vásárlás az App Store-on kere
 A Bucketeer Pro 14 napig ingyen kipróbálható. Indítás előtt a vásárlási oldal mutatja a próbaidőszak hosszát, azt, hogy mi történik utána, és a Pro örök licenc árát; ezután kattintson a **Próbaidőszak indítása** gombra. A próbaidőszak végén a Bucketeer az ingyenes verzióval működik tovább, és semmit sem kell fizetni. A próbaidőszak Apple ID-nként egyszer indítható, a vásárlások visszaállítása pedig egy futó próbaidőszakot egy másik Macen is visszahoz.
 
 - A **Vásárlás visszaállítása** egy másik Macen vagy újratelepítés után visszaadja a Pro funkciókat.
-- A **Kód beváltása** (macOS 15 vagy újabb) megnyitja az Apple ajánlati kódokhoz tartozó ablakát.
+- A **Kód beváltása** megnyitja az Apple ajánlati kódokhoz tartozó ablakát.
 
 ## Billentyűparancsok
 

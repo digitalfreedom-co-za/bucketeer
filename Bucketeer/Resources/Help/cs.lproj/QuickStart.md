@@ -88,7 +88,7 @@ Bucketeer přidává do aplikace Zkratky akce: výpis bucketů, nahrání soubor
 
 Tyto funkce vyžadují Bucketeer Pro:
 
-- **Připojit jako disk**: klikněte na bucket pravým tlačítkem a vyberte **Připojit jako disk**, abyste ho mohli používat ve Finderu jako disk. Vyžaduje macOS 14.1 nebo novější. Připojené disky se zobrazují v sekci **Připojené disky** v postranním panelu; odpojíte je kliknutím pravým tlačítkem a volbou **Odpojit**. Buckety se šifrováním na straně klienta nelze připojit. Změny na serveru se ve Finderu objeví, když bucket v Bucketeeru obnovíte. Pokud se soubor, který upravujete ve Finderu, mezitím na serveru změnil, vaše verze se uloží vedle něj jako konfliktní kopie.
+- **Připojit jako disk**: klikněte na bucket pravým tlačítkem a vyberte **Připojit jako disk**, abyste ho mohli používat ve Finderu jako disk. Připojené disky se zobrazují v sekci **Připojené disky** v postranním panelu; odpojíte je kliknutím pravým tlačítkem a volbou **Odpojit**. Buckety se šifrováním na straně klienta nelze připojit. Změny na serveru se ve Finderu objeví, když bucket v Bucketeeru obnovíte. Pokud se soubor, který upravujete ve Finderu, mezitím na serveru změnil, vaše verze se uloží vedle něj jako konfliktní kopie.
 - **Synchronizační úlohy**: v sekci **Synchronizace** vytvořte úlohu, která kopíruje, přesouvá nebo zrcadlí mezi dvěma buckety, napříč účty a poskytovateli, nebo mezi místní složkou a bucketem. Spouštějte ji ručně, při spuštění aplikace, každých N minut nebo při změně místní složky.
 - **Sledované složky**: **Nová sledovaná složka…** nahraje každý nový soubor z místní složky do bucketu.
 - **Kopírovat do jiného účtu…**: zkopíruje objekty do jiného účtu nebo k jinému poskytovateli. Pokud to obě strany umožňují, kopie probíhá na straně serveru a data neprocházejí vaším Macem.
@@ -103,7 +103,7 @@ Bucketeer Pro je jednorázový nákup v aplikaci přes App Store, bez předplatn
 Bucketeer Pro si můžete 14 dní zdarma vyzkoušet. Před spuštěním ukáže nabídka délku zkušební verze, co se stane potom a cenu Pro doživotně; pak klikněte na **Spustit zkušební verzi**. Po skončení zkušební verze Bucketeer pokračuje v bezplatné verzi a nic se neúčtuje. Zkušební verzi lze spustit jednou na Apple ID a obnovení nákupů vrátí běžící zkušební verzi i na jiném Macu.
 
 - **Obnovit nákup** obnoví Pro na jiném Macu nebo po přeinstalaci.
-- **Uplatnit kód** (macOS 15 nebo novější) otevře dialog Apple pro kódy nabídek.
+- **Uplatnit kód** otevře dialog Apple pro kódy nabídek.
 
 ## Klávesové zkratky
 

@@ -66,10 +66,7 @@ struct PaywallSheet: View {
 
     private var bulletList: some View {
         VStack(alignment: .leading, spacing: 12) {
-            bullet(
-                MountController.isSupportedOnThisSystem ? "paywall.bullet.mount" : "paywall.bullet.mount.requiresNewerMacOS",
-                icon: "externaldrive.badge.plus"
-            )
+            bullet("paywall.bullet.mount", icon: "externaldrive.badge.plus")
             bullet("paywall.bullet.sync", icon: "arrow.triangle.2.circlepath")
             bullet("paywall.bullet.crossAccount", icon: "rectangle.2.swap")
             bullet("paywall.bullet.menubar", icon: "menubar.rectangle")

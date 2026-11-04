@@ -88,7 +88,7 @@ Bucketeer dodaje akcje do aplikacji Skróty: wyświetlanie listy bucketów, wysy
 
 Te funkcje wymagają Bucketeer Pro:
 
-- **Zamontuj jako dysk**: kliknij bucket prawym przyciskiem i wybierz **Zamontuj jako dysk**, aby używać go w Finderze jak dysku. Wymaga systemu macOS 14.1 lub nowszego. Zamontowane dyski są widoczne w sekcji **Zamontowane dyski** na pasku bocznym; kliknij prawym przyciskiem, aby wybrać **Odmontuj**. Bucketów z szyfrowaniem po stronie klienta nie można zamontować. Zmiany na serwerze pojawiają się w Finderze po odświeżeniu bucketu w Bucketeer. Jeśli plik edytowany w Finderze zmienił się w międzyczasie na serwerze, Twoja wersja zostaje zapisana obok jako kopia konfliktu.
+- **Zamontuj jako dysk**: kliknij bucket prawym przyciskiem i wybierz **Zamontuj jako dysk**, aby używać go w Finderze jak dysku. Zamontowane dyski są widoczne w sekcji **Zamontowane dyski** na pasku bocznym; kliknij prawym przyciskiem, aby wybrać **Odmontuj**. Bucketów z szyfrowaniem po stronie klienta nie można zamontować. Zmiany na serwerze pojawiają się w Finderze po odświeżeniu bucketu w Bucketeer. Jeśli plik edytowany w Finderze zmienił się w międzyczasie na serwerze, Twoja wersja zostaje zapisana obok jako kopia konfliktu.
 - **Zadania synchronizacji**: w sekcji **Synchronizacja** utwórz zadanie, które kopiuje, przenosi lub tworzy kopię lustrzaną między dwoma bucketami, także między kontami i dostawcami, albo między lokalnym folderem a bucketem. Uruchamiaj je ręcznie, przy uruchomieniu aplikacji, co N minut lub gdy zmieni się lokalny folder.
 - **Foldery obserwowane**: **Nowy folder obserwowany…** wysyła każdy nowy plik z lokalnego folderu do bucketu.
 - **Kopiuj na inne konto…**: kopiuje obiekty na inne konto lub do innego dostawcy. Jeśli obie strony na to pozwalają, kopiowanie odbywa się po stronie serwera, a dane nie przechodzą przez Twojego Maca.
@@ -103,7 +103,7 @@ Bucketeer Pro to jednorazowy zakup w aplikacji przez App Store, bez subskrypcji.
 Bucketeer Pro możesz wypróbować bezpłatnie przez 14 dni. Przed rozpoczęciem strona zakupu pokazuje długość okresu próbnego, co dzieje się potem i cenę Pro na zawsze; następnie kliknij **Rozpocznij okres próbny**. Po zakończeniu okresu próbnego Bucketeer działa dalej w wersji bezpłatnej i nic nie jest pobierane. Okres próbny można rozpocząć raz na Apple ID, a przywrócenie zakupów przywraca trwający okres próbny także na innym Macu.
 
 - **Przywróć zakup** przywraca Pro na innym Macu lub po ponownej instalacji.
-- **Zrealizuj kod** (macOS 15 lub nowszy) otwiera okno Apple do realizacji kodów ofert.
+- **Zrealizuj kod** otwiera okno Apple do realizacji kodów ofert.
 
 ## Skróty klawiszowe
 

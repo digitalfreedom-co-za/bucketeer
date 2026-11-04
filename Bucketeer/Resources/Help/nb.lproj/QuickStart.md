@@ -88,7 +88,7 @@ Bucketeer legger til handlinger i Snarveier-appen: vis buckets, last opp en fil,
 
 Disse funksjonene krever Bucketeer Pro:
 
-- **Monter som disk**: høyreklikk på en bucket og velg **Monter som disk** for å bruke den i Finder som en disk. Krever macOS 14.1 eller nyere. Monterte disker vises under **Monterte disker** i sidepanelet; høyreklikk og velg **Avmonter** for å fjerne dem. Buckets med kryptering på klientsiden kan ikke monteres. Endringer på serveren vises i Finder når du oppdaterer bucketen i Bucketeer. Hvis en fil du redigerer i Finder er endret på serveren i mellomtiden, lagres din versjon ved siden av som en konfliktkopi.
+- **Monter som disk**: høyreklikk på en bucket og velg **Monter som disk** for å bruke den i Finder som en disk. Monterte disker vises under **Monterte disker** i sidepanelet; høyreklikk og velg **Avmonter** for å fjerne dem. Buckets med kryptering på klientsiden kan ikke monteres. Endringer på serveren vises i Finder når du oppdaterer bucketen i Bucketeer. Hvis en fil du redigerer i Finder er endret på serveren i mellomtiden, lagres din versjon ved siden av som en konfliktkopi.
 - **Synkroniseringsjobber**: i delen **Synkronisering** oppretter du en jobb som kopierer, flytter eller speiler mellom to buckets, på tvers av kontoer og leverandører, eller mellom en lokal mappe og en bucket. Kjør den manuelt, ved oppstart, hvert N. minutt eller når den lokale mappen endres.
 - **Overvåkede mapper**: **Ny overvåket mappe…** laster opp hver nye fil i en lokal mappe til en bucket.
 - **Kopier til annen konto…**: kopierer objekter til en annen konto eller leverandør. Når begge sider tillater det, skjer kopieringen på serveren, og dataene går ikke gjennom Macen din.
@@ -103,7 +103,7 @@ Bucketeer Pro er et engangskjøp i appen via App Store, uten abonnement. Åpne *
 Du kan prøve Bucketeer Pro gratis i 14 dager. Før du starter, viser kjøpssiden hvor lang prøveperioden er, hva som skjer etterpå og prisen på Pro Livstid; klikk deretter på **Start prøveperiode**. Når prøveperioden er over, fortsetter Bucketeer i gratisversjonen, og ingenting belastes. Prøveperioden kan startes én gang per Apple-ID, og gjenoppretting av kjøp henter også tilbake en pågående prøveperiode på en annen Mac.
 
 - **Gjenopprett kjøp** gir deg Pro tilbake på en annen Mac eller etter en ny installasjon.
-- **Løs inn kode** (macOS 15 eller nyere) åpner Apples vindu for tilbudskoder.
+- **Løs inn kode** åpner Apples vindu for tilbudskoder.
 
 ## Tastatursnarveier
 
