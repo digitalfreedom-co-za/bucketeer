@@ -221,6 +221,33 @@ public struct AzureBlobObjectStore: S3Browsing {
         toKey: String,
         metadata: [String: String]?
     ) async throws {
+        try await copy(account: account, fromBucket: fromBucket, fromKey: fromKey,
+                       toBucket: toBucket, toKey: toKey, metadata: metadata, conditions: [:])
+    }
+
+    public func copyIfAbsent(account: S3Account, bucket: String, fromKey: String, sourceETag: String, toKey: String) async throws {
+        do {
+            try await copy(
+                account: account, fromBucket: bucket, fromKey: fromKey, toBucket: bucket, toKey: toKey, metadata: nil,
+                conditions: ["x-ms-source-if-match": ETag.quoted(sourceETag), "If-None-Match": "*"]
+            )
+        } catch BucketeerError.providerError(statusCode: 409, _) {
+            // `BlobAlreadyExists`: the create-only condition failed.
+            throw BucketeerError.preconditionFailed(key: toKey)
+        }
+    }
+
+    /// `conditions` are extra request headers (source / destination
+    /// preconditions) the copy must satisfy.
+    private func copy(
+        account: S3Account,
+        fromBucket: String,
+        fromKey: String,
+        toBucket: String,
+        toKey: String,
+        metadata: [String: String]?,
+        conditions: [String: String]
+    ) async throws {
         let signer = try await credentialsCache.signer(for: account)
         let builder = AzureRequestBuilder(account: account)
 
@@ -231,6 +258,9 @@ public struct AzureBlobObjectStore: S3Browsing {
             builder.absoluteBlobURL(container: fromBucket, blob: fromKey).absoluteString,
             forHTTPHeaderField: "x-ms-copy-source"
         )
+        for (header, value) in conditions {
+            request.setValue(value, forHTTPHeaderField: header)
+        }
         // `copy(...)` previously bypassed the
         // header sanitisation that saveMetadata uses. Same
         // hardening here so a hostile metadata value can't fold a

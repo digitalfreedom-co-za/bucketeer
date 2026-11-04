@@ -55,6 +55,10 @@ public protocol S3Browsing: Sendable {
         toKey: String,
         metadata: [String: String]?
     ) async throws
+    /// Server-side copy inside one bucket that reads `fromKey` only while
+    /// it still has `sourceETag` and creates `toKey` only if nothing is
+    /// there. Throws `.preconditionFailed` when either condition fails.
+    func copyIfAbsent(account: S3Account, bucket: String, fromKey: String, sourceETag: String, toKey: String) async throws
     func createFolder(account: S3Account, bucket: String, prefix: String) async throws
 
     /// Time-limited download URL the user can share without giving the

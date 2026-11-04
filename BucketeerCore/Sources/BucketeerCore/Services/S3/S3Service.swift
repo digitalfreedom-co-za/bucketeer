@@ -192,6 +192,24 @@ public struct S3Service: S3Browsing {
         }
     }
 
+    public func copyIfAbsent(account: S3Account, bucket: String, fromKey: String, sourceETag: String, toKey: String) async throws {
+        let s3 = try await factory.client(for: account)
+        let source = "\(bucket)/\(fromKey)"
+        do {
+            _ = try await s3.copyObject(.init(
+                bucket: bucket,
+                copySource: source.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? source,
+                copySourceIfMatch: ETag.quoted(sourceETag),
+                ifNoneMatch: "*",
+                key: toKey
+            ))
+        } catch where Self.isPreconditionFailure(error) {
+            throw BucketeerError.preconditionFailed(key: toKey)
+        } catch {
+            throw Self.map(error, bucket: bucket, key: fromKey)
+        }
+    }
+
     public func createFolder(account: S3Account, bucket: String, prefix: String) async throws {
         let s3 = try await factory.client(for: account)
         let key = prefix.hasSuffix("/") ? prefix : prefix + "/"

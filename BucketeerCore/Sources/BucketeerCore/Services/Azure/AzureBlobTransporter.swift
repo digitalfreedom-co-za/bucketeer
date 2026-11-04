@@ -335,12 +335,15 @@ public struct AzureBlobTransporter: Sendable {
 
     /// Download the blob to `localURL`. Routes between single-GET and
     /// ranged parallel-GET based on the head-reported size. Zero-byte
-    /// blobs short-circuit to an empty local file.
+    /// blobs short-circuit to an empty local file. Every GET is pinned
+    /// to the version the HEAD reported; with `ifMatch` that version
+    /// must be `ifMatch`, otherwise `.preconditionFailed` is thrown.
     public func download(
         account: S3Account,
         container: String,
         blob: String,
         localURL: URL,
+        ifMatch expectedVersion: String? = nil,
         progress: @Sendable @escaping (Int64, Int64) async -> Void
     ) async throws {
         let signer = try await credentialsCache.signer(for: account)
@@ -364,6 +367,9 @@ public struct AzureBlobTransporter: Sendable {
         let total = headHTTP.value(forHTTPHeaderField: "Content-Length")
             .flatMap { Int64($0) } ?? 0
         let version = headHTTP.value(forHTTPHeaderField: "ETag")
+        if let expectedVersion, !ETag.matches(base: expectedVersion, current: version) {
+            throw BucketeerError.preconditionFailed(key: blob)
+        }
 
         // The existing file is replaced only by a complete download.
         try await StagedDownload.write(to: localURL) { staging in
@@ -381,6 +387,7 @@ public struct AzureBlobTransporter: Sendable {
                     signer: signer,
                     container: container,
                     blob: blob,
+                    version: version,
                     localURL: staging,
                     total: total,
                     progress: progress
@@ -405,12 +412,16 @@ public struct AzureBlobTransporter: Sendable {
         signer: AzureSharedKeySigner,
         container: String,
         blob: String,
+        version: String?,
         localURL: URL,
         total: Int64,
         progress: @Sendable @escaping (Int64, Int64) async -> Void
     ) async throws {
         var request = URLRequest(url: builder.blobDownloadURL(container: container, blob: blob))
         request.httpMethod = "GET"
+        if let version {
+            request.setValue(version, forHTTPHeaderField: "If-Match")
+        }
         signer.sign(&request)
 
         let (data, response) = try await session.azureData(for: request)

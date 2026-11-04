@@ -97,8 +97,11 @@ enum FileProviderItemResolver {
         let item: NSFileProviderItem
     }
 
+    /// Downloads the current version, or exactly `requestedVersion`;
+    /// the returned item describes the version whose bytes were read.
     static func fetchContents(
         identifier: NSFileProviderItemIdentifier,
+        requestedVersion: String?,
         in domain: NSFileProviderDomain,
         container: ExtensionContainer,
         progress: Progress
@@ -115,20 +118,14 @@ enum FileProviderItemResolver {
             .appending(path: UUID().uuidString)
         let object: S3Object
         do {
-            object = try await container.browser.head(
-                account: mountInfo.account,
-                bucket: mountInfo.bucket,
-                key: key
+            object = try await mounted(mountInfo, container: container, progress: progress).fetch(
+                key,
+                requestedVersion: requestedVersion,
+                to: staging
             )
-            try await downloadObject(
-                account: mountInfo.account,
-                bucket: mountInfo.bucket,
-                key: key,
-                size: object.size,
-                to: staging,
-                container: container,
-                progress: progress
-            )
+        } catch MountedBucket.Refusal.versionUnavailable {
+            try? FileManager.default.removeItem(at: staging)
+            throw mappedError(.versionNoLongerAvailable)
         } catch {
             try? FileManager.default.removeItem(at: staging)
             throw fileProviderError(error, fallback: .serverUnreachable)
@@ -143,9 +140,14 @@ enum FileProviderItemResolver {
 
     // MARK: - Create
 
+    /// Files are created only if the name is free. A taken name keeps
+    /// its object: the new file goes up as a conflict copy (and Finder
+    /// shows it under that name), unless `mayAlreadyExist` (re-import)
+    /// finds the identical object already there.
     static func createItem(
         template: NSFileProviderItem,
         contents: URL?,
+        options: NSFileProviderCreateItemOptions,
         in domain: NSFileProviderDomain,
         container: ExtensionContainer,
         progress: Progress
@@ -169,27 +171,35 @@ enum FileProviderItemResolver {
         } else {
             key = parentKey + template.filename
         }
-        do {
-            if isFolder {
+        if !isFolder, let contents {
+            do {
+                let placement = try await mounted(mountInfo, container: container, progress: progress).create(
+                    key, contents: contents, mayAlreadyExist: options.contains(.mayAlreadyExist)
+                )
+                if placement.isConflict {
+                    await announceConflict(.conflictCopy, key: key, in: domain)
+                }
+                return ResolvedItem(
+                    identifier: identifier(for: placement.object.key),
+                    parent: template.parentItemIdentifier,
+                    object: placement.object
+                )
+            } catch {
+                throw fileProviderError(error, fallback: .cannotSynchronize)
+            }
+        }
+        if isFolder {
+            // An existing folder of that name is merged into, which
+            // replaces nothing.
+            do {
                 try await container.browser.createFolder(
                     account: mountInfo.account,
                     bucket: mountInfo.bucket,
                     prefix: key
                 )
-            } else if let contents {
-                try await uploadFile(
-                    contents,
-                    account: mountInfo.account,
-                    bucket: mountInfo.bucket,
-                    key: key,
-                    container: container,
-                    progress: progress
-                )
+            } catch {
+                throw fileProviderError(error, fallback: .cannotSynchronize)
             }
-        } catch {
-            throw fileProviderError(error, fallback: .cannotSynchronize)
-        }
-        if isFolder {
             // Synthesised — there is no head object for a folder marker
             // on S3 (and not always on Azure either).
             return ResolvedItem(
@@ -199,10 +209,9 @@ enum FileProviderItemResolver {
                 isFolder: true
             )
         }
-        // The HEAD after a successful PUT crosses the network too —
-        // it must produce an NSFileProviderError like everything else
-        // or the system sees a foreign error domain after an upload it
-        // considers complete.
+        // A file without contents: report whatever the server holds.
+        // The HEAD crosses the network too — it must produce an
+        // NSFileProviderError like everything else.
         let head: S3Object
         do {
             head = try await container.browser.head(
@@ -281,25 +290,23 @@ enum FileProviderItemResolver {
                     )
                 }
             }
-            // Rename = server-side copy + delete (mirrors the rename
-            // path in the host's BrowserViewModel).
+            // Rename = conditional server-side copy + conditional delete,
+            // against the version this change is based on (the one just
+            // written, or Finder's base version).
             if isMove {
                 let newKey = try moveTarget(of: item)
                 if newKey != originalKey {
-                    try await container.browser.copy(
-                        account: mountInfo.account,
-                        fromBucket: mountInfo.bucket,
-                        fromKey: originalKey,
-                        toBucket: mountInfo.bucket,
-                        toKey: newKey,
-                        metadata: nil
+                    let placement = try await mounted(mountInfo, container: container, progress: progress).rename(
+                        originalKey,
+                        baseVersion: written?.etag ?? String(data: baseVersion.contentVersion, encoding: .utf8),
+                        to: newKey
                     )
-                    try await container.browser.delete(
-                        account: mountInfo.account,
-                        bucket: mountInfo.bucket,
-                        keys: [originalKey]
-                    )
-                    currentKey = newKey
+                    if placement.isConflict {
+                        let kind: ConflictNotice.Kind = placement.object.key == originalKey
+                            ? .renameKeptServerVersion : .conflictCopy
+                        await announceConflict(kind, key: newKey, in: domain)
+                    }
+                    currentKey = placement.object.key
                 }
             }
             // The HEAD supplies the metadata only. If it already shows
@@ -398,7 +405,7 @@ enum FileProviderItemResolver {
                 return nil
             }
         }
-        try? await NSFileProviderManager(for: domain)?.signalEnumerator(for: .workingSet)
+        await announceConflict(.conflictCopy, key: targetKey, in: domain)
         guard let head = try await currentHead(of: key, mountInfo: mountInfo, container: container) else {
             throw mappedError(.noSuchItem)
         }
@@ -430,8 +437,12 @@ enum FileProviderItemResolver {
 
     // MARK: - Delete
 
+    /// Files are deleted only while the server still has `baseVersion`;
+    /// a newer version is kept and the deletion rejected, so Finder
+    /// brings the item back.
     static func deleteItem(
         identifier: NSFileProviderItemIdentifier,
+        baseVersion: NSFileProviderItemVersion,
         in domain: NSFileProviderDomain,
         container: ExtensionContainer
     ) async throws {
@@ -456,12 +467,18 @@ enum FileProviderItemResolver {
                     container: container
                 )
             } else {
-                try await container.browser.delete(
-                    account: mountInfo.account,
-                    bucket: mountInfo.bucket,
-                    keys: [key]
+                try await mounted(mountInfo, container: container, progress: Progress()).delete(
+                    key, baseVersion: String(data: baseVersion.contentVersion, encoding: .utf8)
                 )
             }
+        } catch MountedBucket.Refusal.changedOnServer {
+            await announceConflict(.deletionRefused, key: key, in: domain)
+            guard let current = try? await currentHead(of: key, mountInfo: mountInfo, container: container) else {
+                return
+            }
+            throw NSError.fileProviderErrorForRejectedDeletion(
+                of: ResolvedItem(identifier: identifier, parent: parentIdentifier(for: key), object: current)
+            )
         } catch {
             throw fileProviderError(error, fallback: .cannotSynchronize)
         }
@@ -526,41 +543,75 @@ enum FileProviderItemResolver {
         )
     }
 
-    // MARK: - Transports
+    // MARK: - Version rules
 
-    /// Direct download bridge that bypasses the host's TransferManager
-    /// queue. Picks S3 multipart for large objects automatically via
-    /// Soto; Azure uses the existing ranged-parallel transporter.
-    private static func downloadObject(
-        account: S3Account,
-        bucket: String,
-        key: String,
-        size: Int64,
-        to localURL: URL,
+    private static func mounted(
+        _ mountInfo: (account: S3Account, bucket: String),
         container: ExtensionContainer,
         progress: Progress
-    ) async throws {
-        switch account.provider.family {
-        case .azureBlob:
-            try await container.azureTransporter.download(
-                account: account,
-                container: bucket,
-                blob: key,
-                localURL: localURL,
-                progress: { bytes, total in
-                    Self.publish(progress: progress, bytes: bytes, total: total)
-                }
+    ) -> MountedBucket {
+        MountedBucket(
+            browser: container.browser,
+            account: mountInfo.account,
+            bucket: mountInfo.bucket,
+            transport: ExtensionTransport(account: mountInfo.account, bucket: mountInfo.bucket,
+                                          container: container, progress: progress)
+        )
+    }
+
+    /// The server object differed from what Finder expected and both
+    /// versions were kept: show the change in Finder and tell the user.
+    private static func announceConflict(_ kind: ConflictNotice.Kind, key: String, in domain: NSFileProviderDomain) async {
+        try? await NSFileProviderManager(for: domain)?.signalEnumerator(for: .workingSet)
+        ConflictNotice.post(kind, fileName: displayName(of: key))
+    }
+
+    private static func displayName(of key: String) -> String {
+        key.split(separator: "/").last.map(String.init) ?? key
+    }
+
+    // MARK: - Transports
+
+    /// Direct transfers that bypass the host's TransferManager queue:
+    /// S3 multipart via Soto, Azure via the ranged-parallel transporter.
+    private struct ExtensionTransport: MountedContentTransport {
+        let account: S3Account
+        let bucket: String
+        let container: ExtensionContainer
+        let progress: Progress
+
+        func upload(_ url: URL, to key: String, precondition: WritePrecondition?) async throws -> String? {
+            try await FileProviderItemResolver.uploadFile(
+                url, account: account, bucket: bucket, key: key,
+                precondition: precondition, container: container, progress: progress
             )
-        case .s3:
-            try await S3DirectFetch.download(
-                account: account,
-                bucket: bucket,
-                key: key,
-                size: size,
-                to: localURL,
-                factory: container.clientFactory
-            )
-            Self.publish(progress: progress, bytes: size, total: size)
+        }
+
+        func download(_ key: String, matching etag: String, size: Int64, to url: URL) async throws {
+            switch account.provider.family {
+            case .azureBlob:
+                try await container.azureTransporter.download(
+                    account: account,
+                    container: bucket,
+                    blob: key,
+                    localURL: url,
+                    ifMatch: etag,
+                    progress: { [progress] bytes, total in
+                        FileProviderItemResolver.publish(progress: progress, bytes: bytes, total: total)
+                    }
+                )
+            case .s3:
+                try await S3DirectFetch.download(
+                    account: account,
+                    bucket: bucket,
+                    key: key,
+                    etag: etag,
+                    size: size,
+                    to: url,
+                    factory: container.clientFactory
+                )
+                FileProviderItemResolver.publish(progress: progress, bytes: size, total: size)
+            }
         }
     }
 

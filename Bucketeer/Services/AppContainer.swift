@@ -294,6 +294,8 @@ final class AppContainer {
             await mountController.signalServerChanges(accountID: accountID, bucket: bucket)
         }
         if startsBackgroundWork {
+            // Finder conflicts are announced from the extension.
+            ConflictNotice.requestAuthorization()
             Task { @MainActor [mountController] in
                 await mountController.refresh()
             }

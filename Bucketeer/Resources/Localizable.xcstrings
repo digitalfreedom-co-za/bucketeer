@@ -80525,6 +80525,506 @@
           }
         }
       }
+    },
+    "conflict.notice.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obě verze zachovány"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Begge versioner beholdt"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beide Versionen behalten"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Διατηρήθηκαν και οι δύο εκδόσεις"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Both versions kept"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Both versions kept"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se conservaron ambas versiones"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Molemmat versiot säilytettiin"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les deux versions ont été conservées"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mindkét verzió megmaradt"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrambe le versioni conservate"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "両方のバージョンを保持しました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "두 버전 모두 유지됨"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Begge versjonene beholdt"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beide versies behouden"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zachowano obie wersje"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As duas versões foram mantidas"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As duas versões foram mantidas"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохранены обе версии"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Båda versionerna behölls"
+          }
+        }
+      }
+    },
+    "conflict.notice.copy %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ se současně změnil jinde. Vaše verze byla uložena jako konfliktní kopie vedle něj."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” blev ændret et andet sted samtidig. Din version blev gemt som en konfliktkopi ved siden af."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ wurde gleichzeitig anderswo geändert. Deine Version wurde als Konfliktkopie daneben gespeichert."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το «%@» άλλαξε ταυτόχρονα κάπου αλλού. Η έκδοσή σας αποθηκεύτηκε ως αντίγραφο διένεξης δίπλα του."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” changed elsewhere at the same time. Your version was saved as a conflict copy next to it."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ changed elsewhere at the same time. Your version was saved as a conflict copy next to it."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«%@» cambió en otro lugar al mismo tiempo. Tu versión se guardó como copia en conflicto a su lado."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "”%@” muuttui samaan aikaan muualla. Versiosi tallennettiin sen viereen ristiriitakopiona."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "« %@ » a été modifié ailleurs au même moment. Votre version a été enregistrée à côté comme copie en conflit."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A(z) „%@” közben máshol is megváltozott. Az Ön verziója ütközési másolatként mellé lett mentve."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«%@» è stato modificato altrove nello stesso momento. La tua versione è stata salvata accanto come copia in conflitto."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「%@」は同時に別の場所で変更されました。あなたのバージョンは競合コピーとして隣に保存されました。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’이(가) 동시에 다른 곳에서 변경되었습니다. 사용자의 버전은 그 옆에 충돌 사본으로 저장되었습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«%@» ble endret et annet sted samtidig. Din versjon ble lagret som en konfliktkopi ved siden av."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ is tegelijk ergens anders gewijzigd. Jouw versie is ernaast bewaard als conflictkopie."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@” zmienił się w tym samym czasie w innym miejscu. Twoja wersja została zapisana obok jako kopia konfliktowa."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” foi alterado em outro lugar ao mesmo tempo. Sua versão foi salva ao lado como cópia em conflito."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” foi alterado noutro local ao mesmo tempo. A sua versão foi guardada ao lado como cópia em conflito."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«%@» одновременно изменён в другом месте. Ваша версия сохранена рядом как конфликтная копия."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "”%@” ändrades någon annanstans samtidigt. Din version sparades bredvid som en konfliktkopia."
+          }
+        }
+      }
+    },
+    "conflict.notice.rename %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ se na serveru změnil, proto přejmenování nebylo provedeno. Novější verze zůstává na původním místě."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” blev ændret på serveren, så omdøbningen blev ikke udført. Den nyere version bliver, hvor den var."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ wurde auf dem Server geändert, daher wurde die Umbenennung nicht ausgeführt. Die neuere Version bleibt, wo sie war."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το «%@» άλλαξε στον διακομιστή, γι’ αυτό η μετονομασία δεν εφαρμόστηκε. Η νεότερη έκδοση μένει εκεί που ήταν."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” changed on the server, so the rename was not applied. The newer version stays where it was."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ changed on the server, so the rename was not applied. The newer version stays where it was."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«%@» cambió en el servidor, así que no se aplicó el cambio de nombre. La versión más reciente se queda donde estaba."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "”%@” muuttui palvelimella, joten nimeämistä ei tehty. Uudempi versio pysyy paikallaan."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "« %@ » a été modifié sur le serveur : le renommage n’a donc pas été appliqué. La version la plus récente reste à sa place."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A(z) „%@” megváltozott a szerveren, ezért az átnevezés nem történt meg. Az újabb verzió a helyén marad."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«%@» è cambiato sul server, quindi la ridenominazione non è stata applicata. La versione più recente resta dov’era."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「%@」はサーバ上で変更されたため、名前の変更は適用されませんでした。新しいバージョンは元の場所に残ります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’이(가) 서버에서 변경되어 이름 변경이 적용되지 않았습니다. 최신 버전은 원래 위치에 남아 있습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«%@» ble endret på serveren, så navneendringen ble ikke utført. Den nyere versjonen blir værende der den var."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ is op de server gewijzigd, daarom is de naamswijziging niet doorgevoerd. De nieuwere versie blijft waar ze was."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@” zmienił się na serwerze, więc zmiana nazwy nie została zastosowana. Nowsza wersja pozostaje na miejscu."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” mudou no servidor, por isso a renomeação não foi aplicada. A versão mais recente continua onde estava."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” mudou no servidor, por isso a mudança de nome não foi aplicada. A versão mais recente continua onde estava."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«%@» изменён на сервере, поэтому переименование не выполнено. Более новая версия осталась на месте."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "”%@” ändrades på servern, så namnbytet genomfördes inte. Den nyare versionen ligger kvar där den var."
+          }
+        }
+      }
+    },
+    "conflict.notice.delete %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ se na serveru změnil, proto nebyl smazán. Finder znovu zobrazí novější verzi."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” blev ændret på serveren og blev derfor ikke slettet. Finder viser den nyere version igen."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ wurde auf dem Server geändert und deshalb nicht gelöscht. Der Finder zeigt wieder die neuere Version."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το «%@» άλλαξε στον διακομιστή, γι’ αυτό δεν διαγράφηκε. Το Finder εμφανίζει ξανά τη νεότερη έκδοση."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” changed on the server, so it was not deleted. Finder shows the newer version again."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ changed on the server, so it was not deleted. Finder shows the newer version again."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«%@» cambió en el servidor, así que no se eliminó. Finder vuelve a mostrar la versión más reciente."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "”%@” muuttui palvelimella, joten sitä ei poistettu. Finder näyttää taas uudemman version."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "« %@ » a été modifié sur le serveur : il n’a donc pas été supprimé. Le Finder affiche à nouveau la version la plus récente."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A(z) „%@” megváltozott a szerveren, ezért nem lett törölve. A Finder ismét az újabb verziót mutatja."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«%@» è cambiato sul server, quindi non è stato eliminato. Il Finder mostra di nuovo la versione più recente."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「%@」はサーバ上で変更されたため、削除されませんでした。Finderに新しいバージョンが再び表示されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’이(가) 서버에서 변경되어 삭제되지 않았습니다. Finder에 최신 버전이 다시 표시됩니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«%@» ble endret på serveren og ble derfor ikke slettet. Finder viser den nyere versjonen igjen."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ is op de server gewijzigd en daarom niet verwijderd. De Finder toont de nieuwere versie weer."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@” zmienił się na serwerze, więc nie został usunięty. Finder ponownie pokazuje nowszą wersję."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” mudou no servidor, por isso não foi apagado. O Finder volta a mostrar a versão mais recente."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” mudou no servidor, por isso não foi eliminado. O Finder volta a mostrar a versão mais recente."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«%@» изменён на сервере, поэтому не удалён. Finder снова показывает более новую версию."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "”%@” ändrades på servern och raderades därför inte. Finder visar den nyare versionen igen."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"
