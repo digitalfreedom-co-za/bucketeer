@@ -25,6 +25,21 @@ final class SyncRenderTests: XCTestCase {
         SyncJobListView(viewModel: demo.container.syncJobListViewModel).environment(demo.container)
     }
 
+    // MARK: Sheets
+
+    /// Editing loads the stored job into the form.
+    func testSyncJobSheetPrefilled() async throws {
+        let demo = try await DemoEnvironment.make()
+        try await renderAndAssert(SyncJobSheet(mode: .edit(nightlyJob(demo)), accounts: demo.accounts, onSave: { _ in }),
+                                  name: "SyncJobSheet_populated", size: sheetSize, shows: ["Nightly photos backup"])
+    }
+
+    func testWatchFolderSheet() async throws {
+        let demo = try await DemoEnvironment.make()
+        try await renderAndAssert(WatchFolderSheet(accounts: demo.accounts, onSave: { _ in }),
+                                  name: "WatchFolderSheet_empty", size: sheetSize, shows: ["No folder selected"])
+    }
+
     // MARK: Detail window
 
     /// A job whose account no longer exists fails in the real engine;

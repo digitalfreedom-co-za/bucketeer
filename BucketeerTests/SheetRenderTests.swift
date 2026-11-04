@@ -10,12 +10,45 @@ import SwiftUI
 import StoreKitTest
 import BucketeerCore
 
-/// Sheets of the browser and paywall flows that load their content
-/// asynchronously or depend on the entitlement state.
+/// Sheets of the browser, account and paywall flows, one state each.
 @MainActor
 final class SheetRenderTests: XCTestCase {
     private let sheetSize = CGSize(width: 560, height: 640)
     private let wideSheetSize = CGSize(width: 760, height: 640)
+
+    func testNewFolderSheet() async throws {
+        try await renderAndAssert(NewFolderSheet(onCreate: { _ in }),
+                                  name: "NewFolderSheet_empty", size: CGSize(width: 420, height: 220), shows: ["New folder"])
+    }
+
+    /// Renaming starts from the current name.
+    func testRenameSheetPrefilled() async throws {
+        try await renderAndAssert(RenameSheet(original: "report.pdf", onRename: { _ in }),
+                                  name: "RenameSheet_populated", size: CGSize(width: 420, height: 220),
+                                  shows: ["report.pdf"])
+    }
+
+    // MARK: Cross-account copy
+
+    func testCrossAccountCopyPopulated() async throws {
+        let demo = try await DemoEnvironment.make()
+        try await renderAndAssert(
+            CrossAccountCopySheet(sourceAccount: demo.aws, sourceBucket: "photos-2026",
+                                  keys: ["report.pdf", "readme.txt"], accounts: demo.accounts,
+                                  onSubmit: { _, _, _, _ in [] }),
+            name: "CrossAccountCopySheet_populated", size: sheetSize,
+            shows: ["photos-2026", "Keep source objects"])
+    }
+
+    // MARK: Accounts
+
+    /// Editing loads the stored account into the form.
+    func testEditAccountPrefilled() async throws {
+        let demo = try await DemoEnvironment.make()
+        try await renderAndAssert(AddEditAccountSheet(mode: .edit(demo.aws), onSave: { _, _ in nil }),
+                                  name: "AddEditAccountSheet_populated", size: CGSize(width: 560, height: 720),
+                                  shows: ["Demo AWS"])
+    }
 
     // MARK: Share link
 
