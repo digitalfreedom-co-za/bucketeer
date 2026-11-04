@@ -14,9 +14,8 @@ import BucketeerCore
 /// Concurrent upload / download queue. Wraps Soto's multipart helpers
 /// for large files; uses single-shot `putObject` / `getObject` for
 /// anything below the multipart threshold (5 MB). Progress flows out
-/// through an `AsyncStream<[TransferTask]>` that emits the full task
-/// snapshot on every state change. Callers observe via the
-/// `TransferQueueViewModel`.
+/// through `taskUpdates()`, one stream of full task snapshots per
+/// observer, and every terminal state through `completions()`.
 actor TransferManager: Transferring {
 
     // MARK: - Configuration
@@ -25,10 +24,22 @@ actor TransferManager: Transferring {
     private static let multipartPartSize: Int = 8 * 1024 * 1024
     private let maxConcurrent: Int = 4
 
-    // MARK: - Public stream
+    // MARK: - Public streams
 
-    nonisolated let tasks: AsyncStream<[TransferTask]>
-    private let continuation: AsyncStream<[TransferTask]>.Continuation
+    /// Snapshots of the whole queue, one independent stream per observer
+    /// (transfer list, menu bar, …).
+    private let snapshots = Broadcast<[TransferTask]>(delivery: .snapshots)
+    /// Every task once, when it reaches its terminal state — for work
+    /// that must not miss a completion (auto-tagging).
+    private let terminalEvents = Broadcast<TransferTask>(delivery: .events)
+
+    nonisolated func taskUpdates() -> AsyncStream<[TransferTask]> {
+        snapshots.subscribe()
+    }
+
+    nonisolated func completions() -> AsyncStream<TransferTask> {
+        terminalEvents.subscribe()
+    }
 
     // MARK: - State
 
@@ -112,6 +123,9 @@ actor TransferManager: Transferring {
     /// callback or a delayed completion cannot bring a cancelled task
     /// back to life.
     private var terminated: Set<UUID> = []
+    /// Terminal states a still-running worker reported; applied once
+    /// the worker returns (`workerDidFinish`).
+    private var pendingTerminal: [UUID: TransferState] = [:]
     /// Per-ID waiters created by `awaitCompletion(id:)`. Each entry is
     /// a list of continuations resumed once the task reaches a terminal
     /// state. Fixes the race where a fast transfer
@@ -141,15 +155,11 @@ actor TransferManager: Transferring {
         self.limiter = limiter
         self.resumableUploader = resumableUploader
         self.encryptionGate = encryptionGate
-        let (stream, continuation) = AsyncStream<[TransferTask]>.makeStream(
-            bufferingPolicy: .bufferingNewest(1)
-        )
-        self.tasks = stream
-        self.continuation = continuation
     }
 
     deinit {
-        continuation.finish()
+        snapshots.finish()
+        terminalEvents.finish()
     }
 
     // MARK: - Transferring
@@ -298,8 +308,15 @@ actor TransferManager: Transferring {
         return id
     }
 
+    /// Requests cancellation. A queued task without a worker ends right
+    /// away; a running one ends — and resumes `awaitCompletion` waiters —
+    /// only once its worker returned, because callers free the files
+    /// and security scopes the worker may still be using.
     func cancel(id: UUID) async {
-        workers[id]?.cancel()
+        if let worker = workers[id] {
+            worker.cancel()
+            return
+        }
         // Route through setState so `awaitCompletion(id:)` waiters get
         // resumed and `terminalCache` is populated —
         // bypassing setState left sync engine + drag-drop round-trips
@@ -385,8 +402,12 @@ actor TransferManager: Transferring {
         workers[id] = task
     }
 
+    /// The worker has returned: nothing touches the task's files any
+    /// more, so its terminal state may now reach waiters and observers.
     private func workerDidFinish(id: UUID) {
         workers.removeValue(forKey: id)
+        let outcome = pendingTerminal.removeValue(forKey: id) ?? .cancelled
+        setState(id: id, state: outcome)
         pump()
     }
 
@@ -820,6 +841,16 @@ actor TransferManager: Transferring {
         // further writes. Soto's progress callbacks and completion
         // returns can otherwise arrive after a user-initiated cancel.
         guard !terminated.contains(id), var item = items[id] else { return }
+        // A worker still running (it may be unwinding a cancel) holds its
+        // result back until `workerDidFinish`; progress after a
+        // cancellation request is dropped.
+        if workers[id] != nil {
+            if state.isTerminal {
+                pendingTerminal[id] = pendingTerminal[id] ?? state
+                return
+            }
+            if workers[id]?.isCancelled == true || pendingTerminal[id] != nil { return }
+        }
         item.task.state = state
         items[id] = item
         if state.isTerminal {
@@ -840,6 +871,7 @@ actor TransferManager: Transferring {
             // here (not at the call sites) so every code path that
             // reaches a terminal state is recorded exactly once.
             recordTerminal(item: item, state: state)
+            terminalEvents.publish(item.task)
         }
         publish()
     }
@@ -879,8 +911,7 @@ actor TransferManager: Transferring {
     }
 
     private func publish() {
-        let snapshot = order.compactMap { items[$0]?.task }
-        continuation.yield(snapshot)
+        snapshots.publish(order.compactMap { items[$0]?.task })
     }
 
     private func errorMessage(_ error: Error) -> String {

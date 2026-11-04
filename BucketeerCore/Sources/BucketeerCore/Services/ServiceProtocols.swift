@@ -329,7 +329,8 @@ public protocol Transferring: Sendable {
     /// failed / cancelled) from the queue snapshot.
     func clearTerminal() async
 
-    /// Live snapshot stream of the current task list. Each yielded value
+    /// A new, independent stream of the current task list for one
+    /// observer; it starts with the latest snapshot. Each yielded value
     /// is the complete state — consumers replace, not merge.
-    var tasks: AsyncStream<[TransferTask]> { get }
+    func taskUpdates() -> AsyncStream<[TransferTask]>
 }
