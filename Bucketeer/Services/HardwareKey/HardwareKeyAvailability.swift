@@ -41,7 +41,16 @@ final class HardwareKeyAvailability {
     /// `true` when at least one slot has a card / token inserted.
     var hasInsertedToken: Bool { slots.contains { $0.cardPresent } }
 
+    /// Lists the slots. Production probes CryptoTokenKit; tests pass a
+    /// fixed list so no real reader is queried.
+    typealias Discovery = @MainActor () async -> [HardwareKeySlot]
+
+    private let discover: Discovery
     private var pollTask: Task<Void, Never>?
+
+    init(discover: @escaping Discovery = HardwareKeyAvailability.smartCardSlots) {
+        self.discover = discover
+    }
 
     // No deinit cancel — `pollTask` is main-actor-isolated and
     // can't be touched from `deinit`. The view that owns this
@@ -53,6 +62,11 @@ final class HardwareKeyAvailability {
     /// Refresh the slot list once. Cheap — safe to call from a view
     /// `.task { }` modifier.
     func refresh() async {
+        slots = await discover()
+    }
+
+    /// The slots `TKSmartCardSlotManager` currently reports.
+    static func smartCardSlots() async -> [HardwareKeySlot] {
         let manager = TKSmartCardSlotManager.default
         let names = manager?.slotNames ?? []
         var next: [HardwareKeySlot] = []
@@ -76,7 +90,7 @@ final class HardwareKeyAvailability {
                 HardwareKeySlot(id: name, displayName: name, cardPresent: present)
             )
         }
-        self.slots = next
+        return next
     }
 
     /// Race the slot-resolve callback against a 500 ms timeout via
