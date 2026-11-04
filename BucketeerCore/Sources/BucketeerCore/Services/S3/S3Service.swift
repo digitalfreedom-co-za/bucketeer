@@ -195,7 +195,7 @@ public struct S3Service: S3Browsing {
             var source = try await Self.copySource(s3: s3, bucket: fromBucket, key: fromKey)
             if S3MultipartCopy.needsParts(size: source.size, provider: account.provider) {
                 source.metadata = metadata
-                _ = try await S3MultipartCopy.copy(source, toBucket: toBucket, toKey: toKey, ifAbsent: false,
+                _ = try await S3MultipartCopy.copy(source, toBucket: toBucket, toKey: toKey, precondition: nil,
                                                    provider: account.provider, copier: SotoObjectWriter(s3: s3))
                 return
             }
@@ -223,7 +223,8 @@ public struct S3Service: S3Browsing {
             let multipartSource = try await Self.copySource(s3: s3, bucket: bucket, key: fromKey)
             try PreconditionCheck.verify(.ifMatch(sourceETag), current: multipartSource.etag, key: toKey)
             if S3MultipartCopy.needsParts(size: multipartSource.size, provider: account.provider) {
-                _ = try await S3MultipartCopy.copy(multipartSource, toBucket: bucket, toKey: toKey, ifAbsent: true,
+                _ = try await S3MultipartCopy.copy(multipartSource, toBucket: bucket, toKey: toKey,
+                                                   precondition: .ifAbsent,
                                                    provider: account.provider, copier: SotoObjectWriter(s3: s3))
                 return
             }
@@ -412,7 +413,7 @@ public struct S3Service: S3Browsing {
         do {
             let source = try await Self.copySource(s3: s3, bucket: bucket, key: key, versionId: versionId)
             if S3MultipartCopy.needsParts(size: source.size, provider: account.provider) {
-                _ = try await S3MultipartCopy.copy(source, toBucket: bucket, toKey: key, ifAbsent: false,
+                _ = try await S3MultipartCopy.copy(source, toBucket: bucket, toKey: key, precondition: nil,
                                                    provider: account.provider, copier: SotoObjectWriter(s3: s3))
                 return
             }
@@ -495,7 +496,10 @@ public struct S3Service: S3Browsing {
             var source = try await Self.copySource(s3: s3, bucket: bucket, key: key)
             if S3MultipartCopy.needsParts(size: source.size, provider: account.provider) {
                 source.replacement = metadata
-                _ = try await S3MultipartCopy.copy(source, toBucket: bucket, toKey: key, ifAbsent: false,
+                // Completes only over the object that was read: a write
+                // during the copy is kept, the edit fails.
+                _ = try await S3MultipartCopy.copy(source, toBucket: bucket, toKey: key,
+                                                   precondition: .ifMatch(source.etag),
                                                    provider: account.provider, copier: SotoObjectWriter(s3: s3))
             } else {
                 try await Self.replaceMetadata(s3: s3, bucket: bucket, key: key, encodedSource: encodedSource,
@@ -685,13 +689,13 @@ public struct S3Service: S3Browsing {
         }
     }
 
-    /// A copy source as HEAD reports it, with the version ID that pins
-    /// a ranged copy (`S3MultipartCopy`) where the bucket keeps versions.
+    /// A copy source as HEAD reports it — ETag, properties and the
+    /// version ID that pins a ranged copy (`S3MultipartCopy`) where the
+    /// bucket keeps versions — all from one response.
     private static func copySource(s3: S3, bucket: String, key: String,
                                    versionId: String? = nil) async throws -> S3MultipartCopy.Source {
         let head = try await s3.headObject(.init(bucket: bucket, key: key, versionId: versionId))
-        return S3MultipartCopy.Source(bucket: bucket, key: key, etag: unquote(head.eTag),
-                                      size: head.contentLength ?? 0, versionId: head.versionId ?? versionId)
+        return S3MultipartCopy.Source(bucket: bucket, key: key, head: head, requestedVersion: versionId)
     }
 
     /// The object's ETag (unquoted), or `nil` when there is none.
