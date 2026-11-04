@@ -41,11 +41,9 @@ enum S3DirectFetch {
                     let buffer = try await response.body.collect(upTo: Int(size) + 1)
                     try Data(buffer.readableBytesView).write(to: staging)
                 } else {
-                    _ = try await s3.multipartDownload(
-                        request,
-                        partSize: multipartPartSize,
-                        filename: staging.path,
-                        progress: { @Sendable _ in }
+                    try await S3PinnedDownload.download(
+                        bucket: bucket, key: key, etag: etag, size: size,
+                        partSize: multipartPartSize, to: staging, reader: SotoRangeReader(s3: s3)
                     )
                 }
             }
