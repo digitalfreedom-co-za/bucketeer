@@ -452,95 +452,42 @@ enum FileProviderItemResolver {
         guard let key = key(from: identifier), !key.isEmpty else {
             throw mappedError(.noSuchItem)
         }
+        let bucket = mounted(mountInfo, container: container, progress: Progress())
         do {
             if key.hasSuffix("/") {
-                // Folder identifiers represent a virtual
-                // prefix in the bucket. Deleting only the `prefix/`
-                // marker would leave every descendant orphaned in the
-                // bucket while Finder reports success. Recursively
-                // enumerate and batch-delete every key under the prefix
-                // before completing.
-                try await deleteRecursively(
-                    prefix: key,
-                    account: mountInfo.account,
-                    bucket: mountInfo.bucket,
-                    container: container
-                )
+                // A folder is a prefix: deleting only its marker would
+                // orphan every descendant while Finder reports success.
+                try await bucket.deleteFolder(key)
             } else {
-                try await mounted(mountInfo, container: container, progress: Progress()).delete(
-                    key, baseVersion: String(data: baseVersion.contentVersion, encoding: .utf8)
-                )
+                try await bucket.delete(key, baseVersion: String(data: baseVersion.contentVersion, encoding: .utf8))
             }
-        } catch MountedBucket.Refusal.changedOnServer {
+        } catch MountedBucket.Refusal.changedOnServer where key.hasSuffix("/") {
             await announceConflict(.deletionRefused, key: key, in: domain)
-            guard let current = try? await currentHead(of: key, mountInfo: mountInfo, container: container) else {
-                return
+            throw NSError.fileProviderErrorForRejectedDeletion(
+                of: ResolvedItem(
+                    identifier: identifier,
+                    parent: parentIdentifier(for: key),
+                    object: S3Object(key: key, size: 0, lastModified: Date(), etag: "", isFolder: true)
+                )
+            )
+        } catch MountedBucket.Refusal.changedOnServer {
+            let current: S3Object?
+            do {
+                current = try await currentHead(of: key, mountInfo: mountInfo, container: container)
+            } catch {
+                // The newer object is still there; the delete must not
+                // be reported as done just because the HEAD failed.
+                throw fileProviderError(error, fallback: .cannotSynchronize)
             }
+            // Deleted by someone else meanwhile: nothing left to keep.
+            guard let current else { return }
+            await announceConflict(.deletionRefused, key: key, in: domain)
             throw NSError.fileProviderErrorForRejectedDeletion(
                 of: ResolvedItem(identifier: identifier, parent: parentIdentifier(for: key), object: current)
             )
         } catch {
             throw fileProviderError(error, fallback: .cannotSynchronize)
         }
-    }
-
-    /// Walk every common prefix and file under `prefix` and delete them
-    /// in S3-safe batches. Uses the existing `S3Browsing.listObjects`
-    /// continuation token; the S3 backend chunks 1000 keys per
-    /// DeleteObjects request internally.
-    ///
-    /// Deletes in ROLLING batches as pages are enumerated — the
-    /// extension process runs under a tight memory watchdog, and
-    /// accumulating every key of a million-object prefix before the
-    /// first delete would get it killed. The top-level folder marker
-    /// is deleted LAST so a mid-walk failure leaves the tree visible
-    /// in Finder instead of orphaning the descendants.
-    private static func deleteRecursively(
-        prefix: String,
-        account: S3Account,
-        bucket: String,
-        container: ExtensionContainer
-    ) async throws {
-        let flushThreshold = 900
-        var batch: [String] = []
-        var queue: [String] = [prefix]
-        while let next = queue.first {
-            queue.removeFirst()
-            var token: String? = nil
-            repeat {
-                try Task.checkCancellation()
-                let page = try await container.browser.listObjects(
-                    account: account,
-                    bucket: bucket,
-                    prefix: next,
-                    continuationToken: token
-                )
-                for object in page.objects {
-                    if object.isFolder {
-                        queue.append(object.key)
-                    }
-                    if object.key != prefix {
-                        batch.append(object.key)
-                    }
-                }
-                if batch.count >= flushThreshold {
-                    try await container.browser.delete(
-                        account: account,
-                        bucket: bucket,
-                        keys: batch
-                    )
-                    batch = []
-                }
-                token = page.continuationToken
-                if !page.hasMore { token = nil }
-            } while token != nil
-        }
-        batch.append(prefix)
-        try await container.browser.delete(
-            account: account,
-            bucket: bucket,
-            keys: batch
-        )
     }
 
     // MARK: - Version rules

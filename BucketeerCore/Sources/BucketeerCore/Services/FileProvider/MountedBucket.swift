@@ -129,6 +129,39 @@ public struct MountedBucket: Sendable {
         else { throw Refusal.changedOnServer }
     }
 
+    /// Deletes everything below `prefix`, each object only while it is
+    /// still the version listed for it. Deletes page by page, so a huge
+    /// folder never sits in memory. An object that changed meanwhile is
+    /// kept together with every folder marker, and the delete refused.
+    public func deleteFolder(_ prefix: String) async throws {
+        var folders = [prefix]
+        var queue = [prefix]
+        var keptChanged = false
+        while !queue.isEmpty {
+            let scope = queue.removeFirst()
+            var token: String?
+            repeat {
+                try Task.checkCancellation()
+                let page = try await browser.listObjects(account: account, bucket: bucket, prefix: scope, continuationToken: token)
+                for object in page.objects where object.key != scope {
+                    if object.isFolder {
+                        folders.append(object.key)
+                        queue.append(object.key)
+                    } else if try await !browser.deleteIfUnchanged(account: account, bucket: bucket,
+                                                                   key: object.key, etag: object.etag) {
+                        keptChanged = true
+                    }
+                }
+                token = page.hasMore ? page.continuationToken : nil
+            } while token != nil
+        }
+        guard !keptChanged else { throw Refusal.changedOnServer }
+        for marker in folders.reversed() {
+            guard try await currentHead(marker) != nil else { continue }
+            try await browser.delete(account: account, bucket: bucket, keys: [marker])
+        }
+    }
+
     // MARK: - Helpers
 
     private func conflictCopy(of key: String, contents: URL) async throws -> Placement {

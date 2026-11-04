@@ -109,6 +109,37 @@ struct MountedBucketTests {
         #expect(await browser.data(bucket: "b", key: "draft.txt") == Data("v2".utf8))
     }
 
+    @Test("A folder delete keeps a file that changed after it was listed, with the folder around it")
+    func folderDeleteKeepsChangedDescendant() async throws {
+        let (browser, mounted) = try await setUp()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        await browser.put(bucket: "b", key: "docs/")
+        await browser.put(bucket: "b", key: "docs/old.txt")
+        await browser.put(bucket: "b", key: "docs/sub/")
+        await browser.put(bucket: "b", key: "docs/sub/edited.txt")
+        await browser.rewriteBeforeNextHead(of: "docs/sub/edited.txt")
+
+        await #expect(throws: MountedBucket.Refusal.changedOnServer) {
+            try await mounted.deleteFolder("docs/")
+        }
+
+        #expect(await browser.storedKeys(in: "b") == ["docs/", "docs/sub/", "docs/sub/edited.txt"])
+    }
+
+    @Test("A folder delete removes every object and marker below it")
+    func folderDeleteRemovesEverything() async throws {
+        let (browser, mounted) = try await setUp()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        await browser.put(bucket: "b", key: "docs/")
+        await browser.put(bucket: "b", key: "docs/a.txt")
+        await browser.put(bucket: "b", key: "docs/sub/b.txt")
+        await browser.put(bucket: "b", key: "other.txt")
+
+        try await mounted.deleteFolder("docs/")
+
+        #expect(await browser.storedKeys(in: "b") == ["other.txt"])
+    }
+
     // MARK: - Fetch (F16)
 
     @Test("A fetch for a version the server no longer has is refused; other fetches read the reported version")

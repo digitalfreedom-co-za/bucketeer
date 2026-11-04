@@ -21,6 +21,8 @@ actor InMemoryS3Browser: S3Browsing {
     private var holdsNextCopy = false
     private var heldCopy: CheckedContinuation<Void, Never>?
     private var revision = 0
+    private var pendingRewrite: String?
+    private var pendingPut: (trigger: String, key: String)?
     private var contents: [String: [String: Data]] = [:]
 
     init(pageSize: Int = 1_000) {
@@ -90,6 +92,18 @@ actor InMemoryS3Browser: S3Browsing {
         )
     }
 
+    /// Rewrites `key` just before the next HEAD of it, like a writer that
+    /// lands after a listing but before the operation acting on it.
+    func rewriteBeforeNextHead(of key: String) {
+        pendingRewrite = key
+    }
+
+    /// Creates `key` (size 7) just before the next HEAD of `trigger`,
+    /// like another client writing between a check and a write.
+    func putBeforeNextHead(of trigger: String, key: String) {
+        pendingPut = (trigger, key)
+    }
+
     func fail(with error: BucketeerError?) {
         failure = error
     }
@@ -132,6 +146,14 @@ actor InMemoryS3Browser: S3Browsing {
 
     func head(account: S3Account, bucket: String, key: String) async throws -> S3Object {
         try check()
+        if pendingRewrite == key {
+            pendingRewrite = nil
+            rewrite(bucket: bucket, key: key)
+        }
+        if let put = pendingPut, put.trigger == key {
+            pendingPut = nil
+            self.put(bucket: bucket, key: put.key, size: 7)
+        }
         guard let object = buckets[bucket]?[key] else { throw BucketeerError.objectNotFound(key: key) }
         return object
     }
