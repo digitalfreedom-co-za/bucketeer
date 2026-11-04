@@ -11,8 +11,9 @@ import XCTest
 import BucketeerCore
 
 /// A fully wired `AppContainer` on in-memory stores, an in-memory
-/// Keychain and an in-memory object store, seeded with demo data.
-/// Nothing touches the user's container, Keychain or real accounts.
+/// Keychain, an in-memory object store and fake smart-card slots,
+/// seeded with demo data. Nothing touches the user's container,
+/// Keychain, real accounts or hardware.
 @MainActor
 struct DemoEnvironment {
     static let referenceDate = Date(timeIntervalSince1970: 1_793_000_000)
@@ -25,14 +26,19 @@ struct DemoEnvironment {
     var accounts: [S3Account] { [aws, azure] }
 
     /// `entitlement: nil` derives the state from StoreKit, e.g. an
-    /// `SKTestSession` on `Bucketeer.storekit`.
-    static func make(entitlement: EntitlementManager.State? = .pro) async throws -> DemoEnvironment {
+    /// `SKTestSession` on `Bucketeer.storekit`. `hardwareKeySlots` stands
+    /// in for the smart-card readers, so no real hardware is queried.
+    static func make(
+        entitlement: EntitlementManager.State? = .pro,
+        hardwareKeySlots: [HardwareKeySlot] = []
+    ) async throws -> DemoEnvironment {
         let browser = InMemoryS3Browser()
         let container = try AppContainer(configuration: .init(
             stores: .inMemory,
             keychainStore: InMemoryKeychain(),
             s3Browser: browser,
             entitlementState: entitlement,
+            hardwareKeyDiscovery: { hardwareKeySlots },
             startsBackgroundWork: false
         ))
         let aws = S3Account(name: "Demo AWS", provider: .awsS3, region: "eu-central-1")
