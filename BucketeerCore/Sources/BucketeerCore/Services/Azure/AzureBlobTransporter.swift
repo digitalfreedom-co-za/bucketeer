@@ -365,38 +365,38 @@ public struct AzureBlobTransporter: Sendable {
             .flatMap { Int64($0) } ?? 0
         let version = headHTTP.value(forHTTPHeaderField: "ETag")
 
-        // Truncate / remove existing.
-        try? FileManager.default.removeItem(at: localURL)
+        // The existing file is replaced only by a complete download.
+        try await StagedDownload.write(to: localURL) { staging in
+            if total == 0 {
+                try Data().write(to: staging)
+                await progress(0, 0)
+                return
+            }
 
-        if total == 0 {
-            FileManager.default.createFile(atPath: localURL.path, contents: nil)
-            await progress(0, 0)
-            return
-        }
+            await progress(0, total)
 
-        await progress(0, total)
-
-        if total < Self.multipartThreshold {
-            try await singleShotDownload(
-                builder: builder,
-                signer: signer,
-                container: container,
-                blob: blob,
-                localURL: localURL,
-                total: total,
-                progress: progress
-            )
-        } else {
-            try await rangedDownload(
-                builder: builder,
-                signer: signer,
-                container: container,
-                blob: blob,
-                version: version,
-                localURL: localURL,
-                total: total,
-                progress: progress
-            )
+            if total < Self.multipartThreshold {
+                try await singleShotDownload(
+                    builder: builder,
+                    signer: signer,
+                    container: container,
+                    blob: blob,
+                    localURL: staging,
+                    total: total,
+                    progress: progress
+                )
+            } else {
+                try await rangedDownload(
+                    builder: builder,
+                    signer: signer,
+                    container: container,
+                    blob: blob,
+                    version: version,
+                    localURL: staging,
+                    total: total,
+                    progress: progress
+                )
+            }
         }
     }
 

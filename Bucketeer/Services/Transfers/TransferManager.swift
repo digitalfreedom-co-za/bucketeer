@@ -49,6 +49,29 @@ actor TransferManager: Transferring {
         /// Condition the server must check before it accepts the write
         /// (Open With round-trip). `nil` = unconditional.
         var precondition: WritePrecondition? = nil
+
+        /// The same transfer against another local file (an encrypted
+        /// envelope, a download staging file).
+        func with(localURL: URL, fileSize: Int64? = nil) -> QueuedItem {
+            QueuedItem(
+                account: account,
+                task: TransferTask(
+                    id: task.id,
+                    direction: task.direction,
+                    accountID: task.accountID,
+                    bucket: task.bucket,
+                    key: task.key,
+                    localURL: localURL,
+                    state: task.state,
+                    startedAt: task.startedAt
+                ),
+                contentType: contentType,
+                fileSize: fileSize ?? self.fileSize,
+                bypassDecryption: bypassDecryption,
+                bypassEncryption: bypassEncryption,
+                precondition: precondition
+            )
+        }
     }
 
     enum ConditionalUploadOutcome: Equatable, Sendable {
@@ -404,22 +427,7 @@ actor TransferManager: Transferring {
                 let temp = FileManager.default.temporaryDirectory
                     .appendingPathComponent("bucketeer-enc-\(UUID().uuidString).bin")
                 try envelope.write(to: temp, options: .atomic)
-                item = QueuedItem(
-                    account: item.account,
-                    task: TransferTask(
-                        id: item.task.id,
-                        direction: item.task.direction,
-                        accountID: item.task.accountID,
-                        bucket: item.task.bucket,
-                        key: item.task.key,
-                        localURL: temp,
-                        state: item.task.state,
-                        startedAt: item.task.startedAt
-                    ),
-                    contentType: item.contentType,
-                    fileSize: Int64(envelope.count),
-                    precondition: item.precondition
-                )
+                item = item.with(localURL: temp, fileSize: Int64(envelope.count))
                 encryptionCleanup = temp
             } catch {
                 setState(id: id, state: .failed(message: errorMessage(error)))
@@ -557,104 +565,89 @@ actor TransferManager: Transferring {
             }
         }
 
-        if item.account.provider.family == .azureBlob {
-            await performAzureDownload(item: item)
-            return
-        }
-
-        let s3: S3
+        // The bytes land in a staging file; the destination is replaced
+        // only once download and decryption succeeded, so every failure
+        // leaves the existing file as it was.
+        let staging = StagedDownload.stagingURL(for: url)
+        let staged = item.with(localURL: staging)
         do {
-            s3 = try await factory.client(for: item.account)
+            if item.account.provider.family == .azureBlob {
+                try await downloadFromAzure(item: staged)
+            } else {
+                try await downloadFromS3(item: staged)
+            }
+            if let failure = await finalizeDownloadDecryption(item: staged) {
+                StagedDownload.discard(staging)
+                setState(id: id, state: .failed(message: failure))
+                return
+            }
+            try StagedDownload.publish(staging, to: url)
+            setState(id: id, state: .completed)
         } catch {
-            setState(id: id, state: .failed(message: errorMessage(error)))
-            return
+            StagedDownload.discard(staging)
+            if error is CancellationError || Task.isCancelled {
+                setState(id: id, state: .cancelled)
+            } else {
+                setState(id: id, state: .failed(message: errorMessage(error)))
+            }
         }
+    }
+
+    private func downloadFromS3(item: QueuedItem) async throws {
+        let id = item.task.id
+        let s3 = try await factory.client(for: item.account)
 
         // Pre-flight HEAD so we have a real total to report progress
         // against. multipartDownload internally does the same, but its
         // progress callback only gives us a fraction; we also use the
         // size to pick the right transfer path (zero / single-shot /
         // multipart).
-        let total: Int64
-        do {
-            let head = try await s3.headObject(.init(
+        let head = try await s3.headObject(.init(
+            bucket: item.task.bucket,
+            key: item.task.key
+        ))
+        let total = head.contentLength ?? 0
+        setState(id: id, state: .running(bytesTransferred: 0, totalBytes: total))
+
+        if total == 0 {
+            // Soto's multipartDownload refuses zero-length objects;
+            // create the expected empty file ourselves.
+            try Data().write(to: item.task.localURL)
+            return
+        }
+
+        if total < Self.multipartThreshold {
+            // Small objects: single-shot getObject — cheaper and
+            // sidesteps the multipart path entirely.
+            let response = try await s3.getObject(.init(
                 bucket: item.task.bucket,
                 key: item.task.key
             ))
-            total = head.contentLength ?? 0
-        } catch {
-            setState(id: id, state: .failed(message: errorMessage(error)))
+            let buffer = try await response.body.collect(upTo: Int(total) + 1)
+            let fileData = Data(buffer.readableBytesView)
+            try fileData.write(to: item.task.localURL)
+            // Phase 13.2 — post-charge small GETs as one chunk.
+            await limiter?.consume(bytes: fileData.count)
+            setState(
+                id: id,
+                state: .running(bytesTransferred: total, totalBytes: total)
+            )
             return
         }
-        setState(id: id, state: .running(bytesTransferred: 0, totalBytes: total))
 
-        do {
-            // Truncate any pre-existing file at the target so we never
-            // leave trailing bytes from a previous version.
-            try? FileManager.default.removeItem(at: item.task.localURL)
-
-            if total == 0 {
-                // Soto's multipartDownload refuses zero-length objects;
-                // create the expected empty file ourselves.
-                FileManager.default.createFile(
-                    atPath: item.task.localURL.path,
-                    contents: nil
-                )
-                setState(id: id, state: .completed)
-                return
-            }
-
-            if total < Self.multipartThreshold {
-                // Small objects: single-shot getObject — cheaper and
-                // sidesteps the multipart path entirely.
-                let response = try await s3.getObject(.init(
-                    bucket: item.task.bucket,
-                    key: item.task.key
-                ))
-                let buffer = try await response.body.collect(upTo: Int(total) + 1)
-                let fileData = Data(buffer.readableBytesView)
-                try fileData.write(to: item.task.localURL)
-                // Phase 13.2 — post-charge small GETs as one chunk.
-                await limiter?.consume(bytes: fileData.count)
-                setState(
+        _ = try await s3.multipartDownload(
+            .init(bucket: item.task.bucket, key: item.task.key),
+            partSize: Self.multipartPartSize,
+            filename: item.task.localURL.path,
+            progress: { @Sendable [weak self] fraction in
+                let bytes = Int64(Double(total) * fraction)
+                await self?.setState(
                     id: id,
-                    state: .running(bytesTransferred: total, totalBytes: total)
+                    state: .running(bytesTransferred: bytes, totalBytes: total)
                 )
-                if let failure = await finalizeDownloadDecryption(item: item) {
-                    setState(id: id, state: .failed(message: failure))
-                } else {
-                    setState(id: id, state: .completed)
-                }
-                return
+                await self?.chargeMultipartLimiter(id: id, observedBytes: bytes)
             }
-
-            _ = try await s3.multipartDownload(
-                .init(bucket: item.task.bucket, key: item.task.key),
-                partSize: Self.multipartPartSize,
-                filename: item.task.localURL.path,
-                progress: { @Sendable [weak self] fraction in
-                    let bytes = Int64(Double(total) * fraction)
-                    await self?.setState(
-                        id: id,
-                        state: .running(bytesTransferred: bytes, totalBytes: total)
-                    )
-                    await self?.chargeMultipartLimiter(id: id, observedBytes: bytes)
-                }
-            )
-            if let failure = await finalizeDownloadDecryption(item: item) {
-                setState(id: id, state: .failed(message: failure))
-            } else {
-                setState(id: id, state: .completed)
-            }
-        } catch is CancellationError {
-            setState(id: id, state: .cancelled)
-        } catch {
-            if Task.isCancelled {
-                setState(id: id, state: .cancelled)
-            } else {
-                setState(id: id, state: .failed(message: errorMessage(error)))
-            }
-        }
+        )
     }
 
     // MARK: - Azure transports
@@ -704,51 +697,31 @@ actor TransferManager: Transferring {
         }
     }
 
-    private func performAzureDownload(item: QueuedItem) async {
+    private func downloadFromAzure(item: QueuedItem) async throws {
         let id = item.task.id
         guard let azure else {
-            setState(
-                id: id,
-                state: .failed(message: "Azure transport not configured.")
-            )
-            return
+            throw BucketeerError.unknown(message: "Azure transport not configured.")
         }
-        do {
-            try await azure.download(
-                account: item.account,
-                container: item.task.bucket,
-                blob: item.task.key,
-                localURL: item.task.localURL,
-                progress: { @Sendable [weak self] bytes, total in
-                    await self?.setState(
-                        id: id,
-                        state: .running(bytesTransferred: bytes, totalBytes: total)
-                    )
-                }
-            )
-            if let failure = await finalizeDownloadDecryption(item: item) {
-                setState(id: id, state: .failed(message: failure))
-            } else {
-                setState(id: id, state: .completed)
+        try await azure.download(
+            account: item.account,
+            container: item.task.bucket,
+            blob: item.task.key,
+            localURL: item.task.localURL,
+            progress: { @Sendable [weak self] bytes, total in
+                await self?.setState(
+                    id: id,
+                    state: .running(bytesTransferred: bytes, totalBytes: total)
+                )
             }
-        } catch is CancellationError {
-            setState(id: id, state: .cancelled)
-        } catch {
-            if Task.isCancelled {
-                setState(id: id, state: .cancelled)
-            } else {
-                setState(id: id, state: .failed(message: errorMessage(error)))
-            }
-        }
+        )
     }
 
     // MARK: - Encryption finalisation (Phase 13.15)
 
-    /// Inspect the just-downloaded file. If it starts with the
+    /// Inspect the just-downloaded staging file. If it starts with the
     /// Bucketeer envelope magic AND we have a key for the
-    /// (account, bucket) pair, decrypt in place. On a `failed`
-    /// terminal state, this is a no-op — the caller's failure path
-    /// stays untouched.
+    /// (account, bucket) pair, decrypt it in place before it is
+    /// published to the destination.
     ///
     /// Called from every download completion site so encryption is
     /// transparent regardless of single-shot vs multipart path.
@@ -805,10 +778,9 @@ actor TransferManager: Transferring {
             try plaintext.write(to: url, options: .atomic)
             return nil
         } catch {
-            // Leave the envelope on disk so the user can inspect /
-            // re-attempt, but report the failure — the caller marks
-            // the transfer `.failed` so the queue doesn't show a
-            // green checkmark on a file that is still ciphertext.
+            // Report the failure — the caller discards the staging
+            // file and marks the transfer `.failed`, so neither
+            // ciphertext nor a green checkmark reaches the destination.
             let message = "Decryption failed: \(error.localizedDescription)"
             await activityLog?.record(
                 ActivityEntry(
