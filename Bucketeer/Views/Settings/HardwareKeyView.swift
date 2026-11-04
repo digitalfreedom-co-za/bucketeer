@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import BucketeerCore
 
 /// Settings → Security. Phase 13.16. Surfaces every detected
 /// CryptoTokenKit smartcard slot and the opt-in toggle that wires

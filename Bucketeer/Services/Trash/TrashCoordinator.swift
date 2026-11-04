@@ -28,7 +28,6 @@ final class TrashCoordinator {
     private let trashStore: any TrashStoring
     private let browser: any S3Browsing
     private let transferManager: TransferManager
-    private let activityLog: any ActivityLogging
     private let cacheRootURL: URL
     private let settings: TrashSettings
 
@@ -36,14 +35,12 @@ final class TrashCoordinator {
         trashStore: any TrashStoring,
         browser: any S3Browsing,
         transferManager: TransferManager,
-        activityLog: any ActivityLogging,
         cacheRootURL: URL,
         settings: TrashSettings
     ) {
         self.trashStore = trashStore
         self.browser = browser
         self.transferManager = transferManager
-        self.activityLog = activityLog
         self.cacheRootURL = cacheRootURL
         self.settings = settings
     }

@@ -193,9 +193,12 @@ struct AzureRequestBuilder: Sendable {
 
     /// Block IDs must all be the same base64 length within a single
     /// upload — pad the index with a fixed-width prefix so a 1-of-99
-    /// upload signs identically to a 1-of-100 upload.
-    static func blockID(index: Int) -> String {
-        let raw = String(format: "block-%08d", index)
+    /// upload signs identically to a 1-of-100 upload. Blocks are staged
+    /// per blob, not per upload, so the upload's `session` is part of
+    /// the ID: two uploads of the same blob never overwrite each
+    /// other's staged blocks.
+    static func blockID(session: UUID, index: Int) -> String {
+        let raw = session.uuidString + String(format: "-%08d", index)
         return Data(raw.utf8).base64EncodedString()
     }
 

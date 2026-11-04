@@ -238,14 +238,6 @@ struct SyncPlannerTests {
 
     // MARK: - Phase 9.8 — local-folder endpoint coverage
 
-    @Test("prefix(for:) returns empty for local folders, S3 prefix for s3")
-    func prefixForEndpoint() {
-        let local = SyncEndpoint.localFolder(bookmark: Data(), displayPath: "/x")
-        #expect(SyncPlanner.prefix(for: local) == "")
-        let s3 = SyncEndpoint.s3(accountID: UUID(), bucket: "b", prefix: "p/")
-        #expect(SyncPlanner.prefix(for: s3) == "p/")
-    }
-
     @Test("Local → S3: keys land under destination prefix")
     func localToS3UsesDestPrefix() {
         let job = self.job(

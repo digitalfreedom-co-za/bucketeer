@@ -60,8 +60,8 @@ public final class MultipartUploadRecord {
     public var snapshot: MultipartUploadCheckpoint? {
         // Legacy rows (pre-fingerprint builds) have no fingerprint and
         // can never match a live file — returning nil makes the
-        // store's `compactMap(\.snapshot)` actually filter them out
-        // instead of surfacing un-resumable entries with "".
+        // store's lookup treat them as absent instead of surfacing
+        // un-resumable entries with "".
         guard let fingerprint = fileFingerprint else { return nil }
         let decoder = JSONDecoder()
         let parts = (try? decoder.decode([CompletedUploadPart].self, from: completedPartsData)) ?? []

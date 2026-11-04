@@ -724,7 +724,6 @@ actor SyncEngine {
         case (.s3(_, let srcBucket, _), .s3(_, let dstBucket, _)):
             try await executeS3ToS3(
                 entry: entry,
-                job: job,
                 run: token,
                 sourceBucket: srcBucket,
                 destinationBucket: dstBucket,
@@ -738,7 +737,6 @@ actor SyncEngine {
             else { throw BucketeerError.unknown(message: "Sync context incomplete.") }
             try await executeS3ToLocal(
                 entry: entry,
-                job: job,
                 run: token,
                 sourceAccount: sourceAccount,
                 sourceBucket: srcBucket,
@@ -751,7 +749,6 @@ actor SyncEngine {
             else { throw BucketeerError.unknown(message: "Sync context incomplete.") }
             try await executeLocalToS3(
                 entry: entry,
-                job: job,
                 run: token,
                 sourceRoot: sourceRoot,
                 destinationAccount: destinationAccount,
@@ -772,7 +769,6 @@ actor SyncEngine {
 
     private func executeS3ToS3(
         entry: SyncPlanner.PlanEntry,
-        job: SyncJob,
         run token: UUID,
         sourceBucket: String,
         destinationBucket: String,
@@ -828,7 +824,6 @@ actor SyncEngine {
 
     private func executeS3ToLocal(
         entry: SyncPlanner.PlanEntry,
-        job: SyncJob,
         run token: UUID,
         sourceAccount: S3Account,
         sourceBucket: String,
@@ -863,7 +858,6 @@ actor SyncEngine {
 
     private func executeLocalToS3(
         entry: SyncPlanner.PlanEntry,
-        job: SyncJob,
         run token: UUID,
         sourceRoot: URL,
         destinationAccount: S3Account,

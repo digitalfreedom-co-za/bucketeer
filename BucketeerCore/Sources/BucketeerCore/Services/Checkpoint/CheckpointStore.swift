@@ -73,15 +73,4 @@ public actor CheckpointStore: CheckpointStoring {
             throw BucketeerError.persistenceFailure(message: error.localizedDescription)
         }
     }
-
-    public func all() async throws -> [MultipartUploadCheckpoint] {
-        do {
-            let descriptor = FetchDescriptor<MultipartUploadRecord>(
-                sortBy: [SortDescriptor(\.lastTouchedAt, order: .reverse)]
-            )
-            return try modelContext.fetch(descriptor).compactMap(\.snapshot)
-        } catch {
-            throw BucketeerError.persistenceFailure(message: error.localizedDescription)
-        }
-    }
 }

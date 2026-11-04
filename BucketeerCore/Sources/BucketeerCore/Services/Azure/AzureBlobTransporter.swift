@@ -155,7 +155,10 @@ public struct AzureBlobTransporter: Sendable {
     ) async throws -> String? {
         let blockSize = Int64(Self.blockSize)
         let blockCount = Int((fileSize + blockSize - 1) / blockSize)
-        let blockIDs: [String] = (0..<blockCount).map { AzureRequestBuilder.blockID(index: $0) }
+        let uploadSession = UUID()
+        let blockIDs: [String] = (0..<blockCount).map {
+            AzureRequestBuilder.blockID(session: uploadSession, index: $0)
+        }
 
         let handle: FileHandle
         do {
@@ -360,6 +363,7 @@ public struct AzureBlobTransporter: Sendable {
         }
         let total = headHTTP.value(forHTTPHeaderField: "Content-Length")
             .flatMap { Int64($0) } ?? 0
+        let version = headHTTP.value(forHTTPHeaderField: "ETag")
 
         // Truncate / remove existing.
         try? FileManager.default.removeItem(at: localURL)
@@ -388,6 +392,7 @@ public struct AzureBlobTransporter: Sendable {
                 signer: signer,
                 container: container,
                 blob: blob,
+                version: version,
                 localURL: localURL,
                 total: total,
                 progress: progress
@@ -423,11 +428,15 @@ public struct AzureBlobTransporter: Sendable {
         await progress(total, total)
     }
 
+    /// `version` is the ETag the HEAD reported. Every range is
+    /// conditional on it, so a blob replaced mid-download fails the
+    /// transfer instead of mixing bytes of two versions.
     private func rangedDownload(
         builder: AzureRequestBuilder,
         signer: AzureSharedKeySigner,
         container: String,
         blob: String,
+        version: String?,
         localURL: URL,
         total: Int64,
         progress: @Sendable @escaping (Int64, Int64) async -> Void
@@ -461,6 +470,7 @@ public struct AzureBlobTransporter: Sendable {
                             session: session,
                             container: container,
                             blob: blob,
+                            version: version,
                             offset: offset,
                             length: length,
                             writer: writer
@@ -494,6 +504,7 @@ public struct AzureBlobTransporter: Sendable {
         session: URLSession,
         container: String,
         blob: String,
+        version: String?,
         offset: Int64,
         length: Int64,
         writer: DownloadWriter
@@ -502,6 +513,9 @@ public struct AzureBlobTransporter: Sendable {
         request.httpMethod = "GET"
         let endInclusive = offset + length - 1
         request.setValue("bytes=\(offset)-\(endInclusive)", forHTTPHeaderField: "Range")
+        if let version {
+            request.setValue(version, forHTTPHeaderField: "If-Match")
+        }
         signer.sign(&request)
 
         let (data, response) = try await session.azureData(for: request)

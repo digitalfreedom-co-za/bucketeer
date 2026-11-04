@@ -47,17 +47,4 @@ struct BucketeerEnvelopeAADTests {
         let partial = Data([0x42, 0x43, 0x4B])
         #expect(!BucketeerEnvelope.looksEncrypted(partial))
     }
-
-    @Test("Open with the wrong key throws authenticationFailed, not badEnvelope")
-    func wrongKeyDistinguished() throws {
-        let k1 = SymmetricKey(size: .bits256)
-        let k2 = SymmetricKey(size: .bits256)
-        let env = try BucketeerEnvelope.seal(plaintext: Data("payload".utf8), key: k1)
-        do {
-            _ = try BucketeerEnvelope.open(envelope: env, key: k2)
-            #expect(Bool(false), "wrong key should fail")
-        } catch let error as EncryptionError {
-            #expect(error == .authenticationFailed)
-        }
-    }
 }

@@ -51,10 +51,6 @@ actor InMemoryS3Browser: S3Browsing {
         failure = error
     }
 
-    func keys(in bucket: String) -> [String] {
-        (buckets[bucket] ?? [:]).keys.sorted()
-    }
-
     // MARK: - S3Browsing
 
     func listBuckets(account: S3Account) async throws -> [S3Bucket] {

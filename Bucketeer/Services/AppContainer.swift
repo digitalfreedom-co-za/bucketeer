@@ -331,7 +331,6 @@ final class AppContainer {
             trashStore: trashStore,
             browser: router,
             transferManager: transferManager,
-            activityLog: activityLog,
             cacheRootURL: trashCacheURL,
             settings: trashSettings
         )
