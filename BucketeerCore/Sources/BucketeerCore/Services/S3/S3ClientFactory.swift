@@ -153,7 +153,10 @@ public actor S3ClientFactory {
     public static func endpoint(for account: S3Account) -> URL {
         switch account.provider {
         case .awsS3:
-            return URL(string: "https://s3.\(account.region).amazonaws.com")!
+            // The China partition (cn-north-1, cn-northwest-1) has its
+            // own DNS suffix.
+            let suffix = account.region.hasPrefix("cn-") ? "amazonaws.com.cn" : "amazonaws.com"
+            return URL(string: "https://s3.\(account.region).\(suffix)")!
         case .civo:
             return URL(string: "https://objectstore.\(account.region).civo.com")!
         case .cloudflareR2:

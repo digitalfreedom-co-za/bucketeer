@@ -42,6 +42,9 @@ struct S3ClientFactoryEndpointTests {
 
     @Test("Each provider resolves to its endpoint template", arguments: [
         TemplateCase(provider: .awsS3, region: "eu-central-1", expected: "https://s3.eu-central-1.amazonaws.com"),
+        // The China partition has its own DNS suffix.
+        TemplateCase(provider: .awsS3, region: "cn-north-1", expected: "https://s3.cn-north-1.amazonaws.com.cn"),
+        TemplateCase(provider: .awsS3, region: "cn-northwest-1", expected: "https://s3.cn-northwest-1.amazonaws.com.cn"),
         TemplateCase(provider: .civo, region: "fra1", expected: "https://objectstore.fra1.civo.com"),
         TemplateCase(provider: .cloudflareR2, region: "auto", accountID: "abc123",
                      expected: "https://abc123.r2.cloudflarestorage.com"),
@@ -108,6 +111,18 @@ struct PresignedURLPathTests {
             virtualHost: true
         )
         #expect(url.absoluteString == "https://bkt.fra1.digitaloceanspaces.com/a%20b.txt")
+    }
+
+    @Test("Presigned URLs for AWS China use the China endpoint")
+    func chinaPresignURL() {
+        let account = S3Account(id: UUID(), name: "T", provider: .awsS3, region: "cn-northwest-1")
+        let url = S3Service.presignTargetURL(
+            endpoint: S3ClientFactory.endpoint(for: account),
+            bucket: "bkt",
+            key: "a.txt",
+            virtualHost: S3Service.usesVirtualHost(account: account, bucket: "bkt")
+        )
+        #expect(url.absoluteString == "https://bkt.s3.cn-northwest-1.amazonaws.com.cn/a.txt")
     }
 
     @Test("Addressing follows the request rules: dotted buckets stay path-style")
