@@ -59,6 +59,20 @@ public struct FinderChangeState: Codable, Equatable, Sendable {
         revision += 1
     }
 
+    /// The system was given this item outside an enumeration (the
+    /// result of a create, modify or fetch). Only items of folders
+    /// Finder has open are kept; the others are not part of the baseline.
+    public mutating func remember(_ key: String, etag: String) {
+        guard trackedPrefixes.contains(Self.parent(of: key)) else { return }
+        entries[key] = ETag.normalized(etag)
+        revision += 1
+    }
+
+    /// Key → ETag of every file below `prefix` as the system was given it.
+    public func knownVersions(under prefix: String) -> [String: String] {
+        entries.filter { $0.key.hasPrefix(prefix) && !$0.key.hasSuffix("/") }
+    }
+
     /// Replaces the remembered entries of `listedPrefixes` with
     /// `listing` and returns what changed. Entries of other prefixes
     /// (tracked after the listing was taken) stay as they are and

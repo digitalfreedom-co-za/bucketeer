@@ -77,6 +77,7 @@ enum FileProviderItemResolver {
         } catch {
             throw fileProviderError(error, fallback: .noSuchItem)
         }
+        await remember(object, in: domain)
         return ResolvedItem(
             identifier: identifier,
             parent: parentIdentifier(for: key),
@@ -130,6 +131,7 @@ enum FileProviderItemResolver {
             try? FileManager.default.removeItem(at: staging)
             throw fileProviderError(error, fallback: .serverUnreachable)
         }
+        await remember(object, in: domain)
         let item = ResolvedItem(
             identifier: identifier,
             parent: parentIdentifier(for: key),
@@ -179,6 +181,7 @@ enum FileProviderItemResolver {
                 if placement.isConflict {
                     await announceConflict(.conflictCopy, key: key, in: domain)
                 }
+                await remember(placement.object, in: domain)
                 return ResolvedItem(
                     identifier: identifier(for: placement.object.key),
                     parent: template.parentItemIdentifier,
@@ -222,6 +225,7 @@ enum FileProviderItemResolver {
         } catch {
             throw fileProviderError(error, fallback: .cannotSynchronize)
         }
+        await remember(head, in: domain)
         return ResolvedItem(
             identifier: identifier(for: key),
             parent: template.parentItemIdentifier,
@@ -319,6 +323,7 @@ enum FileProviderItemResolver {
                 key: currentKey
             )
             let newerOnServer = written.map { !ETag.matches(base: $0.etag, current: head.etag) } ?? false
+            await remember(head, in: domain)
             return ModifyResult(
                 item: ResolvedItem(
                     identifier: identifier(for: currentKey),
@@ -409,6 +414,7 @@ enum FileProviderItemResolver {
         guard let head = try await currentHead(of: key, mountInfo: mountInfo, container: container) else {
             throw mappedError(.noSuchItem)
         }
+        await remember(head, in: domain)
         return ModifyResult(
             item: ResolvedItem(identifier: identifier(for: key), parent: parentIdentifier(for: key), object: head),
             shouldFetchContent: true
@@ -457,7 +463,12 @@ enum FileProviderItemResolver {
             if key.hasSuffix("/") {
                 // A folder is a prefix: deleting only its marker would
                 // orphan every descendant while Finder reports success.
-                try await bucket.deleteFolder(key)
+                // Only versions Finder was given may go; anything it never
+                // saw or that changed since stays.
+                let known = await FinderChangeTracker.shared.knownVersions(
+                    under: key, domain: domain.identifier.rawValue
+                )
+                try await bucket.deleteFolder(key, knownVersions: known)
             } else {
                 try await bucket.delete(key, baseVersion: String(data: baseVersion.contentVersion, encoding: .utf8))
             }
@@ -511,6 +522,12 @@ enum FileProviderItemResolver {
     private static func announceConflict(_ kind: ConflictNotice.Kind, key: String, in domain: NSFileProviderDomain) async {
         try? await NSFileProviderManager(for: domain)?.signalEnumerator(for: .workingSet)
         ConflictNotice.post(kind, fileName: displayName(of: key))
+    }
+
+    /// The system now has this version of the item; a later folder
+    /// delete may remove exactly this version.
+    private static func remember(_ object: S3Object, in domain: NSFileProviderDomain) async {
+        await FinderChangeTracker.shared.remember(object, domain: domain.identifier.rawValue)
     }
 
     private static func displayName(of key: String) -> String {

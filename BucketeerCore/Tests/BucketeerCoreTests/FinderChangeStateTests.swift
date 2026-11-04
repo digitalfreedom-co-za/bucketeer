@@ -79,6 +79,16 @@ struct FinderChangeStateTests {
         #expect(current.trackedPrefixes.contains("docs/"))
         #expect(current.entries["docs/a.txt"] == "1")
     }
+
+    @Test("The versions Finder knows below a folder include items handed back after a change, in open folders only")
+    func knownVersionsBelowAFolder() {
+        var current = state(["docs/": "", "top.txt": "1"])
+        current.record(["docs/a.txt": "1", "docs/sub/": ""], under: "docs/")
+        current.remember("docs/c.txt", etag: "\"2\"")
+        current.remember("other/x.txt", etag: "3")
+        #expect(current.knownVersions(under: "docs/") == ["docs/a.txt": "1", "docs/c.txt": "2"])
+        #expect(current.entries["other/x.txt"] == nil)
+    }
 }
 
 private extension FinderChangeState {

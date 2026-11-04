@@ -49,6 +49,20 @@ public actor FinderChangeTracker {
         save(state, domain: domain)
     }
 
+    /// The system was given `object` as the result of a create, modify
+    /// or fetch.
+    public func remember(_ object: S3Object, domain: String) {
+        guard !object.isFolder, var state = load(domain) else { return }
+        state.remember(object.key, etag: object.etag)
+        save(state, domain: domain)
+    }
+
+    /// Key → ETag of every file below `prefix` as the system was given it;
+    /// empty when nothing was remembered for the domain.
+    public func knownVersions(under prefix: String, domain: String) -> [String: String] {
+        load(domain)?.knownVersions(under: prefix) ?? [:]
+    }
+
     /// The anchor of the remembered listing; takes a first listing when
     /// there is none yet.
     public func currentAnchor(domain: String, list: Lister) async throws -> String {
