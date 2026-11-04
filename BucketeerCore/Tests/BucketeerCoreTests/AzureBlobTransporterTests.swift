@@ -70,6 +70,24 @@ struct AzureBlobTransporterTests {
         #expect(!ranges.isEmpty)
         #expect(ranges.allSatisfy { $0.value(forHTTPHeaderField: "If-Match") == AzureStub.etag })
     }
+
+    @Test("A failed download leaves the existing file untouched", arguments: [16, 6 * 1_024 * 1_024])
+    func failedDownloadKeepsExistingFile(blobSize: Int) async throws {
+        AzureStub.reset(blobSize: blobSize, failsGET: true)
+        let transporter = try await transporter()
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let destination = folder.appendingPathComponent("report.txt")
+        try Data("previous version".utf8).write(to: destination)
+
+        await #expect(throws: BucketeerError.self) {
+            try await transporter.download(account: account, container: "c", blob: "report.txt",
+                                           localURL: destination, progress: { _, _ in })
+        }
+
+        #expect(try String(contentsOf: destination, encoding: .utf8) == "previous version")
+        #expect(try FileManager.default.contentsOfDirectory(atPath: folder.path) == ["report.txt"])
+    }
 }
 
 /// Credentials held in memory only.
@@ -97,6 +115,7 @@ private final class AzureStub: URLProtocol {
 
     private struct State {
         var blobSize = 0
+        var failsGET = false
         var requests: [URLRequest] = []
         var committed: [[String]] = []
     }
@@ -104,8 +123,8 @@ private final class AzureStub: URLProtocol {
     nonisolated(unsafe) private static var state = State()
     private static let lock = NSLock()
 
-    static func reset(blobSize: Int) {
-        lock.withLock { state = State(blobSize: blobSize) }
+    static func reset(blobSize: Int, failsGET: Bool = false) {
+        lock.withLock { state = State(blobSize: blobSize, failsGET: failsGET) }
     }
 
     static func committedBlockLists() -> [[String]] {
@@ -143,6 +162,8 @@ private final class AzureStub: URLProtocol {
         switch (request.httpMethod, query(request)["comp"]) {
         case ("HEAD", _):
             return (200, ["Content-Length": String(size), "ETag": etag], Data())
+        case ("GET", _) where state.failsGET:
+            return (500, ["x-ms-error-code": "InternalError"], Data())
         case ("GET", _):
             guard let range = request.value(forHTTPHeaderField: "Range"),
                   let bounds = parse(range: range)

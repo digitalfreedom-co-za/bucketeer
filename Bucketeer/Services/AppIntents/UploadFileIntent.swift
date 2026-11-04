@@ -21,7 +21,7 @@ struct UploadFileIntent: AppIntent {
 
     @Parameter(
         title: "File",
-        supportedTypeIdentifiers: ["public.item"]
+        supportedContentTypes: [.item]
     )
     var file: IntentFile
 

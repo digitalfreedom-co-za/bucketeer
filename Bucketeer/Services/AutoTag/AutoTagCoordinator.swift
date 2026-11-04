@@ -40,10 +40,6 @@ final class AutoTagCoordinator {
 
     private var rules: [AutoTagRule] = []
     private var observerTask: Task<Void, Never>?
-    /// Tracks transfer IDs we have already evaluated so a re-yielded
-    /// snapshot doesn't trigger a second rule pass for the same
-    /// upload.
-    private var evaluatedTransferIDs: Set<UUID> = []
 
     init(
         store: any AutoTagRuleStoring,
@@ -59,22 +55,25 @@ final class AutoTagCoordinator {
         self.accountStore = accountStore
     }
 
-    /// Begin observing the transfer manager's stream. Called once
-    /// from `AppContainer` after the coordinator is constructed.
+    /// Begin observing the transfer manager's completions. Called once
+    /// from `AppContainer` after the coordinator is constructed. The
+    /// completion stream is the coordinator's own and carries every
+    /// terminal task exactly once, so no upload is missed or tagged twice.
     func start() async {
         await reload()
-        // `tasks` is a nonisolated let on the actor — no await needed.
-        let stream = transferManager.tasks
+        let completions = transferManager.completions()
         observerTask?.cancel()
         observerTask = Task { [weak self] in
-            for await snapshot in stream {
+            for await task in completions {
                 // Exit promptly when the
                 // owning coordinator is gone. Without this the
                 // observer keeps draining the AsyncStream until
                 // the stream itself closes, which it never does
                 // for a long-lived TransferManager.
                 guard let self else { return }
-                await self.handle(snapshot: snapshot)
+                if task.direction == .upload, task.state == .completed {
+                    await self.apply(to: task)
+                }
             }
         }
     }
@@ -89,28 +88,6 @@ final class AutoTagCoordinator {
             // it must not crash the App.
             rules = []
         }
-    }
-
-    /// Per-snapshot dispatch. Looks for upload transfers that have
-    /// just reached `.completed` and that we haven't evaluated yet.
-    private func handle(snapshot: [TransferTask]) async {
-        for task in snapshot where task.direction == .upload {
-            switch task.state {
-            case .completed:
-                if !evaluatedTransferIDs.contains(task.id) {
-                    evaluatedTransferIDs.insert(task.id)
-                    await apply(to: task)
-                }
-            case .cancelled, .failed:
-                evaluatedTransferIDs.remove(task.id)
-            default:
-                break
-            }
-        }
-        // Drop tracking for transfers no longer present in the
-        // snapshot to keep the set bounded.
-        let live = Set(snapshot.map(\.id))
-        evaluatedTransferIDs.formIntersection(live)
     }
 
     private func apply(to task: TransferTask) async {

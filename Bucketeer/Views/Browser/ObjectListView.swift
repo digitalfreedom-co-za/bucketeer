@@ -216,7 +216,9 @@ struct ObjectListView: View {
                 pendingDeletion = []
             }
         } message: { items in
-            if items.count == 1 {
+            if items.count == 1, items[0].isFolder {
+                Text("browser.action.delete.confirm.folder \(items[0].displayName)")
+            } else if items.count == 1 {
                 Text("browser.action.delete.confirm.single \(items[0].displayName)")
             } else {
                 Text("browser.action.delete.confirm.multi \(items.count)")

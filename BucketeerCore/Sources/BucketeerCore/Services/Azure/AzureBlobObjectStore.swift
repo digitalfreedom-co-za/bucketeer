@@ -189,6 +189,18 @@ public struct AzureBlobObjectStore: S3Browsing {
         }
     }
 
+    public func delete(account: S3Account, bucket: String, key: String, ifMatch etag: String) async throws {
+        let signer = try await credentialsCache.signer(for: account)
+        try await Self.deleteOne(
+            builder: AzureRequestBuilder(account: account),
+            signer: signer,
+            session: session,
+            bucket: bucket,
+            key: key,
+            ifMatch: etag
+        )
+    }
+
     /// Maximum total wait for an asynchronous Azure copy before we
     /// give up and throw `.providerError(statusCode: 504)`. Tuned
     /// generously enough that the cross-storage-account copy of a
@@ -209,6 +221,33 @@ public struct AzureBlobObjectStore: S3Browsing {
         toKey: String,
         metadata: [String: String]?
     ) async throws {
+        try await copy(account: account, fromBucket: fromBucket, fromKey: fromKey,
+                       toBucket: toBucket, toKey: toKey, metadata: metadata, conditions: [:])
+    }
+
+    public func copyIfAbsent(account: S3Account, bucket: String, fromKey: String, sourceETag: String, toKey: String) async throws {
+        do {
+            try await copy(
+                account: account, fromBucket: bucket, fromKey: fromKey, toBucket: bucket, toKey: toKey, metadata: nil,
+                conditions: ["x-ms-source-if-match": ETag.quoted(sourceETag), "If-None-Match": "*"]
+            )
+        } catch BucketeerError.providerError(statusCode: 409, _) {
+            // `BlobAlreadyExists`: the create-only condition failed.
+            throw BucketeerError.preconditionFailed(key: toKey)
+        }
+    }
+
+    /// `conditions` are extra request headers (source / destination
+    /// preconditions) the copy must satisfy.
+    private func copy(
+        account: S3Account,
+        fromBucket: String,
+        fromKey: String,
+        toBucket: String,
+        toKey: String,
+        metadata: [String: String]?,
+        conditions: [String: String]
+    ) async throws {
         let signer = try await credentialsCache.signer(for: account)
         let builder = AzureRequestBuilder(account: account)
 
@@ -219,6 +258,9 @@ public struct AzureBlobObjectStore: S3Browsing {
             builder.absoluteBlobURL(container: fromBucket, blob: fromKey).absoluteString,
             forHTTPHeaderField: "x-ms-copy-source"
         )
+        for (header, value) in conditions {
+            request.setValue(value, forHTTPHeaderField: header)
+        }
         // `copy(...)` previously bypassed the
         // header sanitisation that saveMetadata uses. Same
         // hardening here so a hostile metadata value can't fold a
@@ -743,11 +785,15 @@ public struct AzureBlobObjectStore: S3Browsing {
         signer: AzureSharedKeySigner,
         session: URLSession,
         bucket: String,
-        key: String
+        key: String,
+        ifMatch etag: String? = nil
     ) async throws {
         var request = URLRequest(url: builder.deleteBlobURL(container: bucket, blob: key))
         request.httpMethod = "DELETE"
         request.setValue("include", forHTTPHeaderField: "x-ms-delete-snapshots")
+        if let etag {
+            request.setValue(ETag.quoted(etag), forHTTPHeaderField: "If-Match")
+        }
         signer.sign(&request)
 
         let (_, response) = try await session.azureData(for: request)

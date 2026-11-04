@@ -40,7 +40,7 @@ Beim Bearbeiten eines Kontos ist das Secret verborgen. Klicke auf **Gespeicherte
 ## Objekte verwalten
 
 - **Neuer Ordner**: Taste in der Symbolleiste oder **⇧⌘N**.
-- **Umbenennen…**: Klicke mit der rechten Maustaste auf ein Objekt. Umbenennen ist eine serverseitige Kopie mit anschließendem Löschen.
+- **Umbenennen…**: Klicke mit der rechten Maustaste auf ein Objekt. Umbenennen ist eine serverseitige Kopie mit anschließendem Löschen. Umbenennen oder Löschen eines Ordners gilt für alles darin, und Umbenennen ersetzt nie einen vorhandenen Namen.
 - **Löschen**: Wähle ein oder mehrere Objekte aus, klicke auf die Papierkorb-Taste und bestätige.
 - **Deep-Link kopieren**: Kopiert einen `bucketeer://`-Link zum Objekt, der es von überall auf deinem Mac in Bucketeer öffnet.
 
@@ -88,7 +88,7 @@ Bucketeer fügt der Kurzbefehle-App Aktionen hinzu: Buckets auflisten, eine Date
 
 Diese Funktionen brauchen Bucketeer Pro:
 
-- **Als Laufwerk einbinden**: Klicke mit der rechten Maustaste auf einen Bucket und wähle **Als Laufwerk einbinden**, um ihn im Finder wie eine Festplatte zu nutzen. Erfordert macOS 14.1 oder neuer. Eingebundene Laufwerke erscheinen unter **Eingebundene Laufwerke** in der Seitenleiste; mit einem Rechtsklick wählst du **Auswerfen**. Buckets mit clientseitiger Verschlüsselung können nicht eingebunden werden. Änderungen auf dem Server erscheinen im Finder, wenn du den Bucket in Bucketeer aktualisierst. Wurde eine Datei, die du im Finder bearbeitest, inzwischen auf dem Server geändert, wird deine Version daneben als Konfliktkopie gesichert.
+- **Als Laufwerk einbinden**: Klicke mit der rechten Maustaste auf einen Bucket und wähle **Als Laufwerk einbinden**, um ihn im Finder wie eine Festplatte zu nutzen. Eingebundene Laufwerke erscheinen unter **Eingebundene Laufwerke** in der Seitenleiste; mit einem Rechtsklick wählst du **Auswerfen**. Buckets mit clientseitiger Verschlüsselung können nicht eingebunden werden. Änderungen auf dem Server erscheinen im Finder, wenn du den Bucket in Bucketeer aktualisierst. Wurde eine Datei, die du im Finder bearbeitest, inzwischen auf dem Server geändert, wird deine Version daneben als Konfliktkopie gesichert.
 - **Sync-Aufträge**: Erstelle im Bereich **Sync** einen Auftrag, der zwischen zwei Buckets kopiert, verschiebt oder spiegelt, auch über Konten und Anbieter hinweg, oder zwischen einem lokalen Ordner und einem Bucket. Starte ihn von Hand, beim Programmstart, alle N Minuten oder wenn sich der lokale Ordner ändert.
 - **Beobachtete Ordner**: **Neuer beobachteter Ordner…** lädt jede neue Datei in einem lokalen Ordner in einen Bucket hoch.
 - **In anderes Konto kopieren…**: Kopiert Objekte in ein anderes Konto oder zu einem anderen Anbieter. Wenn beide Seiten es erlauben, läuft die Kopie serverseitig, und die Daten gehen nicht über deinen Mac.
@@ -103,7 +103,7 @@ Bucketeer Pro ist ein einmaliger In-App-Kauf über den App Store, ohne Abo. Öff
 Du kannst Bucketeer Pro 14 Tage lang kostenlos testen. Vor dem Start zeigt die Kaufseite die Dauer der Testphase, was danach passiert und den Preis von Pro für immer; dann klickst du auf **Testphase starten**. Wenn die Testphase endet, läuft Bucketeer in der kostenlosen Stufe weiter, und es wird nichts berechnet. Die Testphase lässt sich einmal pro Apple-ID starten, und beim Wiederherstellen von Käufen kommt eine laufende Testphase auch auf einem anderen Mac zurück.
 
 - **Kauf wiederherstellen** holt Pro auf einem anderen Mac oder nach einer Neuinstallation zurück.
-- **Code einlösen** (macOS 15 oder neuer) öffnet Apples Fenster für Angebotscodes.
+- **Code einlösen** öffnet Apples Fenster für Angebotscodes.
 
 ## Tastaturkurzbefehle
 

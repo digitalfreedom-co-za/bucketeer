@@ -20,6 +20,9 @@ final class AccountListViewModel {
     private let azureCredentialsCache: AzureCredentialsCache
     private let transferManager: TransferManager
     private let activityLog: (any ActivityLogging)?
+    /// Tells the File Provider extension's own caches that an account
+    /// changed. `nil` in tests.
+    private let credentialsRevision: CredentialsRevision?
     /// Hand the indexer to the
     /// view model so account-delete purges the right sub-domain
     /// instead of nuking the whole Bucketeer Spotlight index.
@@ -31,7 +34,8 @@ final class AccountListViewModel {
         clientFactory: S3ClientFactory,
         azureCredentialsCache: AzureCredentialsCache,
         transferManager: TransferManager,
-        activityLog: (any ActivityLogging)? = nil
+        activityLog: (any ActivityLogging)? = nil,
+        credentialsRevision: CredentialsRevision? = nil
     ) {
         self.accountStore = accountStore
         self.keychainStore = keychainStore
@@ -39,14 +43,17 @@ final class AccountListViewModel {
         self.azureCredentialsCache = azureCredentialsCache
         self.transferManager = transferManager
         self.activityLog = activityLog
+        self.credentialsRevision = credentialsRevision
     }
 
     /// Flush both credential caches so a deleted or edited account does
     /// not leak signing material into subsequent requests. The Azure cache
     /// is per-process-only — no AWSClient shutdown is required, but the
     /// signer must be re-derived from the (possibly rotated) Keychain
-    /// value on the next request.
+    /// value on the next request. The revision bump reaches the caches
+    /// of the File Provider extension.
     private func invalidateAllCaches(for accountID: UUID) async {
+        credentialsRevision?.bump(for: accountID)
         await clientFactory.invalidate(accountID: accountID)
         await azureCredentialsCache.invalidate(accountID: accountID)
     }
