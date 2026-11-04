@@ -13,6 +13,12 @@ before that is internal phase work on the `development` branch.
 
 ## [Unreleased] — `development` branch
 
+### Requires macOS 15.8 (2026-11-04)
+- Bucketeer, its File Provider extension and BucketeerCore now require
+  macOS 15.8, the latest macOS 15 release. Mount as Drive and Redeem
+  Code are therefore always available; their version checks, fallback
+  menu item and "requires a newer macOS" texts are gone.
+
 ### Never overwrite silently: sync, transfers, Finder (2026-11-04)
 - A failed or cancelled download keeps the existing file: bytes land in
   a staging file on the destination's volume and replace the file only
