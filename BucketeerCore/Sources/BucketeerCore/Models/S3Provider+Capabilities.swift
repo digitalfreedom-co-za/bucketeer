@@ -35,9 +35,14 @@ extension S3Provider {
         public static let copySourceIfMatch = ConditionalRequests(rawValue: 1 << 3)
         /// `If-None-Match: *` on CopyObject.
         public static let copyIfAbsent = ConditionalRequests(rawValue: 1 << 4)
+        /// `x-amz-copy-source-if-match` on UploadPartCopy.
+        public static let partCopySourceIfMatch = ConditionalRequests(rawValue: 1 << 6)
+        /// `If-Match` on a ranged GetObject.
+        public static let readIfMatch = ConditionalRequests(rawValue: 1 << 7)
 
         public static let all: ConditionalRequests = [
-            .writeIfMatch, .writeIfAbsent, .completionConditions, .deleteIfMatch, .copySourceIfMatch, .copyIfAbsent
+            .writeIfMatch, .writeIfAbsent, .completionConditions, .deleteIfMatch, .copySourceIfMatch, .copyIfAbsent,
+            .partCopySourceIfMatch, .readIfMatch
         ]
     }
 
@@ -46,14 +51,23 @@ extension S3Provider {
         case .awsS3, .azureBlob:
             return .all
         case .cloudflareR2:
-            return [.writeIfMatch, .writeIfAbsent, .copySourceIfMatch]
+            return [.writeIfMatch, .writeIfAbsent, .copySourceIfMatch, .readIfMatch]
         case .digitalOceanSpaces:
-            return [.copySourceIfMatch]
-        // Civo (live): If-Match is refused even when it holds, the rest
-        // ignored. B2, Wasabi, Storj: not documented. Custom: unknown.
-        case .civo, .backblazeB2, .wasabi, .storj, .custom:
+            return [.copySourceIfMatch, .partCopySourceIfMatch, .readIfMatch]
+        // Civo (live): PUT If-Match is refused even when it holds, the
+        // other write conditions ignored; ranged GET If-Match holds.
+        case .civo:
+            return [.readIfMatch]
+        // B2, Wasabi, Storj: not documented. Custom: unknown.
+        case .backblazeB2, .wasabi, .storj, .custom:
             return []
         }
+    }
+
+    /// False where UploadPartCopy is not generally available: Storj
+    /// enables it only on request.
+    public var supportsUploadPartCopy: Bool {
+        self != .storj
     }
 
     /// False where object tagging is documented as missing: R2 does not

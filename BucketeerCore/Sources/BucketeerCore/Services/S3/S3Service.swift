@@ -192,22 +192,16 @@ public struct S3Service: S3Browsing {
     ) async throws {
         let s3 = try await factory.client(for: account)
         do {
-            let head = try await head(account: account, bucket: fromBucket, key: fromKey)
-            if S3MultipartCopy.needsParts(size: head.size, provider: account.provider) {
-                let source = S3MultipartCopy.Source(bucket: fromBucket, key: fromKey, etag: head.etag,
-                                                    size: head.size, metadata: metadata)
+            var source = try await Self.copySource(s3: s3, bucket: fromBucket, key: fromKey)
+            if S3MultipartCopy.needsParts(size: source.size, provider: account.provider) {
+                source.metadata = metadata
                 _ = try await S3MultipartCopy.copy(source, toBucket: toBucket, toKey: toKey, ifAbsent: false,
-                                                   enforced: account.provider.conditionalRequests,
-                                                   copier: SotoObjectWriter(s3: s3))
+                                                   provider: account.provider, copier: SotoObjectWriter(s3: s3))
                 return
             }
-            let source = "\(fromBucket)/\(fromKey)"
-            let encodedSource = source.addingPercentEncoding(
-                withAllowedCharacters: .urlPathAllowed
-            ) ?? source
             _ = try await s3.copyObject(.init(
                 bucket: toBucket,
-                copySource: encodedSource,
+                copySource: S3MultipartCopy.copySourceHeader(bucket: fromBucket, key: fromKey, versionId: nil),
                 key: toKey,
                 metadata: metadata,
                 metadataDirective: metadata != nil ? .replace : nil
@@ -224,14 +218,13 @@ public struct S3Service: S3Browsing {
         let enforced = account.provider.conditionalRequests
         let source = "\(bucket)/\(fromKey)"
         do {
-            let head = try await head(account: account, bucket: bucket, key: fromKey)
-            try PreconditionCheck.verify(.ifMatch(sourceETag), current: head.etag, key: toKey)
-            if S3MultipartCopy.needsParts(size: head.size, provider: account.provider) {
-                _ = try await S3MultipartCopy.copy(
-                    S3MultipartCopy.Source(bucket: bucket, key: fromKey, etag: sourceETag, size: head.size),
-                    toBucket: bucket, toKey: toKey, ifAbsent: true, enforced: enforced,
-                    copier: SotoObjectWriter(s3: s3)
-                )
+            // The version ID comes from the same HEAD that proved the
+            // ETag, so a ranged copy is pinned to exactly that version.
+            let multipartSource = try await Self.copySource(s3: s3, bucket: bucket, key: fromKey)
+            try PreconditionCheck.verify(.ifMatch(sourceETag), current: multipartSource.etag, key: toKey)
+            if S3MultipartCopy.needsParts(size: multipartSource.size, provider: account.provider) {
+                _ = try await S3MultipartCopy.copy(multipartSource, toBucket: bucket, toKey: toKey, ifAbsent: true,
+                                                   provider: account.provider, copier: SotoObjectWriter(s3: s3))
                 return
             }
             if !enforced.contains(.copyIfAbsent) {
@@ -411,23 +404,18 @@ public struct S3Service: S3Browsing {
         versionId: String
     ) async throws {
         let s3 = try await factory.client(for: account)
-        // Encode key and version ID SEPARATELY. Percent-encoding the
-        // whole string turns the `?` into %3F and S3 then looks up a
-        // literal key named "key?versionId=…" — every versioned
-        // restore 404s. The `?versionId=` separator must stay literal
-        // per the x-amz-copy-source spec. Version IDs are opaque and
-        // may contain query-significant characters (`+`, `/`, `=` on
-        // some providers), so they get a strict query-value encoding.
-        let encodedKey = key.addingPercentEncoding(
-            withAllowedCharacters: .urlPathAllowed
-        ) ?? key
-        var queryValueAllowed = CharacterSet.alphanumerics
-        queryValueAllowed.insert(charactersIn: "-._~")
-        let encodedVersionId = versionId.addingPercentEncoding(
-            withAllowedCharacters: queryValueAllowed
-        ) ?? versionId
-        let encodedSource = "\(bucket)/\(encodedKey)?versionId=\(encodedVersionId)"
+        // Key and version ID are encoded SEPARATELY: an encoded `?`
+        // makes S3 look up a literal key "key?versionId=…" and every
+        // versioned restore 404s. Version IDs are opaque and may hold
+        // `+`, `/`, `=`, so they get a strict query-value encoding.
+        let encodedSource = S3MultipartCopy.copySourceHeader(bucket: bucket, key: key, versionId: versionId)
         do {
+            let source = try await Self.copySource(s3: s3, bucket: bucket, key: key, versionId: versionId)
+            if S3MultipartCopy.needsParts(size: source.size, provider: account.provider) {
+                _ = try await S3MultipartCopy.copy(source, toBucket: bucket, toKey: key, ifAbsent: false,
+                                                   provider: account.provider, copier: SotoObjectWriter(s3: s3))
+                return
+            }
             _ = try await s3.copyObject(.init(
                 bucket: bucket,
                 copySource: encodedSource,
@@ -487,8 +475,9 @@ public struct S3Service: S3Browsing {
         }
     }
 
-    /// CopyObject onto itself with `metadataDirective: .replace` to
-    /// rewrite the HTTP + user metadata + content type, then a
+    /// CopyObject onto itself with `metadataDirective: .replace` (above
+    /// the single-copy limit a pinned `S3MultipartCopy`) to rewrite the
+    /// HTTP + user metadata + content type, then a
     /// follow-up PutObjectTagging to replace the tag set. Both
     /// operations are independent so we don't roll the tag write
     /// back if the metadata write fails — the caller's UI surfaces
@@ -500,26 +489,18 @@ public struct S3Service: S3Browsing {
         metadata: ObjectMetadata
     ) async throws {
         let s3 = try await factory.client(for: account)
-        let source = "\(bucket)/\(key)"
-        let encodedSource = source.addingPercentEncoding(
-            withAllowedCharacters: .urlPathAllowed
-        ) ?? source
+        let encodedSource = S3MultipartCopy.copySourceHeader(bucket: bucket, key: key, versionId: nil)
         let userMetadata = metadata.userMetadata.isEmpty ? nil : metadata.userMetadata
         do {
-            _ = try await s3.copyObject(.init(
-                bucket: bucket,
-                cacheControl: metadata.cacheControl.isEmpty ? nil : metadata.cacheControl,
-                contentDisposition: metadata.contentDisposition.isEmpty ? nil : metadata.contentDisposition,
-                contentEncoding: metadata.contentEncoding.isEmpty ? nil : metadata.contentEncoding,
-                contentType: metadata.contentType.isEmpty ? nil : metadata.contentType,
-                copySource: encodedSource,
-                key: key,
-                metadata: userMetadata,
-                metadataDirective: .replace,
-                // A copy onto itself defaults to STANDARD; keep the
-                // object's class so editing metadata does not move it.
-                storageClass: metadata.storageClass.flatMap(S3.StorageClass.init(rawValue:))
-            ))
+            var source = try await Self.copySource(s3: s3, bucket: bucket, key: key)
+            if S3MultipartCopy.needsParts(size: source.size, provider: account.provider) {
+                source.replacement = metadata
+                _ = try await S3MultipartCopy.copy(source, toBucket: bucket, toKey: key, ifAbsent: false,
+                                                   provider: account.provider, copier: SotoObjectWriter(s3: s3))
+            } else {
+                try await Self.replaceMetadata(s3: s3, bucket: bucket, key: key, encodedSource: encodedSource,
+                                               metadata: metadata, userMetadata: userMetadata)
+            }
         } catch {
             throw Self.map(error, bucket: bucket, key: key)
         }
@@ -538,6 +519,24 @@ public struct S3Service: S3Browsing {
         } catch {
             throw Self.map(error, bucket: bucket, key: key)
         }
+    }
+
+    private static func replaceMetadata(s3: S3, bucket: String, key: String, encodedSource: String,
+                                        metadata: ObjectMetadata, userMetadata: [String: String]?) async throws {
+        _ = try await s3.copyObject(.init(
+            bucket: bucket,
+            cacheControl: metadata.cacheControl.isEmpty ? nil : metadata.cacheControl,
+            contentDisposition: metadata.contentDisposition.isEmpty ? nil : metadata.contentDisposition,
+            contentEncoding: metadata.contentEncoding.isEmpty ? nil : metadata.contentEncoding,
+            contentType: metadata.contentType.isEmpty ? nil : metadata.contentType,
+            copySource: encodedSource,
+            key: key,
+            metadata: userMetadata,
+            metadataDirective: .replace,
+            // A copy onto itself defaults to STANDARD; keep the
+            // object's class so editing metadata does not move it.
+            storageClass: metadata.storageClass.flatMap(S3.StorageClass.init(rawValue:))
+        ))
     }
 
     private static func tags(s3: S3, bucket: String, key: String, supported: Bool) async throws -> [String: String] {
@@ -684,6 +683,15 @@ public struct S3Service: S3Browsing {
         case .ifAbsent where enforced.contains(.writeIfAbsent): return (nil, "*")
         default: return (nil, nil)
         }
+    }
+
+    /// A copy source as HEAD reports it, with the version ID that pins
+    /// a ranged copy (`S3MultipartCopy`) where the bucket keeps versions.
+    private static func copySource(s3: S3, bucket: String, key: String,
+                                   versionId: String? = nil) async throws -> S3MultipartCopy.Source {
+        let head = try await s3.headObject(.init(bucket: bucket, key: key, versionId: versionId))
+        return S3MultipartCopy.Source(bucket: bucket, key: key, etag: unquote(head.eTag),
+                                      size: head.contentLength ?? 0, versionId: head.versionId ?? versionId)
     }
 
     /// The object's ETag (unquoted), or `nil` when there is none.

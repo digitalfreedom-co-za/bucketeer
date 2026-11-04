@@ -25,16 +25,17 @@ struct ProviderCapabilitiesTests {
     @Test("Only documented (or live-tested) conditions are enforced", arguments: [
         // AWS: conditional writes incl. completion and copy, conditional deletes.
         Expectation(provider: .awsS3, conditions: .all),
-        // R2: PutObject conditions and copy-source conditions; none on completion or delete.
-        Expectation(provider: .cloudflareR2, conditions: [.writeIfMatch, .writeIfAbsent, .copySourceIfMatch]),
-        // Spaces: copy-source conditions only.
-        Expectation(provider: .digitalOceanSpaces, conditions: [.copySourceIfMatch]),
+        // R2: PutObject conditions, copy-source conditions (not on parts),
+        // GET If-Match; none on completion or delete.
+        Expectation(provider: .cloudflareR2, conditions: [.writeIfMatch, .writeIfAbsent, .copySourceIfMatch, .readIfMatch]),
+        // Spaces: copy-source conditions on CopyObject and UploadPartCopy, GET If-Match.
+        Expectation(provider: .digitalOceanSpaces, conditions: [.copySourceIfMatch, .partCopySourceIfMatch, .readIfMatch]),
         // Not documented.
         Expectation(provider: .backblazeB2, conditions: []),
         Expectation(provider: .wasabi, conditions: []),
         Expectation(provider: .storj, conditions: []),
-        // Live test: If-Match always 412, the rest ignored.
-        Expectation(provider: .civo, conditions: []),
+        // Live test: If-Match on PUT always 412, the rest ignored; GET Range + If-Match works.
+        Expectation(provider: .civo, conditions: [.readIfMatch]),
         // Unknown server: conservative.
         Expectation(provider: .custom, conditions: []),
         Expectation(provider: .azureBlob, conditions: .all)
@@ -48,6 +49,13 @@ struct ProviderCapabilitiesTests {
         let without: Set<S3Provider> = [.cloudflareR2, .backblazeB2]
         for provider in S3Provider.allCases {
             #expect(provider.supportsObjectTagging == !without.contains(provider))
+        }
+    }
+
+    @Test("UploadPartCopy is used except where it must be enabled on request (Storj)")
+    func uploadPartCopy() {
+        for provider in S3Provider.allCases {
+            #expect(provider.supportsUploadPartCopy == (provider != .storj))
         }
     }
 
