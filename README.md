@@ -80,7 +80,7 @@ for the development history.
 ### Bucketeer Pro
 
 - **Mount as Drive**: use a bucket or container in Finder through the
-  File Provider extension (macOS 14.1 or later). Server-side changes
+  File Provider extension. Server-side changes
   reach Finder when you refresh the bucket; a Finder save over a newer
   server version becomes a conflict copy. Buckets with client-side
   encryption cannot be mounted in this version.
@@ -151,7 +151,7 @@ without any charge, and the Pro Lifetime price.
 
 Requirements:
 
-- macOS 14.0 or later (Mount as Drive needs 14.1)
+- macOS 15.8 or later
 - Xcode 16 or later (Swift 6 strict concurrency)
 
 ```bash

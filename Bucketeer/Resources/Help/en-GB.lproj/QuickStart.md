@@ -40,7 +40,7 @@ The secret is hidden when you edit an account. Click **Reveal stored credentials
 ## Manage objects
 
 - **New Folder**: toolbar button or **⇧⌘N**.
-- **Rename…**: right-click an object. A rename is a server-side copy followed by a delete.
+- **Rename…**: right-click an object. A rename is a server-side copy followed by a delete. Renaming or deleting a folder applies to everything in it, and a rename never replaces an existing name.
 - **Delete**: select one or more objects, click the trash button and confirm.
 - **Copy Deep Link**: copies a `bucketeer://` link to the object, which opens it in Bucketeer from anywhere on your Mac.
 
@@ -88,7 +88,7 @@ Bucketeer adds actions to the Shortcuts app: list buckets, upload a file, create
 
 These features need Bucketeer Pro:
 
-- **Mount as Drive**: right-click a bucket and choose **Mount as Drive** to use it in Finder like a disk. Requires macOS 14.1 or later. Mounted drives appear under **Mounted Drives** in the sidebar; right-click to **Unmount**. Buckets with client-side encryption cannot be mounted. Changes made on the server appear in Finder when you refresh the bucket in Bucketeer. If a file you edit in Finder was changed on the server in the meantime, your version is saved next to it as a conflict copy.
+- **Mount as Drive**: right-click a bucket and choose **Mount as Drive** to use it in Finder like a disk. Mounted drives appear under **Mounted Drives** in the sidebar; right-click to **Unmount**. Buckets with client-side encryption cannot be mounted. Changes made on the server appear in Finder when you refresh the bucket in Bucketeer. If a file you edit in Finder was changed on the server in the meantime, your version is saved next to it as a conflict copy.
 - **Sync jobs**: in the **Sync** section, create a job that copies, moves or mirrors between two buckets, across accounts and providers, or between a local folder and a bucket. Run it by hand, at launch, every N minutes, or when the local folder changes.
 - **Watch folders**: **New Watch Folder…** uploads every new file in a local folder to a bucket.
 - **Copy to other account…**: copies objects to another account or provider. When both sides allow it, the copy runs server-side and the data does not pass through your Mac.
@@ -103,7 +103,7 @@ Bucketeer Pro is a one-time in-app purchase through the App Store, with no subsc
 You can try Bucketeer Pro for 14 days at no cost. Before you start, the paywall shows the length of the trial, what happens afterwards and the price of Pro Lifetime; then click **Start trial**. When the trial ends, Bucketeer continues on the Free tier and nothing is charged. The trial can be started once per Apple ID, and restoring purchases also brings back a running trial on another Mac.
 
 - **Restore purchase** brings Pro back on another Mac or after reinstalling.
-- **Redeem Code** (macOS 15 or later) opens Apple's sheet for offer codes.
+- **Redeem Code** opens Apple's sheet for offer codes.
 
 ## Keyboard shortcuts
 

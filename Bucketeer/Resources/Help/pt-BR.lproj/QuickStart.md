@@ -40,7 +40,7 @@ O segredo fica oculto quando você edita uma conta. Clique em **Mostrar credenci
 ## Gerenciar objetos
 
 - **Nova pasta**: botão da barra de ferramentas ou **⇧⌘N**.
-- **Renomear…**: clique com o botão direito em um objeto. Renomear é uma cópia no servidor seguida de uma exclusão.
+- **Renomear…**: clique com o botão direito em um objeto. Renomear é uma cópia no servidor seguida de uma exclusão. Renomear ou apagar uma pasta vale para todo o conteúdo dela, e uma renomeação nunca substitui um nome existente.
 - **Excluir**: selecione um ou mais objetos, clique no botão da lixeira e confirme.
 - **Copiar deep link**: copia um link `bucketeer://` para o objeto, que o abre no Bucketeer de qualquer lugar do seu Mac.
 
@@ -88,7 +88,7 @@ O Bucketeer adiciona ações ao app Atalhos: listar buckets, fazer upload de um 
 
 Estes recursos precisam do Bucketeer Pro:
 
-- **Montar como unidade**: clique com o botão direito em um bucket e escolha **Montar como unidade** para usá-lo no Finder como um disco. Requer macOS 14.1 ou posterior. As unidades montadas aparecem em **Unidades montadas** na barra lateral; clique com o botão direito para **Desmontar**. Buckets com criptografia no lado do cliente não podem ser montados. As alterações feitas no servidor aparecem no Finder quando você atualiza o bucket no Bucketeer. Se um arquivo que você edita no Finder foi alterado no servidor nesse meio tempo, sua versão é salva ao lado como cópia em conflito.
+- **Montar como unidade**: clique com o botão direito em um bucket e escolha **Montar como unidade** para usá-lo no Finder como um disco. As unidades montadas aparecem em **Unidades montadas** na barra lateral; clique com o botão direito para **Desmontar**. Buckets com criptografia no lado do cliente não podem ser montados. As alterações feitas no servidor aparecem no Finder quando você atualiza o bucket no Bucketeer. Se um arquivo que você edita no Finder foi alterado no servidor nesse meio tempo, sua versão é salva ao lado como cópia em conflito.
 - **Tarefas de sincronização**: na seção **Sincronização**, crie uma tarefa que copia, move ou espelha entre dois buckets, entre contas e provedores, ou entre uma pasta local e um bucket. Execute-a manualmente, ao abrir o app, a cada N minutos ou quando a pasta local mudar.
 - **Pastas monitoradas**: **Nova pasta monitorada…** faz upload para um bucket de cada arquivo novo em uma pasta local.
 - **Copiar para outra conta…**: copia objetos para outra conta ou outro provedor. Quando os dois lados permitem, a cópia é feita no servidor e os dados não passam pelo seu Mac.
@@ -103,7 +103,7 @@ O Bucketeer Pro é uma compra única dentro do app, feita pela App Store, sem as
 Você pode testar o Bucketeer Pro gratuitamente por 14 dias. Antes de começar, a página de compra mostra a duração da avaliação, o que acontece depois e o preço do Pro Vitalício; depois clique em **Iniciar avaliação**. Quando a avaliação termina, o Bucketeer continua na versão gratuita e nada é cobrado. A avaliação pode ser iniciada uma vez por ID Apple, e restaurar compras também traz de volta uma avaliação em andamento em outro Mac.
 
 - **Restaurar compra** traz o Pro de volta em outro Mac ou depois de reinstalar.
-- **Resgatar código** (macOS 15 ou posterior) abre a janela da Apple para códigos de oferta.
+- **Resgatar código** abre a janela da Apple para códigos de oferta.
 
 ## Atalhos de teclado
 

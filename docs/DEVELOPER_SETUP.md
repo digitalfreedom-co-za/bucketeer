@@ -10,7 +10,7 @@ Store; what's below is the developer / contributor workflow.
 
 | Tool | Minimum | Used for |
 |---|---|---|
-| **macOS** | 14.0 | Runtime + Xcode 16 host |
+| **macOS** | 15.8 | Runtime (deployment target of every target and of BucketeerCore) |
 | **Xcode** | 16.0 | Build the host app + extension targets |
 | **Swift toolchain** | 6.0 | Bundled with Xcode 16; `swift test` for the Core package |
 | **Apple Developer account** | Free for local debug, paid for shared App Group / Keychain / IAP work | Code signing for any signed run |

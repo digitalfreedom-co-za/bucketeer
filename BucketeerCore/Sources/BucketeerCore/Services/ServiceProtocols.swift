@@ -43,6 +43,10 @@ public protocol S3Browsing: Sendable {
     ) async throws -> S3Page
     func head(account: S3Account, bucket: String, key: String) async throws -> S3Object
     func delete(account: S3Account, bucket: String, keys: [String]) async throws
+    /// Deletes `key` only while its ETag is still `etag`; throws
+    /// `.preconditionFailed` otherwise. Prefer `deleteIfUnchanged`,
+    /// which also covers providers that ignore the condition.
+    func delete(account: S3Account, bucket: String, key: String, ifMatch etag: String) async throws
     func copy(
         account: S3Account,
         fromBucket: String,
@@ -51,6 +55,10 @@ public protocol S3Browsing: Sendable {
         toKey: String,
         metadata: [String: String]?
     ) async throws
+    /// Server-side copy inside one bucket that reads `fromKey` only while
+    /// it still has `sourceETag` and creates `toKey` only if nothing is
+    /// there. Throws `.preconditionFailed` when either condition fails.
+    func copyIfAbsent(account: S3Account, bucket: String, fromKey: String, sourceETag: String, toKey: String) async throws
     func createFolder(account: S3Account, bucket: String, prefix: String) async throws
 
     /// Time-limited download URL the user can share without giving the
@@ -122,6 +130,26 @@ public protocol S3Browsing: Sendable {
         account: S3Account,
         bucket: String
     ) async throws -> BucketInsights
+}
+
+extension S3Browsing {
+    /// Deletes `key` only while it is still the version with `etag`.
+    /// Compares a HEAD first, because some S3-compatible providers
+    /// ignore `If-Match` on deletes, then deletes conditionally.
+    /// Returns `false` and keeps the object when it changed (or when
+    /// `etag` is unknown); `true` when deleted or already gone.
+    public func deleteIfUnchanged(account: S3Account, bucket: String, key: String, etag: String) async throws -> Bool {
+        do {
+            let current = try await head(account: account, bucket: bucket, key: key)
+            guard ETag.matches(base: etag, current: current.etag) else { return false }
+            try await delete(account: account, bucket: bucket, key: key, ifMatch: etag)
+            return true
+        } catch BucketeerError.objectNotFound {
+            return true
+        } catch BucketeerError.preconditionFailed {
+            return false
+        }
+    }
 }
 
 // MARK: - EncryptionKeyStoring
@@ -305,7 +333,8 @@ public protocol Transferring: Sendable {
     /// failed / cancelled) from the queue snapshot.
     func clearTerminal() async
 
-    /// Live snapshot stream of the current task list. Each yielded value
+    /// A new, independent stream of the current task list for one
+    /// observer; it starts with the latest snapshot. Each yielded value
     /// is the complete state — consumers replace, not merge.
-    var tasks: AsyncStream<[TransferTask]> { get }
+    func taskUpdates() -> AsyncStream<[TransferTask]>
 }

@@ -300,4 +300,84 @@ struct SyncPlannerTests {
         )
         #expect(plan.deletes == ["orphan.txt"])
     }
+
+    // MARK: - Local edits that keep the size
+
+    private func file(_ key: String, modified: TimeInterval) -> S3Object {
+        S3Object(key: key, size: 4, lastModified: Date(timeIntervalSince1970: modified), etag: "")
+    }
+
+    private func fingerprint(modified: TimeInterval) -> LocalFileFingerprint {
+        LocalFileFingerprint(size: 4, modified: Date(timeIntervalSince1970: modified))
+    }
+
+    private var watchJob: SyncJob {
+        var job = self.job(source: localEndpoint(), destination: endpoint(prefix: ""))
+        job.schedule = .onLocalChange
+        return job
+    }
+
+    @Test("A watched file saved without changing its size is uploaded again")
+    func sameSizeEditIsUploaded() {
+        let job = watchJob
+        let plan = SyncPlanner.makePlan(
+            job: job,
+            source: [file("edited.txt", modified: 200), file("same.txt", modified: 100)],
+            destination: [file("edited.txt", modified: 900), file("same.txt", modified: 900)],
+            acknowledged: ["edited.txt": fingerprint(modified: 100), "same.txt": fingerprint(modified: 100)]
+        )
+        #expect(plan.upserts.map(\.sourceKey) == ["edited.txt"])
+        #expect(plan.unchanged.map(\.key) == ["same.txt"])
+    }
+
+    @Test("A watched file without an acknowledged fingerprint is uploaded, since its content is unverified")
+    func unacknowledgedWatchedFileIsUploaded() {
+        let plan = SyncPlanner.makePlan(
+            job: watchJob,
+            source: [file("newer.txt", modified: 200), file("older.txt", modified: 100)],
+            destination: [file("newer.txt", modified: 150), file("older.txt", modified: 150)],
+            acknowledged: [:]
+        )
+        #expect(plan.upserts.map(\.sourceKey) == ["newer.txt", "older.txt"])
+    }
+
+    @Test("An ordinary local job keeps the size-only comparison the user chose")
+    func ordinaryJobKeepsSizeComparison() {
+        let plan = SyncPlanner.makePlan(
+            job: job(source: localEndpoint(), destination: endpoint(prefix: "")),
+            source: [file("edited.txt", modified: 200)],
+            destination: [file("edited.txt", modified: 150)],
+            acknowledged: [:]
+        )
+        #expect(plan.upserts.isEmpty)
+    }
+
+    // MARK: - Name collisions on the destination file system
+
+    @Test("Keys that one case-insensitive folder cannot keep apart are skipped, not aliased")
+    func caseCollisionsAreSkipped() {
+        let job = self.job(mode: .mirror, deletePropagation: true, source: endpoint(prefix: ""), destination: localEndpoint())
+        let plan = SyncPlanner.makePlan(
+            job: job,
+            source: [object("Report.txt"), object("report.txt"), object("photo.jpg"), object("notes.md", size: 5)],
+            destination: [object("NOTES.md", size: 9)],
+            destinationNaming: .fileSystem(caseSensitive: false)
+        )
+        #expect(plan.upserts.map(\.sourceKey) == ["photo.jpg"])
+        #expect(Set(plan.collisions) == ["Report.txt", "report.txt", "notes.md"])
+        #expect(plan.deletes.isEmpty)
+    }
+
+    @Test("Unicode spellings of the same name collide even on a case-sensitive volume")
+    func normalizationCollisionsAreSkipped() {
+        let job = self.job(source: endpoint(prefix: ""), destination: localEndpoint())
+        let plan = SyncPlanner.makePlan(
+            job: job,
+            source: [object("caf\u{E9}.txt"), object("cafe\u{301}.txt"), object("Cafe.txt")],
+            destination: [],
+            destinationNaming: .fileSystem(caseSensitive: true)
+        )
+        #expect(plan.upserts.map(\.sourceKey) == ["Cafe.txt"])
+        #expect(plan.collisions.count == 2)
+    }
 }
