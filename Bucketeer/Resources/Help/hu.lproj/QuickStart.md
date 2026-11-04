@@ -7,6 +7,7 @@ A Bucketeer egy Mac-alkalmazás objektumtároláshoz: Amazon S3, S3-kompatibilis
 - Kattintson a **+** gombra az oldalsáv fejlécében.
 - Válasszon szolgáltatót: AWS S3, Azure Blob Storage, Civo, Cloudflare R2, Backblaze B2, Wasabi, DigitalOcean Spaces, Storj vagy Custom (MinIO és bármely más S3-kompatibilis végpont).
 - Adja meg a nevet, a régiót vagy a végpontot, valamint a hitelesítő adatait (hozzáférési kulcs és titkos kulcs; Azure esetén a tárfiók kulcsa).
+- Ha a kulcsa csak egy buckethez fér hozzá (a Civónál gyakori), adja meg a nevét a **Bucket** mezőben; a fiók ekkor csak ezt a bucketet mutatja. A Civo-kulcsok csak abban a régióban működnek, ahol létrehozták őket.
 - Kattintson a **Kapcsolat tesztelése**, majd a **Mentés** gombra.
 
 A hitelesítő adatai a macOS-kulcskarikában tárolódnak ezen a Macen. A Bucketeernek nincs szervere és nincs felhasználói fiókja; közvetlenül a beállított végpontokkal kommunikál.
