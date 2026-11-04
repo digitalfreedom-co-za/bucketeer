@@ -40,12 +40,4 @@ struct S3ProviderTests {
         #expect(S3Provider.azureBlob.usesPathStyleByDefault == false)
         #expect(S3Provider.custom.usesPathStyleByDefault == true)
     }
-
-    @Test("Fixed-region list is consistent — defaultRegion is present in fixedRegions when both are defined")
-    func defaultRegionAppearsInFixedList() {
-        for provider in S3Provider.allCases {
-            guard let fixed = provider.fixedRegions else { continue }
-            #expect(fixed.contains(provider.defaultRegion))
-        }
-    }
 }

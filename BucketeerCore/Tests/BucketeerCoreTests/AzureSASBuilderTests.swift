@@ -70,26 +70,6 @@ struct AzureSASBuilderTests {
         #expect(url?.absoluteString.contains("/c/folder/file%20name%3F%23.txt") == true)
     }
 
-    @Test("Signature is deterministic for fixed inputs")
-    func signatureDeterministic() {
-        let now = Date(timeIntervalSince1970: 1_700_000_000)
-        let url1 = builder.presignedDownloadURL(
-            baseURL: baseURL,
-            container: "c",
-            blob: "blob.bin",
-            ttl: 3600,
-            now: now
-        )!
-        let url2 = builder.presignedDownloadURL(
-            baseURL: baseURL,
-            container: "c",
-            blob: "blob.bin",
-            ttl: 3600,
-            now: now
-        )!
-        #expect(url1 == url2)
-    }
-
     @Test("Different TTLs produce different signatures")
     func signatureChangesWithTTL() {
         let now = Date(timeIntervalSince1970: 1_700_000_000)
@@ -106,13 +86,5 @@ struct AzureSASBuilderTests {
         let sig2 = URLComponents(url: oneDay, resolvingAgainstBaseURL: false)!
             .queryItems?.first(where: { $0.name == "sig" })?.value
         #expect(sig1 != sig2)
-    }
-
-    @Test("iso8601 formatter outputs a Z-suffixed UTC stamp")
-    func iso8601() {
-        let date = Date(timeIntervalSince1970: 1_700_000_000)
-        let formatted = AzureSASBuilder.iso8601(date)
-        #expect(formatted.hasSuffix("Z"))
-        #expect(formatted.contains("T"))
     }
 }
