@@ -42,15 +42,26 @@ public actor FinderChangeTracker {
         self.storageDirectory = storageDirectory
     }
 
-    /// One page of a folder enumeration was delivered to the system.
+    /// One page of a folder enumeration was listed for the system; it
+    /// joins the change baseline. What the system actually received is
+    /// reported separately with `markDelivered`.
     public func record(_ objects: [S3Object], under prefix: String, domain: String) {
         var state = load(domain) ?? FinderChangeState(anchor: Self.newAnchor())
         state.record(Self.entries(of: objects, excluding: prefix), under: prefix)
         save(state, domain: domain)
     }
 
-    /// The system was given `object` as the result of a create, modify
-    /// or fetch.
+    /// These items reached the system (a published page or change
+    /// report); `deleted` were reported as gone.
+    public func markDelivered(_ objects: [S3Object], deleted: [String] = [], domain: String) {
+        guard var state = load(domain) else { return }
+        state.markDelivered(Self.entries(of: objects, excluding: nil))
+        state.forgetDelivered(deleted)
+        save(state, domain: domain)
+    }
+
+    /// The system was given `object` as the result of an item lookup,
+    /// create, modify or fetch.
     public func remember(_ object: S3Object, domain: String) {
         guard !object.isFolder, var state = load(domain) else { return }
         state.remember(object.key, etag: object.etag)

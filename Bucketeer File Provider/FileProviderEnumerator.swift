@@ -129,7 +129,7 @@ final class FileProviderEnumerator: NSObject, @unchecked Sendable, NSFileProvide
             } else {
                 nextPage = nil
             }
-            // Every delivered page joins the change baseline (the root
+            // Every listed page joins the change baseline (the root
             // through the working set, too), so a later deletion of any
             // of these items is reported.
             await FinderChangeTracker.shared.record(
@@ -137,9 +137,14 @@ final class FileProviderEnumerator: NSObject, @unchecked Sendable, NSFileProvide
                 under: prefix,
                 domain: domain.identifier.rawValue
             )
-            publish(token) {
+            let delivered = publish(token) {
                 obs.value.didEnumerate(items)
                 obs.value.finishEnumerating(upTo: nextPage)
+            }
+            // Only versions the system actually received may later be
+            // deleted by a folder delete.
+            if delivered {
+                await FinderChangeTracker.shared.markDelivered(result.objects, domain: domain.identifier.rawValue)
             }
         } catch {
             publish(token) {
@@ -151,18 +156,22 @@ final class FileProviderEnumerator: NSObject, @unchecked Sendable, NSFileProvide
     }
 
     /// Delivers to the observer only if `token` is still the current
-    /// generation; see the invariant on `lock`.
-    private func publish(_ token: UInt64, _ delivery: () -> Void) {
+    /// generation; see the invariant on `lock`. Returns whether it did.
+    @discardableResult
+    private func publish(_ token: UInt64, _ delivery: () -> Void) -> Bool {
         lock.withLock {
-            guard generation == token else { return }
+            guard generation == token else { return false }
             delivery()
+            return true
         }
     }
 
-    private func publishChange(_ token: UInt64, _ delivery: () -> Void) {
+    @discardableResult
+    private func publishChange(_ token: UInt64, _ delivery: () -> Void) -> Bool {
         lock.withLock {
-            guard changeGeneration == token else { return }
+            guard changeGeneration == token else { return false }
             delivery()
+            return true
         }
     }
 
@@ -210,12 +219,17 @@ final class FileProviderEnumerator: NSObject, @unchecked Sendable, NSFileProvide
                 )
             }
             let deleted = changes.deleted.map(FileProviderItemResolver.identifier(for:))
-            publishChange(token) {
+            let delivered = publishChange(token) {
                 if !updated.isEmpty { obs.value.didUpdate(updated) }
                 if !deleted.isEmpty { obs.value.didDeleteItems(withIdentifiers: deleted) }
                 obs.value.finishEnumeratingChanges(
                     upTo: NSFileProviderSyncAnchor(Data(changes.anchor.utf8)),
                     moreComing: false
+                )
+            }
+            if delivered {
+                await FinderChangeTracker.shared.markDelivered(
+                    changes.updated, deleted: changes.deleted, domain: domain.identifier.rawValue
                 )
             }
         } catch FinderChangeTracker.TrackerError.anchorExpired {
