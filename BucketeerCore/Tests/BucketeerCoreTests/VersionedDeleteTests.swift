@@ -63,4 +63,29 @@ struct VersionedDeleteTests {
         #expect(FileManager.default.fileExists(atPath: edited.path))
         #expect(!FileManager.default.fileExists(atPath: untouched.path))
     }
+
+    @Test("A local delete that fails puts the item back under its name")
+    func failedLocalDeleteRestoresItem() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("VersionedDeleteTests-\(UUID().uuidString)", isDirectory: true)
+        let item = root.appendingPathComponent("album", isDirectory: true)
+        let locked = item.appendingPathComponent("locked.jpg")
+        try FileManager.default.createDirectory(at: item, withIntermediateDirectories: true)
+        try Data("photo".utf8).write(to: locked)
+        try FileManager.default.setAttributes([.immutable: true], ofItemAtPath: locked.path)
+        defer {
+            try? FileManager.default.setAttributes([.immutable: false], ofItemAtPath: locked.path)
+            try? FileManager.default.removeItem(at: root)
+        }
+        let values = try item.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey])
+        let fingerprint = LocalFileFingerprint(
+            size: Int64(values.fileSize ?? 0), modified: values.contentModificationDate ?? .distantPast
+        )
+
+        #expect(throws: (any Error).self) {
+            try LocalFolderWriter.deleteIfUnchanged(relativeKey: "album", under: root, fingerprint: fingerprint)
+        }
+
+        #expect(FileManager.default.fileExists(atPath: locked.path))
+    }
 }

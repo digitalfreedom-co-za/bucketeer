@@ -179,14 +179,21 @@ public enum LocalFolderWriter {
         } catch where !FileManager.default.fileExists(atPath: target.path) {
             return true
         }
-        let values = try claimed.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey])
-        let current = LocalFileFingerprint(
-            size: Int64(values.fileSize ?? 0),
-            modified: values.contentModificationDate ?? .distantPast
-        )
-        if current == fingerprint {
-            try FileManager.default.removeItem(at: claimed)
-            return true
+        do {
+            let values = try claimed.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey])
+            let current = LocalFileFingerprint(
+                size: Int64(values.fileSize ?? 0),
+                modified: values.contentModificationDate ?? .distantPast
+            )
+            if current == fingerprint {
+                try FileManager.default.removeItem(at: claimed)
+                return true
+            }
+        } catch {
+            // The claimed name is hidden from every listing; whatever is
+            // left of the item has to go back where the user had it.
+            try? restore(claimed, to: target)
+            throw error
         }
         try restore(claimed, to: target)
         return false
