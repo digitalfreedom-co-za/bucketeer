@@ -43,49 +43,86 @@ struct VersionedDeleteTests {
         #expect(try await browser.head(account: account, bucket: "b", key: "a.txt").etag != copied.etag)
     }
 
-    @Test("A local file edited after it was listed is kept")
-    func editedLocalFileIsKept() throws {
+    // MARK: - Local files (a temp folder; a "trash" folder inside it stands in for the Trash)
+
+    private func makeRoot() throws -> (root: URL, trash: URL) {
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("VersionedDeleteTests-\(UUID().uuidString)", isDirectory: true)
-        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        let trash = root.appendingPathComponent("trash", isDirectory: true)
+        try FileManager.default.createDirectory(at: trash, withIntermediateDirectories: true)
+        return (root, trash)
+    }
+
+    private func setAside(into trash: URL) -> (URL) throws -> URL? {
+        { url in
+            let kept = trash.appendingPathComponent(url.lastPathComponent)
+            try FileManager.default.moveItem(at: url, to: kept)
+            return kept
+        }
+    }
+
+    private func fingerprint(of key: String, under root: URL) throws -> LocalFileFingerprint {
+        LocalFileFingerprint(try LocalFolderEnumerator.enumerate(at: root).first { $0.key == key }!)
+    }
+
+    @Test("A local file edited after it was listed is kept")
+    func editedLocalFileIsKept() throws {
+        let (root, trash) = try makeRoot()
         defer { try? FileManager.default.removeItem(at: root) }
         let edited = root.appendingPathComponent("edited.txt")
         let untouched = root.appendingPathComponent("untouched.txt")
         try Data("AAAA".utf8).write(to: edited)
         try Data("AAAA".utf8).write(to: untouched)
-        let listed = try LocalFolderEnumerator.enumerate(at: root)
-        let fingerprint = { (key: String) in LocalFileFingerprint(listed.first { $0.key == key }!) }
+        let editedPrint = try fingerprint(of: "edited.txt", under: root)
+        let untouchedPrint = try fingerprint(of: "untouched.txt", under: root)
         try Data("BBBB".utf8).write(to: edited)
         try FileManager.default.setAttributes([.modificationDate: Date().addingTimeInterval(60)], ofItemAtPath: edited.path)
 
-        #expect(try !LocalFolderWriter.deleteIfUnchanged(relativeKey: "edited.txt", under: root, fingerprint: fingerprint("edited.txt")))
-        #expect(try LocalFolderWriter.deleteIfUnchanged(relativeKey: "untouched.txt", under: root, fingerprint: fingerprint("untouched.txt")))
+        #expect(try !LocalFolderWriter.deleteIfUnchanged(relativeKey: "edited.txt", under: root,
+                                                         fingerprint: editedPrint, discard: setAside(into: trash)))
+        #expect(try LocalFolderWriter.deleteIfUnchanged(relativeKey: "untouched.txt", under: root,
+                                                        fingerprint: untouchedPrint, discard: setAside(into: trash)))
         #expect(FileManager.default.fileExists(atPath: edited.path))
         #expect(!FileManager.default.fileExists(atPath: untouched.path))
     }
 
-    @Test("A local delete that fails puts the item back under its name")
-    func failedLocalDeleteRestoresItem() throws {
-        let root = FileManager.default.temporaryDirectory
-            .appendingPathComponent("VersionedDeleteTests-\(UUID().uuidString)", isDirectory: true)
-        let item = root.appendingPathComponent("album", isDirectory: true)
-        let locked = item.appendingPathComponent("locked.jpg")
-        try FileManager.default.createDirectory(at: item, withIntermediateDirectories: true)
-        try Data("photo".utf8).write(to: locked)
-        try FileManager.default.setAttributes([.immutable: true], ofItemAtPath: locked.path)
-        defer {
-            try? FileManager.default.setAttributes([.immutable: false], ofItemAtPath: locked.path)
-            try? FileManager.default.removeItem(at: root)
-        }
-        let values = try item.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey])
-        let fingerprint = LocalFileFingerprint(
-            size: Int64(values.fileSize ?? 0), modified: values.contentModificationDate ?? .distantPast
+    @Test("A write through a handle opened before the move survives the source removal")
+    func lateWriteThroughOpenHandleSurvives() throws {
+        let (root, trash) = try makeRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let source = root.appendingPathComponent("notes.txt")
+        try Data("AAAA".utf8).write(to: source)
+        let listed = try fingerprint(of: "notes.txt", under: root)
+        // An editor that already has the file open.
+        let editor = try FileHandle(forWritingTo: source)
+
+        let removed = try LocalFolderWriter.deleteIfUnchanged(
+            relativeKey: "notes.txt", under: root, fingerprint: listed, discard: setAside(into: trash)
         )
+        try editor.seekToEnd()
+        try editor.write(contentsOf: Data("BB".utf8))
+        try editor.close()
 
-        #expect(throws: (any Error).self) {
-            try LocalFolderWriter.deleteIfUnchanged(relativeKey: "album", under: root, fingerprint: fingerprint)
+        #expect(removed)
+        #expect(!FileManager.default.fileExists(atPath: source.path))
+        #expect(try Data(contentsOf: trash.appendingPathComponent("notes.txt")) == Data("AAAABB".utf8))
+    }
+
+    @Test("A source that cannot be set aside stays under its name")
+    func sourceStaysWhenItCannotBeSetAside() throws {
+        let (root, _) = try makeRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let source = root.appendingPathComponent("notes.txt")
+        try Data("AAAA".utf8).write(to: source)
+        let listed = try fingerprint(of: "notes.txt", under: root)
+        struct NoTrash: Error {}
+
+        #expect(throws: NoTrash.self) {
+            try LocalFolderWriter.deleteIfUnchanged(relativeKey: "notes.txt", under: root, fingerprint: listed,
+                                                    discard: { _ in throw NoTrash() })
         }
 
-        #expect(FileManager.default.fileExists(atPath: locked.path))
+        #expect(try Data(contentsOf: source) == Data("AAAA".utf8))
+        #expect(try FileManager.default.contentsOfDirectory(atPath: root.path).sorted() == ["notes.txt", "trash"])
     }
 }

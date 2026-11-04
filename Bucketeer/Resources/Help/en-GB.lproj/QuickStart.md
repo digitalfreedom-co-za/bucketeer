@@ -90,7 +90,7 @@ Bucketeer adds actions to the Shortcuts app: list buckets, upload a file, create
 These features need Bucketeer Pro:
 
 - **Mount as Drive**: right-click a bucket and choose **Mount as Drive** to use it in Finder like a disk. Mounted drives appear under **Mounted Drives** in the sidebar; right-click to **Unmount**. Buckets with client-side encryption cannot be mounted. Changes made on the server appear in Finder when you refresh the bucket in Bucketeer. If a file you edit in Finder was changed on the server in the meantime, your version is saved next to it as a conflict copy.
-- **Sync jobs**: in the **Sync** section, create a job that copies, moves or mirrors between two buckets, across accounts and providers, or between a local folder and a bucket. Run it by hand, at launch, every N minutes, or when the local folder changes.
+- **Sync jobs**: in the **Sync** section, create a job that copies, moves or mirrors between two buckets, across accounts and providers, or between a local folder and a bucket. Run it by hand, at launch, every N minutes, or when the local folder changes. A move from a local folder puts each source file in the Bin once it is copied, so an edit made at the last moment is never lost.
 - **Watch folders**: **New Watch Folder…** uploads every new file in a local folder to a bucket.
 - **Copy to other account…**: copies objects to another account or provider. When both sides allow it, the copy runs server-side and the data does not pass through your Mac.
 - **Menu bar mode**: **Settings → General** keeps Bucketeer running in the menu bar so drives and sync jobs stay active when the main window is closed.

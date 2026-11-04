@@ -90,7 +90,7 @@ Bucketeer lägger till åtgärder i appen Genvägar: lista buckets, ladda upp en
 Dessa funktioner kräver Bucketeer Pro:
 
 - **Montera som enhet**: högerklicka på en bucket och välj **Montera som enhet** för att använda den i Finder som en disk. Monterade enheter visas under **Monterade enheter** i sidofältet; högerklicka för att **Avmontera**. Buckets med kryptering på klientsidan kan inte monteras. Ändringar på servern visas i Finder när du uppdaterar bucketen i Bucketeer. Om en fil som du redigerar i Finder har ändrats på servern under tiden sparas din version bredvid som en konfliktkopia.
-- **Synkjobb**: i avsnittet **Synkronisering** skapar du ett jobb som kopierar, flyttar eller speglar mellan två buckets, mellan konton och leverantörer, eller mellan en lokal mapp och en bucket. Kör det manuellt, vid start, var N:e minut eller när den lokala mappen ändras.
+- **Synkjobb**: i avsnittet **Synkronisering** skapar du ett jobb som kopierar, flyttar eller speglar mellan två buckets, mellan konton och leverantörer, eller mellan en lokal mapp och en bucket. Kör det manuellt, vid start, var N:e minut eller när den lokala mappen ändras. Vid flytt från en lokal mapp hamnar varje källfil i papperskorgen när den har kopierats, så att en ändring i sista stund aldrig går förlorad.
 - **Bevakade mappar**: **Ny bevakad mapp…** laddar upp varje ny fil i en lokal mapp till en bucket.
 - **Kopiera till annat konto…**: kopierar objekt till ett annat konto eller en annan leverantör. När båda sidor tillåter det sker kopieringen på servern och data passerar inte genom din Mac.
 - **Menyradsläge**: **Inställningar → Allmänt** håller Bucketeer igång i menyraden så att enheter och synkjobb förblir aktiva när huvudfönstret är stängt.
