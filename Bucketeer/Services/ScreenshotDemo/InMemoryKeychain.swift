@@ -19,7 +19,7 @@ actor InMemoryKeychain: KeychainStoring {
     }
 
     func load(for accountID: UUID) async throws -> AccountCredentials {
-        guard let credentials = items[accountID] else { throw BucketeerError.authenticationFailed }
+        guard let credentials = items[accountID] else { throw BucketeerError.credentialsMissing }
         return credentials
     }
 

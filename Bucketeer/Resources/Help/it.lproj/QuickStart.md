@@ -7,6 +7,7 @@ Bucketeer è un'app per Mac per l'archiviazione di oggetti: Amazon S3, provider 
 - Fai clic su **+** nell'intestazione della barra laterale.
 - Scegli un provider: AWS S3, Azure Blob Storage, Civo, Cloudflare R2, Backblaze B2, Wasabi, DigitalOcean Spaces, Storj o Personalizzato (MinIO e qualsiasi altro endpoint compatibile con S3).
 - Inserisci un nome, la regione o l'endpoint e le tue credenziali (chiave di accesso e segreto; per Azure la chiave dell'account di archiviazione).
+- Se la tua chiave ha accesso a un solo bucket (comune con Civo), inseriscine il nome in **Bucket**; l’account mostrerà allora solo quel bucket. Le chiavi Civo funzionano solo nella regione in cui sono state create.
 - Fai clic su **Verifica connessione**, poi su **Salva**.
 
 Le tue credenziali sono salvate nel portachiavi di macOS su questo Mac. Bucketeer non ha un server né un account utente; comunica direttamente con gli endpoint che configuri.

@@ -13,6 +13,20 @@ before that is internal phase work on the `development` branch.
 
 ## [Unreleased] — `development` branch
 
+### Bucket-scoped keys and clearer sign-in errors (2026-11-04)
+- Add/Edit Account has an optional "Bucket" field for S3 providers (the
+  former "Default Bucket" setting, moved out of Advanced). With a bucket
+  set, the connection test and the bucket list check only that bucket
+  instead of listing all buckets, so keys limited to one bucket (common
+  on Civo) work.
+- Sign-in failures name their cause instead of "Authentication failed":
+  credentials missing from the Keychain, an access key unknown in the
+  chosen region (Civo keys only work in the region they were created
+  in), a secret key that does not match, and a key that may not list
+  buckets (asks for the bucket name).
+- The connection test now reports these errors too; it used to show
+  the raw provider error.
+
 ### Requires macOS 15.8 (2026-11-04)
 - Bucketeer, its File Provider extension and BucketeerCore now require
   macOS 15.8, the latest macOS 15 release. Mount as Drive and Redeem

@@ -7,6 +7,7 @@ Bucketeer는 Amazon S3, S3 호환 제공업체 및 Azure Blob Storage의 객체 
 - 사이드바 헤더에서 **+**를 클릭하십시오.
 - 제공업체를 선택하십시오: AWS S3, Azure Blob Storage, Civo, Cloudflare R2, Backblaze B2, Wasabi, DigitalOcean Spaces, Storj 또는 사용자 지정(MinIO 및 기타 모든 S3 호환 엔드포인트).
 - 이름, 리전 또는 엔드포인트, 자격 증명(액세스 키와 시크릿, Azure의 경우 스토리지 계정 키)을 입력하십시오.
+- 키가 버킷 하나에만 접근할 수 있으면(Civo에서 흔함) **버킷**에 그 이름을 입력하세요. 그러면 계정에 그 버킷만 표시됩니다. Civo 키는 생성된 리전에서만 작동합니다.
 - **연결 테스트**를 클릭한 다음 **저장**을 클릭하십시오.
 
 자격 증명은 이 Mac의 macOS 키체인에 저장됩니다. Bucketeer에는 서버도 사용자 계정도 없으며, 사용자가 설정한 엔드포인트와 직접 통신합니다.

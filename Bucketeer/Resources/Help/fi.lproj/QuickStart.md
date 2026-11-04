@@ -7,6 +7,7 @@ Bucketeer on Mac-appi objektitallennukseen: Amazon S3, S3-yhteensopivat palvelun
 - Klikkaa **+** sivupalkin yläosassa.
 - Valitse palveluntarjoaja: AWS S3, Azure Blob Storage, Civo, Cloudflare R2, Backblaze B2, Wasabi, DigitalOcean Spaces, Storj tai Custom (MinIO ja mikä tahansa muu S3-yhteensopiva päätepiste).
 - Anna nimi, alue tai päätepiste sekä tunnistetietosi (käyttöavain ja salainen avain; Azuressa tallennustilin avain).
+- Jos avaimellasi on pääsy vain yhteen bucketiin (tavallista Civossa), anna sen nimi kohtaan **Bucket**; tili näyttää silloin vain sen bucketin. Civo-avaimet toimivat vain alueella, jolla ne luotiin.
 - Klikkaa **Testaa yhteys** ja sitten **Tallenna**.
 
 Tunnistetietosi tallennetaan tämän Macin macOS-avainnippuun. Bucketeerilla ei ole palvelinta eikä käyttäjätiliä; se on yhteydessä suoraan määrittämiisi päätepisteisiin.

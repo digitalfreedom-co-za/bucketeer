@@ -214,6 +214,16 @@ struct AddEditAccountSheet: View {
                     .font(.caption)
                     .foregroundStyle(.orange)
             }
+
+            // Keys scoped to one bucket may not list buckets; with a
+            // name the account checks and shows only that bucket.
+            if provider.family == .s3 {
+                TextField("account.field.bucket", text: $defaultBucket)
+                    .autocorrectionDisabled()
+                Text("account.note.bucket")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 
@@ -272,8 +282,6 @@ struct AddEditAccountSheet: View {
                     label: "account.field.sessionToken",
                     text: $sessionToken
                 )
-                TextField("account.field.defaultBucket", text: $defaultBucket)
-                    .autocorrectionDisabled()
                 if provider.supportsPathStyleToggle {
                     Toggle("account.field.usePathStyle", isOn: $usesPathStyle)
                 }
