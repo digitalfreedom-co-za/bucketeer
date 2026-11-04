@@ -13,6 +13,19 @@ before that is internal phase work on the `development` branch.
 
 ## [Unreleased] — `development` branch
 
+### Deferred data-safety fixes (2026-11-04)
+- Sync jobs skip paths that cannot exist side by side on the
+  destination (a file `a` next to `a/b`, letter case and Unicode
+  variants) before any transfer starts, and report them as collisions.
+- Deleting a folder in Finder removes each file only at the version the
+  system was given; files Finder never saw, or that changed since, stay
+  with their folders, and the delete is refused with a notification.
+- A move from a local folder puts each source file in the Trash (after
+  a coordinated move, so document apps save first) instead of unlinking
+  it: an editor that still has the file open writes into the copy in
+  the Trash. Where a volume has no Trash, the source stays and the move
+  reports it as failed.
+
 ### Bucket-scoped keys and clearer sign-in errors (2026-11-04)
 - Add/Edit Account has an optional "Bucket" field for S3 providers (the
   former "Default Bucket" setting, moved out of Advanced). With a bucket

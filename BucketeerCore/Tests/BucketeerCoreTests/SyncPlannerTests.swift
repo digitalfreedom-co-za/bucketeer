@@ -380,4 +380,56 @@ struct SyncPlannerTests {
         #expect(plan.upserts.map(\.sourceKey) == ["Cafe.txt"])
         #expect(plan.collisions.count == 2)
     }
+
+    @Test("A file and a folder of the same name are skipped together before anything is written")
+    func fileAndFolderOfOneNameAreSkipped() {
+        let job = self.job(source: endpoint(prefix: ""), destination: localEndpoint())
+        let plan = SyncPlanner.makePlan(
+            job: job,
+            source: [object("a"), object("a/b"), object("A/c/d.txt"), object("other.txt")],
+            destination: [],
+            destinationNaming: .fileSystem(caseSensitive: false)
+        )
+        #expect(plan.upserts.map(\.sourceKey) == ["other.txt"])
+        #expect(Set(plan.collisions) == ["a", "a/b", "A/c/d.txt"])
+    }
+
+    @Test("A mirror never deletes a destination file that blocks a skipped source path")
+    func mirrorKeepsFilesInvolvedInACollision() {
+        let job = self.job(mode: .mirror, deletePropagation: true, source: endpoint(prefix: ""), destination: localEndpoint())
+        let plan = SyncPlanner.makePlan(
+            job: job,
+            source: [object("a/b"), object("x.txt")],
+            destination: [object("A"), object("orphan.txt")],
+            destinationNaming: .fileSystem(caseSensitive: false)
+        )
+        #expect(plan.collisions == ["a/b"])
+        #expect(plan.deletes == ["orphan.txt"])
+    }
+
+    @Test("A source path that needs a folder where the destination keeps a file, or the reverse, is skipped")
+    func pathsBlockedByTheDestinationAreSkipped() {
+        let job = self.job(source: endpoint(prefix: ""), destination: localEndpoint())
+        let plan = SyncPlanner.makePlan(
+            job: job,
+            source: [object("docs/x.txt"), object("IMG"), object("cafe\u{301}/menu.txt"), object("free/y.txt")],
+            destination: [object("docs"), object("img/p.png"), object("caf\u{E9}")],
+            destinationNaming: .fileSystem(caseSensitive: false)
+        )
+        #expect(plan.upserts.map(\.sourceKey) == ["free/y.txt"])
+        #expect(Set(plan.collisions) == ["docs/x.txt", "IMG", "cafe\u{301}/menu.txt"])
+    }
+
+    @Test("Object keys may name a file and a folder alike")
+    func objectKeysKeepFileAndFolderNames() {
+        let job = self.job(source: localEndpoint(), destination: endpoint(prefix: ""))
+        let plan = SyncPlanner.makePlan(
+            job: job,
+            source: [object("a"), object("a/b")],
+            destination: [],
+            destinationNaming: .exact
+        )
+        #expect(plan.upserts.map(\.sourceKey) == ["a", "a/b"])
+        #expect(plan.collisions.isEmpty)
+    }
 }

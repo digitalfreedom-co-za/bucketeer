@@ -32,6 +32,11 @@ public struct FinderChangeState: Codable, Equatable, Sendable {
     /// been given: the last change listing plus every item a folder
     /// enumeration delivered since.
     public private(set) var entries: [String: String] = [:]
+    /// Key → unquoted ETag of the files the system was actually handed
+    /// (published pages and changes, item results). Unlike `entries` it
+    /// never holds a version that was only listed, so it decides what a
+    /// folder delete may remove. A stale value only keeps a file.
+    public private(set) var delivered: [String: String] = [:]
     /// Bumped on every change, so a caller that read the state before
     /// an await can tell whether somebody changed it meanwhile.
     public private(set) var revision = 0
@@ -57,6 +62,34 @@ public struct FinderChangeState: Codable, Equatable, Sendable {
             entries[key] = ETag.normalized(etag)
         }
         revision += 1
+    }
+
+    /// These items (key → ETag) reached the system. Folders carry no
+    /// version and are skipped.
+    public mutating func markDelivered(_ versions: [String: String]) {
+        for (key, etag) in versions where !key.hasSuffix("/") {
+            delivered[key] = ETag.normalized(etag)
+        }
+    }
+
+    /// The system was told these items are gone.
+    public mutating func forgetDelivered(_ keys: [String]) {
+        for key in keys { delivered.removeValue(forKey: key) }
+    }
+
+    /// The system was given this item outside an enumeration (the
+    /// result of an item lookup, create, modify or fetch). It joins the
+    /// change baseline only in folders Finder has open.
+    public mutating func remember(_ key: String, etag: String) {
+        markDelivered([key: etag])
+        guard trackedPrefixes.contains(Self.parent(of: key)) else { return }
+        entries[key] = ETag.normalized(etag)
+        revision += 1
+    }
+
+    /// Key → ETag of every file below `prefix` as the system was given it.
+    public func knownVersions(under prefix: String) -> [String: String] {
+        delivered.filter { $0.key.hasPrefix(prefix) }
     }
 
     /// Replaces the remembered entries of `listedPrefixes` with
