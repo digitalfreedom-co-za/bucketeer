@@ -81,6 +81,13 @@ struct FinderChangeStateTests {
     }
 }
 
+private extension FinderChangeState {
+    /// A fresh listing of every tracked prefix.
+    mutating func advance(to listing: [String: String], anchor: String) -> ListingDiff {
+        advance(to: listing, listedPrefixes: trackedPrefixes, anchor: anchor)
+    }
+}
+
 @Suite("ETag.matches")
 struct ETagMatchTests {
 

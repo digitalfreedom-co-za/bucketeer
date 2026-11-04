@@ -100,9 +100,10 @@ struct AzureRequestBuilderTests {
 
     @Test("blockListXML body wraps every block ID in a <Latest> element")
     func blockListXML() {
-        let ids = [AzureRequestBuilder.blockID(index: 0),
-                   AzureRequestBuilder.blockID(index: 1),
-                   AzureRequestBuilder.blockID(index: 99)]
+        let session = UUID()
+        let ids = [AzureRequestBuilder.blockID(session: session, index: 0),
+                   AzureRequestBuilder.blockID(session: session, index: 1),
+                   AzureRequestBuilder.blockID(session: session, index: 99)]
         let body = AzureRequestBuilder.blockListXML(blockIDs: ids)
         let xml = String(decoding: body, as: UTF8.self)
         #expect(xml.hasPrefix("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<BlockList>"))
@@ -113,12 +114,14 @@ struct AzureRequestBuilderTests {
     }
 
     @Test("blockID is base64-encoded and same length for any index — required by Azure")
-    func blockIDsAreSameLength() {
-        let lengths = (0..<10_000).map { AzureRequestBuilder.blockID(index: $0).count }
+    func blockIDsAreSameLength() throws {
+        let session = UUID()
+        let lengths = (0..<10_000).map { AzureRequestBuilder.blockID(session: session, index: $0).count }
         // All entries identical → set has exactly one element
         #expect(Set(lengths).count == 1)
-        // Must be base64-decodable
-        let id = AzureRequestBuilder.blockID(index: 42)
-        #expect(Data(base64Encoded: id) != nil)
+        // Must be base64-decodable and at most 64 bytes before encoding
+        let id = AzureRequestBuilder.blockID(session: session, index: 42)
+        let decoded = try #require(Data(base64Encoded: id))
+        #expect(decoded.count <= 64)
     }
 }

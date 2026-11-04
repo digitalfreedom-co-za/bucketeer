@@ -62,7 +62,7 @@ struct PreviewDownloader: Sendable {
         do {
             head = try await s3.headObject(.init(bucket: bucket, key: key))
         } catch {
-            throw Self.translate(error, bucket: bucket, key: key)
+            throw Self.translate(error)
         }
         let size = head.contentLength ?? 0
 
@@ -93,11 +93,11 @@ struct PreviewDownloader: Sendable {
             )
         } catch {
             try? FileManager.default.removeItem(at: localURL)
-            throw Self.translate(error, bucket: bucket, key: key)
+            throw Self.translate(error)
         }
     }
 
-    private static func translate(_ error: Error, bucket: String, key: String) -> Error {
+    private static func translate(_ error: Error) -> Error {
         if let existing = error as? BucketeerError { return existing }
         // PreviewDownloader runs out of band — surface a generic error
         // and let the calling view decide whether to show it or fall

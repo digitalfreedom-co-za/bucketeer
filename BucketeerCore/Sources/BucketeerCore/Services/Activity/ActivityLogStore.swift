@@ -30,10 +30,6 @@ public actor ActivityLogStore: ActivityLogging {
         }
     }
 
-    public func recent(limit: Int) async throws -> [ActivityEntry] {
-        try fetch(limit: max(0, limit), predicate: nil)
-    }
-
     public func search(
         text: String?,
         kinds: Set<ActivityKind>?,

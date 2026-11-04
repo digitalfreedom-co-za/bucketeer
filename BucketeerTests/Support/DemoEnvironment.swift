@@ -26,10 +26,7 @@ struct DemoEnvironment {
 
     /// `entitlement: nil` derives the state from StoreKit, e.g. an
     /// `SKTestSession` on `Bucketeer.storekit`.
-    static func make(
-        entitlement: EntitlementManager.State? = .pro,
-        withAccounts: Bool = true
-    ) async throws -> DemoEnvironment {
+    static func make(entitlement: EntitlementManager.State? = .pro) async throws -> DemoEnvironment {
         let browser = InMemoryS3Browser()
         let container = try AppContainer(configuration: .init(
             stores: .inMemory,
@@ -40,11 +37,9 @@ struct DemoEnvironment {
         ))
         let aws = S3Account(name: "Demo AWS", provider: .awsS3, region: "eu-central-1")
         let azure = S3Account(name: "Demo Azure", provider: .azureBlob, accountID: "demostorage")
-        if withAccounts {
-            try await container.accountStore.upsert(aws)
-            try await container.accountStore.upsert(azure)
-            await seedObjects(in: browser)
-        }
+        try await container.accountStore.upsert(aws)
+        try await container.accountStore.upsert(azure)
+        await seedObjects(in: browser)
         await container.accountListViewModel.refresh()
         return DemoEnvironment(container: container, browser: browser, aws: aws, azure: azure)
     }
@@ -96,7 +91,6 @@ extension XCTestCase {
             view, name: name, size: size, expected: fragments, afterAppear: afterAppear
         )
         XCTAssertGreaterThan(result.png.count, 1_000, "\(name): empty render", file: file, line: line)
-        print("OCR \(name): \(result.texts)")
         for fragment in fragments where !result.contains(fragment) {
             XCTFail("\(name): \"\(fragment)\" not rendered. Recognised: \(result.texts)", file: file, line: line)
         }

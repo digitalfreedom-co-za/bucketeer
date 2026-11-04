@@ -261,7 +261,6 @@ public struct AzureBlobObjectStore: S3Browsing {
             return
         case "pending":
             try await waitForCopyToFinish(
-                account: account,
                 builder: builder,
                 signer: signer,
                 container: toBucket,
@@ -280,7 +279,6 @@ public struct AzureBlobObjectStore: S3Browsing {
     /// backoff (1s → 2s → 4s → … capped at 30s) bounded by
     /// `copyPollTimeoutSeconds`.
     private func waitForCopyToFinish(
-        account: S3Account,
         builder: AzureRequestBuilder,
         signer: AzureSharedKeySigner,
         container: String,
@@ -451,7 +449,7 @@ public struct AzureBlobObjectStore: S3Browsing {
             return
         case "pending":
             try await waitForCopyToFinish(
-                account: account, builder: builder, signer: signer,
+                builder: builder, signer: signer,
                 container: bucket, key: key
             )
         case "failed", "aborted":
