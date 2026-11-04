@@ -29,9 +29,8 @@ import Foundation
 public struct S3ResumableUploader: Sendable {
     /// Files below this size fall back to Soto's helper.
     public static let resumableThreshold: Int64 = 50 * 1024 * 1024
-    /// Part size for the manual loop — matches Soto's default so the
-    /// hand-rolled path uses the same number of parts.
-    public static let partSize: Int = 8 * 1024 * 1024
+    /// Preferred part size; larger files get larger parts.
+    public static let partSize: Int = S3FileUpload.defaultPartSize
 
     public let factory: S3ClientFactory
     public let checkpointStore: any CheckpointStoring
@@ -271,7 +270,9 @@ public struct S3ResumableUploader: Sendable {
             key: key,
             localPath: localURL.path,
             fileSize: fileSize,
-            partSize: Self.partSize,
+            // A fixed 8 MiB would stop at 10,000 parts (78 GiB). The
+            // checkpoint keeps the size, so a resume uses the same parts.
+            partSize: S3FileUpload.partSize(forFileOf: fileSize, preferred: Self.partSize),
             uploadId: uploadId,
             fileFingerprint: fingerprint
         )

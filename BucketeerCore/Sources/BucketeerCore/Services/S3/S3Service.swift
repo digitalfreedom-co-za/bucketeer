@@ -162,10 +162,17 @@ public struct S3Service: S3Browsing {
         }
     }
 
+    /// Where the provider ignores `If-Match` on deletes, the ETag is
+    /// compared with a HEAD right before an unconditional delete.
     public func delete(account: S3Account, bucket: String, key: String, ifMatch etag: String) async throws {
         let s3 = try await factory.client(for: account)
+        let enforced = account.provider.conditionalRequests.contains(.deleteIfMatch)
+        if !enforced {
+            let current = try await Self.currentETag(s3: s3, bucket: bucket, key: key)
+            try PreconditionCheck.verify(.ifMatch(etag), current: current, key: key)
+        }
         do {
-            _ = try await s3.deleteObject(.init(bucket: bucket, ifMatch: ETag.quoted(etag), key: key))
+            _ = try await s3.deleteObject(.init(bucket: bucket, ifMatch: enforced ? ETag.quoted(etag) : nil, key: key))
         } catch where Self.isPreconditionFailure(error) {
             throw BucketeerError.preconditionFailed(key: key)
         } catch {
@@ -202,15 +209,26 @@ public struct S3Service: S3Browsing {
         }
     }
 
+    /// Conditions the provider ignores on copies are checked with a HEAD
+    /// of the source and the destination right before the copy.
     public func copyIfAbsent(account: S3Account, bucket: String, fromKey: String, sourceETag: String, toKey: String) async throws {
         let s3 = try await factory.client(for: account)
+        let enforced = account.provider.conditionalRequests
         let source = "\(bucket)/\(fromKey)"
         do {
+            if !enforced.contains(.copySourceIfMatch) {
+                let current = try await Self.currentETag(s3: s3, bucket: bucket, key: fromKey)
+                try PreconditionCheck.verify(.ifMatch(sourceETag), current: current, key: toKey)
+            }
+            if !enforced.contains(.copyIfAbsent) {
+                let current = try await Self.currentETag(s3: s3, bucket: bucket, key: toKey)
+                try PreconditionCheck.verify(.ifAbsent, current: current, key: toKey)
+            }
             _ = try await s3.copyObject(.init(
                 bucket: bucket,
                 copySource: source.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? source,
-                copySourceIfMatch: ETag.quoted(sourceETag),
-                ifNoneMatch: "*",
+                copySourceIfMatch: enforced.contains(.copySourceIfMatch) ? ETag.quoted(sourceETag) : nil,
+                ifNoneMatch: enforced.contains(.copyIfAbsent) ? "*" : nil,
                 key: toKey
             ))
         } catch where Self.isPreconditionFailure(error) {
@@ -258,7 +276,8 @@ public struct S3Service: S3Browsing {
         let url = Self.presignTargetURL(
             endpoint: S3ClientFactory.endpoint(for: account),
             bucket: bucket,
-            key: key
+            key: key,
+            virtualHost: Self.usesVirtualHost(account: account, bucket: bucket)
         )
         let clamped = max(60, min(ttl, 7 * 24 * 60 * 60))
         let expires = TimeAmount.seconds(Int64(clamped))
@@ -273,13 +292,23 @@ public struct S3Service: S3Browsing {
         }
     }
 
-    /// Path-style object URL for signing. Path-style and virtual-host
-    /// both work; the signed URL is independent from the account's
-    /// runtime addressing mode and `endpoint` is already the right base.
-    /// `appending(path:)` percent-encodes the raw key itself — encoding
-    /// it beforehand produced `%2520` for a space.
-    static func presignTargetURL(endpoint: URL, bucket: String, key: String) -> URL {
-        endpoint.appending(path: "\(bucket)/\(key)")
+    /// Object URL for signing, addressed like the account's requests:
+    /// `signURL` skips Soto's S3 middleware, so it must be built here.
+    /// Not every provider documents path-style (DigitalOcean Spaces
+    /// does not). `appending(path:)` percent-encodes the raw key itself
+    /// — encoding it beforehand produced `%2520` for a space.
+    static func presignTargetURL(endpoint: URL, bucket: String, key: String, virtualHost: Bool) -> URL {
+        guard virtualHost, var components = URLComponents(url: endpoint, resolvingAgainstBaseURL: false),
+              let host = components.host
+        else { return endpoint.appending(path: "\(bucket)/\(key)") }
+        components.host = "\(bucket).\(host)"
+        return (components.url ?? endpoint).appending(path: key)
+    }
+
+    /// Soto's rule (S3Middleware): virtual-host for AWS and for
+    /// `.s3ForceVirtualHost`, never for bucket names with a dot.
+    static func usesVirtualHost(account: S3Account, bucket: String) -> Bool {
+        (account.provider == .awsS3 || !account.usesPathStyle) && !bucket.contains(".")
     }
 
     // MARK: - Versioning (Phase 13.6)
@@ -626,12 +655,28 @@ public struct S3Service: S3Browsing {
         return false
     }
 
-    /// The `ifMatch` / `ifNoneMatch` header values for a PutObject.
-    public static func headers(for precondition: WritePrecondition?) -> (ifMatch: String?, ifNoneMatch: String?) {
+    /// The `ifMatch` / `ifNoneMatch` header values for a PutObject;
+    /// none for a condition the provider does not enforce.
+    public static func headers(
+        for precondition: WritePrecondition?,
+        enforced: S3Provider.ConditionalRequests
+    ) -> (ifMatch: String?, ifNoneMatch: String?) {
         switch precondition {
-        case .ifMatch(let etag): return (ETag.quoted(etag), nil)
-        case .ifAbsent: return (nil, "*")
-        case nil: return (nil, nil)
+        case .ifMatch(let etag) where enforced.contains(.writeIfMatch): return (ETag.quoted(etag), nil)
+        case .ifAbsent where enforced.contains(.writeIfAbsent): return (nil, "*")
+        default: return (nil, nil)
+        }
+    }
+
+    /// The object's ETag (unquoted), or `nil` when there is none.
+    static func currentETag(s3: S3, bucket: String, key: String) async throws -> String? {
+        do {
+            return unquote(try await s3.headObject(.init(bucket: bucket, key: key)).eTag)
+        } catch {
+            // Mapped like `head`: a bare 404 is the object, not the bucket.
+            let mapped = map(error, key: key)
+            if case .objectNotFound = mapped { return nil }
+            throw mapped
         }
     }
 

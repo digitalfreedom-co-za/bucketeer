@@ -93,8 +93,29 @@ struct PresignedURLPathTests {
         let url = S3Service.presignTargetURL(
             endpoint: URL(string: "https://s3.example.com")!,
             bucket: "bkt",
-            key: "my folder/a?b#c%e.txt"
+            key: "my folder/a?b#c%e.txt",
+            virtualHost: false
         )
         #expect(url.absoluteString == "https://s3.example.com/bkt/my%20folder/a%3Fb%23c%25e.txt")
+    }
+
+    @Test("A virtual-host account gets the bucket in the host, as its requests do")
+    func virtualHostURL() {
+        let url = S3Service.presignTargetURL(
+            endpoint: URL(string: "https://fra1.digitaloceanspaces.com")!,
+            bucket: "bkt",
+            key: "a b.txt",
+            virtualHost: true
+        )
+        #expect(url.absoluteString == "https://bkt.fra1.digitaloceanspaces.com/a%20b.txt")
+    }
+
+    @Test("Addressing follows the request rules: dotted buckets stay path-style")
+    func addressingRule() {
+        let spaces = S3Account(id: UUID(), name: "T", provider: .digitalOceanSpaces, region: "fra1")
+        #expect(S3Service.usesVirtualHost(account: spaces, bucket: "bkt"))
+        #expect(!S3Service.usesVirtualHost(account: spaces, bucket: "my.bkt"))
+        let civo = S3Account(id: UUID(), name: "T", provider: .civo, region: "fra1")
+        #expect(!S3Service.usesVirtualHost(account: civo, bucket: "bkt"))
     }
 }

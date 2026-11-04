@@ -475,24 +475,8 @@ actor TransferManager: Transferring {
         }
 
         do {
-            if let precondition = item.precondition {
-                // Streams large files part by part; the precondition
-                // guards the completion (Soto's helpers cannot carry it).
-                let total = item.fileSize
-                let etag = try await S3ConditionalUpload.upload(
-                    fileAt: item.task.localURL,
-                    bucket: item.task.bucket,
-                    key: item.task.key,
-                    contentType: item.contentType,
-                    precondition: precondition,
-                    writer: SotoObjectWriter(s3: s3),
-                    progress: { @Sendable [weak self] bytes in
-                        await self?.setState(id: id, state: .running(bytesTransferred: bytes, totalBytes: total))
-                        await self?.chargeMultipartLimiter(id: id, observedBytes: bytes)
-                    }
-                )
-                recordWrittenETag(etag, id: id)
-            } else if item.fileSize >= S3ResumableUploader.resumableThreshold,
+            if item.precondition == nil,
+               item.fileSize >= S3ResumableUploader.resumableThreshold,
                let resumableUploader {
                 // Phase 13.10 — files large enough that an interruption
                 // costs noticeable bandwidth go through the resumable
@@ -514,40 +498,25 @@ actor TransferManager: Transferring {
                         await self?.chargeMultipartLimiter(id: id, observedBytes: bytes)
                     }
                 )
-            } else if item.fileSize >= Self.multipartThreshold {
+            } else {
+                // One PUT or buffered parts (never `aws-chunked`); a
+                // precondition guards the write that makes it visible.
                 let total = item.fileSize
-                _ = try await s3.multipartUpload(
-                    .init(
-                        bucket: item.task.bucket,
-                        contentType: item.contentType,
-                        key: item.task.key
-                    ),
-                    partSize: Self.multipartPartSize,
-                    filename: item.task.localURL.path,
-                    progress: { @Sendable [weak self] fraction in
-                        let bytes = Int64(Double(total) * fraction)
-                        await self?.setState(
-                            id: id,
-                            state: .running(bytesTransferred: bytes, totalBytes: total)
-                        )
+                let etag = try await S3FileUpload.upload(
+                    fileAt: item.task.localURL,
+                    bucket: item.task.bucket,
+                    key: item.task.key,
+                    contentType: item.contentType,
+                    precondition: item.precondition,
+                    enforced: item.account.provider.conditionalRequests,
+                    writer: SotoObjectWriter(s3: s3),
+                    progress: { @Sendable [weak self] bytes in
+                        await self?.setState(id: id, state: .running(bytesTransferred: bytes, totalBytes: total))
                         await self?.chargeMultipartLimiter(id: id, observedBytes: bytes)
                     }
                 )
-            } else {
-                let data = try Data(contentsOf: item.task.localURL, options: .mappedIfSafe)
-                let buffer = ByteBuffer(bytes: data)
-                _ = try await s3.putObject(.init(
-                    body: AWSHTTPBody(buffer: buffer),
-                    bucket: item.task.bucket,
-                    contentType: item.contentType,
-                    key: item.task.key
-                ))
-                // Phase 13.2 — post-charge small PUTs as one chunk.
-                await limiter?.consume(bytes: data.count)
-                setState(
-                    id: id,
-                    state: .running(bytesTransferred: item.fileSize, totalBytes: item.fileSize)
-                )
+                // Only conditional writers collect the ETag.
+                if item.precondition != nil { recordWrittenETag(etag, id: id) }
             }
             setState(id: id, state: .completed)
         } catch is CancellationError {
