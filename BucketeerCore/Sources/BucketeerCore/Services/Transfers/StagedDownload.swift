@@ -26,6 +26,8 @@ public enum StagedDownload {
         let staging = stagingURL(for: destination)
         do {
             let result = try await body(staging)
+            // A cancel that arrives with the last bytes must not publish.
+            try Task.checkCancellation()
             try publish(staging, to: destination)
             return result
         } catch {

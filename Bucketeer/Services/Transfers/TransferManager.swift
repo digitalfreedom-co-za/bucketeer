@@ -604,6 +604,8 @@ actor TransferManager: Transferring {
                 setState(id: id, state: .failed(message: failure))
                 return
             }
+            // A cancel during decryption must not replace the file.
+            try Task.checkCancellation()
             try StagedDownload.publish(staging, to: url)
             setState(id: id, state: .completed)
         } catch {
