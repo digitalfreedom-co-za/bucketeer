@@ -7,6 +7,7 @@ Bucketeer je aplikace pro Mac pro objektová úložiště: Amazon S3, poskytovat
 - Klikněte na **+** v záhlaví postranního panelu.
 - Vyberte poskytovatele: AWS S3, Azure Blob Storage, Civo, Cloudflare R2, Backblaze B2, Wasabi, DigitalOcean Spaces, Storj nebo Custom (MinIO a jakýkoli jiný koncový bod kompatibilní s S3).
 - Zadejte název, region nebo koncový bod a své přihlašovací údaje (přístupový klíč a tajný klíč; u Azure klíč účtu úložiště).
+- Pokud má váš klíč přístup jen k jednomu bucketu (u Civo běžné), zadejte jeho název do pole **Bucket**; účet pak zobrazí jen tento bucket. Klíče Civo fungují jen v oblasti, ve které byly vytvořeny.
 - Klikněte na **Otestovat připojení** a potom na **Uložit**.
 
 Vaše přihlašovací údaje se ukládají do klíčenky macOS na tomto Macu. Bucketeer nemá žádný server ani uživatelský účet; komunikuje přímo s koncovými body, které nastavíte.

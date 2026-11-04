@@ -90,7 +90,7 @@ final class AccountListViewModel {
     func save(account: S3Account, credentials: AccountCredentials) async -> BucketeerError? {
         // Snapshot any existing credentials *before* the new save so
         // we can restore them if the SwiftData write fails on an edit.
-        // "No item stored" (authenticationFailed from errSecItemNotFound)
+        // "No item stored" (credentialsMissing from errSecItemNotFound)
         // legitimately means create; any OTHER Keychain failure must
         // abort — treating a transient error as "create" would make a
         // later rollback DELETE the user's real credentials, and the
@@ -98,7 +98,7 @@ final class AccountListViewModel {
         let previousCredentials: AccountCredentials?
         do {
             previousCredentials = try await keychainStore.load(for: account.id)
-        } catch BucketeerError.authenticationFailed {
+        } catch BucketeerError.credentialsMissing {
             previousCredentials = nil
         } catch let error as BucketeerError {
             self.error = error
@@ -236,7 +236,7 @@ final class AccountListViewModel {
     }
 
     /// Validates the supplied account configuration and credentials by
-    /// issuing a lightweight `ListBuckets` call. The throwaway client
+    /// listing the buckets the account would show. The throwaway client
     /// is shut down before the call returns; nothing is persisted. Use
     /// this from the Add/Edit Account sheet to verify a connection
     /// before the user commits. Empty fields fall back to the stored
@@ -252,7 +252,7 @@ final class AccountListViewModel {
         let existing: AccountCredentials?
         do {
             existing = try await keychainStore.load(for: account.id)
-        } catch BucketeerError.authenticationFailed {
+        } catch BucketeerError.credentialsMissing {
             existing = nil
         } catch let error as BucketeerError {
             return error

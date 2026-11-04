@@ -145,7 +145,14 @@ struct SidebarView: View {
             AddEditAccountSheet(
                 mode: .edit(account),
                 onSave: { updated, credentials in
-                    await viewModel.save(account: updated, credentials: credentials)
+                    let failure = await viewModel.save(account: updated, credentials: credentials)
+                    // The browser keeps its own copy of the account; reopen
+                    // it so a new bucket or region applies right away.
+                    let browser = container.browserViewModel
+                    if failure == nil, browser.account?.id == updated.id {
+                        Task { await browser.openAccount(updated) }
+                    }
+                    return failure
                 },
                 onTest: { updated, credentials in
                     await viewModel.testConnection(account: updated, credentials: credentials)

@@ -12,6 +12,17 @@ import Foundation
 /// cases before the value crosses the actor boundary into the UI.
 public enum BucketeerError: Error, Sendable, Equatable {
     case authenticationFailed
+    /// The Keychain holds no credentials for the account.
+    case credentialsMissing
+    /// The provider does not know the access key (`InvalidAccessKeyId`).
+    /// Civo keys only exist in the region they were created in, so
+    /// there it usually means a region mismatch.
+    case accessKeyNotRecognized(provider: S3Provider?, region: String?)
+    /// The secret key does not belong to the access key
+    /// (`SignatureDoesNotMatch`).
+    case secretKeyMismatch
+    /// The key may not call ListBuckets; it needs a bucket name.
+    case bucketListingDenied
     case bucketNotFound(String)
     case objectNotFound(key: String)
     case networkUnavailable
@@ -37,6 +48,26 @@ extension BucketeerError: LocalizedError {
         case .authenticationFailed:
             return String(localized: "error.authenticationFailed",
                           defaultValue: "Authentication failed.")
+        case .credentialsMissing:
+            return String(localized: "error.credentialsMissing",
+                          defaultValue: "The credentials for this account are missing. Edit the account and enter the access key and secret key again.")
+        case .accessKeyNotRecognized(let provider, let region):
+            guard let region, !region.isEmpty else {
+                return String(localized: "error.accessKeyNotRecognized",
+                              defaultValue: "The access key is not recognized in this region. Check the access key and the region.")
+            }
+            if provider == .civo {
+                return String(localized: "error.accessKeyNotRecognized.civo",
+                              defaultValue: "Civo does not recognize this access key in region \(region). Civo keys only work in the region they were created in — check the region in the account settings.")
+            }
+            return String(localized: "error.accessKeyNotRecognized.region",
+                          defaultValue: "The access key is not recognized in region \(region). Check the access key and the region.")
+        case .secretKeyMismatch:
+            return String(localized: "error.secretKeyMismatch",
+                          defaultValue: "The secret key does not match the access key. Enter the secret key again.")
+        case .bucketListingDenied:
+            return String(localized: "error.bucketListingDenied",
+                          defaultValue: "This key can't list buckets. Edit the account and enter the bucket name.")
         case .bucketNotFound(let name):
             return String(localized: "error.bucketNotFound",
                           defaultValue: "Bucket \"\(name)\" was not found.")
