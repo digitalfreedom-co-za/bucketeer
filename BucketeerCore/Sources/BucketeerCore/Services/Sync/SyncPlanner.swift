@@ -172,7 +172,9 @@ public enum SyncPlanner {
             // absent from the source. Filtered by the same include/exclude
             // globs as the upsert side so a mirror job for `*.jpg`
             // never deletes unrelated files in the destination. A file
-            // the source names in another spelling is not an orphan.
+            // the source names in another spelling is not an orphan, and
+            // neither is one that blocks a skipped source path: deleting
+            // it would leave neither version.
             let sourceRelatives = Set(
                 source
                     .filter { !$0.isFolder }
@@ -180,7 +182,10 @@ public enum SyncPlanner {
             )
             for d in destination where !d.isFolder {
                 let relative = relativeKey(d.key, under: destinationPrefix)
-                guard matches(relative, includes: job.includeGlobs, excludes: job.excludeGlobs) else {
+                guard matches(relative, includes: job.includeGlobs, excludes: job.excludeGlobs),
+                      !blockedNames.contains(naming.identity(of: d.key)),
+                      !naming.folderIdentities(of: d.key).contains(where: blockedNames.contains)
+                else {
                     continue
                 }
                 if !sourceRelatives.contains(naming.identity(of: relative)) {

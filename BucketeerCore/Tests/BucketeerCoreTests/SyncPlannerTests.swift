@@ -394,6 +394,19 @@ struct SyncPlannerTests {
         #expect(Set(plan.collisions) == ["a", "a/b", "A/c/d.txt"])
     }
 
+    @Test("A mirror never deletes a destination file that blocks a skipped source path")
+    func mirrorKeepsFilesInvolvedInACollision() {
+        let job = self.job(mode: .mirror, deletePropagation: true, source: endpoint(prefix: ""), destination: localEndpoint())
+        let plan = SyncPlanner.makePlan(
+            job: job,
+            source: [object("a/b"), object("x.txt")],
+            destination: [object("A"), object("orphan.txt")],
+            destinationNaming: .fileSystem(caseSensitive: false)
+        )
+        #expect(plan.collisions == ["a/b"])
+        #expect(plan.deletes == ["orphan.txt"])
+    }
+
     @Test("A source path that needs a folder where the destination keeps a file, or the reverse, is skipped")
     func pathsBlockedByTheDestinationAreSkipped() {
         let job = self.job(source: endpoint(prefix: ""), destination: localEndpoint())
