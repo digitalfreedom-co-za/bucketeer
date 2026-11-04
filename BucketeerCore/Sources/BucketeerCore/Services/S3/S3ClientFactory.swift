@@ -110,9 +110,11 @@ public actor S3ClientFactory {
     }
 
     /// One-shot credential validation. Builds a throwaway `AWSClient`
-    /// with the supplied credentials, calls `listBuckets`, then shuts
+    /// with the supplied credentials, lists the buckets the account
+    /// would show (only its named bucket, if it has one), then shuts
     /// the client down. The cache is never touched so this never
-    /// pollutes the live state for an existing account.
+    /// pollutes the live state for an existing account. Throws
+    /// `BucketeerError`.
     public static func testConnection(
         for account: S3Account,
         credentials: AccountCredentials
@@ -136,7 +138,7 @@ public actor S3ClientFactory {
                 endpoint: endpoint.absoluteString,
                 options: options
             )
-            _ = try await s3.listBuckets()
+            _ = try await S3Service.discoverBuckets(s3: s3, account: account)
             try await awsClient.shutdown()
         } catch {
             try? await awsClient.shutdown()

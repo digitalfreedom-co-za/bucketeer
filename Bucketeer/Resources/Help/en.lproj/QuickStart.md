@@ -7,6 +7,7 @@ Bucketeer is a Mac app for object storage: Amazon S3, S3-compatible providers an
 - Click **+** in the sidebar header.
 - Pick a provider: AWS S3, Azure Blob Storage, Civo, Cloudflare R2, Backblaze B2, Wasabi, DigitalOcean Spaces, Storj, or Custom (MinIO and any other S3-compatible endpoint).
 - Enter a name, the region or endpoint, and your credentials (access key and secret; for Azure the storage account key).
+- If your key can only access one bucket (common with Civo), enter its name under **Bucket**; the account then shows only that bucket. Civo keys only work in the region they were created in.
 - Click **Test Connection**, then **Save**.
 
 Your credentials are stored in the macOS Keychain on this Mac. Bucketeer has no server and no user account; it talks directly to the endpoints you configure.

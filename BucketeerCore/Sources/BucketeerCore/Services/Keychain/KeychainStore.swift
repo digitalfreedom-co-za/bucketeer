@@ -63,10 +63,7 @@ public actor KeychainStore: KeychainStoring {
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
         guard status == errSecSuccess else {
-            if status == errSecItemNotFound {
-                throw BucketeerError.authenticationFailed
-            }
-            throw BucketeerError.keychainFailure(status: status)
+            throw Self.loadError(for: status)
         }
         guard let data = result as? Data else {
             throw BucketeerError.keychainFailure(status: errSecItemNotFound)
@@ -142,6 +139,14 @@ public actor KeychainStore: KeychainStoring {
     }
 
     // MARK: - Internals
+
+    /// A missing item is not a failed sign-in: the user has to enter
+    /// the credentials again, the provider never saw a request.
+    static func loadError(for status: OSStatus) -> BucketeerError {
+        status == errSecItemNotFound
+            ? .credentialsMissing
+            : .keychainFailure(status: status)
+    }
 
     /// With an access group the query targets the data-protection
     /// keychain: on macOS that is the only backend that honours

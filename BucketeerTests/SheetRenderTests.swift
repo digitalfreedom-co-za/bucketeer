@@ -50,6 +50,15 @@ final class SheetRenderTests: XCTestCase {
                                   shows: ["Demo AWS"])
     }
 
+    /// A key scoped to one bucket needs its name; the field sits with
+    /// the connection settings, not behind Advanced.
+    func testEditAccountShowsBucketField() async throws {
+        let account = S3Account(name: "Civo Photos", provider: .civo, region: "fra1", defaultBucket: "team-photos")
+        try await renderAndAssert(AddEditAccountSheet(mode: .edit(account), onSave: { _, _ in nil }),
+                                  name: "AddEditAccountSheet_bucket", size: CGSize(width: 560, height: 720),
+                                  shows: ["Bucket (optional)", "team-photos"])
+    }
+
     // MARK: Share link
 
     func testPresignedURLPopulated() async throws {

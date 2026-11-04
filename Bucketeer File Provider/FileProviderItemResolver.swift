@@ -632,7 +632,8 @@ enum FileProviderItemResolver {
             switch bucketeer {
             case .objectNotFound, .bucketNotFound:
                 return mappedError(.noSuchItem)
-            case .authenticationFailed:
+            case .authenticationFailed, .credentialsMissing, .accessKeyNotRecognized,
+                 .secretKeyMismatch:
                 return mappedError(.notAuthenticated)
             case .networkUnavailable:
                 return mappedError(.serverUnreachable)

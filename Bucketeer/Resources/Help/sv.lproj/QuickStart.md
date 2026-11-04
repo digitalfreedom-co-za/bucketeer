@@ -7,6 +7,7 @@ Bucketeer är en Mac-app för objektlagring: Amazon S3, S3-kompatibla leverantö
 - Klicka på **+** överst i sidofältet.
 - Välj en leverantör: AWS S3, Azure Blob Storage, Civo, Cloudflare R2, Backblaze B2, Wasabi, DigitalOcean Spaces, Storj eller Custom (MinIO och alla andra S3-kompatibla slutpunkter).
 - Ange ett namn, regionen eller slutpunkten och dina inloggningsuppgifter (åtkomstnyckel och hemlig nyckel; för Azure lagringskontots nyckel).
+- Om din nyckel bara har åtkomst till en bucket (vanligt hos Civo) anger du dess namn under **Bucket**; kontot visar då bara den bucketen. Civo-nycklar fungerar bara i regionen där de skapades.
 - Klicka på **Testa anslutning** och sedan på **Spara**.
 
 Dina inloggningsuppgifter sparas i macOS-nyckelringen på den här datorn. Bucketeer har ingen server och inget användarkonto; appen kommunicerar direkt med de slutpunkter du konfigurerar.
