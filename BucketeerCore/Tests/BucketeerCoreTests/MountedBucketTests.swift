@@ -118,9 +118,10 @@ struct MountedBucketTests {
         await browser.put(bucket: "b", key: "docs/sub/")
         await browser.put(bucket: "b", key: "docs/sub/edited.txt")
         await browser.rewriteBeforeNextHead(of: "docs/sub/edited.txt")
+        let known = ["docs/old.txt": "etag-docs/old.txt", "docs/sub/edited.txt": "etag-docs/sub/edited.txt"]
 
         await #expect(throws: MountedBucket.Refusal.changedOnServer) {
-            try await mounted.deleteFolder("docs/")
+            try await mounted.deleteFolder("docs/", knownVersions: known)
         }
 
         #expect(await browser.storedKeys(in: "b") == ["docs/", "docs/sub/", "docs/sub/edited.txt"])
@@ -134,10 +135,30 @@ struct MountedBucketTests {
         await browser.put(bucket: "b", key: "docs/a.txt")
         await browser.put(bucket: "b", key: "docs/sub/b.txt")
         await browser.put(bucket: "b", key: "other.txt")
+        let known = ["docs/a.txt": "etag-docs/a.txt", "docs/sub/b.txt": "etag-docs/sub/b.txt"]
 
-        try await mounted.deleteFolder("docs/")
+        try await mounted.deleteFolder("docs/", knownVersions: known)
 
         #expect(await browser.storedKeys(in: "b") == ["other.txt"])
+    }
+
+    @Test("A folder delete removes only files at the version Finder knew; changed or unseen files stay")
+    func folderDeleteUsesFinderKnownVersions() async throws {
+        let (browser, mounted) = try await setUp()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        await browser.put(bucket: "b", key: "docs/")
+        await browser.put(bucket: "b", key: "docs/seen.txt")
+        await browser.put(bucket: "b", key: "docs/edited.txt")
+        await browser.put(bucket: "b", key: "docs/sub/unseen.txt")
+        let known = ["docs/seen.txt": "etag-docs/seen.txt", "docs/edited.txt": "etag-docs/edited.txt"]
+        // Changed after Finder last saw it, before the delete lists the folder.
+        await browser.rewrite(bucket: "b", key: "docs/edited.txt")
+
+        await #expect(throws: MountedBucket.Refusal.changedOnServer) {
+            try await mounted.deleteFolder("docs/", knownVersions: known)
+        }
+
+        #expect(await browser.storedKeys(in: "b") == ["docs/", "docs/edited.txt", "docs/sub/unseen.txt"])
     }
 
     // MARK: - Fetch (F16)

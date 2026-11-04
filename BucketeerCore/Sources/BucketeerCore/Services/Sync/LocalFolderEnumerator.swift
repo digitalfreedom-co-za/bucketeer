@@ -159,44 +159,98 @@ public enum LocalFolderWriter {
         try FileManager.default.removeItem(at: target)
     }
 
-    /// Deletes the file only while it still has `fingerprint`, i.e. was
+    /// Removes the file only while it still has `fingerprint`, i.e. was
     /// not saved again since it was listed. Returns `false` and keeps
-    /// the file when it changed; `true` when deleted or already gone.
+    /// the file when it changed; `true` when removed or already gone.
+    ///
+    /// The file is never unlinked: `discard` sets it aside (the Trash by
+    /// default) and returns where it went. An editor that still has the
+    /// file open keeps writing into that copy, so no ordering of its
+    /// writes against this call loses data. A coordinated move lets
+    /// document-based apps save first and follow the file. When it
+    /// cannot be set aside, the file stays and the error is thrown.
     public static func deleteIfUnchanged(
         relativeKey: String,
         under root: URL,
-        fingerprint: LocalFileFingerprint
+        fingerprint: LocalFileFingerprint,
+        discard: (URL) throws -> URL? = moveToTrash
     ) throws -> Bool {
         let target = try safeChildURL(root: root, relativeKey: relativeKey)
         guard FileManager.default.fileExists(atPath: target.path) else { return true }
+        let coordinator = NSFileCoordinator()
+        var coordinationError: NSError?
+        var outcome: Result<Bool, Error> = .success(false)
+        coordinator.coordinate(writingItemAt: target, options: .forMoving, error: &coordinationError) { url in
+            outcome = Result {
+                switch try setAsideIfUnchanged(url, fingerprint: fingerprint, discard: discard) {
+                case .changed:
+                    return false
+                case .removed(let location):
+                    if let location { coordinator.item(at: url, didMoveTo: location) }
+                    return true
+                }
+            }
+        }
+        if let coordinationError { throw coordinationError }
+        return try outcome.get()
+    }
+
+    /// The user's Trash on the file's volume; throws where there is none.
+    public static func moveToTrash(_ url: URL) throws -> URL? {
+        var resulting: NSURL?
+        try FileManager.default.trashItem(at: url, resultingItemURL: &resulting)
+        return resulting as URL?
+    }
+
+    private enum SetAside {
+        /// The file changed and was put back.
+        case changed
+        /// Set aside at the location, if known (`nil` when it was already
+        /// gone or `discard` did not say).
+        case removed(URL?)
+    }
+
+    private static func setAsideIfUnchanged(
+        _ target: URL,
+        fingerprint: LocalFileFingerprint,
+        discard: (URL) throws -> URL?
+    ) throws -> SetAside {
         // Take the file out of reach first (a rename is atomic), then
         // check the file that was actually taken: a save that replaced
-        // it between check and delete can no longer be the one deleted.
-        let claimed = target.deletingLastPathComponent()
-            .appendingPathComponent(".bucketeer-deleting-\(UUID().uuidString)")
+        // it between check and removal can no longer be the one removed.
+        // It keeps its name inside a hidden holder, so the Trash shows it
+        // as the user knows it.
+        let holder = target.deletingLastPathComponent()
+            .appendingPathComponent(".bucketeer-deleting-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: holder, withIntermediateDirectories: false)
+        // rmdir removes the holder only once it is empty.
+        defer { rmdir(holder.path) }
+        let claimed = holder.appendingPathComponent(target.lastPathComponent)
         do {
             try FileManager.default.moveItem(at: target, to: claimed)
         } catch where !FileManager.default.fileExists(atPath: target.path) {
-            return true
+            return .removed(nil)
         }
+        let unchanged: Bool
+        var location: URL?
         do {
             let values = try claimed.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey])
-            let current = LocalFileFingerprint(
+            unchanged = LocalFileFingerprint(
                 size: Int64(values.fileSize ?? 0),
                 modified: values.contentModificationDate ?? .distantPast
-            )
-            if current == fingerprint {
-                try FileManager.default.removeItem(at: claimed)
-                return true
-            }
+            ) == fingerprint
+            if unchanged { location = try discard(claimed) }
         } catch {
-            // The claimed name is hidden from every listing; whatever is
-            // left of the item has to go back where the user had it.
+            // The holder is hidden from every listing; whatever is left
+            // of the item has to go back where the user had it.
             try? restore(claimed, to: target)
             throw error
         }
-        try restore(claimed, to: target)
-        return false
+        guard unchanged else {
+            try restore(claimed, to: target)
+            return .changed
+        }
+        return .removed(location)
     }
 
     /// Symlinks resolved in the part of the path that exists; the

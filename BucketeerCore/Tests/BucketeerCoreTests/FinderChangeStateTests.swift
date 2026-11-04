@@ -79,6 +79,17 @@ struct FinderChangeStateTests {
         #expect(current.trackedPrefixes.contains("docs/"))
         #expect(current.entries["docs/a.txt"] == "1")
     }
+
+    @Test("Only versions handed to the system count as known below a folder, not ones merely listed")
+    func knownVersionsAreTheDeliveredOnes() {
+        var current = state(["docs/": "", "top.txt": "1"])
+        // Listed, but the enumeration that took the listing was superseded.
+        current.record(["docs/a.txt": "2", "docs/b.txt": "1", "docs/sub/": ""], under: "docs/")
+        current.markDelivered(["docs/a.txt": "\"1\"", "docs/sub/": ""])
+        current.remember("docs/c.txt", etag: "\"2\"")
+        current.remember("other/x.txt", etag: "3")
+        #expect(current.knownVersions(under: "docs/") == ["docs/a.txt": "1", "docs/c.txt": "2"])
+    }
 }
 
 private extension FinderChangeState {
