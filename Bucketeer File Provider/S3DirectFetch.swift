@@ -53,10 +53,9 @@ enum S3DirectFetch {
     }
 
     /// With a `precondition` the write only succeeds while it holds; a
-    /// refusal surfaces as `BucketeerError.preconditionFailed`.
-    /// Conditional writes stream large files as a multipart upload with
-    /// the precondition on the completion (`S3ConditionalUpload`), so
-    /// the extension never holds a whole file in memory.
+    /// refusal surfaces as `BucketeerError.preconditionFailed`. Large
+    /// files go up part by part (`S3FileUpload`), so the extension never
+    /// holds a whole file in memory.
     /// Returns the ETag the write answered with (unquoted).
     @discardableResult
     static func upload(
@@ -69,39 +68,14 @@ enum S3DirectFetch {
         factory: S3ClientFactory
     ) async throws -> String? {
         let s3 = try await factory.client(for: account)
-        let size = (try? localURL.resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0
-        let fileSize = Int64(size)
-        if let precondition {
-            return try await S3ConditionalUpload.upload(
-                fileAt: localURL,
-                bucket: bucket,
-                key: key,
-                contentType: contentType,
-                precondition: precondition,
-                writer: SotoObjectWriter(s3: s3)
-            )
-        } else if fileSize >= multipartThreshold {
-            let output = try await s3.multipartUpload(
-                .init(
-                    bucket: bucket,
-                    contentType: contentType,
-                    key: key
-                ),
-                partSize: multipartPartSize,
-                filename: localURL.path,
-                progress: { @Sendable _ in }
-            )
-            return output.eTag.map(ETag.normalized)
-        } else {
-            let data = try Data(contentsOf: localURL, options: .mappedIfSafe)
-            let buffer = ByteBuffer(bytes: data)
-            let output = try await s3.putObject(.init(
-                body: AWSHTTPBody(buffer: buffer),
-                bucket: bucket,
-                contentType: contentType,
-                key: key
-            ))
-            return output.eTag.map(ETag.normalized)
-        }
+        return try await S3FileUpload.upload(
+            fileAt: localURL,
+            bucket: bucket,
+            key: key,
+            contentType: contentType,
+            precondition: precondition,
+            enforced: account.provider.conditionalRequests,
+            writer: SotoObjectWriter(s3: s3)
+        )
     }
 }

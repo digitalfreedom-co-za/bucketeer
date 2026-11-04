@@ -26,11 +26,16 @@ public struct AzureBlobTransporter: Sendable {
     /// threshold so users see consistent behaviour across providers.
     public static let multipartThreshold: Int64 = 5 * 1024 * 1024
 
-    /// Size of each staged block. Azure allows up to 4000 MiB per block
-    /// in the most recent API; 8 MiB matches the S3 part size for
-    /// symmetry and is well within the 50 000 block-per-blob limit
-    /// (50 000 × 8 MiB ≈ 400 GiB, comfortable for v1).
+    /// Preferred size of each staged block; matches the S3 part size.
+    /// Azure allows up to 4000 MiB per block and 50 000 blocks per blob.
     public static let blockSize: Int = 8 * 1024 * 1024
+    public static let maximumBlockCount = 50_000
+
+    /// `blockSize`, or larger where the file would otherwise need more
+    /// than `maximumBlockCount` blocks (8 MiB stops at about 390 GiB).
+    public static func blockSize(forFileOf size: Int64) -> Int {
+        max(blockSize, Int((size + Int64(maximumBlockCount) - 1) / Int64(maximumBlockCount)))
+    }
 
     /// Max parallel block uploads inside a single Put Block List
     /// multipart. Bumps throughput on fast connections without
@@ -153,7 +158,7 @@ public struct AzureBlobTransporter: Sendable {
         precondition: WritePrecondition?,
         progress: @Sendable @escaping (Int64, Int64) async -> Void
     ) async throws -> String? {
-        let blockSize = Int64(Self.blockSize)
+        let blockSize = Int64(Self.blockSize(forFileOf: fileSize))
         let blockCount = Int((fileSize + blockSize - 1) / blockSize)
         let uploadSession = UUID()
         let blockIDs: [String] = (0..<blockCount).map {

@@ -81525,6 +81525,131 @@
           }
         }
       }
+    },
+    "error.largeCopyUnsupported" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ je pro tohoto poskytovatele příliš velký na kopírování na serveru bez rizika smíchání dvou verzí. Místo toho jej stáhněte a znovu nahrajte."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ er for stor til, at denne udbyder kan kopiere den på serveren uden risiko for at blande to versioner. Download den, og upload den igen i stedet."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ ist zu groß, um bei diesem Anbieter auf dem Server kopiert zu werden, ohne zwei Versionen zu vermischen. Lade die Datei stattdessen herunter und erneut hoch."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το «%@» είναι πολύ μεγάλο για να αντιγραφεί στον διακομιστή αυτού του παρόχου χωρίς κίνδυνο ανάμειξης δύο εκδόσεων. Κατεβάστε το και ανεβάστε το ξανά."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\"%@\" is too large for this provider to copy on the server without risking a mix of two versions. Download it and upload it again instead."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\"%@\" is too large for this provider to copy on the server without risking a mix of two versions. Download it and upload it again instead."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«%@» es demasiado grande para que este proveedor lo copie en el servidor sin riesgo de mezclar dos versiones. Descárgalo y vuelve a subirlo."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "”%@” on liian suuri, jotta tämä palveluntarjoaja voisi kopioida sen palvelimella ilman kahden version sekoittumisen riskiä. Lataa se sen sijaan ja lähetä se uudelleen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "« %@ » est trop volumineux pour que ce fournisseur le copie sur le serveur sans risquer de mélanger deux versions. Téléchargez-le puis envoyez-le à nouveau."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A(z) „%@” túl nagy ahhoz, hogy ez a szolgáltató a szerveren másolja két verzió keveredésének kockázata nélkül. Töltse le, majd töltse fel újra."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«%@» è troppo grande perché questo provider lo copi sul server senza rischiare di mescolare due versioni. Scaricalo e caricalo di nuovo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「%@」はこのプロバイダでサーバー上にコピーするには大きすぎ、2 つのバージョンが混在するおそれがあります。ダウンロードしてからもう一度アップロードしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\"%@\"은(는) 이 제공업체에서 두 버전이 섞일 위험 없이 서버에서 복사하기에는 너무 큽니다. 대신 다운로드한 후 다시 업로드하세요."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«%@» er for stor til at denne leverandøren kan kopiere den på serveren uten fare for å blande to versjoner. Last den ned og last den opp på nytt i stedet."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ is te groot om bij deze provider op de server te kopiëren zonder risico dat twee versies door elkaar raken. Download het en upload het opnieuw."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@” jest zbyt duży, aby ten dostawca mógł go skopiować na serwerze bez ryzyka pomieszania dwóch wersji. Zamiast tego pobierz go i prześlij ponownie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\"%@\" é grande demais para este provedor copiar no servidor sem risco de misturar duas versões. Baixe-o e envie-o novamente."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\"%@\" é demasiado grande para este fornecedor copiar no servidor sem risco de misturar duas versões. Transfira-o e carregue-o novamente."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«%@» слишком велик, чтобы этот провайдер скопировал его на сервере без риска смешать две версии. Скачайте его и загрузите заново."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "”%@” är för stor för att den här leverantören ska kunna kopiera den på servern utan risk att två versioner blandas. Ladda ned den och ladda upp den igen i stället."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

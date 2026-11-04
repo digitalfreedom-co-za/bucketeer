@@ -39,7 +39,9 @@ struct ObjectMetadataSheet: View {
                     Form {
                         httpSection(vm: $vm)
                         userMetadataSection()
-                        tagsSection()
+                        if viewModel.account.provider.supportsObjectTagging {
+                            tagsSection()
+                        }
                         if let storageClass = viewModel.metadata.storageClass {
                             Section("metadata.section.storageClass") {
                                 LabeledContent("metadata.storageClass.label") {

@@ -34,6 +34,13 @@ struct AzureBlobTransporterTests {
 
     private var multipartSize: Int { Int(AzureBlobTransporter.multipartThreshold) + 1_024 }
 
+    @Test("Blocks grow so a blob never needs more than 50,000 of them")
+    func blockSizeStaysWithinBlockLimit() {
+        #expect(AzureBlobTransporter.blockSize(forFileOf: 100 * 1_024 * 1_024) == AzureBlobTransporter.blockSize)
+        let oneTiB: Int64 = 1_024 * 1_024 * 1_024 * 1_024
+        #expect(Int64(AzureBlobTransporter.blockSize(forFileOf: oneTiB)) * 50_000 >= oneTiB)
+    }
+
     @Test("Uploads of the same blob stage disjoint blocks and commit only their own")
     func uploadsUseOwnBlocks() async throws {
         AzureStub.reset(blobSize: 0)

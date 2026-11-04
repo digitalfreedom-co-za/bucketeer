@@ -38,6 +38,9 @@ public enum BucketeerError: Error, Sendable, Equatable {
     /// A conditional write (If-Match) was refused because the object
     /// changed on the server (HTTP 412).
     case preconditionFailed(key: String)
+    /// The object needs a copy in parts that this provider cannot pin
+    /// to one version, so it is not copied at all.
+    case largeCopyUnsupported(key: String)
     /// `message` is shown as-is, so it must already be user-facing text.
     case unknown(message: String)
 }
@@ -100,6 +103,9 @@ extension BucketeerError: LocalizedError {
         case .preconditionFailed(let key):
             return String(localized: "error.preconditionFailed",
                           defaultValue: "\"\(key)\" was changed on the server in the meantime.")
+        case .largeCopyUnsupported(let key):
+            return String(localized: "error.largeCopyUnsupported",
+                          defaultValue: "\"\(key)\" is too large for this provider to copy on the server without risking a mix of two versions. Download it and upload it again instead.")
         case .unknown(let message):
             // Call sites pass either an already-localized explanation or
             // a system `localizedDescription`; wrapping it in a catalog

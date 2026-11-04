@@ -254,33 +254,28 @@ final class BrowserViewModel {
             return
         }
         do {
-            // Rename is copy + delete; the copy would silently replace an
-            // existing object (without a trash capture) under the new name.
-            if try await objectExists(account: account, bucket: bucket, key: newKey) {
-                actionError = .unknown(message: String(
-                    localized: "browser.action.rename.exists",
-                    defaultValue: "An object with that name already exists in this folder."
-                ))
-                return
-            }
-            try await s3Browser.copy(
-                account: account,
-                fromBucket: bucket,
-                fromKey: key,
-                toBucket: bucket,
-                toKey: newKey,
-                metadata: nil
-            )
-            try await s3Browser.delete(account: account, bucket: bucket, keys: [key])
+            // Rename is copy + delete: create-only, so an object under the
+            // new name is never replaced, and a source written meanwhile
+            // is kept instead of deleted.
+            let source = try await s3Browser.head(account: account, bucket: bucket, key: key)
+            let removed = try await ObjectMove.move(key, etag: source.etag, to: newKey,
+                                                    browser: s3Browser, account: account, bucket: bucket)
             selection.remove(key)
-            actionError = nil
+            actionError = removed ? nil : .unknown(message: String(localized: "sync.error.sourceChangedDuringMove"))
             await record(
                 .copy,
-                status: .success,
+                status: removed ? .success : .failure,
                 key: newKey,
                 message: "Renamed from \(key)"
             )
             await loadObjectsResetting()
+        } catch BucketeerError.preconditionFailed {
+            // Either the name is taken or the source changed while it was read.
+            let nameIsTaken = (try? await objectExists(account: account, bucket: bucket, key: newKey)) ?? true
+            actionError = .unknown(message: nameIsTaken
+                ? String(localized: "browser.action.rename.exists",
+                         defaultValue: "An object with that name already exists in this folder.")
+                : String(localized: "sync.error.sourceChangedDuringMove"))
         } catch let error as BucketeerError {
             actionError = error
             await record(.copy, status: .failure, key: key, errorMessage: error.errorDescription)
