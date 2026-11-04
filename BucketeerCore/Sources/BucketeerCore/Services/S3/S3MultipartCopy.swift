@@ -14,10 +14,10 @@ import Foundation
 public protocol S3ObjectCopying: S3RangeReading {
     /// The object's ETag, or `nil` when there is none.
     func currentETag(bucket: String, key: String) async throws -> String?
-    /// Starts a multipart upload that carries the source's properties
-    /// (`S3MultipartCopy.createRequest`); its tags only with `copiesTags`.
-    func createMultipartCopy(of source: S3MultipartCopy.Source, toBucket: String, toKey: String,
-                             copiesTags: Bool) async throws -> String
+    /// The tags of `source` (of `source.versionId`, if set).
+    func tags(of source: S3MultipartCopy.Source) async throws -> [String: String]
+    /// Starts the multipart upload; returns its upload ID.
+    func createMultipartCopy(_ request: S3.CreateMultipartUploadRequest) async throws -> String
     /// Copies `range` of `source` (of `source.versionId`, if set) as
     /// one part, with `sourceIfMatch` as the copy-source condition.
     func uploadPartCopy(of source: S3MultipartCopy.Source, range: ClosedRange<Int64>, toBucket: String, toKey: String,
@@ -37,7 +37,9 @@ public protocol S3ObjectCopying: S3RangeReading {
 ///   where the provider enforces it;
 /// - otherwise the bytes are relayed through ranged GETs with `If-Match`.
 /// A provider with none of these refuses the copy before anything is
-/// written (`largeCopyUnsupported`).
+/// written (`largeCopyUnsupported`). The properties come from the HEAD
+/// that established the ETag; the tags are read separately and, without
+/// a version ID, can belong to a different write (documented limit).
 public enum S3MultipartCopy {
 
     public struct Source: Sendable, Equatable {
@@ -45,28 +47,76 @@ public enum S3MultipartCopy {
         public let key: String
         public let etag: String
         public let size: Int64
-        /// The source version; pins every range when set. `"null"` (the
-        /// version of an object written while versioning was off) is no
-        /// pin, it is overwritten in place, so it is dropped.
-        public var versionId: String? {
-            didSet { if versionId == "null" { versionId = nil } }
-        }
+        /// The version every range is read from. `"null"` (the version of
+        /// an object written while versioning was off) selects that
+        /// version but does not pin it: it is overwritten in place, so
+        /// its ranges are additionally bound by the ETag.
+        public var versionId: String?
+        /// The properties a copy keeps, as of the HEAD that read `etag`.
+        public var properties: Properties
         /// Replaces the source's user metadata on the copy.
         public var metadata: [String: String]?
         /// Replaces all of the source's properties (metadata edit).
         public var replacement: ObjectMetadata?
 
         public init(bucket: String, key: String, etag: String, size: Int64, versionId: String? = nil,
-                    metadata: [String: String]? = nil, replacement: ObjectMetadata? = nil) {
+                    properties: Properties = Properties(), metadata: [String: String]? = nil,
+                    replacement: ObjectMetadata? = nil) {
             self.bucket = bucket
             self.key = key
             self.etag = etag
             self.size = size
-            self.versionId = versionId == "null" ? nil : versionId
+            self.versionId = versionId
+            self.properties = properties
             self.metadata = metadata
             self.replacement = replacement
         }
+
+        /// The source as `head` describes it. A requested version stays
+        /// the selector, `"null"` included; without one, the version the
+        /// HEAD reports pins the copy unless it is the mutable `"null"`.
+        public init(bucket: String, key: String, head: S3.HeadObjectOutput, requestedVersion: String? = nil) {
+            let reported = head.versionId == nullVersion ? nil : head.versionId
+            self.init(bucket: bucket, key: key, etag: ETag.normalized(head.eTag ?? ""),
+                      size: head.contentLength ?? 0, versionId: requestedVersion ?? reported,
+                      properties: Properties(head: head))
+        }
+
+        /// True when `versionId` names one immutable version.
+        var pinsVersion: Bool {
+            versionId.map { $0 != nullVersion } ?? false
+        }
     }
+
+    /// The properties CopyObject keeps besides the bytes.
+    public struct Properties: Sendable, Equatable {
+        public var cacheControl: String?
+        public var contentDisposition: String?
+        public var contentEncoding: String?
+        public var contentLanguage: String?
+        public var contentType: String?
+        public var expires: String?
+        public var metadata: [String: String]?
+        public var storageClass: S3.StorageClass?
+        public var websiteRedirectLocation: String?
+
+        public init() {}
+
+        public init(head: S3.HeadObjectOutput) {
+            cacheControl = head.cacheControl
+            contentDisposition = head.contentDisposition
+            contentEncoding = head.contentEncoding
+            contentLanguage = head.contentLanguage
+            contentType = head.contentType
+            expires = head.expires
+            metadata = head.metadata
+            storageClass = head.storageClass
+            websiteRedirectLocation = head.websiteRedirectLocation
+        }
+    }
+
+    /// The version ID S3 reports for an object written without versioning.
+    static let nullVersion = "null"
 
     /// How the ranges are bound to the source version.
     enum Pin: Equatable {
@@ -87,22 +137,24 @@ public enum S3MultipartCopy {
     static func pin(for source: Source, provider: S3Provider) throws -> Pin {
         let enforced = provider.conditionalRequests
         if provider.supportsUploadPartCopy {
-            if source.versionId != nil { return .version }
+            if source.pinsVersion { return .version }
             if enforced.contains(.partCopySourceIfMatch) { return .sourceCondition }
         }
         if enforced.contains(.readIfMatch) { return .relay }
         throw BucketeerError.largeCopyUnsupported(key: source.key)
     }
 
-    /// Copies `source` to `toKey`; with `ifAbsent` only while nothing is
-    /// there. Returns the ETag of the copy. `partSize` defaults to
+    /// Copies `source` to `toKey`, completing only while `precondition`
+    /// holds for the destination: as a completion header where the
+    /// provider enforces it, else checked with a HEAD right before.
+    /// Returns the ETag of the copy. `partSize` defaults to
     /// `defaultPartSize` for server-side ranges and to the upload part
     /// size for relayed ones (they pass through memory).
     public static func copy(
         _ source: Source,
         toBucket: String,
         toKey: String,
-        ifAbsent: Bool,
+        precondition: WritePrecondition?,
         provider: S3Provider,
         copier: any S3ObjectCopying,
         partSize: Int? = nil
@@ -110,8 +162,10 @@ public enum S3MultipartCopy {
         let pin = try pin(for: source, provider: provider)
         let preferred = partSize ?? (pin == .relay ? S3FileUpload.defaultPartSize : defaultPartSize)
         let partSize = S3FileUpload.partSize(forFileOf: source.size, preferred: preferred)
-        let uploadID = try await copier.createMultipartCopy(of: source, toBucket: toBucket, toKey: toKey,
-                                                            copiesTags: provider.supportsObjectTagging)
+        let tags = try await tags(of: source, provider: provider, copier: copier)
+        let uploadID = try await copier.createMultipartCopy(
+            createRequest(for: source, tags: tags, toBucket: toBucket, toKey: toKey)
+        )
         do {
             var parts: [S3CompletedPart] = []
             for (index, range) in ranges(size: source.size, partSize: partSize).enumerated() {
@@ -121,14 +175,16 @@ public enum S3MultipartCopy {
                 parts.append(S3CompletedPart(number: index + 1, etag: etag))
             }
             let enforced = provider.conditionalRequests
-            let sendsIfAbsent = ifAbsent && enforced.isSuperset(of: [.writeIfAbsent, .completionConditions])
-            if ifAbsent, !sendsIfAbsent {
-                let existing = try await copier.currentETag(bucket: toBucket, key: toKey)
-                try PreconditionCheck.verify(.ifAbsent, current: existing, key: toKey)
+            let headers = enforced.contains(.completionConditions)
+                ? S3Service.headers(for: precondition, enforced: enforced)
+                : S3Service.headers(for: nil, enforced: [])
+            if let precondition, headers.ifMatch == nil, headers.ifNoneMatch == nil {
+                let current = try await copier.currentETag(bucket: toBucket, key: toKey)
+                try PreconditionCheck.verify(precondition, current: current, key: toKey)
             }
             let etag = try await copier.completeMultipartUpload(
                 bucket: toBucket, key: toKey, uploadID: uploadID, parts: parts,
-                ifMatch: nil, ifNoneMatch: sendsIfAbsent ? "*" : nil
+                ifMatch: headers.ifMatch, ifNoneMatch: headers.ifNoneMatch
             )
             return etag.map(ETag.normalized)
         } catch {
@@ -151,8 +207,8 @@ public enum S3MultipartCopy {
                 sourceIfMatch: pin == .sourceCondition ? ETag.quoted(source.etag) : nil
             )
         case .relay:
-            let body = try await copier.read(bucket: source.bucket, key: source.key, range: range,
-                                             ifMatch: ETag.quoted(source.etag))
+            let body = try await copier.read(bucket: source.bucket, key: source.key, versionId: source.versionId,
+                                             range: range, ifMatch: ETag.quoted(source.etag))
             guard body.count == range.count else { throw BucketeerError.preconditionFailed(key: toKey) }
             return try await copier.uploadPart(bucket: toBucket, key: toKey, uploadID: uploadID,
                                                partNumber: number, body: body)
@@ -165,20 +221,30 @@ public enum S3MultipartCopy {
         }
     }
 
+    /// The tags the copy gets: the edited ones, else the source's;
+    /// `nil` where the provider has no tagging.
+    private static func tags(of source: Source, provider: S3Provider,
+                             copier: any S3ObjectCopying) async throws -> [String: String]? {
+        guard provider.supportsObjectTagging else { return nil }
+        if let replacement = source.replacement { return replacement.tags }
+        return try await copier.tags(of: source)
+    }
+
     /// The CreateMultipartUpload request for a copy: the properties a
     /// CopyObject would keep (headers, user metadata, storage class,
     /// tags), or `source.replacement` for a metadata edit. `tags` is
     /// `nil` where the provider has no tagging.
-    static func createRequest(for source: Source, head: S3.HeadObjectOutput, tags: [String: String]?,
+    static func createRequest(for source: Source, tags: [String: String]?,
                               toBucket: String, toKey: String) -> S3.CreateMultipartUploadRequest {
         let tagging = tags.flatMap(taggingHeader)
         guard let replacement = source.replacement else {
+            let kept = source.properties
             return .init(
-                bucket: toBucket, cacheControl: head.cacheControl, contentDisposition: head.contentDisposition,
-                contentEncoding: head.contentEncoding, contentLanguage: head.contentLanguage,
-                contentType: head.contentType, expires: head.expires, key: toKey,
-                metadata: source.metadata ?? head.metadata, storageClass: head.storageClass, tagging: tagging,
-                websiteRedirectLocation: head.websiteRedirectLocation
+                bucket: toBucket, cacheControl: kept.cacheControl, contentDisposition: kept.contentDisposition,
+                contentEncoding: kept.contentEncoding, contentLanguage: kept.contentLanguage,
+                contentType: kept.contentType, expires: kept.expires, key: toKey,
+                metadata: source.metadata ?? kept.metadata, storageClass: kept.storageClass, tagging: tagging,
+                websiteRedirectLocation: kept.websiteRedirectLocation
             )
         }
         return .init(
@@ -210,25 +276,14 @@ private extension String {
 
 extension SotoObjectWriter: S3ObjectCopying {
 
-    public func createMultipartCopy(of source: S3MultipartCopy.Source, toBucket: String, toKey: String,
-                                    copiesTags: Bool) async throws -> String {
-        let head = try await s3.headObject(.init(bucket: source.bucket, key: source.key, versionId: source.versionId))
-        var tags: [String: String]?
-        if copiesTags {
-            if let replacement = source.replacement {
-                tags = replacement.tags
-            } else {
-                tags = try await sourceTags(of: source)
-            }
-        }
-        let request = S3MultipartCopy.createRequest(for: source, head: head, tags: tags, toBucket: toBucket, toKey: toKey)
+    public func createMultipartCopy(_ request: S3.CreateMultipartUploadRequest) async throws -> String {
         guard let uploadID = try await s3.createMultipartUpload(request).uploadId else {
             throw BucketeerError.providerError(statusCode: 0, message: "The provider returned no multipart upload ID.")
         }
         return uploadID
     }
 
-    private func sourceTags(of source: S3MultipartCopy.Source) async throws -> [String: String] {
+    public func tags(of source: S3MultipartCopy.Source) async throws -> [String: String] {
         let tagging = try await s3.getObjectTagging(.init(bucket: source.bucket, key: source.key,
                                                           versionId: source.versionId))
         return Dictionary(tagging.tagSet.map { ($0.key, $0.value) }, uniquingKeysWith: { _, last in last })
@@ -253,8 +308,10 @@ extension SotoObjectWriter: S3ObjectCopying {
         return etag
     }
 
-    public func read(bucket: String, key: String, range: ClosedRange<Int64>, ifMatch: String) async throws -> Data {
-        try await SotoRangeReader(s3: s3).read(bucket: bucket, key: key, range: range, ifMatch: ifMatch)
+    public func read(bucket: String, key: String, versionId: String?, range: ClosedRange<Int64>,
+                     ifMatch: String) async throws -> Data {
+        try await SotoRangeReader(s3: s3).read(bucket: bucket, key: key, versionId: versionId, range: range,
+                                               ifMatch: ifMatch)
     }
 }
 
