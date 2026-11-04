@@ -58,12 +58,4 @@ struct MultipartUploadCheckpointTests {
         #expect(MultipartUploadCheckpoint.fingerprint(for: a)
                 != MultipartUploadCheckpoint.fingerprint(for: b))
     }
-
-    @Test("Fingerprint for a non-existent URL is the zero-baseline")
-    func missingFile() {
-        let missing = URL(fileURLWithPath: "/tmp/bucketeer-does-not-exist-\(UUID().uuidString)")
-        let fp = MultipartUploadCheckpoint.fingerprint(for: missing)
-        // mtime + size + inode all zero → "0|0|0"
-        #expect(fp == "0|0|0")
-    }
 }

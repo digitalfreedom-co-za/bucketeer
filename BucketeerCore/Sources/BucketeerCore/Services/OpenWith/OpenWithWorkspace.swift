@@ -134,17 +134,35 @@ public struct OpenWithWorkspace: Sendable {
 
     /// Folders of earlier launches belong to launches that crashed or
     /// were killed. Files that differ from the server version they are
-    /// based on move to recovery; everything else is removed.
+    /// based on move to recovery; everything else is removed. A file
+    /// that cannot be read or moved stays where it is, and so does its
+    /// session folder, for the next launch to try again.
     public func scavengeLeftovers() {
         for session in Self.subfolders(of: workRoot) where session.lastPathComponent != sessionID {
-            for folder in Self.subfolders(of: session) {
-                guard let manifest = manifest(inFolder: folder) else { continue }
-                let file = folder.appendingPathComponent(manifest.fileName)
-                guard let digest = Self.digest(of: file), digest != manifest.digest else { continue }
-                retain(file)
+            for folder in Self.subfolders(of: session) where !keepsUnsyncedEdit(in: folder) {
+                try? FileManager.default.removeItem(at: folder)
             }
-            try? FileManager.default.removeItem(at: session)
+            if Self.subfolders(of: session).isEmpty {
+                try? FileManager.default.removeItem(at: session)
+            }
         }
+    }
+
+    /// Whether `folder` still holds a file that differs (or may differ)
+    /// from its server version after trying to move it to recovery.
+    private func keepsUnsyncedEdit(in folder: URL) -> Bool {
+        guard let manifest = manifest(inFolder: folder) else {
+            // No manifest: the file was never handed to an editor. An
+            // unreadable one leaves the file's state unknown.
+            let manifestURL = folder.appendingPathComponent(Self.manifestName)
+            return FileManager.default.fileExists(atPath: manifestURL.path)
+        }
+        let file = folder.appendingPathComponent(manifest.fileName)
+        guard FileManager.default.fileExists(atPath: file.path) else { return false }
+        guard let digest = Self.digest(of: file) else { return true }
+        guard digest != manifest.digest else { return false }
+        retain(file)
+        return FileManager.default.fileExists(atPath: folder.path)
     }
 
     /// Kept edits, oldest first.

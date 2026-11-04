@@ -32,17 +32,17 @@ final class AppActivationController {
     /// Apply the current preference to the running app. Called once at
     /// launch from the AppDelegate; idempotent.
     func applyOnLaunch() {
-        applyPolicy(animated: false)
+        applyPolicy()
     }
 
     func setMenubarMode(_ enabled: Bool) {
         guard menubarMode != enabled else { return }
         menubarMode = enabled
         UserDefaults.standard.set(enabled, forKey: Self.preferenceKey)
-        applyPolicy(animated: true)
+        applyPolicy()
     }
 
-    private func applyPolicy(animated: Bool) {
+    private func applyPolicy() {
         let policy: NSApplication.ActivationPolicy = menubarMode ? .accessory : .regular
         NSApp.setActivationPolicy(policy)
         if !menubarMode {

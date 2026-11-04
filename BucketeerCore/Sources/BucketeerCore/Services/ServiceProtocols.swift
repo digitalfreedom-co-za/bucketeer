@@ -179,10 +179,6 @@ public protocol CheckpointStoring: Sendable {
     /// Discard a checkpoint after the upload completed or was
     /// permanently abandoned.
     func delete(id: UUID) async throws
-
-    /// All checkpoints currently on disk — used by the optional
-    /// "Resume" picker in the host app.
-    func all() async throws -> [MultipartUploadCheckpoint]
 }
 
 // MARK: - AutoTagRuleStoring
@@ -211,9 +207,6 @@ public protocol ActivityLogging: Sendable {
     /// errors so a write failure on the audit path cannot break the
     /// underlying operation the user actually asked for.
     func record(_ entry: ActivityEntry) async
-
-    /// Most-recent first, hard-capped at `limit`.
-    func recent(limit: Int) async throws -> [ActivityEntry]
 
     /// Free-text search + structural filters. All filters are AND-ed.
     /// `text` matches `bucket`, `key`, `accountName`, `syncJobName`,

@@ -59,15 +59,10 @@ public struct FinderChangeState: Codable, Equatable, Sendable {
         revision += 1
     }
 
-    /// Replaces the remembered listing with `listing` (the fresh
-    /// listing of all tracked prefixes) and returns what changed.
-    public mutating func advance(to listing: [String: String], anchor newAnchor: String) -> ListingDiff {
-        advance(to: listing, listedPrefixes: trackedPrefixes, anchor: newAnchor)
-    }
-
-    /// Like `advance(to:anchor:)` for a listing of `listedPrefixes`
-    /// only. Entries of other prefixes (tracked after the listing was
-    /// taken) stay as they are and produce no changes.
+    /// Replaces the remembered entries of `listedPrefixes` with
+    /// `listing` and returns what changed. Entries of other prefixes
+    /// (tracked after the listing was taken) stay as they are and
+    /// produce no changes.
     public mutating func advance(
         to listing: [String: String],
         listedPrefixes: Set<String>,

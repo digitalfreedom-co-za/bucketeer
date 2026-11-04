@@ -13,6 +13,21 @@ before that is internal phase work on the `development` branch.
 
 ## [Unreleased] — `development` branch
 
+### Data-integrity fixes and cleanup (2026-11-04)
+- Azure multipart uploads give their block IDs a per-upload session
+  part. Blocks are staged per blob, so two uploads of the same blob
+  (four transfer workers, or a second Mac) no longer overwrite each
+  other's staged blocks and commit mixed content.
+- Azure ranged downloads send `If-Match` with the ETag of the HEAD.
+  A blob replaced during the download fails the transfer instead of
+  producing a file assembled from two versions.
+- Open With launch cleanup no longer deletes a crash survivor it could
+  not move to recovery or could not read; the file and its session
+  folder stay for the next launch. Clean folders are still removed.
+- Removed unused code (parameters, functions, protocol requirements,
+  imports) and reduced the test suite to business rules, flows and one
+  render test per view.
+
 ### Export compliance (2026-11-02)
 - `ITSAppUsesNonExemptEncryption` is `NO`. v1.0 is not offered in
   France, so no ANSSI declaration and no documentation are needed.
