@@ -298,6 +298,10 @@ final class AppContainer {
             }
         }
         let syncJobStore = SyncJobStore(modelContainer: modelContainer)
+        let fingerprintContainer = try Self.makeHostContainer(
+            "BucketeerSyncFingerprints", schema: SyncFingerprintStore.schema,
+            fileName: AppEnvironment.syncFingerprintStoreFileName, stores: stores
+        )
         let syncEngine = SyncEngine(
             accountStore: accountStore,
             jobStore: syncJobStore,
@@ -305,6 +309,7 @@ final class AppContainer {
             transferManager: transferManager,
             activityLog: activityLog,
             encryptionGate: bucketEncryptionGate,
+            fingerprintStore: SyncFingerprintStore(modelContainer: fingerprintContainer),
             isAuthorized: { [entitlementManager] in
                 await entitlementManager.isUnlockedAfterLaunchCheck(.syncEngine)
             }

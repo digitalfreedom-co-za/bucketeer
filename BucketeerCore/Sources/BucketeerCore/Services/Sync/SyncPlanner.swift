@@ -19,13 +19,16 @@ import Foundation
 public enum SyncPlanner {
 
     public struct PlanEntry: Hashable, Sendable {
-        public let sourceKey: String
-        public let sourceSize: Int64
+        /// The source as listed at planning time: its ETag (object
+        /// stores) or size and date (local files) identify the version
+        /// the entry transfers.
+        public let source: S3Object
         public let destinationKey: String
 
-        public init(sourceKey: String, sourceSize: Int64, destinationKey: String) {
-            self.sourceKey = sourceKey
-            self.sourceSize = sourceSize
+        public var sourceKey: String { source.key }
+
+        public init(source: S3Object, destinationKey: String) {
+            self.source = source
             self.destinationKey = destinationKey
         }
     }
@@ -39,11 +42,14 @@ public enum SyncPlanner {
         /// Source keys left alone because the destination would store
         /// them under the same name as another key.
         public let collisions: [String]
+        /// Source objects whose destination copy is already current.
+        public let unchanged: [S3Object]
 
-        public init(upserts: [PlanEntry], deletes: [String], collisions: [String] = []) {
+        public init(upserts: [PlanEntry], deletes: [String], collisions: [String] = [], unchanged: [S3Object] = []) {
             self.upserts = upserts
             self.deletes = deletes
             self.collisions = collisions
+            self.unchanged = unchanged
         }
     }
 
@@ -72,12 +78,17 @@ public enum SyncPlanner {
     /// enumerates each side into a `[S3Object]` (local folders use
     /// `LocalFolderEnumerator` with empty `etag` and relative-path
     /// keys; S3 / Azure use the existing recursive listing).
+    ///
+    /// `acknowledged` holds the fingerprints a local source had when the
+    /// job last synced it (empty for a job that never recorded any).
     public static func makePlan(
         job: SyncJob,
         source: [S3Object],
         destination: [S3Object],
-        destinationNaming naming: DestinationNaming = .exact
+        destinationNaming naming: DestinationNaming = .exact,
+        acknowledged: [String: LocalFileFingerprint] = [:]
     ) -> Plan {
+        let sourceIsLocal = if case .localFolder = job.source { true } else { false }
         let sourcePrefix = prefix(for: job.source)
         let destinationPrefix = prefix(for: job.destination)
 
@@ -102,6 +113,7 @@ public enum SyncPlanner {
 
         var upserts: [PlanEntry] = []
         var collisions: [String] = []
+        var unchanged: [S3Object] = []
         for s in candidates {
             let destKey = destinationPrefix + relativeKey(s.key, under: sourcePrefix)
             let name = naming.identity(of: destKey)
@@ -114,16 +126,13 @@ public enum SyncPlanner {
                 collisions.append(s.key)
                 continue
             }
-            if let existing = destIndex[destKey], isUnchanged(
-                source: s, dest: existing, strategy: job.diffStrategy
-            ) {
+            if let existing = destIndex[destKey],
+               isUnchanged(source: s, dest: existing, strategy: job.diffStrategy),
+               !sourceIsLocal || isAcknowledged(s, copy: existing, acknowledged: acknowledged[s.key]) {
+                unchanged.append(s)
                 continue
             }
-            upserts.append(PlanEntry(
-                sourceKey: s.key,
-                sourceSize: s.size,
-                destinationKey: destKey
-            ))
+            upserts.append(PlanEntry(source: s, destinationKey: destKey))
         }
 
         var deletes: [String] = []
@@ -149,7 +158,20 @@ public enum SyncPlanner {
             }
         }
 
-        return Plan(upserts: upserts, deletes: deletes, collisions: collisions)
+        return Plan(upserts: upserts, deletes: deletes, collisions: collisions, unchanged: unchanged)
+    }
+
+    /// A local file has no ETag, so an equal size alone cannot tell an
+    /// edit apart. It counts as synced only if it still has the
+    /// fingerprint the job acknowledged — or, before any fingerprint
+    /// was recorded, if it is not newer than its copy.
+    static func isAcknowledged(
+        _ file: S3Object,
+        copy: S3Object,
+        acknowledged: LocalFileFingerprint?
+    ) -> Bool {
+        if let acknowledged { return acknowledged == LocalFileFingerprint(file) }
+        return file.lastModified <= copy.lastModified
     }
 
     /// Effective prefix for a sync endpoint. S3 endpoints carry an

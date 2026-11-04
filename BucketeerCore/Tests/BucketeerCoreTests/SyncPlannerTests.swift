@@ -301,6 +301,42 @@ struct SyncPlannerTests {
         #expect(plan.deletes == ["orphan.txt"])
     }
 
+    // MARK: - Local edits that keep the size
+
+    private func file(_ key: String, modified: TimeInterval) -> S3Object {
+        S3Object(key: key, size: 4, lastModified: Date(timeIntervalSince1970: modified), etag: "")
+    }
+
+    private func fingerprint(modified: TimeInterval) -> LocalFileFingerprint {
+        LocalFileFingerprint(size: 4, modified: Date(timeIntervalSince1970: modified))
+    }
+
+    @Test("A local file saved without changing its size is uploaded again")
+    func sameSizeEditIsUploaded() {
+        let job = self.job(source: localEndpoint(), destination: endpoint(prefix: ""))
+        let plan = SyncPlanner.makePlan(
+            job: job,
+            source: [file("edited.txt", modified: 200), file("same.txt", modified: 100)],
+            destination: [file("edited.txt", modified: 900), file("same.txt", modified: 900)],
+            acknowledged: ["edited.txt": fingerprint(modified: 100), "same.txt": fingerprint(modified: 100)]
+        )
+        #expect(plan.upserts.map(\.sourceKey) == ["edited.txt"])
+        #expect(plan.unchanged.map(\.key) == ["same.txt"])
+    }
+
+    @Test("Without an acknowledged fingerprint a local file newer than its copy is uploaded")
+    func newerFileWithoutFingerprintIsUploaded() {
+        let job = self.job(source: localEndpoint(), destination: endpoint(prefix: ""))
+        let plan = SyncPlanner.makePlan(
+            job: job,
+            source: [file("newer.txt", modified: 200), file("older.txt", modified: 100)],
+            destination: [file("newer.txt", modified: 150), file("older.txt", modified: 150)],
+            acknowledged: [:]
+        )
+        #expect(plan.upserts.map(\.sourceKey) == ["newer.txt"])
+        #expect(plan.unchanged.map(\.key) == ["older.txt"])
+    }
+
     // MARK: - Name collisions on the destination file system
 
     @Test("Keys that one case-insensitive folder cannot keep apart are skipped, not aliased")

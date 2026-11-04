@@ -102,6 +102,9 @@ actor SyncEngine {
     private let isAuthorized: @Sendable () async -> Bool
     /// Decides whether a same-account copy may stay server-side.
     private let encryptionGate: BucketEncryptionGate?
+    /// What each job's local source looked like when it last synced,
+    /// so same-size edits are noticed.
+    private let fingerprintStore: (any SyncFingerprintStoring)?
 
     init(
         accountStore: any AccountStoring,
@@ -110,9 +113,11 @@ actor SyncEngine {
         transferManager: TransferManager,
         activityLog: (any ActivityLogging)? = nil,
         encryptionGate: BucketEncryptionGate? = nil,
+        fingerprintStore: (any SyncFingerprintStoring)? = nil,
         isAuthorized: @escaping @Sendable () async -> Bool = { true }
     ) {
         self.encryptionGate = encryptionGate
+        self.fingerprintStore = fingerprintStore
         self.accountStore = accountStore
         self.jobStore = jobStore
         self.browser = browser
@@ -154,9 +159,10 @@ actor SyncEngine {
         let all = try await jobStore.all()
         jobs.removeAll()
         for job in all { jobs[job.id] = job }
-        // Drop statuses of deleted jobs.
+        // Drop statuses and fingerprints of deleted jobs.
         current = current.filter { jobs[$0.key] != nil }
         publish()
+        try? await fingerprintStore?.removeAll(except: Set(jobs.keys))
         // Reconcile FSEvents watchers for `.onLocalChange` jobs whose
         // source is a local folder. Phase 9.10.
         reconcileLocalChangeWatchers(against: all)
@@ -415,11 +421,13 @@ actor SyncEngine {
             return
         }
 
+        let acknowledged = await acknowledgedFingerprints(for: job)
         let plan = SyncPlanner.makePlan(
             job: job,
             source: sourceList,
             destination: destList,
-            destinationNaming: Self.naming(of: context.destination)
+            destinationNaming: Self.naming(of: context.destination),
+            acknowledged: acknowledged
         )
         recordCollisions(plan.collisions, job: job)
         let planned = plan.upserts.count + (job.mode == .mirror && job.deletePropagation ? plan.deletes.count : 0)
@@ -514,6 +522,8 @@ actor SyncEngine {
             updateStatus(id: job.id, run: token, phase: .cancelled)
             return
         }
+
+        await acknowledge(plan: plan, transferred: successfulEntries, job: job)
 
         // Mirror deletes (only when explicitly enabled).
         if job.mode == .mirror && job.deletePropagation {
@@ -659,6 +669,27 @@ actor SyncEngine {
                 didStartSecurityScope: true
             )
         }
+    }
+
+    // MARK: - Local fingerprints
+
+    private func acknowledgedFingerprints(for job: SyncJob) async -> [String: LocalFileFingerprint] {
+        guard case .localFolder = job.source, let fingerprintStore else { return [:] }
+        return (try? await fingerprintStore.fingerprints(jobID: job.id)) ?? [:]
+    }
+
+    /// Remembers the local files this run found current or transferred,
+    /// each with the fingerprint it had at planning time — a file edited
+    /// during its upload therefore goes up again next run. Failed
+    /// entries lose their fingerprint for the same reason.
+    private func acknowledge(plan: SyncPlanner.Plan, transferred: [SyncPlanner.PlanEntry], job: SyncJob) async {
+        guard case .localFolder = job.source, let fingerprintStore else { return }
+        let synced = plan.unchanged + transferred.map(\.source)
+        let fingerprints = Dictionary(
+            synced.map { ($0.key, LocalFileFingerprint($0)) },
+            uniquingKeysWith: { _, last in last }
+        )
+        try? await fingerprintStore.replace(jobID: job.id, with: fingerprints)
     }
 
     /// A local destination compares names the way its volume does;
