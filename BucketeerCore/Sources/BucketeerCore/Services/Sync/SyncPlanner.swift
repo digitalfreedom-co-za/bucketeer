@@ -70,6 +70,21 @@ public enum SyncPlanner {
                 return caseSensitive ? normalized : normalized.folding(options: .caseInsensitive, locale: nil)
             }
         }
+
+        /// Whether a name can be a file or a folder, but not both: object
+        /// keys `a` and `a/b` coexist, a folder cannot hold both.
+        var separatesFilesFromFolders: Bool {
+            if case .fileSystem = self { return true }
+            return false
+        }
+
+        /// The identities of the folders a path lives in, outermost first.
+        func folderIdentities(of path: String) -> [String] {
+            let components = path.split(separator: "/", omittingEmptySubsequences: false)
+            return (1..<max(components.count, 1)).map {
+                identity(of: components[..<$0].joined(separator: "/"))
+            }
+        }
     }
 
     /// Compute the set of upserts and (for mirror jobs with delete
@@ -115,6 +130,12 @@ public enum SyncPlanner {
             grouping: candidates,
             by: { naming.identity(of: destinationPrefix + relativeKey($0.key, under: sourcePrefix)) }
         )
+        let blockedNames = structuralConflicts(
+            fileNames: Set(candidatesPerName.keys).union(destinationNames.keys),
+            paths: candidates.map { destinationPrefix + relativeKey($0.key, under: sourcePrefix) }
+                + destination.filter { !$0.isFolder }.map(\.key),
+            naming: naming
+        )
 
         var upserts: [PlanEntry] = []
         var collisions: [String] = []
@@ -124,9 +145,14 @@ public enum SyncPlanner {
             let name = naming.identity(of: destKey)
             // Two source keys, or a source key and a differently spelled
             // destination file, would land on one file: writing either
-            // would silently replace the other.
+            // would silently replace the other. A path that needs a
+            // folder where a file is due, or the reverse, cannot be
+            // written without the other: the whole set is left alone
+            // before the first transfer starts.
             let sharesName = candidatesPerName[name, default: []].count > 1
                 || destinationNames[name, default: []].contains { $0 != destKey }
+                || blockedNames.contains(name)
+                || naming.folderIdentities(of: destKey).contains(where: blockedNames.contains)
             if sharesName {
                 collisions.append(s.key)
                 continue
@@ -146,7 +172,9 @@ public enum SyncPlanner {
             // absent from the source. Filtered by the same include/exclude
             // globs as the upsert side so a mirror job for `*.jpg`
             // never deletes unrelated files in the destination. A file
-            // the source names in another spelling is not an orphan.
+            // the source names in another spelling is not an orphan, and
+            // neither is one that blocks a skipped source path: deleting
+            // it would leave neither version.
             let sourceRelatives = Set(
                 source
                     .filter { !$0.isFolder }
@@ -154,7 +182,10 @@ public enum SyncPlanner {
             )
             for d in destination where !d.isFolder {
                 let relative = relativeKey(d.key, under: destinationPrefix)
-                guard matches(relative, includes: job.includeGlobs, excludes: job.excludeGlobs) else {
+                guard matches(relative, includes: job.includeGlobs, excludes: job.excludeGlobs),
+                      !blockedNames.contains(naming.identity(of: d.key)),
+                      !naming.folderIdentities(of: d.key).contains(where: blockedNames.contains)
+                else {
                     continue
                 }
                 if !sourceRelatives.contains(naming.identity(of: relative)) {
@@ -174,6 +205,16 @@ public enum SyncPlanner {
     public static func prefix(for endpoint: SyncEndpoint) -> String {
         if case .s3(_, _, let prefix) = endpoint { return prefix }
         return ""
+    }
+
+    /// Names the destination would need as a file and as a folder at once.
+    private static func structuralConflicts(
+        fileNames: Set<String>,
+        paths: [String],
+        naming: DestinationNaming
+    ) -> Set<String> {
+        guard naming.separatesFilesFromFolders else { return [] }
+        return Set(paths.flatMap(naming.folderIdentities(of:))).intersection(fileNames)
     }
 
     // MARK: - Internal helpers (public so tests in BucketeerCoreTests can poke them)
