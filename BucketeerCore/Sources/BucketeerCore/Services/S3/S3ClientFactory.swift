@@ -12,34 +12,56 @@ import Foundation
 /// owns its own `AWSClient` so that connection pools stay scoped to
 /// the credentials currently in use. `invalidate(accountID:)` is called
 /// whenever credentials change or the account is deleted.
+///
+/// As in `AzureCredentialsCache`, entries carry the `CredentialsRevision`
+/// they were built at (changes made by the other process) and a
+/// per-account generation discards lookups an invalidation overtook.
 public actor S3ClientFactory {
     private let keychainStore: any KeychainStoring
+    private let revision: CredentialsRevision?
 
     private struct Cached {
         let awsClient: AWSClient
         let s3: S3
+        let revision: Int
     }
 
     private var cache: [UUID: Cached] = [:]
+    private var generations: [UUID: Int] = [:]
 
-    public init(keychainStore: any KeychainStoring) {
+    public init(keychainStore: any KeychainStoring, revision: CredentialsRevision? = nil) {
         self.keychainStore = keychainStore
+        self.revision = revision
     }
 
     // MARK: - Public
 
     public func client(for account: S3Account) async throws -> S3 {
-        if let cached = cache[account.id] {
-            return cached.s3
+        while true {
+            let currentRevision = revision?.current(for: account.id) ?? 0
+            if let cached = cache[account.id] {
+                if cached.revision == currentRevision { return cached.s3 }
+                await invalidate(accountID: account.id)
+                continue
+            }
+            let generation = generations[account.id, default: 0]
+            let credentials = try await keychainStore.load(for: account.id)
+            // Invalidated while the Keychain answered: these credentials
+            // may be the ones just replaced.
+            guard generations[account.id, default: 0] == generation else { continue }
+            // Actor reentrancy: another concurrent `client(for:)` call may
+            // have populated the cache while we were awaiting the
+            // Keychain. Re-check before constructing a duplicate
+            // AWSClient (which would otherwise leak — Soto requires
+            // explicit shutdown).
+            if let cached = cache[account.id], cached.revision == currentRevision {
+                return cached.s3
+            }
+            return makeClient(for: account, credentials: credentials, revision: currentRevision)
         }
-        let credentials = try await keychainStore.load(for: account.id)
-        // Actor reentrancy: another concurrent `client(for:)` call may have
-        // populated the cache while we were awaiting the Keychain. Re-check
-        // before constructing a duplicate AWSClient (which would otherwise
-        // leak — Soto requires explicit shutdown).
-        if let cached = cache[account.id] {
-            return cached.s3
-        }
+    }
+
+    private func makeClient(for account: S3Account, credentials: AccountCredentials, revision: Int) -> S3 {
         let awsClient = AWSClient(
             credentialProvider: .static(
                 accessKeyId: credentials.accessKey,
@@ -62,11 +84,12 @@ public actor S3ClientFactory {
             endpoint: endpoint.absoluteString,
             options: options
         )
-        cache[account.id] = Cached(awsClient: awsClient, s3: s3)
+        cache[account.id] = Cached(awsClient: awsClient, s3: s3, revision: revision)
         return s3
     }
 
     public func invalidate(accountID: UUID) async {
+        generations[accountID, default: 0] += 1
         guard let cached = cache.removeValue(forKey: accountID) else { return }
         try? await cached.awsClient.shutdown()
     }

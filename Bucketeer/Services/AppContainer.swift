@@ -184,8 +184,11 @@ final class AppContainer {
             }
         }
         let accountStore = AccountStore(modelContainer: modelContainer)
-        let clientFactory = S3ClientFactory(keychainStore: keychainStore)
-        let azureCredentialsCache = AzureCredentialsCache(keychainStore: keychainStore)
+        // Shared with the File Provider extension; tests stay off the
+        // App Group defaults.
+        let credentialsRevision: CredentialsRevision? = stores == .onDisk ? .appGroup : nil
+        let clientFactory = S3ClientFactory(keychainStore: keychainStore, revision: credentialsRevision)
+        let azureCredentialsCache = AzureCredentialsCache(keychainStore: keychainStore, revision: credentialsRevision)
         let azureObjectStore = AzureBlobObjectStore(credentialsCache: azureCredentialsCache)
         // Phase 13.2 — one shared bandwidth limiter is hot-plugged
         // into both the Azure transporter and the TransferManager so
@@ -246,7 +249,8 @@ final class AppContainer {
             clientFactory: clientFactory,
             azureCredentialsCache: azureCredentialsCache,
             transferManager: transferManager,
-            activityLog: activityLog
+            activityLog: activityLog,
+            credentialsRevision: credentialsRevision
         )
         self.browserViewModel = BrowserViewModel(
             s3Browser: router,

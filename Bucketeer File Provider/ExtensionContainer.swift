@@ -53,9 +53,11 @@ final class ExtensionContainer: Sendable {
         )
         self.keychainStore = keychain
         self.accountStore = AccountStore(modelContainer: self.modelContainer)
-        let factory = S3ClientFactory(keychainStore: keychain)
+        // The host bumps the revision when an account changes, so these
+        // caches drop credentials edited in the app.
+        let factory = S3ClientFactory(keychainStore: keychain, revision: .appGroup)
         self.clientFactory = factory
-        let azureCache = AzureCredentialsCache(keychainStore: keychain)
+        let azureCache = AzureCredentialsCache(keychainStore: keychain, revision: .appGroup)
         self.azureCredentialsCache = azureCache
         let azureStore = AzureBlobObjectStore(credentialsCache: azureCache)
         self.azureTransporter = AzureBlobTransporter(credentialsCache: azureCache)

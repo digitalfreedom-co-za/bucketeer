@@ -27,6 +27,9 @@ actor BucketEncryptionGate {
         let expiresAt: Date
     }
     private var cache: [String: CacheEntry] = [:]
+    /// Bumped by `invalidate`; a lookup that started before an
+    /// invalidation is discarded and repeated.
+    private var generations: [String: Int] = [:]
     private let ttl: TimeInterval = 30
 
     init(keyStore: any EncryptionKeyStoring) {
@@ -39,13 +42,19 @@ actor BucketEncryptionGate {
     /// upload plaintext into an encrypted bucket. Only definite answers
     /// are cached.
     func key(accountID: UUID, bucket: String) async throws -> SymmetricKey? {
-        let cacheKey = "\(accountID.uuidString)|\(bucket)"
-        if let entry = cache[cacheKey], entry.expiresAt > Date() {
-            return entry.key
+        let cacheKey = Self.cacheKey(accountID: accountID, bucket: bucket)
+        while true {
+            if let entry = cache[cacheKey], entry.expiresAt > Date() {
+                return entry.key
+            }
+            let generation = generations[cacheKey, default: 0]
+            let resolved = try await resolve(accountID: accountID, bucket: bucket)
+            // The key was created or deleted while the store answered:
+            // that answer may describe the old state.
+            guard generations[cacheKey, default: 0] == generation else { continue }
+            cache[cacheKey] = CacheEntry(key: resolved, expiresAt: Date().addingTimeInterval(ttl))
+            return resolved
         }
-        let resolved = try await resolve(accountID: accountID, bucket: bucket)
-        cache[cacheKey] = CacheEntry(key: resolved, expiresAt: Date().addingTimeInterval(ttl))
-        return resolved
     }
 
     /// Routing helper (server-side copy or not). A failed lookup counts
@@ -80,7 +89,13 @@ actor BucketEncryptionGate {
     /// creates / deletes a key in the editor so the next transfer
     /// sees the change immediately rather than after the TTL.
     func invalidate(accountID: UUID, bucket: String) {
-        cache.removeValue(forKey: "\(accountID.uuidString)|\(bucket)")
+        let cacheKey = Self.cacheKey(accountID: accountID, bucket: bucket)
+        cache.removeValue(forKey: cacheKey)
+        generations[cacheKey, default: 0] += 1
+    }
+
+    private static func cacheKey(accountID: UUID, bucket: String) -> String {
+        "\(accountID.uuidString)|\(bucket)"
     }
 
     private func resolve(accountID: UUID, bucket: String) async throws -> SymmetricKey? {

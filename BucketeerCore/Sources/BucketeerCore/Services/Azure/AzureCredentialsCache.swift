@@ -12,12 +12,24 @@ import Foundation
 /// once per process for a given account. Invalidated whenever an
 /// account is edited or deleted so credential rotation propagates
 /// immediately.
+///
+/// Each entry remembers the `CredentialsRevision` it was built at, so a
+/// change made by the host reaches the extension's cache too; a
+/// per-account generation discards lookups that were in flight when
+/// the account was invalidated.
 public actor AzureCredentialsCache {
     private let keychainStore: any KeychainStoring
-    private var cache: [UUID: AzureSharedKeySigner] = [:]
+    private let revision: CredentialsRevision?
+    private struct Entry {
+        let signer: AzureSharedKeySigner
+        let revision: Int
+    }
+    private var cache: [UUID: Entry] = [:]
+    private var generations: [UUID: Int] = [:]
 
-    public init(keychainStore: any KeychainStoring) {
+    public init(keychainStore: any KeychainStoring, revision: CredentialsRevision? = nil) {
         self.keychainStore = keychainStore
+        self.revision = revision
     }
 
     /// Returns a signer for the supplied account. The Azure credential
@@ -27,30 +39,31 @@ public actor AzureCredentialsCache {
     ///   - `sessionToken` is unused for Shared Key auth (reserved for
     ///     SAS in v1.1).
     func signer(for account: S3Account) async throws -> AzureSharedKeySigner {
-        if let cached = cache[account.id] { return cached }
-        let credentials = try await keychainStore.load(for: account.id)
-        // Actor reentrancy guard — mirrors the pattern in S3ClientFactory.
-        if let cached = cache[account.id] { return cached }
-        // Prefer the explicit accountID on the S3Account model (set by the
-        // Add/Edit sheet for Azure) over the Keychain copy — it survives
-        // even if the Keychain entry was created before we added the
-        // accountID duplication.
-        let accountName = account.accountID?.isEmpty == false
-            ? account.accountID!
-            : credentials.accessKey
-        guard let signer = AzureSharedKeySigner(
-            accountName: accountName,
-            base64AccountKey: credentials.secretKey
-        ) else {
-            throw BucketeerError.authenticationFailed
+        while true {
+            let currentRevision = revision?.current(for: account.id) ?? 0
+            if let cached = cache[account.id], cached.revision == currentRevision { return cached.signer }
+            let generation = generations[account.id, default: 0]
+            let credentials = try await keychainStore.load(for: account.id)
+            // Invalidated while the Keychain answered: these
+            // credentials may be the ones just replaced.
+            guard generations[account.id, default: 0] == generation else { continue }
+            // Actor reentrancy guard — mirrors the pattern in S3ClientFactory.
+            if let cached = cache[account.id], cached.revision == currentRevision { return cached.signer }
+            guard let signer = Self.makeSigner(account: account, credentials: credentials) else {
+                throw BucketeerError.authenticationFailed
+            }
+            cache[account.id] = Entry(signer: signer, revision: currentRevision)
+            return signer
         }
-        cache[account.id] = signer
-        return signer
     }
 
     /// One-shot signer for the connection-test flow. Doesn't touch the
     /// cache so a successful test against credentials a user is *trying*
     /// to enter doesn't poison the live cache for an existing account.
+    /// Prefers the explicit accountID on the S3Account model (set by the
+    /// Add/Edit sheet for Azure) over the Keychain copy — it survives
+    /// even if the Keychain entry was created before we added the
+    /// accountID duplication.
     static func makeSigner(
         account: S3Account,
         credentials: AccountCredentials
@@ -66,6 +79,7 @@ public actor AzureCredentialsCache {
 
     public func invalidate(accountID: UUID) async {
         cache.removeValue(forKey: accountID)
+        generations[accountID, default: 0] += 1
     }
 
     /// Raw account-name + base64-key tuple. Used by the SAS-builder
