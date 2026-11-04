@@ -39,6 +39,7 @@ struct AzureBlobTransporterTests {
         AzureStub.reset(blobSize: 0)
         let transporter = try await transporter()
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
         let file = folder.appendingPathComponent("large.bin")
         try Data(repeating: 1, count: multipartSize).write(to: file)
 
@@ -60,6 +61,7 @@ struct AzureBlobTransporterTests {
         AzureStub.reset(blobSize: multipartSize)
         let transporter = try await transporter()
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
 
         try await transporter.download(account: account, container: "c", blob: "large.bin",
                                        localURL: folder.appendingPathComponent("large.bin"), progress: { _, _ in })
