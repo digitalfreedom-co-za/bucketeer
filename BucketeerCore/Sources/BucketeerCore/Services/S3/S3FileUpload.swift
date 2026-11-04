@@ -1,5 +1,5 @@
 //
-//  S3ConditionalUpload.swift
+//  S3FileUpload.swift
 //  BucketeerCore
 //
 //  Created by Marcel R. G. Berger on 04.11.26.
@@ -15,10 +15,12 @@ public struct S3CompletedPart: Sendable, Equatable {
     public let etag: String
 }
 
-/// The S3 writes a conditional upload needs; `SotoObjectWriter` is the
+/// The S3 writes a file upload needs; `SotoObjectWriter` is the
 /// production implementation. Precondition refusals surface as
 /// `BucketeerError.preconditionFailed`.
 public protocol S3ObjectWriting: Sendable {
+    /// The object's ETag, or `nil` when there is none.
+    func currentETag(bucket: String, key: String) async throws -> String?
     func putObject(bucket: String, key: String, body: Data, contentType: String?,
                    ifMatch: String?, ifNoneMatch: String?) async throws -> String?
     func createMultipartUpload(bucket: String, key: String, contentType: String?) async throws -> String
@@ -28,15 +30,27 @@ public protocol S3ObjectWriting: Sendable {
     func abortMultipartUpload(bucket: String, key: String, uploadID: String) async throws
 }
 
-/// Uploads a file under a write precondition (If-Match / If-None-Match)
-/// without holding it in memory: small files in one PUT, larger ones as
-/// a multipart upload read part by part, with the precondition on the
-/// completion — the request that makes the new version visible. A
-/// refused or failed upload is aborted so no parts linger.
-public enum S3ConditionalUpload {
+/// Uploads a file, optionally under a write precondition (If-Match /
+/// If-None-Match), without holding it in memory: small files in one
+/// PUT, larger ones as a multipart upload read part by part, with the
+/// precondition on the completion — the request that makes the new
+/// version visible. A refused or failed upload is aborted so no parts
+/// linger. A condition the provider does not enforce (`enforced`) is
+/// checked with a HEAD right before that request and not sent.
+///
+/// Every body is a complete buffer, so requests carry a plain signed
+/// payload: Soto streams its own multipart parts as `aws-chunked`,
+/// which Civo rejects and the other providers do not document.
+public enum S3FileUpload {
 
     public static let defaultPartSize = 8 * 1024 * 1024
     public static let maximumPartCount = 10_000
+
+    /// `preferred`, or larger where the file would otherwise need more
+    /// than `maximumPartCount` parts.
+    public static func partSize(forFileOf size: Int64, preferred: Int = defaultPartSize) -> Int {
+        max(preferred, Int((size + Int64(maximumPartCount) - 1) / Int64(maximumPartCount)))
+    }
 
     /// Returns the ETag the write answered with (unquoted).
     public static func upload(
@@ -44,27 +58,32 @@ public enum S3ConditionalUpload {
         bucket: String,
         key: String,
         contentType: String?,
-        precondition: WritePrecondition,
+        precondition: WritePrecondition?,
+        enforced: S3Provider.ConditionalRequests,
         writer: any S3ObjectWriting,
         partSize: Int = defaultPartSize,
         progress: @Sendable (Int64) async -> Void = { _ in }
     ) async throws -> String? {
         let size = try fileSize(of: url)
-        let headers = S3Service.headers(for: precondition)
+        let putHeaders = S3Service.headers(for: precondition, enforced: enforced)
         if size <= Int64(partSize) {
             let body = try Data(contentsOf: url)
+            try await verifyUnlessSent(precondition, headers: putHeaders, bucket: bucket, key: key, writer: writer)
             let etag = try await writer.putObject(bucket: bucket, key: key, body: body, contentType: contentType,
-                                                  ifMatch: headers.ifMatch, ifNoneMatch: headers.ifNoneMatch)
+                                                  ifMatch: putHeaders.ifMatch, ifNoneMatch: putHeaders.ifNoneMatch)
             await progress(size)
             return etag.map(ETag.normalized)
         }
-        // S3 accepts at most `maximumPartCount` parts; larger files get
-        // larger parts instead of a failure after gigabytes were sent.
-        let partSize = max(partSize, Int((size + Int64(maximumPartCount) - 1) / Int64(maximumPartCount)))
+        // Larger parts instead of a failure after gigabytes were sent.
+        let partSize = Self.partSize(forFileOf: size, preferred: partSize)
         let uploadID = try await writer.createMultipartUpload(bucket: bucket, key: key, contentType: contentType)
         do {
             let parts = try await uploadParts(of: url, size: size, partSize: partSize, bucket: bucket, key: key,
                                               uploadID: uploadID, writer: writer, progress: progress)
+            let headers = enforced.contains(.completionConditions)
+                ? putHeaders
+                : S3Service.headers(for: nil, enforced: [])
+            try await verifyUnlessSent(precondition, headers: headers, bucket: bucket, key: key, writer: writer)
             let etag = try await writer.completeMultipartUpload(
                 bucket: bucket, key: key, uploadID: uploadID, parts: parts,
                 ifMatch: headers.ifMatch, ifNoneMatch: headers.ifNoneMatch
@@ -74,6 +93,19 @@ public enum S3ConditionalUpload {
             try? await writer.abortMultipartUpload(bucket: bucket, key: key, uploadID: uploadID)
             throw error
         }
+    }
+
+    /// Checks the precondition with a HEAD when no header carries it.
+    private static func verifyUnlessSent(
+        _ precondition: WritePrecondition?,
+        headers: (ifMatch: String?, ifNoneMatch: String?),
+        bucket: String,
+        key: String,
+        writer: any S3ObjectWriting
+    ) async throws {
+        guard let precondition, headers.ifMatch == nil, headers.ifNoneMatch == nil else { return }
+        let current = try await writer.currentETag(bucket: bucket, key: key)
+        try PreconditionCheck.verify(precondition, current: current, key: key)
     }
 
     private static func uploadParts(
@@ -123,10 +155,14 @@ public enum S3ConditionalUpload {
 
 /// `S3ObjectWriting` on a Soto `S3` client.
 public struct SotoObjectWriter: S3ObjectWriting {
-    private let s3: S3
+    let s3: S3
 
     public init(s3: S3) {
         self.s3 = s3
+    }
+
+    public func currentETag(bucket: String, key: String) async throws -> String? {
+        try await S3Service.currentETag(s3: s3, bucket: bucket, key: key)
     }
 
     public func putObject(bucket: String, key: String, body: Data, contentType: String?,

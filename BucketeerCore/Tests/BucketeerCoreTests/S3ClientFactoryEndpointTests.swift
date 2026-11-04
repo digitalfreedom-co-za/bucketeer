@@ -42,6 +42,9 @@ struct S3ClientFactoryEndpointTests {
 
     @Test("Each provider resolves to its endpoint template", arguments: [
         TemplateCase(provider: .awsS3, region: "eu-central-1", expected: "https://s3.eu-central-1.amazonaws.com"),
+        // The China partition has its own DNS suffix.
+        TemplateCase(provider: .awsS3, region: "cn-north-1", expected: "https://s3.cn-north-1.amazonaws.com.cn"),
+        TemplateCase(provider: .awsS3, region: "cn-northwest-1", expected: "https://s3.cn-northwest-1.amazonaws.com.cn"),
         TemplateCase(provider: .civo, region: "fra1", expected: "https://objectstore.fra1.civo.com"),
         TemplateCase(provider: .cloudflareR2, region: "auto", accountID: "abc123",
                      expected: "https://abc123.r2.cloudflarestorage.com"),
@@ -93,8 +96,41 @@ struct PresignedURLPathTests {
         let url = S3Service.presignTargetURL(
             endpoint: URL(string: "https://s3.example.com")!,
             bucket: "bkt",
-            key: "my folder/a?b#c%e.txt"
+            key: "my folder/a?b#c%e.txt",
+            virtualHost: false
         )
         #expect(url.absoluteString == "https://s3.example.com/bkt/my%20folder/a%3Fb%23c%25e.txt")
+    }
+
+    @Test("A virtual-host account gets the bucket in the host, as its requests do")
+    func virtualHostURL() {
+        let url = S3Service.presignTargetURL(
+            endpoint: URL(string: "https://fra1.digitaloceanspaces.com")!,
+            bucket: "bkt",
+            key: "a b.txt",
+            virtualHost: true
+        )
+        #expect(url.absoluteString == "https://bkt.fra1.digitaloceanspaces.com/a%20b.txt")
+    }
+
+    @Test("Presigned URLs for AWS China use the China endpoint")
+    func chinaPresignURL() {
+        let account = S3Account(id: UUID(), name: "T", provider: .awsS3, region: "cn-northwest-1")
+        let url = S3Service.presignTargetURL(
+            endpoint: S3ClientFactory.endpoint(for: account),
+            bucket: "bkt",
+            key: "a.txt",
+            virtualHost: S3Service.usesVirtualHost(account: account, bucket: "bkt")
+        )
+        #expect(url.absoluteString == "https://bkt.s3.cn-northwest-1.amazonaws.com.cn/a.txt")
+    }
+
+    @Test("Addressing follows the request rules: dotted buckets stay path-style")
+    func addressingRule() {
+        let spaces = S3Account(id: UUID(), name: "T", provider: .digitalOceanSpaces, region: "fra1")
+        #expect(S3Service.usesVirtualHost(account: spaces, bucket: "bkt"))
+        #expect(!S3Service.usesVirtualHost(account: spaces, bucket: "my.bkt"))
+        let civo = S3Account(id: UUID(), name: "T", provider: .civo, region: "fra1")
+        #expect(!S3Service.usesVirtualHost(account: civo, bucket: "bkt"))
     }
 }
