@@ -13,6 +13,31 @@ before that is internal phase work on the `development` branch.
 
 ## [Unreleased] — `development` branch
 
+### Provider compatibility (2026-11-04)
+- Request conditions (If-Match, If-None-Match, copy-source-if-match) are
+  sent only to providers that document or were tested to enforce them:
+  AWS all, Cloudflare R2 on single uploads and copies, DigitalOcean
+  Spaces on copies. Everywhere else the app compares the object with a
+  HEAD right before the request. On Civo, saving an edited file no
+  longer always ends in a conflict copy (Civo refused If-Match even when
+  it held), and create-only uploads, folder deletes, moves and renames
+  no longer rely on conditions Civo ignores.
+- Uploads always send complete, signed request bodies; the streamed
+  `aws-chunked` parts Civo rejects are gone.
+- Files above 78 GiB (S3) and 390 GiB (Azure) upload in larger parts
+  instead of failing at the part limit; objects above 5 GB are copied in
+  ranged parts, so renaming and moving them works.
+- Cloudflare R2 always signs for region `auto`; region lists for AWS,
+  Civo, Backblaze B2, Wasabi and DigitalOcean Spaces follow the
+  providers' documentation.
+- Shared links use the account's addressing style (virtual-host where
+  the account uses it).
+- Metadata editing works on R2 and B2, which have no object tags; the
+  tag section is hidden there.
+- Renaming a file in the browser never replaces an object that appeared
+  under the new name and keeps a source that was written during the
+  rename.
+
 ### Deferred data-safety fixes (2026-11-04)
 - Sync jobs skip paths that cannot exist side by side on the
   destination (a file `a` next to `a/b`, letter case and Unicode
