@@ -132,20 +132,35 @@ public enum LocalFolderWriter {
             at: parent,
             withIntermediateDirectories: true
         )
-        // `replaceItemAt` is atomic on the same volume and preserves
-        // the original file until the new one is fully present. If
-        // the destination doesn't yet exist, fall back to `moveItem`
-        // which is also atomic on the same volume.
-        if FileManager.default.fileExists(atPath: destination.path) {
-            _ = try FileManager.default.replaceItemAt(
-                destination,
-                withItemAt: temp,
-                backupItemName: nil,
-                options: []
-            )
-        } else {
-            try FileManager.default.moveItem(at: temp, to: destination)
+        try place(temp, at: destination)
+    }
+
+    /// Moves a staged file to `destination`. `replaceItemAt` is atomic
+    /// on the same volume and preserves the original file until the new
+    /// one is fully present; a missing destination falls back to
+    /// `moveItem`, also atomic on the same volume.
+    ///
+    /// A folder at `destination` is refused: the folder walk skips
+    /// hidden files, so a folder holding only those looks empty to the
+    /// planner, and `replaceItemAt` would delete it with its contents.
+    public static func place(_ staged: URL, at destination: URL) throws {
+        var isDirectory: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: destination.path, isDirectory: &isDirectory) else {
+            try FileManager.default.moveItem(at: staged, to: destination)
+            return
         }
+        guard !isDirectory.boolValue else {
+            throw BucketeerError.providerError(
+                statusCode: 409,
+                message: "A folder named \(destination.lastPathComponent) already exists in the destination, so the file was not written over it."
+            )
+        }
+        _ = try FileManager.default.replaceItemAt(
+            destination,
+            withItemAt: staged,
+            backupItemName: nil,
+            options: []
+        )
     }
 
     /// Delete a local file under the folder root. Idempotent — missing

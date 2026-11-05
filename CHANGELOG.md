@@ -13,6 +13,13 @@ before that is internal phase work on the `development` branch.
 
 ## [Unreleased] — `development` branch
 
+### Release review (2026-11-05)
+- A sync into a local folder no longer replaces a folder with a file of
+  the same name. The folder walk skips hidden files, so a folder holding
+  only hidden files (`.env`, `.git`) looked empty to the planner, and the
+  downloaded file replaced it together with its contents. The file is
+  now reported as failed and the folder stays.
+
 ### Provider compatibility (2026-11-04)
 - Request conditions (If-Match, If-None-Match, copy-source-if-match) are
   sent only to providers that document or were tested to enforce them:
