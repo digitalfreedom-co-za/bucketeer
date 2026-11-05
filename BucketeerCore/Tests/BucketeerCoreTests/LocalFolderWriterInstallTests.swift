@@ -44,6 +44,25 @@ struct LocalFolderWriterInstallTests {
         #expect(try String(contentsOf: hidden, encoding: .utf8) == "SECRET=1")
     }
 
+    @Test("The replacing step itself refuses a folder")
+    func replacingStepRefusesFolder() throws {
+        let root = try makeRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let destination = root.appendingPathComponent("config")
+        let hidden = destination.appendingPathComponent(".env")
+        try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
+        try Data("SECRET=1".utf8).write(to: hidden)
+        let incoming = root.appendingPathComponent(".incoming")
+        try Data("remote".utf8).write(to: incoming)
+
+        // The replacing step on its own, as reached when the folder is
+        // created after the file was staged beside the destination.
+        #expect(throws: BucketeerError.self) {
+            try LocalFolderWriter.replace(destination, with: incoming)
+        }
+        #expect(try String(contentsOf: hidden, encoding: .utf8) == "SECRET=1")
+    }
+
     @Test("An existing file at the destination is replaced")
     func fileIsReplaced() throws {
         let root = try makeRoot()

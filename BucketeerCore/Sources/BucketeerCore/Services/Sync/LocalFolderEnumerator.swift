@@ -116,11 +116,10 @@ public enum LocalFolderWriter {
     /// Copy an already-downloaded file to the target relative path.
     /// Used by `SyncEngine` when the source has produced a staging
     /// file (e.g. from the TransferManager download path) and we need
-    /// to move it into place. Atomic — uses
-    /// `replaceItemAt` so a failed move never leaves the destination
-    /// in an inconsistent state. Path-traversal guarded via
-    /// `safeChildURL` so a malicious S3 key cannot escape the chosen
-    /// sync root.
+    /// to move it into place. Atomic — see `place` — so a failed move
+    /// never leaves the destination in an inconsistent state.
+    /// Path-traversal guarded via `safeChildURL` so a malicious S3 key
+    /// cannot escape the chosen sync root.
     public static func install(
         from temp: URL,
         relativeKey: String,
@@ -135,32 +134,41 @@ public enum LocalFolderWriter {
         try place(temp, at: destination)
     }
 
-    /// Moves a staged file to `destination`. `replaceItemAt` is atomic
-    /// on the same volume and preserves the original file until the new
-    /// one is fully present; a missing destination falls back to
-    /// `moveItem`, also atomic on the same volume.
+    /// Moves a staged file to `destination`, replacing a file there
+    /// atomically and never a folder.
     ///
-    /// A folder at `destination` is refused: the folder walk skips
-    /// hidden files, so a folder holding only those looks empty to the
-    /// planner, and `replaceItemAt` would delete it with its contents.
+    /// The file first moves beside the destination (a copy when it is
+    /// staged on another volume), so the last step is one `rename(2)`
+    /// in the same folder. A folder at the destination makes that step
+    /// itself fail, so one created after any earlier look survives too.
+    /// `replaceItemAt` would delete it with its contents, and the folder
+    /// walk skips hidden files, so a folder holding only those looks
+    /// empty to the planner.
     public static func place(_ staged: URL, at destination: URL) throws {
-        var isDirectory: ObjCBool = false
-        guard FileManager.default.fileExists(atPath: destination.path, isDirectory: &isDirectory) else {
-            try FileManager.default.moveItem(at: staged, to: destination)
-            return
+        let incoming = destination.deletingLastPathComponent()
+            .appendingPathComponent(".bucketeer-placing-\(UUID().uuidString)")
+        try FileManager.default.moveItem(at: staged, to: incoming)
+        do {
+            try replace(destination, with: incoming)
+        } catch {
+            // Still the staged file; `unlink` never removes a folder.
+            unlink(incoming.path)
+            throw error
         }
-        guard !isDirectory.boolValue else {
+    }
+
+    /// The replacing step: `rename(2)` swaps a file in one step and
+    /// refuses a folder with `EISDIR`, on APFS, HFS+, exFAT and FAT alike.
+    static func replace(_ destination: URL, with incoming: URL) throws {
+        guard rename(incoming.path, destination.path) != 0 else { return }
+        let code = errno
+        guard code != EISDIR else {
             throw BucketeerError.providerError(
                 statusCode: 409,
                 message: "A folder named \(destination.lastPathComponent) already exists in the destination, so the file was not written over it."
             )
         }
-        _ = try FileManager.default.replaceItemAt(
-            destination,
-            withItemAt: staged,
-            backupItemName: nil,
-            options: []
-        )
+        throw POSIXError(POSIXErrorCode(rawValue: code) ?? .EIO)
     }
 
     /// Delete a local file under the folder root. Idempotent — missing
