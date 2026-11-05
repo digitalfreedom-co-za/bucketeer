@@ -529,11 +529,14 @@ actor SyncEngine {
 
         // Mirror deletes (only when explicitly enabled).
         if job.mode == .mirror && job.deletePropagation {
-            for key in plan.deletes {
+            for orphan in plan.deletes {
                 if Task.isCancelled { break }
                 do {
-                    try await deleteKey(key, from: job.destination, context: context.destination)
-                    completed += 1
+                    if try await deleteOrphan(orphan, from: job.destination, context: context.destination) {
+                        completed += 1
+                    } else {
+                        failed += 1
+                    }
                 } catch {
                     failed += 1
                 }
@@ -1001,25 +1004,29 @@ actor SyncEngine {
         }
     }
 
-    /// Endpoint-aware delete used by mirror-delete. Routes to the right transport based on the
-    /// endpoint kind. Local-folder deletes are idempotent (missing
-    /// files succeed).
-    private func deleteKey(
-        _ key: String,
+    /// Endpoint-aware delete used by mirror-delete. A local file goes
+    /// only while it is still the file that was listed: one saved since,
+    /// or a folder that took its name, stays and the call returns
+    /// `false`. Missing local files count as deleted.
+    private func deleteOrphan(
+        _ orphan: S3Object,
         from endpoint: SyncEndpoint,
         context: EndpointContext
-    ) async throws {
+    ) async throws -> Bool {
         switch endpoint {
         case .s3(_, let bucket, _):
             guard let account = context.account else {
                 throw BucketeerError.unknown(message: "Sync context incomplete.")
             }
-            try await browser.delete(account: account, bucket: bucket, keys: [key])
+            try await browser.delete(account: account, bucket: bucket, keys: [orphan.key])
+            return true
         case .localFolder:
             guard let root = context.localRoot else {
                 throw BucketeerError.unknown(message: "Local folder root unavailable.")
             }
-            try LocalFolderWriter.delete(relativeKey: key, under: root)
+            return try LocalFolderWriter.deleteIfUnchanged(
+                relativeKey: orphan.key, under: root, fingerprint: LocalFileFingerprint(orphan)
+            )
         }
     }
 

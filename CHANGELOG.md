@@ -23,6 +23,11 @@ before that is internal phase work on the `development` branch.
   itself, so a folder created while the file is being placed survives
   as well. A file the sync overwrites keeps its permissions, so a
   `0600` file stays private and a script stays executable.
+- A mirror job deleting in a local folder removes a file only while it
+  is still the file that was listed: one saved since, or a folder that
+  took its name, stays and is counted as failed. Deleted files go to the
+  Trash, as a move job's local sources already did, instead of being
+  removed for good.
 
 ### Provider compatibility (2026-11-04)
 - Request conditions (If-Match, If-None-Match, copy-source-if-match) are
