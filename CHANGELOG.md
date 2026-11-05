@@ -21,7 +21,8 @@ before that is internal phase work on the `development` branch.
   now reported as failed and the folder stays. The replacement is a
   single `rename(2)` beside the destination, which refuses a folder
   itself, so a folder created while the file is being placed survives
-  as well.
+  as well. A file the sync overwrites keeps its permissions, so a
+  `0600` file stays private and a script stays executable.
 
 ### Provider compatibility (2026-11-04)
 - Request conditions (If-Match, If-None-Match, copy-source-if-match) are

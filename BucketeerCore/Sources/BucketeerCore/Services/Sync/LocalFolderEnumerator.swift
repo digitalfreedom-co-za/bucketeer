@@ -144,16 +144,31 @@ public enum LocalFolderWriter {
     /// `replaceItemAt` would delete it with its contents, and the folder
     /// walk skips hidden files, so a folder holding only those looks
     /// empty to the planner.
+    ///
+    /// A replaced file keeps its permissions, so a `0600` file does not
+    /// become readable for others and a script stays executable.
     public static func place(_ staged: URL, at destination: URL) throws {
         let incoming = destination.deletingLastPathComponent()
             .appendingPathComponent(".bucketeer-placing-\(UUID().uuidString)")
-        try FileManager.default.moveItem(at: staged, to: incoming)
         do {
+            try FileManager.default.moveItem(at: staged, to: incoming)
+            try adoptPermissions(of: destination, to: incoming)
             try replace(destination, with: incoming)
         } catch {
-            // Still the staged file; `unlink` never removes a folder.
+            // Only ever the staged file or a partial copy of it; `unlink`
+            // never removes a folder.
             unlink(incoming.path)
             throw error
+        }
+    }
+
+    /// Gives `incoming` the permission bits of the file at `destination`;
+    /// nothing to adopt when no file is there.
+    private static func adoptPermissions(of destination: URL, to incoming: URL) throws {
+        var existing = stat()
+        guard lstat(destination.path, &existing) == 0, existing.st_mode & S_IFMT == S_IFREG else { return }
+        guard chmod(incoming.path, existing.st_mode & 0o777) == 0 else {
+            throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
         }
     }
 

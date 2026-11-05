@@ -75,4 +75,34 @@ struct LocalFolderWriterInstallTests {
 
         #expect(try String(contentsOf: destination, encoding: .utf8) == "new")
     }
+
+    @Test("A replaced file keeps its permissions", arguments: [0o600, 0o755])
+    func replacedFileKeepsPermissions(permissions: Int) throws {
+        let root = try makeRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let destination = root.appendingPathComponent("run.sh")
+        try Data("old".utf8).write(to: destination)
+        try FileManager.default.setAttributes([.posixPermissions: permissions], ofItemAtPath: destination.path)
+        let staged = try makeStagedFile("new")
+        try FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: staged.path)
+
+        try LocalFolderWriter.install(from: staged, relativeKey: "run.sh", under: root)
+
+        let attributes = try FileManager.default.attributesOfItem(atPath: destination.path)
+        #expect(attributes[.posixPermissions] as? Int == permissions)
+        #expect(try String(contentsOf: destination, encoding: .utf8) == "new")
+    }
+
+    @Test("A refused file leaves nothing behind in the destination folder")
+    func refusedFileLeavesNothingBehind() throws {
+        let root = try makeRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        try FileManager.default.createDirectory(at: root.appendingPathComponent("config"), withIntermediateDirectories: false)
+        let staged = try makeStagedFile("remote")
+
+        #expect(throws: BucketeerError.self) {
+            try LocalFolderWriter.install(from: staged, relativeKey: "config", under: root)
+        }
+        #expect(try FileManager.default.contentsOfDirectory(atPath: root.path) == ["config"])
+    }
 }
