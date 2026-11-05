@@ -994,16 +994,7 @@ actor SyncEngine {
         do {
             try FileManager.default.copyItem(at: sourceFile, to: staging)
             try Task.checkCancellation()
-            if FileManager.default.fileExists(atPath: destination.path) {
-                _ = try FileManager.default.replaceItemAt(
-                    destination,
-                    withItemAt: staging,
-                    backupItemName: nil,
-                    options: []
-                )
-            } else {
-                try FileManager.default.moveItem(at: staging, to: destination)
-            }
+            try LocalFolderWriter.place(staging, at: destination)
         } catch {
             try? FileManager.default.removeItem(at: staging)
             throw error
