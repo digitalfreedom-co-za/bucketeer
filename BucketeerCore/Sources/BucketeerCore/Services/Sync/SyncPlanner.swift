@@ -35,17 +35,18 @@ public enum SyncPlanner {
 
     public struct Plan: Sendable {
         public let upserts: [PlanEntry]
-        /// Destination-side keys that exist in the destination but not in
-        /// the source. Only populated for mirror jobs with
-        /// `deletePropagation == true`.
-        public let deletes: [String]
+        /// Destination objects, as listed, that exist in the destination
+        /// but not in the source. Only populated for mirror jobs with
+        /// `deletePropagation == true`. The listing identifies the version
+        /// to delete: a local file saved or replaced since then stays.
+        public let deletes: [S3Object]
         /// Source keys left alone because the destination would store
         /// them under the same name as another key.
         public let collisions: [String]
         /// Source objects whose destination copy is already current.
         public let unchanged: [S3Object]
 
-        public init(upserts: [PlanEntry], deletes: [String], collisions: [String] = [], unchanged: [S3Object] = []) {
+        public init(upserts: [PlanEntry], deletes: [S3Object], collisions: [String] = [], unchanged: [S3Object] = []) {
             self.upserts = upserts
             self.deletes = deletes
             self.collisions = collisions
@@ -166,7 +167,7 @@ public enum SyncPlanner {
             upserts.append(PlanEntry(source: s, destinationKey: destKey))
         }
 
-        var deletes: [String] = []
+        var deletes: [S3Object] = []
         if job.mode == .mirror && job.deletePropagation {
             // Destination-side keys whose corresponding relative path is
             // absent from the source. Filtered by the same include/exclude
@@ -189,7 +190,7 @@ public enum SyncPlanner {
                     continue
                 }
                 if !sourceRelatives.contains(naming.identity(of: relative)) {
-                    deletes.append(d.key)
+                    deletes.append(d)
                 }
             }
         }
