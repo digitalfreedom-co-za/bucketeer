@@ -13,6 +13,17 @@ before that is internal phase work on the `development` branch.
 
 ## [Unreleased] — `development` branch
 
+### Release review (2026-11-05)
+- A sync into a local folder no longer replaces a folder with a file of
+  the same name. The folder walk skips hidden files, so a folder holding
+  only hidden files (`.env`, `.git`) looked empty to the planner, and the
+  downloaded file replaced it together with its contents. The file is
+  now reported as failed and the folder stays. The replacement is a
+  single `rename(2)` beside the destination, which refuses a folder
+  itself, so a folder created while the file is being placed survives
+  as well. A file the sync overwrites keeps its permissions, so a
+  `0600` file stays private and a script stays executable.
+
 ### Provider compatibility (2026-11-04)
 - Request conditions (If-Match, If-None-Match, copy-source-if-match) are
   sent only to providers that document or were tested to enforce them:
