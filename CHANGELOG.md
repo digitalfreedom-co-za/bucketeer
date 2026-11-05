@@ -28,6 +28,10 @@ before that is internal phase work on the `development` branch.
   took its name, stays and is counted as failed. Deleted files go to the
   Trash, as a move job's local sources already did, instead of being
   removed for good.
+- A bucket mounted in Finder during the trial turns read-only once the
+  trial ends, instead of staying fully usable. The mount stays, so
+  Finder changes not uploaded yet are not dropped, and files stay
+  readable; creating, changing, renaming and deleting files needs Pro.
 
 ### Provider compatibility (2026-11-04)
 - Request conditions (If-Match, If-None-Match, copy-source-if-match) are

@@ -82,6 +82,18 @@ final class ExtensionContainer: Sendable {
         )
     }
 
+    /// Refuses changing a mounted bucket once Bucketeer Pro has lapsed.
+    /// The mount stays and reads keep working; unmounting would drop
+    /// Finder changes not uploaded yet.
+    func refuseIfReadOnly() throws {
+        guard FinderWriteAccess.appGroup.isReadOnly else { return }
+        throw NSError(
+            domain: NSCocoaErrorDomain,
+            code: NSFeatureUnsupportedError,
+            userInfo: [NSLocalizedDescriptionKey: "Changing files of a mounted bucket in Finder needs Bucketeer Pro. The files stay readable; open Bucketeer to unlock Pro."]
+        )
+    }
+
     /// Resolve the `(account, bucket)` tuple that a domain identifier
     /// encodes. Returns nil when the account no longer exists.
     func resolve(_ identifier: String) async throws -> (account: S3Account, bucket: String)? {
