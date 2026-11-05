@@ -86,6 +86,31 @@ struct VersionedDeleteTests {
         #expect(!FileManager.default.fileExists(atPath: untouched.path))
     }
 
+    @Test("A folder that took the listed file's place is kept with its contents")
+    func folderInPlaceOfListedFileIsKept() throws {
+        let (root, trash) = try makeRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let path = root.appendingPathComponent("notes.txt")
+        // A whole second, so the folder below can carry exactly this date.
+        let date = Date(timeIntervalSince1970: 1_700_000_000)
+        try Data().write(to: path)
+        try FileManager.default.setAttributes([.modificationDate: date], ofItemAtPath: path.path)
+        let listed = try fingerprint(of: "notes.txt", under: root)
+        // Between planning and deleting, the file becomes a folder with
+        // the listed date: a folder has no size, so only its type tells
+        // it apart.
+        try FileManager.default.removeItem(at: path)
+        try FileManager.default.createDirectory(at: path, withIntermediateDirectories: false)
+        try Data("keep".utf8).write(to: path.appendingPathComponent("keep.txt"))
+        try FileManager.default.setAttributes([.modificationDate: date], ofItemAtPath: path.path)
+
+        #expect(try !LocalFolderWriter.deleteIfUnchanged(relativeKey: "notes.txt", under: root,
+                                                         fingerprint: listed, discard: setAside(into: trash)))
+        #expect(try Data(contentsOf: path.appendingPathComponent("keep.txt")) == Data("keep".utf8))
+        #expect(try FileManager.default.contentsOfDirectory(atPath: root.path).sorted() == ["notes.txt", "trash"])
+        #expect(try FileManager.default.contentsOfDirectory(atPath: trash.path).isEmpty)
+    }
+
     @Test("A write through a handle opened before the move survives the source removal")
     func lateWriteThroughOpenHandleSurvives() throws {
         let (root, trash) = try makeRoot()

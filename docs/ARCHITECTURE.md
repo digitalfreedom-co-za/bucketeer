@@ -716,7 +716,13 @@ stateDiagram-v2
 All three paths end in `EntitlementManager.refresh()`, which reads
 `Transaction.currentEntitlements` and then calls `onStateChange`;
 `AppContainer` uses that hook to switch off menu bar mode once Pro
-lapses. `Transaction.updates` is observed for the app's lifetime, so
+lapses and to write `FinderWriteAccess` to the App Group defaults: until
+when mounts accept changes (the trial end during a trial, so they lock
+on time even while the app is not running). Existing Finder mounts are
+not removed, because that would drop changes not uploaded yet; once
+that date has passed, the File Provider extension refuses creating,
+deleting, renaming, moving and writing contents, and reading keeps
+working. `Transaction.updates` is observed for the app's lifetime, so
 purchases completed outside the paywall (another device, Family
 Sharing, a redeemed code, Ask to Buy) unlock Pro without a restart.
 The trial length lives only in `ProAccessResolver`. The paywall shows

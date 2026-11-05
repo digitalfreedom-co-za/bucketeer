@@ -91,6 +91,8 @@ final class EntitlementManager {
     /// True while a purchase or restore is in flight.
     private(set) var purchaseInProgress: Bool = false
 
+    /// When the running trial ends; `nil` outside a derived trial.
+    private var trialEndsAt: Date?
     private let now: @Sendable () -> Date
     private var transactionObserver: Task<Void, Never>?
     private var activationObserver: Task<Void, Never>?
@@ -158,16 +160,27 @@ final class EntitlementManager {
         }
     }
 
+    /// Until when `feature` stays unlocked without another refresh: the
+    /// trial end during a trial, `.distantFuture` for Pro, `.distantPast`
+    /// when locked. For state shared with processes that cannot refresh.
+    func unlockedUntil(_ feature: ProFeature) -> Date {
+        guard isUnlocked(feature) else { return .distantPast }
+        if case .trial = state, let trialEndsAt { return trialEndsAt }
+        return .distantFuture
+    }
+
     /// Re-derive `state` from the live StoreKit entitlements.
     func refresh() async {
         trialExpiryTimer?.cancel()
         trialExpiryTimer = nil
+        trialEndsAt = nil
         let reading = now()
         switch ProAccessResolver.resolve(await currentTransactions(), now: reading) {
         case .lifetime:
             state = .pro
             isTrialAvailable = false
         case .trial(let endsAt):
+            trialEndsAt = endsAt
             state = .trial(daysRemaining: ProAccessResolver.daysRemaining(until: endsAt, now: reading))
             isTrialAvailable = false
             scheduleTrialExpiryRefresh(after: endsAt.timeIntervalSince(reading))

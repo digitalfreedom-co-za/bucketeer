@@ -202,7 +202,7 @@ struct SyncPlannerTests {
             source: [object("keep.txt")],
             destination: [object("keep.txt"), object("orphan.txt")]
         )
-        #expect(plan.deletes == ["orphan.txt"])
+        #expect(plan.deletes.map(\.key) == ["orphan.txt"])
     }
 
     @Test("Mirror deletes respect exclude globs")
@@ -213,7 +213,7 @@ struct SyncPlannerTests {
             destination: [object("orphan.txt"), object("noise.log")]
         )
         // *.log is excluded from both upsert and delete consideration
-        #expect(plan.deletes == ["orphan.txt"])
+        #expect(plan.deletes.map(\.key) == ["orphan.txt"])
     }
 
     @Test("Mirror deletes respect include globs")
@@ -224,7 +224,7 @@ struct SyncPlannerTests {
             destination: [object("orphan.jpg"), object("orphan.txt")]
         )
         // Only files matching the include glob are eligible for deletion
-        #expect(plan.deletes == ["orphan.jpg"])
+        #expect(plan.deletes.map(\.key) == ["orphan.jpg"])
     }
 
     // MARK: - relativeKey helper
@@ -298,7 +298,7 @@ struct SyncPlannerTests {
             source: [object("keep.txt")],
             destination: [object("keep.txt"), object("orphan.txt")]
         )
-        #expect(plan.deletes == ["orphan.txt"])
+        #expect(plan.deletes.map(\.key) == ["orphan.txt"])
     }
 
     // MARK: - Local edits that keep the size
@@ -404,7 +404,7 @@ struct SyncPlannerTests {
             destinationNaming: .fileSystem(caseSensitive: false)
         )
         #expect(plan.collisions == ["a/b"])
-        #expect(plan.deletes == ["orphan.txt"])
+        #expect(plan.deletes.map(\.key) == ["orphan.txt"])
     }
 
     @Test("A source path that needs a folder where the destination keeps a file, or the reverse, is skipped")
