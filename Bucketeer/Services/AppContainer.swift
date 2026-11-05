@@ -282,10 +282,14 @@ final class AppContainer {
         }
         let activationController = AppActivationController()
         self.activationController = activationController
-        // A persisted menubar mode must not outlive the entitlement.
+        // A persisted menubar mode must not outlive the entitlement, and
+        // existing Finder mounts turn read-only with it. Tests stay off
+        // the App Group defaults.
+        let finderWriteAccess: FinderWriteAccess? = stores == .onDisk ? .appGroup : nil
         entitlementManager.onStateChange = { [weak entitlementManager, activationController] _ in
-            guard let entitlementManager,
-                  !entitlementManager.isUnlocked(.menubarBackground) else { return }
+            guard let entitlementManager else { return }
+            finderWriteAccess?.allowWrites(until: entitlementManager.unlockedUntil(.mountDrive))
+            guard !entitlementManager.isUnlocked(.menubarBackground) else { return }
             activationController.setMenubarMode(false)
         }
         let mountController = MountController(encryptionKeyStore: encryptionKeyStore)

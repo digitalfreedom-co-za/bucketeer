@@ -186,20 +186,11 @@ public enum LocalFolderWriter {
         throw POSIXError(POSIXErrorCode(rawValue: code) ?? .EIO)
     }
 
-    /// Delete a local file under the folder root. Idempotent — missing
-    /// files are silently OK because the sync engine may compute a
-    /// delete plan against a moved-since-then folder. Path-traversal
-    /// guarded so a mirror-delete plan with a hostile relative key
-    /// can't reach outside the chosen root.
-    public static func delete(relativeKey: String, under root: URL) throws {
-        let target = try safeChildURL(root: root, relativeKey: relativeKey)
-        guard FileManager.default.fileExists(atPath: target.path) else { return }
-        try FileManager.default.removeItem(at: target)
-    }
-
     /// Removes the file only while it still has `fingerprint`, i.e. was
     /// not saved again since it was listed. Returns `false` and keeps
-    /// the file when it changed; `true` when removed or already gone.
+    /// the file when it changed or a folder took its name; `true` when
+    /// removed or already gone. Path-traversal guarded so a hostile
+    /// relative key cannot reach outside `root`.
     ///
     /// The file is never unlinked: `discard` sets it aside (the Trash by
     /// default) and returns where it went. An editor that still has the
@@ -272,8 +263,10 @@ public enum LocalFolderWriter {
         let unchanged: Bool
         var location: URL?
         do {
-            let values = try claimed.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey])
-            unchanged = LocalFileFingerprint(
+            // A folder has no size, so its date alone could match: only a
+            // regular file can be the one that was listed.
+            let values = try claimed.resourceValues(forKeys: [.isRegularFileKey, .fileSizeKey, .contentModificationDateKey])
+            unchanged = values.isRegularFile == true && LocalFileFingerprint(
                 size: Int64(values.fileSize ?? 0),
                 modified: values.contentModificationDate ?? .distantPast
             ) == fingerprint

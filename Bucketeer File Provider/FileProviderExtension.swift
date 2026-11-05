@@ -146,6 +146,7 @@ final class FileProviderExtension: NSObject, @unchecked Sendable, NSFileProvider
                 return
             }
             do {
+                try container.refuseIfReadOnly()
                 try container.refuseIfEncrypted(domain.identifier.rawValue)
                 let created = try await FileProviderItemResolver.createItem(
                     template: itemTemplate,
@@ -186,6 +187,10 @@ final class FileProviderExtension: NSObject, @unchecked Sendable, NSFileProvider
                 return
             }
             do {
+                // Other fields (tags, last use) stay local and need no Pro.
+                if !changedFields.isDisjoint(with: [.contents, .filename, .parentItemIdentifier]) {
+                    try container.refuseIfReadOnly()
+                }
                 try container.refuseIfEncrypted(domain.identifier.rawValue)
                 let modified = try await FileProviderItemResolver.modifyItem(
                     item: item,
@@ -225,6 +230,7 @@ final class FileProviderExtension: NSObject, @unchecked Sendable, NSFileProvider
                 return
             }
             do {
+                try container.refuseIfReadOnly()
                 try await FileProviderItemResolver.deleteItem(
                     identifier: identifier,
                     baseVersion: version,
