@@ -288,7 +288,7 @@ final class AppContainer {
         let finderWriteAccess: FinderWriteAccess? = stores == .onDisk ? .appGroup : nil
         entitlementManager.onStateChange = { [weak entitlementManager, activationController] _ in
             guard let entitlementManager else { return }
-            finderWriteAccess?.setReadOnly(!entitlementManager.isUnlocked(.mountDrive))
+            finderWriteAccess?.allowWrites(until: entitlementManager.unlockedUntil(.mountDrive))
             guard !entitlementManager.isUnlocked(.menubarBackground) else { return }
             activationController.setMenubarMode(false)
         }

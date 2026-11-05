@@ -86,7 +86,7 @@ final class ExtensionContainer: Sendable {
     /// The mount stays and reads keep working; unmounting would drop
     /// Finder changes not uploaded yet.
     func refuseIfReadOnly() throws {
-        guard FinderWriteAccess.appGroup.isReadOnly else { return }
+        guard !FinderWriteAccess.appGroup.allowsWrites(at: Date()) else { return }
         throw NSError(
             domain: NSCocoaErrorDomain,
             code: NSFeatureUnsupportedError,
