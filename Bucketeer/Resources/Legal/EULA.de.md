@@ -1,14 +1,14 @@
-<!-- doc-id: BUCKETEER_EULA | lang: de | area: app | version: 1.0.0 | valid-from: 2026-11-02 | translation-of: BUCKETEER_EULA en 1.0.0 (EULA.md) | review: not counsel-reviewed | owner: Marcel R. G. Berger -->
+<!-- doc-id: BUCKETEER_EULA | lang: de | area: app | version: 1.0.0 | valid-from: 2026-11-02 | translation-of: BUCKETEER_EULA en 1.0.0 (EULA.md) | review: not counsel-reviewed; AI legal review (Anwalt role) completed 2026-11-09, not a licensed counsel review | owner: Marcel R. G. Berger -->
 # Endbenutzer-Lizenzvertrag
 
 *Die Bedingungen, zu denen du Bucketeer für macOS installieren und nutzen darfst.*
 
-**Anwendung** — Bucketeer für macOS, einschließlich seiner Finder-Erweiterung
+**Anwendung**: Bucketeer für macOS, einschließlich seiner Finder-Erweiterung
 (die "App")
-**Herausgeber** — DigitalFreedom, eine Marke der DigitalFreedom Global LLC,
+**Herausgeber**: DigitalFreedom, eine Marke der DigitalFreedom Global LLC,
 30 N Gould St, Ste N, Sheridan, WY 82801, United States
-**Kontakt** — hello@digitalfreedom.co.za · https://digitalfreedom.co.za
-**Gültig ab** — 2. November 2026
+**Kontakt**: hello@digitalfreedom.co.za · https://digitalfreedom.co.za
+**Gültig ab**: 2. November 2026
 
 ---
 
@@ -22,7 +22,7 @@
   erneut berechnet (Abschnitt 4).
 - Die App läuft auf deinem Mac. Der Herausgeber betreibt dafür keinen
   Server und kein Benutzerkonto (Abschnitt 8).
-- Die App enthält Open-Source-Komponenten, die in den Open-Source-Hinweisen
+- Die App enthält Open-Source-Komponenten, die in den Open Source Notices
   aufgeführt sind (Abschnitt 3).
 
 ---
@@ -61,10 +61,11 @@ Apple-Medienservices erlauben.
 
 Mit der App gebündelte Open-Source-Komponenten unterliegen ihren eigenen
 Lizenzen, die dieser Vertrag nicht einschränkt. Siehe **Open Source
-Notices** im Über-Fenster.
+Notices** im Bereich Open Source des Fensters Über Bucketeer.
 
 Der Quellcode der App wird gesondert unter der **Source-Available
-License** veröffentlicht (siehe **License** im Über-Fenster). Für den
+License** veröffentlicht (siehe Bereich **Lizenz** im Fenster Über
+Bucketeer). Für den
 Quellcode gilt diese Lizenz, nicht dieser Vertrag.
 
 ---
@@ -83,12 +84,12 @@ der App angezeigt, bevor sie beginnt. Wenn die Testphase endet, kehrt die
 App zur kostenlosen Version zurück. Für die Testphase wird nichts
 berechnet.
 
-**Produkt** — Bucketeer Pro (Lifetime)
-**Art** — einmaliger, nicht verbrauchbarer In-App-Kauf; kein Abonnement,
+**Produkt**: Bucketeer Pro (Lifetime)
+**Art**: einmaliger, nicht verbrauchbarer In-App-Kauf; kein Abonnement,
 keine Verlängerung
-**Preis** — wird vor dem Kauf in der App und im App Store in deiner
+**Preis**: wird vor dem Kauf in der App und im App Store in deiner
 Landeswährung angezeigt
-**Familienfreigabe** — aktiviert
+**Familienfreigabe**: aktiviert
 
 Der Kauf wird von Apple abgewickelt. In der EU/im EWR, im Vereinigten
 Königreich, in der Schweiz und in der Türkei verkauft Apple im eigenen
@@ -156,8 +157,8 @@ Umgang mit Daten.
 Die App verarbeitet deine Daten auf deinem Mac und sendet sie nur an die
 Speicher-Endpunkte, die du einrichtest, und für den Kauf an Apple. Der
 Herausgeber erhält weder deine Zugangsdaten noch Auflistungen noch
-Dateien. Die **Datenschutzerklärung** im Über-Fenster beschreibt die
-Einzelheiten.
+Dateien. Die **Datenschutzerklärung** im Bereich Datenschutz des Fensters
+Über Bucketeer beschreibt die Einzelheiten.
 
 ---
 
@@ -189,8 +190,8 @@ vor.
 ## 11. Haftungsbeschränkung
 
 Soweit gesetzlich zulässig, haftet der Herausgeber nicht für indirekte
-Schäden oder Folgeschäden oder für den Verlust von Daten, Gewinnen oder
-Geschäften, und seine Gesamthaftung ist auf den Betrag begrenzt, den du
+Schäden oder Folgeschäden oder für Datenverlust, entgangenen Gewinn oder
+entgangene Geschäfte, und seine Gesamthaftung ist auf den Betrag begrenzt, den du
 für Bucketeer Pro bezahlt hast.
 
 Diese Beschränkungen gelten nicht für: (a) vorsätzlich oder grob
@@ -217,8 +218,8 @@ Schäden führen könnte.
 Du kannst diesen Vertrag jederzeit beenden, indem du die App löschst. Der
 Herausgeber kann ihn beenden, wenn du ihn wesentlich verletzt und die
 Verletzung, soweit sie behebbar ist, nicht innerhalb einer angemessenen
-Frist nach Aufforderung behebst. Im Übrigen kann der Herausgeber einen
-Kauf von Bucketeer Pro nicht widerrufen. Zwingende gesetzliche Rechte
+Frist nach Aufforderung behebst. Darüber hinaus kann der Herausgeber dir
+einen Kauf von Bucketeer Pro nicht entziehen. Zwingende gesetzliche Rechte
 bleiben unberührt.
 
 ---
@@ -333,7 +334,8 @@ verantwortlich.
 
 **17.7 Einhaltung von Gesetzen.** Du versicherst, dass du dich nicht in
 einem Land befindest, das einem Embargo der US-Regierung unterliegt oder
-von der US-Regierung als Terror unterstützendes Land eingestuft ist, und
+von der US-Regierung als den Terrorismus unterstützendes Land eingestuft
+ist, und
 dass du auf keiner Liste der US-Regierung mit verbotenen oder
 eingeschränkten Parteien geführt wirst.
 
@@ -355,7 +357,8 @@ gegenüber durchzusetzen.
 
 ## 18. Salvatorische Klausel und Änderungen
 
-Ist eine Bestimmung dieses Vertrags unwirksam, bleibt der Rest wirksam.
+Ist eine Bestimmung dieses Vertrags unwirksam, bleiben die übrigen
+Bestimmungen wirksam.
 Wenn sich dieser Vertrag ändert, ändert sich das Datum "Gültig ab" oben,
 und die App-Store-Versionshinweise der betreffenden Version weisen darauf
 hin.

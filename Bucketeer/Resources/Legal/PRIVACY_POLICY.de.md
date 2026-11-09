@@ -1,18 +1,18 @@
-<!-- doc-id: BUCKETEER_PRIVACY_POLICY | lang: de | area: app | version: 1.0.0 | valid-from: 2026-11-02 | translation-of: BUCKETEER_PRIVACY_POLICY en 1.0.0 (PRIVACY_POLICY.md) | review: not counsel-reviewed | owner: Marcel R. G. Berger -->
+<!-- doc-id: BUCKETEER_PRIVACY_POLICY | lang: de | area: app | version: 1.0.0 | valid-from: 2026-11-02 | translation-of: BUCKETEER_PRIVACY_POLICY en 1.0.0 (PRIVACY_POLICY.md) | review: not counsel-reviewed; AI legal review (Anwalt role) completed 2026-11-09, not a licensed counsel review | owner: Marcel R. G. Berger -->
 # Datenschutzerklärung
 
 *Wie Bucketeer für macOS mit deinen Daten umgeht.*
 
-**Anwendung** — Bucketeer für macOS, einschließlich seiner Finder-Erweiterung
+**Anwendung**: Bucketeer für macOS, einschließlich seiner Finder-Erweiterung
 ("Bucketeer File Provider")
-**Gültig ab** — 2. November 2026
+**Gültig ab**: 2. November 2026
 
-**Verantwortlicher** — DigitalFreedom Global LLC (handelnd als DigitalFreedom),
+**Verantwortlicher**: DigitalFreedom Global LLC (handelnd als DigitalFreedom),
 30 N Gould St, Ste N, Sheridan, WY 82801, United States
-**Kontakt für Datenschutz** — data-protection@digitalfreedom.co.za ·
+**Kontakt für Datenschutz**: data-protection@digitalfreedom.co.za ·
 Anfrageformular https://data-protection.digitalfreedom.co.za
-**Allgemeiner Kontakt** — hello@digitalfreedom.co.za
-**Website** — https://digitalfreedom.co.za
+**Allgemeiner Kontakt**: hello@digitalfreedom.co.za
+**Website**: https://digitalfreedom.co.za
 
 ---
 
@@ -153,7 +153,7 @@ verarbeiten wir deinen Namen, deine E-Mail-Adresse, den Inhalt deiner
 Nachricht und etwaige Anhänge, um dir zu antworten. Rechtsgrundlage:
 Art. 6 Abs. 1 lit. b DSGVO, soweit deine Anfrage deinen Kauf oder deine
 Nutzung der App betrifft, ansonsten Art. 6 Abs. 1 lit. f DSGVO (unser
-Interesse, Anfragen zu beantworten). Die Bearbeitung von
+berechtigtes Interesse, Anfragen zu beantworten). Die Bearbeitung von
 Support-Anfragen, die beteiligten Helpdesk-Anbieter und deren
 Speicherfristen sind in den Datenschutzhinweisen des Helpdesks
 beschrieben, die im Support-Portal unter
@@ -208,7 +208,7 @@ Daten auf deinem Mac bleiben erhalten, bis du sie in der App, im Finder
 oder in der Schlüsselbundverwaltung löschst, mit diesen automatischen
 Grenzen: Aktivitätsprotokoll 180 Tage, Papierkorbeinträge nach der von
 dir festgelegten Aufbewahrungsdauer (Standard 30 Tage), Vorschau-Cache
-begrenzt auf 2 GiB. Der Anbieter hat von keinen dieser Daten eine Kopie.
+begrenzt auf 2 GiB. Der Anbieter hat keine Kopie dieser Daten.
 Support-Korrespondenz wird so lange aufbewahrt, wie in den
 Datenschutzhinweisen des Helpdesks angegeben.
 

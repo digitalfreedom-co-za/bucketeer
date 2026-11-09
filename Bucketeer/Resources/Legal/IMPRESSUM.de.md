@@ -1,11 +1,11 @@
-<!-- doc-id: BUCKETEER_IMPRESSUM | lang: de | area: app | version: 1.0.0 | valid-from: 2026-11-02 | translation-of: BUCKETEER_IMPRESSUM en 1.0.0 (IMPRESSUM.md) | review: not counsel-reviewed | owner: Marcel R. G. Berger -->
+<!-- doc-id: BUCKETEER_IMPRESSUM | lang: de | area: app | version: 1.0.1 | valid-from: 2026-11-09 | translation-of: BUCKETEER_IMPRESSUM en 1.0.1 (IMPRESSUM.md) | review: not counsel-reviewed; AI legal review (Anwalt role) completed 2026-11-09, not a licensed counsel review | owner: Marcel R. G. Berger -->
 # Impressum
 
 *Angaben gemäß § 5 DDG (Digitale-Dienste-Gesetz) und den anwendbaren
 internationalen Offenlegungspflichten.*
 
-**Anwendung** — Bucketeer für macOS
-**Stand** — 2. November 2026
+**Anwendung**: Bucketeer für macOS
+**Stand**: 9. November 2026
 
 ---
 
@@ -21,28 +21,33 @@ United States
 
 Handelsname: **DigitalFreedom**
 
-**E-Mail** — hello@digitalfreedom.co.za
-**Support-Formular** — https://support.apps.digitalfreedom.co.za
-**Website** — https://digitalfreedom.co.za
+**E-Mail**: hello@digitalfreedom.co.za
+**Support-Formular**: https://support.apps.digitalfreedom.co.za
+**Website**: https://digitalfreedom.co.za
 
 ---
 
 ## 2. Rechtsform
 
 Limited Liability Company (LLC) nach dem Recht des Bundesstaats Wyoming,
-Vereinigte Staaten von Amerika, vertreten durch ihre Mitglieder.
+Vereinigte Staaten von Amerika.
+
+**Vertretungsberechtigte**
+
+M. Berger
+J. Rosenstock
 
 ---
 
 ## 3. Kontakt
 
-**Allgemeine Anfragen** — hello@digitalfreedom.co.za
-**Kundensupport** — support@digitalfreedom.co.za
-**Support-Formular** — https://support.apps.digitalfreedom.co.za
-**Datenschutzanfragen** — data-protection@digitalfreedom.co.za
-**Datenschutz-Anfrageformular** — https://data-protection.digitalfreedom.co.za
-**Meldungen von Sicherheitslücken** — security@digitalfreedom.co.za
-**Formular für Sicherheitsmeldungen** — https://security.digitalfreedom.co.za
+**Allgemeine Anfragen**: hello@digitalfreedom.co.za
+**Kundensupport**: support@digitalfreedom.co.za
+**Support-Formular**: https://support.apps.digitalfreedom.co.za
+**Datenschutzanfragen**: data-protection@digitalfreedom.co.za
+**Datenschutz-Anfrageformular**: https://data-protection.digitalfreedom.co.za
+**Meldungen von Sicherheitslücken**: security@digitalfreedom.co.za
+**Formular für Sicherheitsmeldungen**: https://security.digitalfreedom.co.za
 
 ---
 
@@ -61,16 +66,16 @@ des § 5 Abs. 1 Nr. 5 DDG aus.
 ### 4.3 Kontaktstellen nach dem Digital Services Act
 
 **Kontaktstelle für Behörden der Mitgliedstaaten, die Kommission und das
-Europäische Gremium für digitale Dienste (Art. 11 DSA)** —
+Europäische Gremium für digitale Dienste (Art. 11 DSA)**:
 hello@digitalfreedom.co.za
 
-**Kontaktstelle für Nutzer des Dienstes (Art. 12 DSA)** —
+**Kontaktstelle für Nutzer des Dienstes (Art. 12 DSA)**:
 support@digitalfreedom.co.za oder das oben genannte Support-Formular
 
 Beide Kontaktstellen werden von einem Menschen betreut. Akzeptierte
 Sprachen: Englisch und Deutsch.
 
-**Rechtsvertreter in der Union (Art. 13 DSA)** — keiner benannt.
+**Rechtsvertreter in der Union (Art. 13 DSA)**: keiner benannt.
 
 ---
 
@@ -89,9 +94,9 @@ Vereinigten Königreich, in der Schweiz und in der Türkei verkauft Apple
 im eigenen Namen; in allen anderen Storefronts verkauft Apple als
 Vertreter des Anbieters.
 
-Der Quellcode wird unter
-https://github.com/digitalfreedom-co-za/bucketeer unter der im Dokument
-**License** beschriebenen Source-Available License veröffentlicht. Die
+Der Quellcode ist auf https://github.com/digitalfreedom-co-za/bucketeer
+veröffentlicht, und zwar unter der Source-Available License, die im
+Bereich **Lizenz** des Fensters Über Bucketeer wiedergegeben ist. Die
 Veröffentlichung des Quellcodes ist kein Vertrieb der App.
 
 ---
@@ -120,9 +125,9 @@ dem VSBG teilzunehmen, es sei denn, das Gesetz schreibt dies vor.
 Der Anbieter ist für seine eigenen Inhalte in der App und auf seiner
 Website nach den allgemeinen Gesetzen verantwortlich.
 
-Bucketeer verbindet sich mit S3-kompatiblen Endpunkten und Azure Blob
-Storage-Konten, die du selbst einrichtest. Die dort gespeicherten Objekte
-sind deine Inhalte oder Inhalte Dritter; der Anbieter hostet sie weder,
+Bucketeer verbindet sich mit S3-kompatiblen Endpunkten und
+Azure-Blob-Storage-Konten, die du selbst einrichtest. Die dort gespeicherten
+Objekte sind deine Inhalte oder Inhalte Dritter; der Anbieter hostet sie weder,
 noch sieht er sie. Eine allgemeine Pflicht zur Überwachung fremder
 übermittelter oder gespeicherter Informationen besteht nicht (Art. 8 der
 Verordnung (EU) 2022/2065, anwendbar über § 7 Abs. 1 DDG). Verpflichtungen
@@ -153,7 +158,8 @@ Rechts hinaus bedürfen der schriftlichen Zustimmung des Anbieters.
 
 Der Quellcode ist unter der **Source-Available License** lizenziert. In
 der App gebündelte Open-Source-Komponenten behalten ihre eigenen Lizenzen;
-siehe **Open Source Notices** im Über-Fenster.
+siehe **Open Source Notices** im Bereich Open Source des Fensters Über
+Bucketeer.
 
 ---
 

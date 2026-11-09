@@ -68,7 +68,8 @@ The Bucketeer texts are product adaptations of the legal repo baselines
 not recorded; the header names the version the legal repo carries at
 b938e59 for reference only. Version 1.0.0 is the first versioned state of the
 Bucketeer text. Each German file names the English doc-id and version it
-translates and is marked `review: not counsel-reviewed`. The in-app renderer
+translates and is marked `review: not counsel-reviewed`. AI legal review
+(Anwalt role) completed 2026-11-09; not a licensed counsel review. The in-app renderer
 skips single-line HTML comments, so the headers are not shown to the reader.
 
 When an English document changes, bump its version, update the German sibling
@@ -79,7 +80,8 @@ sync.
 
 - The verified storefront and language list from App Store Connect. Until it is
   known, only `en` and `de` are generated.
-- Counsel review of the German texts before they are published.
+- Counsel review of the German texts before they are published. AI legal
+  review (Anwalt role) completed 2026-11-09; not a licensed counsel review.
 - Whether further languages are required once the list is known. The
   localization policy names `cs da de el es fi fr hu it ja ko nb nl pl pt sv tr`
   as the store tier. French in particular may be needed for consumers in

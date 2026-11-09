@@ -1,11 +1,11 @@
-<!-- doc-id: BUCKETEER_IMPRESSUM | lang: en | area: app | version: 1.0.0 | valid-from: 2026-11-02 | baseline: legal website/IMPRESSUM.en.md, Bucketeer product adaptation; baseline version at derivation not recorded (legal b938e59 carries IMPRESSUM 1.5.1) | owner: Marcel R. G. Berger -->
+<!-- doc-id: BUCKETEER_IMPRESSUM | lang: en | area: app | version: 1.0.1 | valid-from: 2026-11-09 | baseline: legal website/IMPRESSUM.en.md, Bucketeer product adaptation; baseline version at derivation not recorded (legal b938e59 carries IMPRESSUM 1.5.1) | owner: Marcel R. G. Berger -->
 # Impressum / Legal Notice
 
 *Information pursuant to § 5 DDG (Digitale-Dienste-Gesetz) and the
 applicable international disclosure requirements.*
 
 **Application** — Bucketeer for macOS
-**Last updated** — 2 November 2026
+**Last updated** — 9 November 2026
 
 ---
 
@@ -30,7 +30,12 @@ Trade name: **DigitalFreedom**
 ## 2. Legal form
 
 Limited Liability Company (LLC) under the laws of the State of Wyoming,
-United States of America, represented by its members.
+United States of America.
+
+**Authorized representatives**
+
+M. Berger
+J. Rosenstock
 
 ---
 
