@@ -172,6 +172,11 @@ classification of the client-side AES-256-GCM encryption (Phase
 Full reasoning and the steps for adding France later:
 `docs/EXPORT_COMPLIANCE.md`.
 
+France is one of five deselected markets. The full availability
+matrix, with Mainland China, Egypt, Saudi Arabia and Russia from the
+legal baseline, is in `docs/AVAILABILITY.md`; the pre-submission check
+is in `docs/RELEASE_v1.0.md` section 2.
+
 ## In-App Purchases
 
 | Field | Value |
