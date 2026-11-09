@@ -1,3 +1,4 @@
+<!-- doc-id: BUCKETEER_IMPRESSUM | lang: en | area: app | version: 1.0.0 | valid-from: 2026-11-02 | baseline: legal website/IMPRESSUM.en.md, Bucketeer product adaptation; baseline version at derivation not recorded (legal b938e59 carries IMPRESSUM 1.5.1) | owner: Marcel R. G. Berger -->
 # Impressum / Legal Notice
 
 *Information pursuant to § 5 DDG (Digitale-Dienste-Gesetz) and the
