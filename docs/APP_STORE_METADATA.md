@@ -255,9 +255,10 @@ Proposed en-US drafts, pending approval:
 |---|---|---|
 | Name | `Bucketeer: S3 & Azure Storage` | 29 of 30 |
 | Subtitle | `Browse, sync & mount buckets` | 28 of 30 |
-| Keywords (variant B, no company names) | `cloud,object,blob,upload,transfer,file,client,r2,b2,drive,encryption,explorer,mirror` | 84 of 100 bytes |
-| Keywords (variant A, with provider names) | `aws,cloud,object,blob,r2,b2,backblaze,wasabi,minio,upload,transfer,file,client,drive,encryption` | 95 of 100 bytes |
+| Keywords (approved direction) | `aws,cloud,object,blob,r2,b2,backblaze,wasabi,minio,upload,transfer,client,drive,encryption,backup` | 97 of 100 bytes |
 
-For every locale, the keyword field should drop `s3`, `azure` and
-`blob` where name or subtitle already contain them. German drafts and
-the approach for the other locales are in the research document.
+Marcello 2026-11-09 Europe/Rome: include everything (provider names
+and generic terms, including `backup`). Still draft only; no App Store
+Connect write. Drop `s3` and `azure` from the keyword field where the
+name already carries them. German drafts and other locales: research
+document, same direction.

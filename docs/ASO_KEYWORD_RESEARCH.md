@@ -250,7 +250,7 @@ The older Astro note in the ASO toolkit (`apps/bucketeer/bucketeer.md`,
 2026-05-23) proposed `ftp` and `sftp` for the keyword field. Bucketeer
 1.0 supports neither, so they stay out.
 
-### 6.3 Open policy question: provider names in the keyword field
+### 6.3 Provider names in the keyword field (resolved)
 
 Apple's keyword reference says "Names of other apps or companies
 aren't allowed", and guideline 2.3.7 warns against trademarked terms
@@ -287,8 +287,7 @@ assumption.
 |---|---|---|---|
 | Name | `Bucketeer – Object Storage` | `Bucketeer: S3 & Azure Storage` | 29 of 30 |
 | Subtitle | `S3 and Azure Blob file browser` | `Browse, sync & mount buckets` | 28 of 30 |
-| Keywords, variant B (recommended) | see 4.1 | `cloud,object,blob,upload,transfer,file,client,r2,b2,drive,encryption,explorer,mirror` | 84 of 100 bytes |
-| Keywords, variant A (with provider names) | see 4.1 | `aws,cloud,object,blob,r2,b2,backblaze,wasabi,minio,upload,transfer,file,client,drive,encryption` | 95 of 100 bytes |
+| Keywords (approved: providers + generics + backup) | see 4.1 | `aws,cloud,object,blob,r2,b2,backblaze,wasabi,minio,upload,transfer,client,drive,encryption,backup` | 97 of 100 bytes |
 | Promotional text | 157 characters | keep the current ASC text | 157 of 170 |
 
 Reasoning (expert judgment applied to the measured values):
@@ -322,8 +321,7 @@ Reasoning (expert judgment applied to the measured values):
 |---|---|---|---|
 | Name | `Bucketeer – Object Storage` | `Bucketeer: S3 & Azure Speicher` | 30 of 30 |
 | Subtitle | `Dateibrowser für S3 und Azure` | `Sync & Mount für Buckets` | 24 of 30 |
-| Keywords, variant B | see 4.2 | `cloud,synchronisieren,blob,object,storage,upload,laufwerk,datei,transfer,verschlüsselung,r2,b2` | 95 of 100 bytes |
-| Keywords, variant A | see 4.2 | `aws,cloud,synchronisieren,blob,object,r2,b2,backblaze,wasabi,upload,laufwerk,datei,verschlüsselung` | 99 of 100 bytes |
+| Keywords (approved direction) | see 4.2 | `aws,cloud,sync,blob,object,r2,b2,backblaze,wasabi,upload,laufwerk,datei,backup,verschlüsselung` | 95 of 100 bytes |
 
 Reasoning: in the DE storefront `s3` alone shows little demand (9)
 while `sync` (39), `azure` (37), `speicher` (37) and
@@ -383,20 +381,24 @@ Attribution limits:
 - No App Store mechanism A/B tests text metadata, so text changes are
   before and after comparisons with all their seasonal noise.
 
-## 9. Open questions
+## 9. Decisions and remaining questions
+
+Resolved 2026-11-09 Europe/Rome (Marcello):
+
+1. Keywords: include everything. Use provider names and generic terms,
+   including `backup`. Chosen en-US keyword draft (100 of 100 bytes):
+   `aws,cloud,object,blob,r2,b2,backblaze,wasabi,minio,upload,transfer,client,drive,encryption,backup`.
+   Still research/draft only. No App Store Connect write.
+
+Still open:
 
 1. ASC listing verification: the ASC drafts (20 locales) are ahead of
    `APP_STORE_METADATA.md`. Should ASC become the source of truth, or
    should the repo document be synced from ASC?
-2. Provider names in the keyword field: variant A or variant B
-   (section 6.3)?
-3. Name change from `Bucketeer – Object Storage` to
+2. Name change from `Bucketeer – Object Storage` to
    `Bucketeer: S3 & Azure Storage` before the first submission?
-4. Paid ASO tool access: Astro provides relative popularity and
+3. Paid ASO tool access: Astro provides relative popularity and
    difficulty scores only. Is access to Apple Search Ads popularity or
    another ASO tool with search volume estimates available?
-5. Locale priority after en-US and de-DE: which storefronts matter
-   most for Marcello? Each needs an Astro measurement and a native
-   speaker review.
-6. Is `backup` an intended positioning for the free 16 bytes in
-   variant B?
+4. Locale priority after en-US and de-DE: which storefronts matter
+   most? Each needs an Astro measurement and a native speaker review.
