@@ -91,10 +91,11 @@ side encryption, hardware-key preview).
 
 ## Support period (draft)
 
-Status: draft. The end month and year are not yet published because
-the first market placement of v1.0 is not verified. Fill them in only
-from the verified App Store release date, and use the same month and
-year in this listing, in the About window and in
+Status: draft for planned first placement. Marcello confirmed
+2026-11-09 Europe/Rome that v1.0 is planned for November 2026 (not
+yet live). Five-year floor: at least November 2031. Once the listing
+is live, replace "planned" with the verified release month and year
+in this listing, in the About window and in
 `docs/SUPPORT_AND_UPDATE.md`. Baseline: legal
 `shared/SUPPORT_AND_UPDATE_POLICY.en.md` version 2.0.0, EULA section 9.
 
@@ -103,15 +104,15 @@ Proposed copy for the end of the Description:
 > ### Support period
 >
 > Bucketeer v1.0 receives security and conformity updates until at
-> least [MONTH YEAR, to be filled when first placement is verified],
-> five years from the day this version was placed on the market. The
-> support period covers security fixes and the fixes needed to keep
-> the app working as described. It does not promise new features,
-> support for macOS versions Apple no longer supports, or that the
-> app stays on sale. Details in the EULA, section 9.
+> least November 2031, five years from the planned first market
+> placement in November 2026. The support period covers security
+> fixes and the fixes needed to keep the app working as described. It
+> does not promise new features, support for macOS versions Apple no
+> longer supports, or that the app stays on sale. Details in the
+> EULA, section 9.
 
-Do not upload this block while the bracketed placeholder is still in
-it.
+Do not upload this block until the November 2026 placement is live
+and the month has been verified against the App Store release date.
 
 ## Keywords (100 chars max — comma-separated, no spaces around commas)
 

@@ -43,8 +43,11 @@ of the App or Bucketeer Pro.
 
 | Version | Market placement | Support period ends | Status |
 |---|---|---|---|
-| 1.0 | to be filled when first placement is verified | to be filled when first placement is verified | open |
+| 1.0 | November 2026 (planned, not yet live) | at least November 2031 | planned |
 
-Fill in a row only from the verified App Store release date. The same
-month and year then go into `docs/APP_STORE_METADATA.md` and the About
+Planned first market placement for v1.0 is November 2026 (confirmed by
+Marcello 2026-11-09 Europe/Rome). The five-year floor therefore runs
+until at least November 2031. Replace "planned" with the verified App
+Store release month and year once the listing is live, and use the
+same month and year in `docs/APP_STORE_METADATA.md` and the About
 window.
