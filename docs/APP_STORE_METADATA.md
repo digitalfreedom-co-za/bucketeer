@@ -234,3 +234,30 @@ one) so the data looks plausible.
 - [ ] First push to `test` → verify TestFlight upload
 - [ ] Promote `test` → `beta` for external testers
 - [ ] Promote `beta` → `main` for production submission
+
+---
+
+## ASO draft recommendations (not live)
+
+Research from ticket #2, captured 2026-11-09. Nothing in this section
+has been written to App Store Connect. Evidence, metric sources and
+open questions: [`ASO_KEYWORD_RESEARCH.md`](ASO_KEYWORD_RESEARCH.md).
+
+App Store Connect already holds draft name, subtitle, keywords,
+promotional text and description for all 20 store locales (version
+1.0, `PREPARE_FOR_SUBMISSION`, not public). Those drafts differ from
+the Subtitle and Keywords sections above; ASC is the copy that would
+ship.
+
+Proposed en-US drafts, pending approval:
+
+| Field | Draft | Length |
+|---|---|---|
+| Name | `Bucketeer: S3 & Azure Storage` | 29 of 30 |
+| Subtitle | `Browse, sync & mount buckets` | 28 of 30 |
+| Keywords (variant B, no company names) | `cloud,object,blob,upload,transfer,file,client,r2,b2,drive,encryption,explorer,mirror` | 84 of 100 bytes |
+| Keywords (variant A, with provider names) | `aws,cloud,object,blob,r2,b2,backblaze,wasabi,minio,upload,transfer,file,client,drive,encryption` | 95 of 100 bytes |
+
+For every locale, the keyword field should drop `s3`, `azure` and
+`blob` where name or subtitle already contain them. German drafts and
+the approach for the other locales are in the research document.
