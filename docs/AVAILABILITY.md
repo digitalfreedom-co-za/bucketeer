@@ -13,7 +13,7 @@ one of those places.
 | Egypt | Deselect | Portfolio legal baseline |
 | Saudi Arabia | Deselect | Portfolio legal baseline |
 | Russia | Deselect | Portfolio legal baseline |
-| France | Deselect for v1.0 | Bucketeer export compliance (ANSSI) |
+| France | Deselect for v1.0 (confirmed) | Bucketeer export compliance (ANSSI); confirmed by Marcello 2026-11-09 Europe/Rome |
 | Every other storefront Apple serves | Offered | Portfolio legal baseline |
 
 GDPR remains the global floor for every actual user of the App,
@@ -33,6 +33,10 @@ wherever they live (Privacy Policy §2).
   [`APP_STORE_METADATA.md`](APP_STORE_METADATA.md). France stays
   deselected while the key is `NO` and no ANSSI declaration has been
   filed.
+
+## Decision log
+
+- 2026-11-09 Europe/Rome: Marcello confirmed France remains deselected for Bucketeer v1.0. ASC Pricing and Availability evidence is still outstanding.
 
 ## Live App Store Connect configuration
 
