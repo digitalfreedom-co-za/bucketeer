@@ -83,7 +83,10 @@ final class SpotlightIndexer {
             )
         }
         guard !items.isEmpty else { return }
-        try? await index.indexSearchableItems(items)
+        try? await Self.indexItems(
+            index: SpotlightBox(value: index),
+            items: SpotlightBox(value: items)
+        )
         rememberAccountDomain(account.id)
     }
 
@@ -101,7 +104,7 @@ final class SpotlightIndexer {
         var domains = trackedAccountDomains()
         domains.append(domainID)
         do {
-            try await index.deleteSearchableItems(withDomainIdentifiers: domains)
+            try await Self.deleteItems(index: SpotlightBox(value: index), domains: domains)
             defaults.removeObject(forKey: Self.indexedAccountsKey)
         } catch {
             // Leave the tracking set intact — a subsequent purgeAll
@@ -119,7 +122,7 @@ final class SpotlightIndexer {
     func purgeAccount(_ accountID: UUID) async {
         let target = Self.domain(for: accountID, baseDomain: domainID)
         do {
-            try await index.deleteSearchableItems(withDomainIdentifiers: [target])
+            try await Self.deleteItems(index: SpotlightBox(value: index), domains: [target])
             forgetAccountDomain(accountID)
         } catch {
             // Tracking set stays; the next purge attempt re-tries.
@@ -154,4 +157,25 @@ final class SpotlightIndexer {
         ids.remove(accountID.uuidString.lowercased())
         defaults.set(Array(ids), forKey: Self.indexedAccountsKey)
     }
+
+    // CSSearchableIndex and CSSearchableItem are not Sendable on the
+    // Xcode 16.0 SDK. Box them and hop through nonisolated helpers so
+    // the MainActor type does not send them across the await.
+    nonisolated private static func indexItems(
+        index: SpotlightBox<CSSearchableIndex>,
+        items: SpotlightBox<[CSSearchableItem]>
+    ) async throws {
+        try await index.value.indexSearchableItems(items.value)
+    }
+
+    nonisolated private static func deleteItems(
+        index: SpotlightBox<CSSearchableIndex>,
+        domains: [String]
+    ) async throws {
+        try await index.value.deleteSearchableItems(withDomainIdentifiers: domains)
+    }
+}
+
+private struct SpotlightBox<T>: @unchecked Sendable {
+    let value: T
 }

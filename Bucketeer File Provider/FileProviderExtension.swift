@@ -139,6 +139,9 @@ final class FileProviderExtension: NSObject, @unchecked Sendable, NSFileProvider
     ) -> Progress {
         let progress = Progress(totalUnitCount: 100)
         let ch = UncheckedSendable(value: completionHandler)
+        // NSFileProviderItem is not Sendable; wrap before Task so Xcode 16.0
+        // can transfer the closure.
+        let template = UncheckedSendable(value: itemTemplate)
         let task = Task {
             let completionHandler = ch.value
             guard let container = container else {
@@ -149,7 +152,7 @@ final class FileProviderExtension: NSObject, @unchecked Sendable, NSFileProvider
                 try container.refuseIfReadOnly()
                 try container.refuseIfEncrypted(domain.identifier.rawValue)
                 let created = try await FileProviderItemResolver.createItem(
-                    template: itemTemplate,
+                    template: template.value,
                     contents: url,
                     options: options,
                     in: domain,
@@ -180,6 +183,8 @@ final class FileProviderExtension: NSObject, @unchecked Sendable, NSFileProvider
     ) -> Progress {
         let progress = Progress(totalUnitCount: 100)
         let ch = UncheckedSendable(value: completionHandler)
+        let itemBox = UncheckedSendable(value: item)
+        let versionBox = UncheckedSendable(value: version)
         let task = Task {
             let completionHandler = ch.value
             guard let container = container else {
@@ -193,8 +198,8 @@ final class FileProviderExtension: NSObject, @unchecked Sendable, NSFileProvider
                 }
                 try container.refuseIfEncrypted(domain.identifier.rawValue)
                 let modified = try await FileProviderItemResolver.modifyItem(
-                    item: item,
-                    baseVersion: version,
+                    item: itemBox.value,
+                    baseVersion: versionBox.value,
                     changedFields: changedFields,
                     contents: newContents,
                     in: domain,
@@ -223,6 +228,7 @@ final class FileProviderExtension: NSObject, @unchecked Sendable, NSFileProvider
     ) -> Progress {
         let progress = Progress(totalUnitCount: 1)
         let ch = UncheckedSendable(value: completionHandler)
+        let versionBox = UncheckedSendable(value: version)
         let task = Task {
             let completionHandler = ch.value
             guard let container = container else {
@@ -233,7 +239,7 @@ final class FileProviderExtension: NSObject, @unchecked Sendable, NSFileProvider
                 try container.refuseIfReadOnly()
                 try await FileProviderItemResolver.deleteItem(
                     identifier: identifier,
-                    baseVersion: version,
+                    baseVersion: versionBox.value,
                     in: domain,
                     container: container
                 )

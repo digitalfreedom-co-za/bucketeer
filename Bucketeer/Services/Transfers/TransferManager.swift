@@ -433,10 +433,10 @@ actor TransferManager: Transferring {
         var encryptionCleanup: URL? = nil
         let encryptionKey: SymmetricKey?
         do {
-            encryptionKey = item.bypassEncryption ? nil : try await encryptionGate?.key(
+            encryptionKey = item.bypassEncryption ? nil : try await encryptionGate?.sendableKey(
                 accountID: item.account.id,
                 bucket: item.task.bucket
-            )
+            )?.key
         } catch {
             setState(id: id, state: .failed(message: errorMessage(error)))
             return
@@ -738,10 +738,10 @@ actor TransferManager: Transferring {
         guard BucketeerEnvelope.looksEncrypted(data) else { return nil }
         let lookedUpKey: SymmetricKey?
         do {
-            lookedUpKey = try await encryptionGate.key(
+            lookedUpKey = try await encryptionGate.sendableKey(
                 accountID: item.account.id,
                 bucket: item.task.bucket
-            )
+            )?.key
         } catch {
             return errorMessage(error)
         }
