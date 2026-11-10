@@ -4,7 +4,7 @@
 applicable international disclosure requirements.*
 
 **Application** — Bucketeer for macOS
-**Last updated** — 2 November 2026
+**Last updated** — 9 November 2026
 
 ---
 
@@ -12,6 +12,8 @@ applicable international disclosure requirements.*
 
 Bucketeer is offered under the **DigitalFreedom** brand. The operating
 legal entity (service provider within the meaning of § 5 DDG) is:
+
+[Why is the provider a US LLC?](https://getbucketeer.app/why-llc/)
 
 DigitalFreedom Global LLC
 30 N Gould St, Ste N
@@ -29,7 +31,9 @@ Trade name: **DigitalFreedom**
 ## 2. Legal form
 
 Limited Liability Company (LLC) under the laws of the State of Wyoming,
-United States of America, represented by its members.
+United States of America.
+
+**Authorized Representatives:** M. Berger, J. Rosenstock
 
 ---
 
@@ -70,6 +74,11 @@ Both contact points are handled by a person. Languages accepted:
 English and German.
 
 **Legal representative in the Union (Art. 13 DSA)** — none designated.
+
+### 4.4 Insurance
+
+Commercial general liability insurance and cyber and data risk insurance
+with Hiscox Insurance Company Inc.
 
 ---
 
