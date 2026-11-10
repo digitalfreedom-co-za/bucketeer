@@ -20,6 +20,12 @@ import BucketeerCore
 ///
 /// Caches recent lookups for 30 seconds so a multi-part upload
 /// doesn't slam the SwiftData store with one query per part.
+/// `SymmetricKey` is not Sendable on the Xcode 16.0 SDK. This box lets
+/// the key leave `BucketEncryptionGate` and enter `TransferManager`.
+struct SendableSymmetricKey: @unchecked Sendable {
+    let key: SymmetricKey
+}
+
 actor BucketEncryptionGate {
     private let keyStore: any EncryptionKeyStoring
     private struct CacheEntry {
@@ -55,6 +61,11 @@ actor BucketEncryptionGate {
             cache[cacheKey] = CacheEntry(key: resolved, expiresAt: Date().addingTimeInterval(ttl))
             return resolved
         }
+    }
+
+    /// Same lookup as `key`, boxed so a TransferManager actor can await it.
+    func sendableKey(accountID: UUID, bucket: String) async throws -> SendableSymmetricKey? {
+        try await key(accountID: accountID, bucket: bucket).map(SendableSymmetricKey.init(key:))
     }
 
     /// Routing helper (server-side copy or not). A failed lookup counts
