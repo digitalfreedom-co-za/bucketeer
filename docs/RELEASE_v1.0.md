@@ -103,6 +103,13 @@ credentials.
 - [ ] Upload App Store description, keywords, support / marketing /
       privacy URLs (drafts in the same doc)
 - [ ] Upload 9-shot screenshot set per locale
+- [ ] Before every submission, verify Pricing and Availability against
+      [`docs/AVAILABILITY.md`](AVAILABILITY.md) for the app and for the
+      IAP: Mainland China, Egypt, Saudi Arabia and Russia deselected
+      (legal baseline), and France deselected for v1.0
+      ([`docs/EXPORT_COMPLIANCE.md`](EXPORT_COMPLIANCE.md)). Record the
+      evidence in `docs/AVAILABILITY.md`. Live configuration is unknown
+      until then.
 
 ### 3. Xcode Cloud workflows
 - [x] Onboarding + four wiki workflows — **done 2026-07-05**. The

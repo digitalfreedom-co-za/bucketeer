@@ -35,9 +35,11 @@ request form https://data-protection.digitalfreedom.co.za
 
 ## 2. Global scope and GDPR as the baseline
 
-Bucketeer is distributed through the Mac App Store in every storefront
-Apple serves. This Policy applies to all users wherever they live. The
-provider applies the EU General Data Protection Regulation (GDPR) as a
+Bucketeer is distributed through the Mac App Store. It is not offered
+in the storefronts for Mainland China, Egypt, Saudi Arabia, Russia and
+France. This Policy applies to every user of the App wherever they
+live, including anyone who uses it outside the storefront where it was
+obtained. The provider applies the EU General Data Protection Regulation (GDPR) as a
 **global floor**: every user gets at least the protection described
 here. Where the law of your country of residence is more protective,
 that law applies.

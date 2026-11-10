@@ -27,8 +27,10 @@ side encryption, hardware-key preview).
 >
 > **Native, fast, private.** Built entirely with Swift 6 and SwiftUI.
 > Your credentials live in the macOS Keychain. No telemetry, no
-> analytics or tracking SDKs. The only network traffic Bucketeer
-> creates is the object-storage traffic you configure.
+> analytics or tracking SDKs, and no Bucketeer server. Bucketeer
+> connects directly to the object storage you configure, plus Apple's
+> App Store (StoreKit) for the Bucketeer Pro trial, purchase and
+> restore.
 >
 > ### What you can do
 >
@@ -36,8 +38,9 @@ side encryption, hardware-key preview).
 >   preview
 > - **Drag and drop in every direction** — Finder ↔ Bucketeer, even
 >   across accounts and providers
-> - **Mount any bucket as a Finder drive** via the File Provider
->   extension *(Bucketeer Pro)*
+> - **Mount buckets as Finder drives** via the File Provider
+>   extension *(Bucketeer Pro)*. Buckets with client-side encryption
+>   cannot be mounted in this version
 > - **Background sync jobs** between any two locations, including
 >   S3 ↔ Azure, with copy / move / mirror modes plus **watch
 >   folders** that auto-upload on every change *(Bucketeer Pro)*
@@ -89,6 +92,31 @@ side encryption, hardware-key preview).
 > binary ships exclusively through the Mac App Store. Read the License,
 > EULA and Privacy Policy in-app via Bucketeer → About.
 
+## Support period (draft)
+
+Status: draft for planned first placement. Marcello confirmed
+2026-11-09 Europe/Rome that v1.0 is planned for November 2026 (not
+yet live). Five-year floor: at least November 2031. Once the listing
+is live, replace "planned" with the verified release month and year
+in this listing, in the About window and in
+`docs/SUPPORT_AND_UPDATE.md`. Baseline: legal
+`shared/SUPPORT_AND_UPDATE_POLICY.en.md` version 2.0.0, EULA section 9.
+
+Proposed copy for the end of the Description:
+
+> ### Support period
+>
+> Bucketeer v1.0 receives security and conformity updates until at
+> least November 2031, five years from the planned first market
+> placement in November 2026. The support period covers security
+> fixes and the fixes needed to keep the app working as described. It
+> does not promise new features, support for macOS versions Apple no
+> longer supports, or that the app stays on sale. Details in the
+> EULA, section 9.
+
+Do not upload this block until the November 2026 placement is live
+and the month has been verified against the App Store release date.
+
 ## Keywords (100 chars max — comma-separated, no spaces around commas)
 
 `s3,azure,blob,object,storage,aws,r2,backblaze,wasabi,minio,sync,mount,finder,encrypt,shortcuts`
@@ -107,7 +135,8 @@ side encryption, hardware-key preview).
 > - Inline Quick Look preview plus Spacebar full-window preview
 > - Drag and drop between Finder and Bucketeer, plus intra-app and
 >   cross-account drags
-> - Mount any bucket as a Finder drive (Pro)
+> - Mount buckets as Finder drives (Pro); buckets with client-side
+>   encryption cannot be mounted in this version
 > - Background sync between any two locations across providers (Pro),
 >   plus watch folders that auto-upload on every change
 > - Client-side AES-256-GCM encryption per bucket — keys live in
@@ -172,6 +201,11 @@ classification of the client-side AES-256-GCM encryption (Phase
 Full reasoning and the steps for adding France later:
 `docs/EXPORT_COMPLIANCE.md`.
 
+France is one of five deselected markets. The full availability
+matrix, with Mainland China, Egypt, Saudi Arabia and Russia from the
+legal baseline, is in `docs/AVAILABILITY.md`; the pre-submission check
+is in `docs/RELEASE_v1.0.md` section 2.
+
 ## In-App Purchases
 
 | Field | Value |
@@ -224,6 +258,9 @@ one) so the data looks plausible.
 - [ ] Add localised App Store descriptions (drafts above are en/de;
       the other 18 store locales follow the same convention)
 - [ ] Upload one screenshot set per locale
+- [ ] Fill in the support period end month and year from the verified
+      release date (see "Support period (draft)" above and
+      `docs/SUPPORT_AND_UPDATE.md`)
 - [ ] **Xcode manual step**: register `CFBundleURLTypes` for the
       `bucketeer://` scheme (see `docs/DEEP_LINKS.md` §
       "Mac App Store packaging requirement")

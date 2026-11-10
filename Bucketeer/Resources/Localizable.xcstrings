@@ -44522,121 +44522,121 @@
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Připojení libovolného bucketu ve Finderu"
+            "value" : "Připojení bucketů ve Finderu (kromě šifrovaných bucketů)"
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Montér enhver bucket i Finder"
+            "value" : "Montér buckets i Finder (undtagen krypterede buckets)"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Jeden Bucket im Finder einbinden"
+            "value" : "Buckets im Finder einbinden (außer verschlüsselten Buckets)"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Προσάρτηση οποιουδήποτε bucket στο Finder"
+            "value" : "Προσάρτηση buckets στο Finder (εκτός από κρυπτογραφημένα buckets)"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mount any bucket in Finder"
+            "value" : "Mount buckets in Finder (except encrypted buckets)"
           }
         },
         "en-GB" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mount any bucket in Finder"
+            "value" : "Mount buckets in Finder (except encrypted buckets)"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Monta cualquier bucket en el Finder"
+            "value" : "Monta buckets en el Finder (excepto buckets cifrados)"
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Liitä mikä tahansa bucket Finderiin"
+            "value" : "Liitä bucketit Finderiin (paitsi salatut bucketit)"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Montez n'importe quel bucket dans le Finder"
+            "value" : "Montez vos buckets dans le Finder (sauf les buckets chiffrés)"
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bármely bucket csatolása a Finderben"
+            "value" : "Bucketek csatolása a Finderben (titkosított bucketek kivételével)"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Monta qualsiasi bucket nel Finder"
+            "value" : "Monta i bucket nel Finder (esclusi i bucket crittografati)"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "あらゆるバケットを Finder にマウント"
+            "value" : "バケットを Finder にマウント（暗号化されたバケットを除く）"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finder에서 모든 버킷 마운트"
+            "value" : "Finder에서 버킷 마운트(암호화된 버킷 제외)"
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Monter en hvilken som helst bucket i Finder"
+            "value" : "Monter buckets i Finder (unntatt krypterte buckets)"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Koppel elke bucket in Finder"
+            "value" : "Koppel buckets in Finder (behalve versleutelde buckets)"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Montuj dowolny bucket w Finderze"
+            "value" : "Montuj buckety w Finderze (poza zaszyfrowanymi bucketami)"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Monte qualquer bucket no Finder"
+            "value" : "Monte buckets no Finder (exceto buckets criptografados)"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Monte qualquer bucket no Finder"
+            "value" : "Monte buckets no Finder (exceto buckets encriptados)"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Монтирование любого бакета в Finder"
+            "value" : "Монтирование бакетов в Finder (кроме зашифрованных бакетов)"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Montera valfri bucket i Finder"
+            "value" : "Montera buckets i Finder (utom krypterade buckets)"
           }
         }
       }
