@@ -214,6 +214,7 @@ BucketeerTests/                     host test target
 | [`Bucketeer/Resources/Legal/PRIVACY_POLICY.md`](Bucketeer/Resources/Legal/PRIVACY_POLICY.md) | Privacy Policy |
 | [`Bucketeer/Resources/Legal/IMPRESSUM.md`](Bucketeer/Resources/Legal/IMPRESSUM.md) | Legal notice (Impressum) |
 | [`Bucketeer/Resources/Legal/OPEN_SOURCE_NOTICES.md`](Bucketeer/Resources/Legal/OPEN_SOURCE_NOTICES.md) | Third-party open-source attributions |
+| [`docs/LEGAL_LANGUAGES.md`](docs/LEGAL_LANGUAGES.md) | Legal languages: EULA, Privacy Policy and Impressum in English and German (`*.de.md`), governing-language rule, open questions |
 
 **Source-available, not OSI open source.** You may read the code, fork
 it for study and contribute back. You may not redistribute it, ship

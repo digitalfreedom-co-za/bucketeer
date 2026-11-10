@@ -82,6 +82,12 @@ struct MarkdownView: View {
                 continue
             }
 
+            // Single-line HTML comments carry traceability headers
+            // (doc-id, version) and generator markers, not reader text.
+            if trimmed.hasPrefix("<!--") && trimmed.hasSuffix("-->") {
+                continue
+            }
+
             if trimmed.hasPrefix("### ") {
                 flushAll()
                 result.append(.h3(String(trimmed.dropFirst(4))))

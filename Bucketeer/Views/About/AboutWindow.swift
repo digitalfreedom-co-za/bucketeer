@@ -179,9 +179,15 @@ struct AboutWindow: View {
             ?? "© 2026 DigitalFreedom Global LLC"
     }
 
+    /// Prefers the translation in the user's language (e.g. EULA.de.md)
+    /// and falls back to the unsuffixed English document.
     private func loadMarkdown(named name: String) -> String {
-        if let url = Bundle.main.url(forResource: name, withExtension: "md") {
-            return (try? String(contentsOf: url, encoding: .utf8)) ?? fallback(name)
+        let localized = Locale.current.language.languageCode.map { "\(name).\($0.identifier)" }
+        for resource in [localized, name].compactMap({ $0 }) {
+            if let url = Bundle.main.url(forResource: resource, withExtension: "md"),
+               let text = try? String(contentsOf: url, encoding: .utf8) {
+                return text
+            }
         }
         return fallback(name)
     }

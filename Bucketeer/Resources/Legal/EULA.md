@@ -1,3 +1,4 @@
+<!-- doc-id: BUCKETEER_EULA | lang: en | area: app | version: 1.0.0 | valid-from: 2026-11-02 | baseline: legal apps/documents/EULA.en.md, Bucketeer product adaptation; baseline version at derivation not recorded (legal b938e59 carries EULA 1.2.0) | owner: Marcel R. G. Berger -->
 # End User License Agreement
 
 *The terms under which you may install and use Bucketeer for macOS.*
