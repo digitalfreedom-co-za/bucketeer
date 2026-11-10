@@ -33,8 +33,9 @@ not agree, do not install or use the App.
 
 ### 1.1 Global scope
 
-The App is available in every storefront of the Mac App Store. This
-Agreement applies to all users regardless of where they download or
+The App is distributed through the Mac App Store. It is not offered in
+the storefronts for Mainland China, Egypt, Saudi Arabia, Russia and
+France. This Agreement applies to all users regardless of where they download or
 use the App. Mandatory consumer-protection and other statutory rights
 of your country of residence remain unaffected and prevail where they
 are more protective.
