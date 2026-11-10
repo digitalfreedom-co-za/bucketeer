@@ -27,8 +27,10 @@ side encryption, hardware-key preview).
 >
 > **Native, fast, private.** Built entirely with Swift 6 and SwiftUI.
 > Your credentials live in the macOS Keychain. No telemetry, no
-> analytics or tracking SDKs. The only network traffic Bucketeer
-> creates is the object-storage traffic you configure.
+> analytics or tracking SDKs, and no Bucketeer server. Bucketeer
+> connects directly to the object storage you configure, plus Apple's
+> App Store (StoreKit) for the Bucketeer Pro trial, purchase and
+> restore.
 >
 > ### What you can do
 >
@@ -36,8 +38,9 @@ side encryption, hardware-key preview).
 >   preview
 > - **Drag and drop in every direction** — Finder ↔ Bucketeer, even
 >   across accounts and providers
-> - **Mount any bucket as a Finder drive** via the File Provider
->   extension *(Bucketeer Pro)*
+> - **Mount buckets as Finder drives** via the File Provider
+>   extension *(Bucketeer Pro)*. Buckets with client-side encryption
+>   cannot be mounted in this version
 > - **Background sync jobs** between any two locations, including
 >   S3 ↔ Azure, with copy / move / mirror modes plus **watch
 >   folders** that auto-upload on every change *(Bucketeer Pro)*
@@ -107,7 +110,8 @@ side encryption, hardware-key preview).
 > - Inline Quick Look preview plus Spacebar full-window preview
 > - Drag and drop between Finder and Bucketeer, plus intra-app and
 >   cross-account drags
-> - Mount any bucket as a Finder drive (Pro)
+> - Mount buckets as Finder drives (Pro); buckets with client-side
+>   encryption cannot be mounted in this version
 > - Background sync between any two locations across providers (Pro),
 >   plus watch folders that auto-upload on every change
 > - Client-side AES-256-GCM encryption per bucket — keys live in
