@@ -92,6 +92,31 @@ side encryption, hardware-key preview).
 > binary ships exclusively through the Mac App Store. Read the License,
 > EULA and Privacy Policy in-app via Bucketeer → About.
 
+## Support period (draft)
+
+Status: draft for planned first placement. Marcello confirmed
+2026-11-09 Europe/Rome that v1.0 is planned for November 2026 (not
+yet live). Five-year floor: at least November 2031. Once the listing
+is live, replace "planned" with the verified release month and year
+in this listing, in the About window and in
+`docs/SUPPORT_AND_UPDATE.md`. Baseline: legal
+`shared/SUPPORT_AND_UPDATE_POLICY.en.md` version 2.0.0, EULA section 9.
+
+Proposed copy for the end of the Description:
+
+> ### Support period
+>
+> Bucketeer v1.0 receives security and conformity updates until at
+> least November 2031, five years from the planned first market
+> placement in November 2026. The support period covers security
+> fixes and the fixes needed to keep the app working as described. It
+> does not promise new features, support for macOS versions Apple no
+> longer supports, or that the app stays on sale. Details in the
+> EULA, section 9.
+
+Do not upload this block until the November 2026 placement is live
+and the month has been verified against the App Store release date.
+
 ## Keywords (100 chars max — comma-separated, no spaces around commas)
 
 `s3,azure,blob,object,storage,aws,r2,backblaze,wasabi,minio,sync,mount,finder,encrypt,shortcuts`
@@ -233,6 +258,9 @@ one) so the data looks plausible.
 - [ ] Add localised App Store descriptions (drafts above are en/de;
       the other 18 store locales follow the same convention)
 - [ ] Upload one screenshot set per locale
+- [ ] Fill in the support period end month and year from the verified
+      release date (see "Support period (draft)" above and
+      `docs/SUPPORT_AND_UPDATE.md`)
 - [ ] **Xcode manual step**: register `CFBundleURLTypes` for the
       `bucketeer://` scheme (see `docs/DEEP_LINKS.md` §
       "Mac App Store packaging requirement")

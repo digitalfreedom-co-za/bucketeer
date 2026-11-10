@@ -157,6 +157,60 @@ at https://support.apps.digitalfreedom.co.za. For consumers in the
 EU/EEA, the conformity and update obligations of Directive (EU)
 2019/770 apply and are not excluded by this Agreement.
 
+### 9.1 Support period
+
+Each version of the App receives security and conformity updates for
+at least five years from the day that version is placed on the market.
+This applies to every version you acquire, whether you use the free
+tier or Bucketeer Pro. The end of the support period is stated with
+month and year in the Mac App Store listing and in the About window of
+the App, so that it is known before you download the App or buy
+Bucketeer Pro.
+
+### 9.2 What an update covers
+
+Security and conformity updates are security fixes, fixes required to
+keep the App working on the macOS versions it supports, fixes required
+to keep the described functionality available, and changes required by
+law or by Mac App Store policy.
+
+The support period is not a promise of new features, of changes to the
+described functionality, of support for macOS versions that Apple
+itself no longer supports, or of changes requested by an individual
+user. It is also not a promise that the App or Bucketeer Pro remains
+available for sale.
+
+### 9.3 Withdrawal of the App
+
+The App may be withdrawn from sale at any time. The Publisher operates
+no user account for the App (section 8) and therefore cannot write to
+you directly. A withdrawal is announced in the App and on
+https://getbucketeer.app at least 30 days in advance, stating the date
+of withdrawal and the end of the support period that applies to your
+version.
+
+Withdrawal does not shorten the support period. Security and conformity
+updates continue for versions already acquired until the support
+period stated for that version ends. An App withdrawn without such an
+announcement continues to be supported.
+
+The App works locally on your Mac. Withdrawal removes the Mac App Store
+listing; it does not disable the App on your Mac or revoke a Bucketeer
+Pro purchase you have already made. Bucketeer Pro is a one-time
+purchase without a recurring term (section 4), so there is no
+subscription that ends with a withdrawal.
+
+### 9.4 Changes to the App
+
+The Publisher changes the described functionality of the App only for a
+valid reason: adapting to a change in law, case law or Mac App Store
+policy, closing a security vulnerability, maintaining compatibility
+with macOS or a platform service, or replacing a third-party service
+that its provider discontinues. Such a change is announced in the App
+at least 30 days in advance unless it must take effect immediately for
+security reasons. Your statutory rights where a change materially
+disadvantages you remain unaffected.
+
 ---
 
 ## 10. Disclaimer of warranties
