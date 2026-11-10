@@ -14,6 +14,8 @@ internationalen Offenlegungspflichten.*
 Bucketeer wird unter der Marke **DigitalFreedom** angeboten. Die
 betreibende juristische Person (Diensteanbieter im Sinne des § 5 DDG) ist:
 
+[Warum ist der Anbieter eine US LLC?](https://getbucketeer.app/why-llc/)
+
 DigitalFreedom Global LLC
 30 N Gould St, Ste N
 Sheridan, WY 82801
@@ -76,6 +78,11 @@ Beide Kontaktstellen werden von einem Menschen betreut. Akzeptierte
 Sprachen: Englisch und Deutsch.
 
 **Rechtsvertreter in der Union (Art. 13 DSA)**: keiner benannt.
+
+### 4.4 Versicherung
+
+Betriebshaftpflichtversicherung (Commercial General Liability) sowie
+Cyber- und Datenrisikoversicherung bei der Hiscox Insurance Company Inc.
 
 ---
 
