@@ -14,6 +14,8 @@ applicable international disclosure requirements.*
 Bucketeer is offered under the **DigitalFreedom** brand. The operating
 legal entity (service provider within the meaning of § 5 DDG) is:
 
+[Why is the provider a US LLC?](https://getbucketeer.app/why-llc/)
+
 DigitalFreedom Global LLC
 30 N Gould St, Ste N
 Sheridan, WY 82801
@@ -32,10 +34,7 @@ Trade name: **DigitalFreedom**
 Limited Liability Company (LLC) under the laws of the State of Wyoming,
 United States of America.
 
-**Authorized representatives**
-
-M. Berger
-J. Rosenstock
+**Authorized Representatives:** M. Berger, J. Rosenstock
 
 ---
 
@@ -76,6 +75,11 @@ Both contact points are handled by a person. Languages accepted:
 English and German.
 
 **Legal representative in the Union (Art. 13 DSA)** — none designated.
+
+### 4.4 Insurance
+
+Commercial general liability insurance and cyber and data risk insurance
+with Hiscox Insurance Company Inc.
 
 ---
 
