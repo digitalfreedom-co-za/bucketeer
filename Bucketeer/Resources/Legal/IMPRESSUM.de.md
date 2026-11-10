@@ -14,7 +14,7 @@ internationalen Offenlegungspflichten.*
 Bucketeer wird unter der Marke **DigitalFreedom** angeboten. Die
 betreibende juristische Person (Diensteanbieter im Sinne des § 5 DDG) ist:
 
-[Warum ist der Anbieter eine US LLC?](https://getbucketeer.app/why-llc/)
+[Warum ist der Anbieter eine US-LLC?](https://getbucketeer.app/de/warum-llc/)
 
 DigitalFreedom Global LLC
 30 N Gould St, Ste N
