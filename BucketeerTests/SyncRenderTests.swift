@@ -18,7 +18,7 @@ final class SyncRenderTests: XCTestCase {
         try await demo.container.syncJobStore.upsert(nightlyJob(demo))
         await demo.container.syncJobListViewModel.refresh()
         try await renderAndAssert(list(demo), name: "SyncJobListView_populated",
-                                  shows: ["Nightly photos", "Mirror", "12 ok / 0 failed"])
+                                  shows: ["Nightly photos", "Mirror", "12 completed / 0 failed"])
     }
 
     private func list(_ demo: DemoEnvironment) -> some View {
@@ -67,7 +67,7 @@ final class SyncRenderTests: XCTestCase {
             deletePropagation: true,
             schedule: .interval(seconds: 3_600),
             lastRunAt: DemoEnvironment.referenceDate,
-            lastRunSummary: "12 ok / 0 failed / 12 planned"
+            lastRunSummary: String(localized: "sync.summary.run \(12) \(0) \(12)")
         )
     }
 }
