@@ -67,7 +67,7 @@ final class SyncRenderTests: XCTestCase {
             deletePropagation: true,
             schedule: .interval(seconds: 3_600),
             lastRunAt: DemoEnvironment.referenceDate,
-            lastRunSummary: String(localized: "sync.summary.run \(12) \(0) \(12)")
+            lastRunSummary: "12 completed / 0 failed / 12 planned"
         )
     }
 }
