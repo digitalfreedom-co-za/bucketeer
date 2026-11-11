@@ -72,7 +72,7 @@ struct BucketDashboardSheet: View {
                 .foregroundStyle(.accentInk)
             VStack(alignment: .leading, spacing: 4) {
                 Text(viewModel.bucket).font(.title2.bold())
-                Text("\(viewModel.account.name) · \(viewModel.account.provider.displayName)")
+                Text("\(viewModel.account.name) · \(viewModel.account.provider.localizedDisplayName)")
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }

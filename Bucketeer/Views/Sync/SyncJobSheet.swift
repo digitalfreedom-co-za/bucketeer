@@ -281,7 +281,7 @@ struct SyncJobSheet: View {
             Text("sync.account.placeholder").tag(UUID?.none)
             ForEach(accounts) { account in
                 Label {
-                    Text("\(account.name) (\(account.provider.displayName))")
+                    Text("\(account.name) (\(account.provider.localizedDisplayName))")
                 } icon: {
                     Image(systemName: account.provider.iconSystemName)
                 }

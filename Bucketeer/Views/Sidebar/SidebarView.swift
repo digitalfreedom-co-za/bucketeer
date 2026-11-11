@@ -34,7 +34,7 @@ struct SidebarView: View {
                     Label {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(account.name)
-                            Text(account.provider.displayName)
+                            Text(account.provider.localizedDisplayName)
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                         }
