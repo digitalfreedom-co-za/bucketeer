@@ -13,12 +13,26 @@ import BucketeerCore
 final class SyncRenderTests: XCTestCase {
     private let sheetSize = CGSize(width: 620, height: 720)
 
+    func testLocalizedRunSummary() throws {
+        let resources = Bundle(for: Self.self)
+        let english = try XCTUnwrap(Bundle(path: XCTUnwrap(resources.path(forResource: "en", ofType: "lproj"))))
+        let polish = try XCTUnwrap(Bundle(path: XCTUnwrap(resources.path(forResource: "pl", ofType: "lproj"))))
+        XCTAssertEqual(String(localized: "sync.summary.run \(12) \(0) \(14)", bundle: english, locale: Locale(identifier: "en")),
+                       "12 completed / 0 failed / 14 planned")
+        XCTAssertEqual(String(localized: "sync.summary.run \(12) \(3) \(14) \(2)", bundle: english, locale: Locale(identifier: "en")),
+                       "12 completed / 3 failed (2 source deletions failed) / 14 planned")
+        for count in [2, 5] {
+            XCTAssertEqual(String(localized: "sync.summary.run \(12) \(count) \(14) \(count)", bundle: polish, locale: Locale(identifier: "pl")),
+                           "Ukończono: 12 / Nieudane: \(count) (\(count) \(count == 2 ? "nieudane usunięcia źródła" : "nieudanych usunięć źródła")) / Zaplanowano: 14")
+        }
+    }
+
     func testSyncJobListPopulated() async throws {
         let demo = try await DemoEnvironment.make()
         try await demo.container.syncJobStore.upsert(nightlyJob(demo))
         await demo.container.syncJobListViewModel.refresh()
         try await renderAndAssert(list(demo), name: "SyncJobListView_populated",
-                                  shows: ["Nightly photos", "Mirror", "12 completed / 0 failed"])
+                                  shows: ["Nightly photos", "Mirror", "12 ok / 0 failed"])
     }
 
     private func list(_ demo: DemoEnvironment) -> some View {
@@ -67,7 +81,7 @@ final class SyncRenderTests: XCTestCase {
             deletePropagation: true,
             schedule: .interval(seconds: 3_600),
             lastRunAt: DemoEnvironment.referenceDate,
-            lastRunSummary: "12 completed / 0 failed / 12 planned"
+            lastRunSummary: "12 ok / 0 failed / 12 planned"
         )
     }
 }

@@ -1,3 +1,10 @@
+//
+//  S3Provider+Localization.swift
+//  Bucketeer
+//
+//  Created by Marcel R. G. Berger on 12.11.26.
+//
+
 import BucketeerCore
 import Foundation
 
