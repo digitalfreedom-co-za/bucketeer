@@ -14237,7 +14237,7 @@
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Download…"
+            "value" : "Hent…"
           }
         },
         "de" : {
@@ -19154,13 +19154,13 @@
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Download"
+            "value" : "Hentning"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Download"
+            "value" : "Herunterladen"
           }
         },
         "el" : {
@@ -19208,7 +19208,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Download"
+            "value" : "Scaricamento"
           }
         },
         "ja" : {
@@ -20160,7 +20160,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Upload"
+            "value" : "Hochladen"
           }
         },
         "el" : {
@@ -20244,7 +20244,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Upload"
+            "value" : "Envio"
           }
         },
         "pt-PT" : {
@@ -20809,13 +20809,13 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Info"
+            "value" : "Información"
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Info"
+            "value" : "Tieto"
           }
         },
         "fr" : {
@@ -20833,7 +20833,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Info"
+            "value" : "Informazione"
           }
         },
         "ja" : {
@@ -31668,7 +31668,7 @@
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Origins"
+            "value" : "Oprindelser"
           }
         },
         "de" : {
@@ -31740,13 +31740,13 @@
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Origins"
+            "value" : "Opprinnelser"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Origins"
+            "value" : "Oorsprongen"
           }
         },
         "pl" : {
@@ -48032,121 +48032,121 @@
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Režim řádku nabídek, který udrží vše v běhu"
+            "value" : "Připojené disky a synchronizace zůstávají aktivní v režimu řádku nabídek"
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Menulinjetilstand, der holder alt kørende"
+            "value" : "Hold monteringer og synkronisering kørende i menulinjetilstand"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Menüleisten-Modus, der alles am Laufen hält"
+            "value" : "Eingebundene Laufwerke und Synchronisierungen im Menüleisten-Modus weiter nutzen"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Λειτουργία γραμμής μενού που κρατά τα πάντα ενεργά"
+            "value" : "Διατηρήστε τις προσαρτήσεις και τον συγχρονισμό σε λειτουργία στη γραμμή μενού"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Menubar mode that keeps everything alive"
+            "value" : "Keep mounts and sync running in menubar mode"
           }
         },
         "en-GB" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Menubar mode that keeps everything alive"
+            "value" : "Keep mounts and sync running in menubar mode"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Modo barra de menús que mantiene todo activo"
+            "value" : "Mantén los montajes y la sincronización activos en el modo barra de menús"
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Valikkorivitila, joka pitää kaiken käynnissä"
+            "value" : "Pidä liitokset ja synkronointi käynnissä valikkorivitilassa"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mode barre des menus qui maintient tout actif"
+            "value" : "Gardez les volumes montés et la synchronisation actifs en mode barre des menus"
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Menüsoros mód, amelyben minden tovább fut"
+            "value" : "A csatolások és a szinkronizálás menüsoros módban is működnek"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Modalità barra dei menu che mantiene tutto attivo"
+            "value" : "Mantieni attivi i volumi montati e la sincronizzazione in modalità barra dei menu"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "すべてを動かし続けるメニューバーモード"
+            "value" : "メニューバーモードでマウントと同期を継続"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "모든 것이 계속 실행되는 메뉴 막대 모드"
+            "value" : "메뉴 막대 모드에서 마운트와 동기화 유지"
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Menylinjemodus som holder alt i gang"
+            "value" : "Hold monteringer og synkronisering i gang i menylinjemodus"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Menubalkmodus die alles draaiende houdt"
+            "value" : "Houd koppelingen en synchronisatie actief in de menubalkmodus"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tryb paska menu, w którym wszystko działa w tle"
+            "value" : "Utrzymuj zamontowane dyski i synchronizację w trybie paska menu"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Modo barra de menus que mantém tudo ativo"
+            "value" : "Mantenha montagens e sincronização ativas no modo barra de menus"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Modo de barra de menus que mantém tudo em execução"
+            "value" : "Mantenha as montagens e a sincronização ativas no modo de barra de menus"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Режим строки меню, в котором всё продолжает работать"
+            "value" : "Монтирование и синхронизация продолжают работать в режиме строки меню"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Menyradsläge som håller allt igång"
+            "value" : "Håll monteringar och synkronisering igång i menyradsläge"
           }
         }
       }
@@ -50157,121 +50157,121 @@
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Odemkněte funkce, které z aplikace Bucketeer udělají skutečnou cloudovou pracovní stanici."
+            "value" : "Jednorázovým nákupem odemkněte připojování disků, synchronizaci na pozadí, kopírování mezi účty a režim řádku nabídek."
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lås de funktioner op, der gør Bucketeer til en rigtig cloud-arbejdsstation."
+            "value" : "Lås op for montering, baggrundssynkronisering, kopiering mellem konti og menulinjetilstand med et engangskøb."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Schalte die Funktionen frei, die Bucketeer zu einer echten Cloud-Workstation machen."
+            "value" : "Einmal kaufen und Laufwerke einbinden, im Hintergrund synchronisieren, zwischen Konten kopieren und den Menüleisten-Modus nutzen."
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ξεκλειδώστε τις δυνατότητες που μετατρέπουν το Bucketeer σε πραγματικό σταθμό εργασίας νέφους."
+            "value" : "Ξεκλειδώστε την προσάρτηση, τον συγχρονισμό στο παρασκήνιο, την αντιγραφή μεταξύ λογαριασμών και τη λειτουργία γραμμής μενού με μία εφάπαξ αγορά."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unlock the features that turn Bucketeer into a real cloud workstation."
+            "value" : "Unlock mounting, background sync, cross-account copy and menubar mode with a one-time purchase."
           }
         },
         "en-GB" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unlock the features that turn Bucketeer into a real cloud workstation."
+            "value" : "Unlock mounting, background sync, cross-account copy and menubar mode with a one-time purchase."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Desbloquea las funciones que convierten a Bucketeer en una verdadera estación de trabajo en la nube."
+            "value" : "Desbloquea el montaje, la sincronización en segundo plano, la copia entre cuentas y el modo barra de menús con una compra única."
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Avaa ominaisuudet, jotka tekevät Bucketeerista todellisen pilvityöaseman."
+            "value" : "Avaa liittäminen, taustasynkronointi, tilien välinen kopiointi ja valikkorivitila kertaostoksella."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Débloquez les fonctionnalités qui font de Bucketeer une véritable station de travail cloud."
+            "value" : "Débloquez le montage, la synchronisation en arrière-plan, la copie entre comptes et le mode barre des menus avec un achat unique."
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oldja fel azokat a funkciókat, amelyek a Bucketeert igazi felhő-munkaállomássá teszik."
+            "value" : "Egyszeri vásárlással feloldhatja a csatolást, a háttérszinkronizálást, a fiókok közötti másolást és a menüsoros módot."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sblocca le funzionalità che trasformano Bucketeer in una vera workstation cloud."
+            "value" : "Sblocca il montaggio, la sincronizzazione in background, la copia tra account e la modalità barra dei menu con un acquisto unico."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bucketeer を本格的なクラウドワークステーションにする機能のロックを解除できます。"
+            "value" : "一度の購入で、マウント、バックグラウンド同期、アカウント間コピー、メニューバーモードが使えます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bucketeer를 진정한 클라우드 워크스테이션으로 만들어 주는 기능을 잠금 해제하십시오."
+            "value" : "한 번 구입으로 마운트, 백그라운드 동기화, 계정 간 복사, 메뉴 막대 모드를 이용하세요."
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lås opp funksjonene som gjør Bucketeer til en ekte sky-arbeidsstasjon."
+            "value" : "Lås opp montering, bakgrunnssynkronisering, kopiering mellom kontoer og menylinjemodus med et engangskjøp."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ontgrendel de functies die van Bucketeer een echt cloudwerkstation maken."
+            "value" : "Ontgrendel koppelen, achtergrondsynchronisatie, kopiëren tussen accounts en de menubalkmodus met een eenmalige aankoop."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Odblokuj funkcje, które zamieniają Bucketeer w prawdziwą stację roboczą w chmurze."
+            "value" : "Odblokuj montowanie, synchronizację w tle, kopiowanie między kontami i tryb paska menu jednym zakupem."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Desbloqueie os recursos que tornam o Bucketeer uma verdadeira estação de trabalho em nuvem."
+            "value" : "Desbloqueie montagem, sincronização em segundo plano, cópia entre contas e modo barra de menus com uma compra única."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Desbloqueie as funcionalidades que transformam o Bucketeer numa verdadeira estação de trabalho na nuvem."
+            "value" : "Desbloqueie a montagem, a sincronização em segundo plano, a cópia entre contas e o modo de barra de menus com uma compra única."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Откройте функции, которые превращают Bucketeer в полноценную облачную рабочую станцию."
+            "value" : "Одна покупка открывает монтирование, фоновую синхронизацию, копирование между учётными записями и режим строки меню."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lås upp funktionerna som gör Bucketeer till en riktig molnarbetsstation."
+            "value" : "Lås upp montering, bakgrundssynkronisering, kopiering mellan konton och menyradsläge med ett engångsköp."
           }
         }
       }
@@ -58666,7 +58666,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sync"
+            "value" : "Synchronisierung"
           }
         },
         "el" : {
@@ -69408,7 +69408,7 @@
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endpoints"
+            "value" : "Slutpunkter"
           }
         },
         "de" : {
@@ -69420,7 +69420,7 @@
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endpoints"
+            "value" : "Τελικά σημεία"
           }
         },
         "en" : {
@@ -69438,7 +69438,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endpoints"
+            "value" : "Puntos de conexión"
           }
         },
         "fi" : {
@@ -69480,7 +69480,7 @@
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endpoints"
+            "value" : "Endepunkter"
           }
         },
         "nl" : {
@@ -69516,7 +69516,7 @@
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Endpoints"
+            "value" : "Slutpunkter"
           }
         }
       }
