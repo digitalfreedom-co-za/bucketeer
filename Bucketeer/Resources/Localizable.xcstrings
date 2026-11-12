@@ -90783,6 +90783,256 @@
           }
         }
       }
+    },
+    "encryption.badge.expected.label" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Will be encrypted"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bude zašifrováno"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bliver krypteret"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wird verschlüsselt"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Θα κρυπτογραφηθεί"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Will be encrypted"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se cifrará"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salataan"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sera chiffré"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Titkosítva lesz"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verrà crittografato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暗号化予定"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "암호화 예정"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blir kryptert"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wordt versleuteld"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zostanie zaszyfrowany"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Será criptografado"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Será encriptado"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Будет зашифровано"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kommer att krypteras"
+          }
+        }
+      }
+    },
+    "encryption.badge.upload.expected.help" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This bucket has an encryption key, so this upload is expected to be encrypted. Encryption is confirmed when the upload starts."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tento bucket má šifrovací klíč, takže toto nahrání by mělo být zašifrováno. Šifrování se potvrdí při zahájení nahrávání."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne bucket har en krypteringsnøgle, så denne upload forventes at blive krypteret. Krypteringen bekræftes, når uploaden starter."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Bucket hat einen Verschlüsselungsschlüssel, daher wird dieser Upload voraussichtlich verschlüsselt. Die Verschlüsselung wird bestätigt, sobald der Upload startet."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αυτό το bucket έχει κλειδί κρυπτογράφησης, οπότε αυτή η μεταφόρτωση αναμένεται να κρυπτογραφηθεί. Η κρυπτογράφηση επιβεβαιώνεται όταν ξεκινήσει η μεταφόρτωση."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This bucket has an encryption key, so this upload is expected to be encrypted. Encryption is confirmed when the upload starts."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este bucket tiene una clave de cifrado, así que se prevé que esta subida se cifre. El cifrado se confirma cuando empieza la subida."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tällä bucketilla on salausavain, joten tämä lähetys on tarkoitus salata. Salaus vahvistetaan, kun lähetys alkaa."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce bucket possède une clé de chiffrement : ce téléversement devrait donc être chiffré. Le chiffrement est confirmé au démarrage du téléversement."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ennek a bucketnek van titkosítási kulcsa, ezért ez a feltöltés várhatóan titkosítva lesz. A titkosítás a feltöltés indulásakor erősödik meg."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo bucket ha una chiave di crittografia, quindi questo caricamento dovrebbe essere crittografato. La crittografia viene confermata all’avvio del caricamento."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このバケットには暗号化キーがあるため、このアップロードは暗号化される予定です。暗号化はアップロードの開始時に確定します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 버킷에는 암호화 키가 있으므로 이 업로드는 암호화될 예정입니다. 암호화는 업로드가 시작될 때 확정됩니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne bucketen har en krypteringsnøkkel, så denne opplastingen skal etter planen krypteres. Krypteringen bekreftes når opplastingen starter."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze bucket heeft een versleutelingssleutel, dus deze upload wordt naar verwachting versleuteld. De versleuteling wordt bevestigd zodra de upload begint."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ten bucket ma klucz szyfrowania, więc ten plik powinien zostać zaszyfrowany. Szyfrowanie zostanie potwierdzone po rozpoczęciu wysyłania."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este bucket tem uma chave de criptografia, então este upload deve ser criptografado. A criptografia é confirmada quando o upload começa."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este bucket tem uma chave de encriptação, por isso este carregamento deverá ser encriptado. A encriptação é confirmada quando o carregamento começa."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "У этого бакета есть ключ шифрования, поэтому эта загрузка, как ожидается, будет зашифрована. Шифрование подтверждается, когда загрузка начинается."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den här bucketen har en krypteringsnyckel, så den här uppladdningen väntas bli krypterad. Krypteringen bekräftas när uppladdningen startar."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

@@ -45,7 +45,8 @@ public struct TransferTask: Identifiable, Hashable, Sendable {
     public let startedAt: Date
     /// Whether the upload is sealed with the bucket's key or carries
     /// already-encrypted bytes. Set only once the transfer has resolved
-    /// the key, never from queue-time state, so rows never look it up.
+    /// the key, never from queue-time state; a queued row can only say
+    /// that encryption is expected.
     public var isEncrypted: Bool
 
     public init(

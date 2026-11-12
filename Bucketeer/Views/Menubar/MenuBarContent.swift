@@ -87,10 +87,8 @@ struct MenuBarContent: View {
                         .font(.caption)
                         .lineLimit(1)
                         .truncationMode(.middle)
-                    if task.showsEncryptedMarker {
-                        EncryptedBadge(help: "encryption.badge.upload.help")
-                            .font(.caption2)
-                    }
+                    UploadEncryptionBadge(task: task)
+                        .font(.caption2)
                 }
                 if let fraction = task.state.progressFraction {
                     ProgressView(value: fraction)

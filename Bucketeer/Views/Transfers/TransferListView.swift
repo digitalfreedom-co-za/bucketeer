@@ -65,10 +65,8 @@ private struct TransferRow: View {
                             .font(.callout)
                             .lineLimit(1)
                             .truncationMode(.middle)
-                        if task.showsEncryptedMarker {
-                            EncryptedBadge(help: "encryption.badge.upload.help")
-                                .font(.caption)
-                        }
+                        UploadEncryptionBadge(task: task)
+                            .font(.caption)
                     }
                     Text("\(task.bucket)/\(task.key)")
                         .font(.caption)
@@ -141,18 +139,5 @@ private struct TransferRow: View {
 
     private func format(_ bytes: Int64) -> String {
         ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
-    }
-}
-
-extension TransferTask {
-    /// Uploads that are being or were sealed. `isEncrypted` is only set
-    /// once the worker resolved the key; a failed or cancelled upload
-    /// stored nothing, so it shows no marker.
-    var showsEncryptedMarker: Bool {
-        guard direction == .upload, isEncrypted else { return false }
-        switch state {
-        case .running, .completed: return true
-        case .queued, .failed, .cancelled: return false
-        }
     }
 }
