@@ -29,6 +29,7 @@ final class EncryptionRoutingTests: XCTestCase {
         let state = await fixture.manager.awaitCompletion(id: id)
         XCTAssertEqual(state, .completed)
         XCTAssertEqual(RoutingAzureStub.uploaded(bucket: fixture.bucket), plaintext)
+        XCTAssertEqual(RoutingAzureStub.uploadedMarker(bucket: fixture.bucket), false)
     }
 
     func testUploadWithKeySendsAnAuthenticatedEnvelope() async throws {
@@ -41,9 +42,9 @@ final class EncryptionRoutingTests: XCTestCase {
         let state = await fixture.manager.awaitCompletion(id: id)
         XCTAssertEqual(state, .completed)
         let bytes = try XCTUnwrap(RoutingAzureStub.uploaded(bucket: fixture.bucket))
-        XCTAssertEqual(bytes.prefix(4), Data("BCKT".utf8))
-        XCTAssertTrue([UInt8(1), 2].contains(try XCTUnwrap(bytes.dropFirst(4).first)))
+        XCTAssertEqual(try XCTUnwrap(bytes.dropFirst(4).first), 0x02)
         XCTAssertEqual(try BucketeerEnvelope.open(envelope: bytes, key: fixture.key), plaintext)
+        XCTAssertEqual(RoutingAzureStub.uploadedMarker(bucket: fixture.bucket), true)
     }
 
     func testEnvelopeWithoutKeyFailsWithoutPublishingCiphertext() async throws {
@@ -136,6 +137,7 @@ final class EncryptionRoutingTests: XCTestCase {
         XCTAssertNil(error)
         XCTAssertEqual(RoutingAzureStub.uploaded(bucket: fixture.bucket), envelope,
                        "Restore must bypass encryption, preserving the original envelope byte for byte")
+        XCTAssertEqual(RoutingAzureStub.uploadedMarker(bucket: fixture.bucket), true)
     }
 
     private var noKeyMessage: String {
@@ -193,6 +195,12 @@ private final class RoutingAzureStub: URLProtocol {
     }
 
     static func uploaded(bucket: String) -> Data? { lock.withLock { objects[bucket]?.uploaded } }
+    static func uploadedMarker(bucket: String) -> Bool? {
+        lock.withLock {
+            guard let object = objects[bucket], object.uploaded != nil else { return nil }
+            return object.marked
+        }
+    }
     static func remove(bucket: String) { _ = lock.withLock { objects.removeValue(forKey: bucket) } }
 
     override class func canInit(with request: URLRequest) -> Bool { true }
@@ -204,7 +212,9 @@ private final class RoutingAzureStub: URLProtocol {
         let bucket = request.url!.pathComponents.dropFirst().first ?? ""
         let (status, headers, bytes): (Int, [String: String], Data) = Self.lock.withLock {
             if request.httpMethod == "PUT" {
-                Self.objects[bucket] = Object(bytes: body, marked: false, uploaded: body)
+                guard request.url?.query == nil else { return (400, [:], Data()) }
+                let marked = request.value(forHTTPHeaderField: "x-ms-meta-" + BucketeerEnvelope.azureMetadataKey) == "1"
+                Self.objects[bucket] = Object(bytes: body, marked: marked, uploaded: body)
                 return (201, [:], Data())
             }
             guard let object = Self.objects[bucket], ["HEAD", "GET"].contains(request.httpMethod) else {

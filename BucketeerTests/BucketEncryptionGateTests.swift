@@ -71,6 +71,24 @@ final class BucketEncryptionGateTests: XCTestCase {
         }
     }
 
+    func testServerSideCopyFailsClosedWhenEitherKeyLookupFails() async throws {
+        for failingBucket in ["source", "destination"] {
+            let store = InMemoryEncryptionKeyStore()
+            let gate = BucketEncryptionGate(keyStore: store)
+            if failingBucket == "destination" {
+                // Cache the source so the injected failure reaches the destination lookup.
+                _ = try await gate.key(accountID: accountID, bucket: "source")
+            }
+            await store.failNextLookups(1)
+
+            let allowed = await gate.allowsServerSideCopy(
+                sourceAccountID: accountID, sourceBucket: "source",
+                destinationAccountID: accountID, destinationBucket: "destination"
+            )
+            XCTAssertFalse(allowed, "A failed \(failingBucket) lookup must prevent server-side copy")
+        }
+    }
+
     // MARK: - Encrypted to plain
 
     func testEncryptedSourceIntoBucketWithoutKeyIsEncryptedToPlain() {
