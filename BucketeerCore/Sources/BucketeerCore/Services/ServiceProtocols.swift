@@ -160,6 +160,9 @@ extension S3Browsing {
 /// the Keychain. Deletion failures can leave stale metadata; callers
 /// must handle missing bytes without falling back to plaintext.
 public protocol EncryptionKeyStoring: Sendable {
+    func importKey(_ entry: KeyBackupEntry, replacing expectedID: UUID?) async throws
+    func markBackupReady(id: UUID) async throws
+
     /// Every registered key's metadata.
     func all() async throws -> [BucketEncryptionKey]
 

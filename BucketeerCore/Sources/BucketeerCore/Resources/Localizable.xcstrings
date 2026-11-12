@@ -1,6 +1,256 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "encryption.backup.conflict" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Different key exists"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Different key exists"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Existuje jiný klíč"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En anden nøgle findes"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anderer Schlüssel vorhanden"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Υπάρχει διαφορετικό κλειδί"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Existe una clave diferente"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eri avain on olemassa"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une autre clé existe"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Másik kulcs létezik"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esiste una chiave diversa"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "異なる鍵が存在"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다른 키가 있음"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En annen nøkkel finnes"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Andere sleutel aanwezig"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Istnieje inny klucz"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Existe uma chave diferente"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Existe uma chave diferente"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Существует другой ключ"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En annan nyckel finns"
+          }
+        }
+      }
+    },
+    "encryption.backup.hint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use at least 12 characters. Several unrelated words make a stronger passphrase. Both fields must match."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use at least 12 characters. Several unrelated words make a stronger passphrase. Both fields must match."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Použijte alespoň 12 znaků. Několik nesouvisejících slov vytvoří silnější heslovou frázi. Obě pole se musí shodovat."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brug mindst 12 tegn. Flere ord uden indbyrdes sammenhæng giver en stærkere adgangssætning. Begge felter skal være ens."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwende mindestens 12 Zeichen. Mehrere zusammenhanglose Wörter ergeben eine stärkere Passphrase. Beide Felder müssen übereinstimmen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Χρησιμοποιήστε τουλάχιστον 12 χαρακτήρες. Πολλές άσχετες λέξεις δημιουργούν ισχυρότερη φράση. Τα δύο πεδία πρέπει να ταιριάζουν."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa al menos 12 caracteres. Varias palabras sin relación crean una frase más segura. Ambos campos deben coincidir."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Käytä vähintään 12 merkkiä. Useat toisiinsa liittymättömät sanat muodostavat vahvemman salalauseen. Kenttien on vastattava toisiaan."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilisez au moins 12 caractères. Plusieurs mots sans rapport forment une phrase plus robuste. Les deux champs doivent correspondre."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Használjon legalább 12 karaktert. Több, egymáshoz nem kapcsolódó szó erősebb jelmondatot alkot. A két mezőnek egyeznie kell."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa almeno 12 caratteri. Più parole non correlate rendono la frase più sicura. I due campi devono coincidere."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "12文字以上を使用してください。関連のない複数の単語を使うと、より強力になります。両方の入力欄が一致する必要があります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "12자 이상을 사용하세요. 서로 관련 없는 여러 단어를 사용하면 더 강력한 암호 구문이 됩니다. 두 입력란이 일치해야 합니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bruk minst 12 tegn. Flere ord uten sammenheng gir en sterkere passfrase. Begge feltene må være like."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebruik minimaal 12 tekens. Meerdere niet-verwante woorden maken een sterkere wachtzin. Beide velden moeten overeenkomen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Użyj co najmniej 12 znaków. Kilka niepowiązanych słów tworzy silniejszą frazę. Oba pola muszą być zgodne."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use pelo menos 12 caracteres. Várias palavras sem relação formam uma frase mais forte. Os dois campos devem coincidir."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilize pelo menos 12 caracteres. Várias palavras sem relação formam uma frase mais forte. Os dois campos têm de coincidir."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Используйте не менее 12 символов. Несколько несвязанных слов делают фразу надёжнее. Оба поля должны совпадать."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Använd minst 12 tecken. Flera orelaterade ord ger en starkare lösenfras. Båda fälten måste stämma överens."
+          }
+        }
+      }
+    },
     "encryption.error.authenticationFailed" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3813,6 +4063,631 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Servern returnerade HTTP %lld med ett okänt svarsinnehåll."
+          }
+        }
+      }
+    },
+    "encryption.backup.error.wrongPassphrase" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wrong passphrase, or the backup file was modified."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wrong passphrase, or the backup file was modified."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nesprávná přístupová fráze nebo byl soubor zálohy změněn."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forkert adgangssætning, eller sikkerhedskopifilen er blevet ændret."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Falsche Passphrase oder die Sicherungsdatei wurde verändert."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Λανθασμένη φράση πρόσβασης ή το αρχείο αντιγράφου ασφαλείας τροποποιήθηκε."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La frase de contraseña es incorrecta o el archivo de copia de seguridad se ha modificado."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Väärä tunnuslause tai varmuuskopiotiedostoa on muutettu."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phrase secrète incorrecte ou fichier de sauvegarde modifié."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Helytelen jelmondat, vagy a biztonsági mentés fájlja módosult."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passphrase errata oppure il file di backup è stato modificato."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パスフレーズが正しくないか、バックアップファイルが変更されています。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "암호 구문이 잘못되었거나 백업 파일이 수정되었습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feil passfrase, eller sikkerhetskopifilen er endret."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Onjuiste wachtwoordzin, of het back-upbestand is gewijzigd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nieprawidłowe hasło lub plik kopii zapasowej został zmodyfikowany."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frase secreta incorreta ou o arquivo de backup foi modificado."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frase-passe incorreta ou o ficheiro de cópia de segurança foi alterado."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Неверная парольная фраза или файл резервной копии был изменён."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fel lösenfras, eller säkerhetskopian har ändrats."
+          }
+        }
+      }
+    },
+    "encryption.backup.error.stale" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A key changed since review. Review the file again."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A key changed since review. Review the file again."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Od kontroly se klíč změnil. Zkontrolujte soubor znovu."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En nøgle er ændret siden gennemgangen. Gennemgå filen igen."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Schlüssel wurde seit der Prüfung geändert. Prüfe die Datei erneut."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ένα κλειδί άλλαξε μετά τον έλεγχο. Ελέγξτε ξανά το αρχείο."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una clave ha cambiado desde la revisión. Revisa el archivo de nuevo."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avain on muuttunut tarkistuksen jälkeen. Tarkista tiedosto uudelleen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une clé a changé depuis la vérification. Vérifiez à nouveau le fichier."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Egy kulcs megváltozott az ellenőrzés óta. Ellenőrizze újra a fájlt."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una chiave è cambiata dopo la verifica. Verifica nuovamente il file."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確認後にキーが変更されました。ファイルをもう一度確認してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "검토 후 키가 변경되었습니다. 파일을 다시 검토하세요."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En nøkkel er endret siden gjennomgangen. Se gjennom filen på nytt."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een sleutel is sinds de controle gewijzigd. Controleer het bestand opnieuw."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klucz zmienił się od czasu sprawdzenia. Sprawdź plik ponownie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uma chave mudou desde a revisão. Revise o arquivo novamente."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uma chave foi alterada desde a revisão. Reveja o ficheiro."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "После проверки ключ изменился. Проверьте файл ещё раз."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En nyckel har ändrats sedan granskningen. Granska filen igen."
+          }
+        }
+      }
+    },
+    "encryption.backup.error.notConfirmed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upload stopped: export a key backup or confirm the risk."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upload stopped: export a key backup or confirm the risk."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nahrávání zastaveno: exportujte zálohu klíče nebo potvrďte riziko."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upload stoppet: Eksportér en nøglesikkerhedskopi, eller bekræft risikoen."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upload gestoppt: Exportiere eine Schlüsselsicherung oder bestätige das Risiko."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Η μεταφόρτωση σταμάτησε: εξαγάγετε αντίγραφο ασφαλείας του κλειδιού ή αποδεχτείτε τον κίνδυνο."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carga detenida: exporta una copia de seguridad de la clave o confirma el riesgo."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lähetys pysäytetty: vie avaimen varmuuskopio tai hyväksy riski."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Envoi arrêté : exportez une sauvegarde de la clé ou acceptez le risque."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feltöltés leállítva: exportálja a kulcs biztonsági mentését, vagy fogadja el a kockázatot."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caricamento interrotto: esporta un backup della chiave o conferma il rischio."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップロードを停止しました。キーのバックアップをエクスポートするか、リスクを承認してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업로드가 중지되었습니다. 키 백업을 내보내거나 위험을 확인하세요."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opplasting stoppet: Eksporter en sikkerhetskopi av nøkkelen, eller godta risikoen."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upload gestopt: exporteer een sleutelback-up of bevestig het risico."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przesyłanie zatrzymane: wyeksportuj kopię zapasową klucza lub zaakceptuj ryzyko."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upload interrompido: exporte um backup da chave ou confirme o risco."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carregamento interrompido: exporte uma cópia de segurança da chave ou confirme o risco."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загрузка остановлена: экспортируйте резервную копию ключа или подтвердите риск."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uppladdningen stoppades: exportera en säkerhetskopia av nyckeln eller godkänn risken."
+          }
+        }
+      }
+    },
+    "encryption.backup.error.authentication" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Device-owner authentication was not approved."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Device-owner authentication was not approved."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ověření vlastníka zařízení nebylo schváleno."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Godkendelse af enhedens ejer blev ikke godkendt."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Authentifizierung des Geräteinhabers wurde nicht bestätigt."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Η πιστοποίηση του κατόχου της συσκευής δεν εγκρίθηκε."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha aprobado la autenticación del propietario del dispositivo."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laitteen omistajan todennusta ei hyväksytty."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’authentification du propriétaire de l’appareil n’a pas été approuvée."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Az eszköz tulajdonosának hitelesítése nem lett jóváhagyva."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’autenticazione del proprietario del dispositivo non è stata approvata."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デバイス所有者の認証が承認されませんでした。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기기 소유자 인증이 승인되지 않았습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autentisering av enhetens eier ble ikke godkjent."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verificatie van de eigenaar van het apparaat is niet goedgekeurd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uwierzytelnienie właściciela urządzenia nie zostało zatwierdzone."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A autenticação do proprietário do dispositivo não foi aprovada."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A autenticação do proprietário do dispositivo não foi aprovada."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Аутентификация владельца устройства не была подтверждена."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autentisering av enhetens ägare godkändes inte."
+          }
+        }
+      }
+    },
+    "encryption.backup.error.extension" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use the .bktkeys extension for key backups."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use the .bktkeys extension for key backups."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro zálohy klíčů použijte příponu .bktkeys."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brug filtypen .bktkeys til nøglesikkerhedskopier."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwende die Dateiendung .bktkeys für Schlüsselsicherungen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Χρησιμοποιήστε την επέκταση .bktkeys για αντίγραφα ασφαλείας κλειδιών."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa la extensión .bktkeys para las copias de seguridad de claves."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Käytä avainten varmuuskopioissa .bktkeys-tiedostopäätettä."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilisez l’extension .bktkeys pour les sauvegardes de clés."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A kulcsok biztonsági mentéséhez használja a .bktkeys kiterjesztést."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa l’estensione .bktkeys per i backup delle chiavi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キーのバックアップには拡張子 .bktkeys を使用してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "키 백업에는 .bktkeys 확장자를 사용하세요."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bruk filtypen .bktkeys for sikkerhetskopier av nøkler."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebruik de extensie .bktkeys voor sleutelback-ups."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Użyj rozszerzenia .bktkeys dla kopii zapasowych kluczy."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use a extensão .bktkeys para backups de chaves."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilize a extensão .bktkeys para cópias de segurança de chaves."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Используйте расширение .bktkeys для резервных копий ключей."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Använd filändelsen .bktkeys för säkerhetskopior av nycklar."
           }
         }
       }

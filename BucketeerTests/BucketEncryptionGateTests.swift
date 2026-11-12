@@ -32,6 +32,22 @@ final class BucketEncryptionGateTests: XCTestCase {
         XCTAssertNotNil(laterAnswer)
     }
 
+    @MainActor
+    func testDeclineDoesNotPromptForEveryQueuedUpload() async throws {
+        let store = InMemoryEncryptionKeyStore(encryptedBuckets: [(accountID, "vault")], backupReady: false)
+        var prompts = 0
+        let gate = BucketEncryptionGate(keyStore: store, confirmBackup: { _ in prompts += 1; return false })
+        for _ in 0..<8 {
+            do {
+                _ = try await gate.uploadKey(accountID: accountID, bucket: "vault")
+                XCTFail("Declined upload must fail")
+            } catch {
+                XCTAssertTrue(error is EncryptionError)
+            }
+        }
+        XCTAssertEqual(prompts, 1)
+    }
+
     // MARK: - Encrypted to plain
 
     func testEncryptedSourceIntoBucketWithoutKeyIsEncryptedToPlain() {
@@ -113,6 +129,14 @@ private actor GatedKeyStore: EncryptionKeyStoring {
     }
 
     func copyForReassignment(_ key: BucketEncryptionKey, to accountID: UUID) throws -> BucketEncryptionKey {
+        throw CocoaError(.featureUnsupported)
+    }
+
+    func importKey(_ entry: KeyBackupEntry, replacing expectedID: UUID?) throws {
+        throw CocoaError(.featureUnsupported)
+    }
+
+    func markBackupReady(id: UUID) throws {
         throw CocoaError(.featureUnsupported)
     }
 

@@ -22,18 +22,21 @@ public struct BucketEncryptionKey: Identifiable, Hashable, Sendable {
     public let accountID: UUID
     public let bucket: String
     public let createdAt: Date
+    public var backupReady: Bool
 
     public init(
         id: UUID = UUID(),
         label: String,
         accountID: UUID,
         bucket: String,
-        createdAt: Date = Date()
+        createdAt: Date = Date(),
+        backupReady: Bool = false
     ) {
         self.id = id
         self.label = label
         self.accountID = accountID
         self.bucket = bucket
         self.createdAt = createdAt
+        self.backupReady = backupReady
     }
 }

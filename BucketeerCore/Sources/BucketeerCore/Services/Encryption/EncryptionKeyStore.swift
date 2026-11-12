@@ -98,7 +98,7 @@ public actor EncryptionKeyStore: EncryptionKeyStoring {
         }
         let bytes = try readKeychain(id: key.id)
         let replacement = BucketEncryptionKey(
-            label: key.label, accountID: accountID, bucket: bucket, createdAt: key.createdAt
+            label: key.label, accountID: accountID, bucket: bucket, createdAt: key.createdAt, backupReady: key.backupReady
         )
         try writeKeychain(id: replacement.id, bytes: bytes)
         do {
@@ -146,6 +146,42 @@ public actor EncryptionKeyStore: EncryptionKeyStoring {
             modelContext.rollback()
             throw BucketeerError.persistenceFailure(message: error.localizedDescription)
         }
+    }
+
+    public func markBackupReady(id: UUID) throws {
+        let descriptor = FetchDescriptor<BucketEncryptionKeyRecord>(predicate: #Predicate { $0.id == id })
+        guard let record = try modelContext.fetch(descriptor).first else { throw EncryptionError.keyRemoved }
+        record.backupReady = true
+        do { try modelContext.save() }
+        catch { modelContext.rollback(); throw error }
+    }
+
+    public func importKey(_ entry: KeyBackupEntry, replacing expectedID: UUID?) throws {
+        let accountID = entry.accountID
+        let bucket = entry.bucket
+        let descriptor = FetchDescriptor<BucketEncryptionKeyRecord>(
+            predicate: #Predicate { $0.accountID == accountID && $0.bucket == bucket }
+        )
+        let existing = try modelContext.fetch(descriptor).first
+        let oldBytes: Data?
+        do { oldBytes = try existing.map { try readKeychain(id: $0.id) } }
+        catch EncryptionError.keyRemoved { oldBytes = nil }
+        guard try KeyBackupService.shouldImport(entry, existing: existing?.snapshot,
+                                                existingBytes: oldBytes, replacing: expectedID) else { return }
+        let replacement = BucketEncryptionKey(label: entry.label, accountID: accountID, bucket: bucket,
+                                               createdAt: entry.createdAt, backupReady: true)
+        try writeKeychain(id: replacement.id, bytes: entry.rawKey)
+        let oldID = existing?.id
+        do {
+            if let existing { modelContext.delete(existing) }
+            modelContext.insert(BucketEncryptionKeyRecord(key: replacement))
+            try modelContext.save()
+        } catch {
+            modelContext.rollback()
+            try? deleteKeychain(id: replacement.id)
+            throw error
+        }
+        if let oldID, oldBytes != nil { try deleteKeychain(id: oldID) }
     }
 
     // MARK: - Keychain helpers

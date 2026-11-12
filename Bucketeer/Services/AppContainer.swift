@@ -160,7 +160,8 @@ final class AppContainer {
         let encryptionKeyStore: any EncryptionKeyStoring = EncryptionKeyStore(
             modelContainer: encryptionContainer
         )
-        let bucketEncryptionGate = BucketEncryptionGate(keyStore: encryptionKeyStore)
+        let backupPresenter = KeyBackupPresenter()
+        let bucketEncryptionGate = BucketEncryptionGate(keyStore: encryptionKeyStore, confirmBackup: backupPresenter.confirmBackupRisk)
         // Write to the shared keychain access group of the
         // data-protection keychain so the File Provider extension
         // (which reads from the same group) can load credentials.
@@ -437,6 +438,7 @@ final class AppContainer {
             mountController: mountController,
             encryptedBucketListURL: stores == .onDisk ? Self.groupContainerURL().map(EncryptedBucketList.url(inGroupContainer:)) : nil
         )
+        backupPresenter.viewModel = self.encryptionKeysViewModel
         if startsBackgroundWork {
             Task { @MainActor [encryptionKeysViewModel = self.encryptionKeysViewModel] in
                 await encryptionKeysViewModel.reload()

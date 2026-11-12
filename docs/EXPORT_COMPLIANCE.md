@@ -34,12 +34,13 @@ classification below.
 | Transport to S3 | TLS 1.2+ | Soto SotoS3 → AsyncHTTPClient (swift-nio). Its dependency swift-nio-ssl vendors **BoringSSL**, which is linked into both the host app and the File Provider extension (`CNIOBoringSSL` symbols, verified with `nm` on the 2026-11-02 Debug build). Which TLS stack serves a given connection at runtime is not documented here. |
 | Credentials at rest | macOS Keychain | Apple Security framework |
 | BYOK at-rest object encryption (Phase 13.15) | AES-256-GCM | Apple CryptoKit (`AES.GCM.seal` / `.open`, `SymmetricKey(size: .bits256)`) |
+| Key backup files | PBKDF2-HMAC-SHA256 + AES-256-GCM | Apple CommonCrypto, CryptoKit and Security (random salt/nonce) |
 | Request signing (Azure SharedKey / SAS) | HMAC-SHA256 | Apple CryptoKit |
 | Hash for resumable-upload fingerprints | SHA-256 | Apple CryptoKit (`SHA256`) |
 | Hash for the cross-account temp manifest | SHA-256 | Apple CryptoKit |
 
 Every algorithm is a **standard symmetric cipher, MAC, or hash**.
-The app's own encryption, signing and hashing use Apple CryptoKit;
+The app's own encryption, signing and hashing use Apple CryptoKit and CommonCrypto;
 the one bundled third-party cryptographic implementation is BoringSSL
 inside swift-nio-ssl (transitive dependency of Soto, see table). It
 implements standard TLS only. There is no proprietary cryptography,
