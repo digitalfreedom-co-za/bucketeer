@@ -152,14 +152,12 @@ extension BucketListView {
     /// Finder → bucket card. Uploads dropped files to the bucket root.
     private func handleURLDrop(_ urls: [URL], into bucket: String) -> Bool {
         guard let account = viewModel.account else { return false }
-        let encrypted = container.encryptionKeysViewModel.isEncrypted(accountID: account.id, bucket: bucket)
         Task {
             await container.dragDropCoordinator.uploadDroppedURLs(
                 urls,
                 account: account,
                 bucket: bucket,
-                prefix: "",
-                expectsEncryption: encrypted
+                prefix: ""
             )
         }
         return true

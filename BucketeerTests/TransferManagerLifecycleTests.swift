@@ -162,25 +162,30 @@ final class TransferManagerLifecycleTests: XCTestCase {
         XCTAssertFalse(RefusingAzureStub.requested(blob: "no-key.txt"))
     }
 
-    func testEncryptedMarkerFollowsTheKeyTheUploadResolved() async throws {
+    func testEncryptedMarkerWaitsForTheKeyTheUploadResolved() async throws {
         let keyStore = InMemoryEncryptionKeyStore(encryptedBuckets: [(account.id, "vault")])
         let manager = try await makeManager(encryptionGate: BucketEncryptionGate(keyStore: keyStore))
         let file = folder.appendingPathComponent("marker.txt")
         try Data("payload".utf8).write(to: file)
-        let completions = manager.completions()
+        let updates = manager.taskUpdates()
 
-        let unhinted = await manager.enqueueUpload(account: account, bucket: "vault", key: "unhinted.txt",
-                                                   localURL: file, contentType: nil)
-        let staleHint = await manager.enqueueUpload(account: account, bucket: "public", key: "stale-hint.txt",
-                                                    localURL: file, contentType: nil, expectsEncryption: true)
+        let keyed = await manager.enqueueUpload(account: account, bucket: "vault", key: "keyed.txt",
+                                                localURL: file, contentType: nil)
+        let plain = await manager.enqueueUpload(account: account, bucket: "public", key: "plain.txt",
+                                                localURL: file, contentType: nil)
         var marked: [UUID: Bool] = [:]
-        for await task in completions where [unhinted, staleHint].contains(task.id) {
-            marked[task.id] = task.isEncrypted
+        for await snapshot in updates {
+            for task in snapshot where [keyed, plain].contains(task.id) {
+                if case .queued = task.state {
+                    XCTAssertFalse(task.isEncrypted, "a queued upload has not resolved a key yet")
+                }
+                if task.state.isTerminal { marked[task.id] = task.isEncrypted }
+            }
             if marked.count == 2 { break }
         }
 
-        XCTAssertEqual(marked[unhinted], true, "a keyed bucket marks the upload without a preflight hint")
-        XCTAssertEqual(marked[staleHint], false, "a stale hint is cleared once the upload finds no key")
+        XCTAssertEqual(marked[keyed], true, "the key the upload resolved marks it")
+        XCTAssertEqual(marked[plain], false, "an upload without a key stays unmarked")
     }
 
     // MARK: - Helpers

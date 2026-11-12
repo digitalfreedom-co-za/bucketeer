@@ -369,14 +369,12 @@ struct ObjectListView: View {
               let bucket = viewModel.bucket
         else { return false }
         let prefix = viewModel.prefix
-        let encrypted = isBucketEncrypted
         Task {
             await container.dragDropCoordinator.uploadDroppedURLs(
                 urls,
                 account: account,
                 bucket: bucket,
-                prefix: prefix,
-                expectsEncryption: encrypted
+                prefix: prefix
             )
         }
         return true
@@ -561,8 +559,7 @@ struct ObjectListView: View {
             account: account,
             bucket: bucket,
             prefix: viewModel.prefix,
-            fileURLs: urls,
-            expectsEncryption: container.encryptionKeysViewModel.isEncrypted(accountID: account.id, bucket: bucket)
+            fileURLs: urls
         )
     }
 

@@ -145,14 +145,14 @@ private struct TransferRow: View {
 }
 
 extension TransferTask {
-    /// Uploads that are being or were sealed. A failed or cancelled
-    /// upload may never have reached the key check, so its preflight
-    /// marker proves nothing.
+    /// Uploads that are being or were sealed. `isEncrypted` is only set
+    /// once the worker resolved the key; a failed or cancelled upload
+    /// stored nothing, so it shows no marker.
     var showsEncryptedMarker: Bool {
         guard direction == .upload, isEncrypted else { return false }
         switch state {
-        case .queued, .running, .completed: return true
-        case .failed, .cancelled: return false
+        case .running, .completed: return true
+        case .queued, .failed, .cancelled: return false
         }
     }
 }

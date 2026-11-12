@@ -43,9 +43,9 @@ public struct TransferTask: Identifiable, Hashable, Sendable {
     public let localURL: URL
     public var state: TransferState
     public let startedAt: Date
-    /// Whether the upload is (or will be) sealed with the bucket's key.
-    /// Set from the preflight when the task is queued and confirmed
-    /// once the transfer resolves the key, so rows never look it up.
+    /// Whether the upload is sealed with the bucket's key or carries
+    /// already-encrypted bytes. Set only once the transfer has resolved
+    /// the key, never from queue-time state, so rows never look it up.
     public var isEncrypted: Bool
 
     public init(

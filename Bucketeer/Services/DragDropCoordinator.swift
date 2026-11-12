@@ -67,14 +67,12 @@ final class DragDropCoordinator {
 
     /// Enqueue every dropped URL as an upload into the destination
     /// prefix. Directory drops are not recursive in v1 — top-level files
-    /// only. Folder upload arrives in v1.1. `expectsEncryption` marks
-    /// the queued uploads, see `Transferring.enqueueUpload`.
+    /// only. Folder upload arrives in v1.1.
     func uploadDroppedURLs(
         _ urls: [URL],
         account: S3Account,
         bucket: String,
-        prefix: String,
-        expectsEncryption: Bool
+        prefix: String
     ) async {
         var fileURLs: [URL] = []
         for url in urls {
@@ -91,8 +89,7 @@ final class DragDropCoordinator {
             account: account,
             bucket: bucket,
             prefix: prefix,
-            fileURLs: fileURLs,
-            expectsEncryption: expectsEncryption
+            fileURLs: fileURLs
         )
     }
 

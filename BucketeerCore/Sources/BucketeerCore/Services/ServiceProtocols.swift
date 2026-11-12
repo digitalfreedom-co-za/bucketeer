@@ -357,17 +357,13 @@ public protocol TrashStoring: Sendable {
 /// `AsyncStream` so view models stay decoupled from the underlying task
 /// graph.
 public protocol Transferring: Sendable {
-    /// `expectsEncryption` is the caller's answer, from state it has
-    /// already loaded, to whether the bucket has a key. It only marks
-    /// the queued task; the upload resolves the key itself.
     @discardableResult
     func enqueueUpload(
         account: S3Account,
         bucket: String,
         key: String,
         localURL: URL,
-        contentType: String?,
-        expectsEncryption: Bool
+        contentType: String?
     ) async -> UUID
 
     @discardableResult
@@ -388,24 +384,4 @@ public protocol Transferring: Sendable {
     /// observer; it starts with the latest snapshot. Each yielded value
     /// is the complete state — consumers replace, not merge.
     func taskUpdates() -> AsyncStream<[TransferTask]>
-}
-
-extension Transferring {
-    @discardableResult
-    public func enqueueUpload(
-        account: S3Account,
-        bucket: String,
-        key: String,
-        localURL: URL,
-        contentType: String?
-    ) async -> UUID {
-        await enqueueUpload(
-            account: account,
-            bucket: bucket,
-            key: key,
-            localURL: localURL,
-            contentType: contentType,
-            expectsEncryption: false
-        )
-    }
 }

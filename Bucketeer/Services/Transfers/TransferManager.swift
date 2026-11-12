@@ -185,8 +185,7 @@ actor TransferManager: Transferring {
         bucket: String,
         key: String,
         localURL: URL,
-        contentType: String?,
-        expectsEncryption: Bool
+        contentType: String?
     ) async -> UUID {
         await enqueueUpload(
             account: account,
@@ -194,8 +193,7 @@ actor TransferManager: Transferring {
             key: key,
             localURL: localURL,
             contentType: contentType,
-            bypassEncryption: false,
-            expectsEncryption: expectsEncryption
+            bypassEncryption: false
         )
     }
 
@@ -213,8 +211,7 @@ actor TransferManager: Transferring {
         bypassEncryption: Bool,
         requiresEncryption: Bool = false,
         destinationHadKey: Bool = false,
-        precondition: WritePrecondition? = nil,
-        expectsEncryption: Bool = false
+        precondition: WritePrecondition? = nil
     ) async -> UUID {
         let id = UUID()
         let size = (try? localURL.resourceValues(forKeys: [.fileSizeKey]))?.fileSize
@@ -227,8 +224,7 @@ actor TransferManager: Transferring {
             key: key,
             localURL: localURL,
             state: .queued,
-            startedAt: Date(),
-            isEncrypted: expectsEncryption || requiresEncryption || bypassEncryption
+            startedAt: Date()
         )
         items[id] = QueuedItem(
             account: account,
@@ -886,7 +882,9 @@ actor TransferManager: Transferring {
         }
     }
 
-    /// Replaces the preflight's marker with what the upload resolved.
+    /// Marks the upload as sealed once it has resolved the bucket's key
+    /// (or carries already-encrypted bytes). Queued tasks stay unmarked:
+    /// the key may change before a worker picks them up.
     private func markEncrypted(id: UUID, _ isEncrypted: Bool) {
         guard !terminated.contains(id), items[id]?.task.isEncrypted != isEncrypted else { return }
         items[id]?.task.isEncrypted = isEncrypted
