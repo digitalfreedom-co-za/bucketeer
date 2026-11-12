@@ -13,9 +13,11 @@ actor InMemoryEncryptionKeyStore: EncryptionKeyStoring {
     private var keys: [BucketEncryptionKey] = []
     private var material: [UUID: Data] = [:]
     private var failingLookups = 0
+    private var failingDeletes = 0
 
     init(encryptedBuckets: [(accountID: UUID, bucket: String)] = []) {
         keys = encryptedBuckets.map { BucketEncryptionKey(label: "Key", accountID: $0.accountID, bucket: $0.bucket) }
+        material = Dictionary(uniqueKeysWithValues: keys.map { ($0.id, Data($0.id.uuidString.utf8.prefix(32))) })
     }
 
     func all() -> [BucketEncryptionKey] { keys }
@@ -36,6 +38,7 @@ actor InMemoryEncryptionKeyStore: EncryptionKeyStoring {
     func create(label: String, accountID: UUID, bucket: String) -> BucketEncryptionKey {
         let key = BucketEncryptionKey(label: label, accountID: accountID, bucket: bucket)
         keys.append(key)
+        material[key.id] = Data(key.id.uuidString.utf8.prefix(32))
         return key
     }
 
@@ -52,12 +55,21 @@ actor InMemoryEncryptionKeyStore: EncryptionKeyStoring {
     }
 
     func keyMaterial(id: UUID) throws -> Data {
-        guard keys.contains(where: { $0.id == id }) else { throw EncryptionError.noKeyForBucket }
-        return material[id] ?? Data(id.uuidString.utf8.prefix(32))
+        guard let bytes = material[id] else { throw EncryptionError.noKeyForBucket }
+        return bytes
     }
 
-    func delete(id: UUID) {
-        keys.removeAll { $0.id == id }
+    func failNextDeletes(_ count: Int) {
+        failingDeletes = count
+    }
+
+    func delete(id: UUID) throws {
         material.removeValue(forKey: id)
+        if failingDeletes > 0 {
+            failingDeletes -= 1
+            // Model a metadata failure after the Keychain bytes are gone.
+            throw CocoaError(.fileWriteNoPermission)
+        }
+        keys.removeAll { $0.id == id }
     }
 }

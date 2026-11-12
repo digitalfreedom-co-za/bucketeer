@@ -45,7 +45,6 @@ final class EncryptionKeysViewModel {
     /// Also mirrors the key list for the File Provider extension, so
     /// every create, delete and launch refreshes it.
     func reload() async {
-        accountsLoaded = false
         do {
             keys = try await keyStore.all()
             if let encryptedBucketListURL {
@@ -55,8 +54,10 @@ final class EncryptionKeysViewModel {
             accountsLoaded = true
             error = nil
         } catch let bucketeerError as BucketeerError {
+            accountsLoaded = false
             error = bucketeerError
         } catch {
+            accountsLoaded = false
             self.error = .unknown(message: error.localizedDescription)
         }
     }
@@ -86,7 +87,7 @@ final class EncryptionKeysViewModel {
             await gate.invalidate(accountID: key.accountID, bucket: key.bucket)
             await gate.invalidate(accountID: account.id, bucket: key.bucket)
             await reload()
-            return error == nil
+            return true
         } catch {
             // A failed rollback can leave both entries. Refresh the
             // mirror and caches even when the move reports an error.
@@ -98,6 +99,10 @@ final class EncryptionKeysViewModel {
                 self.error = .unknown(message: String(localized: "encryption.reassign.conflict"))
             case EncryptionKeyReassignmentError.verificationFailed:
                 self.error = .unknown(message: String(localized: "encryption.reassign.verificationFailed"))
+            case EncryptionKeyReassignmentError.rollbackFailed:
+                self.error = .unknown(message: String(localized: "encryption.reassign.rollbackFailed"))
+            case EncryptionKeyReassignmentError.sourceCleanupFailed:
+                self.error = .unknown(message: String(localized: "encryption.reassign.sourceCleanupFailed"))
             default:
                 self.error = error as? BucketeerError ?? .unknown(message: error.localizedDescription)
             }

@@ -1,6 +1,40 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "encryption.reassign.sourceCleanupFailed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The key was copied and verified for the destination account, but cleanup of the original entry failed. Keep the destination key. You can delete the old entry under Deleted account in Settings → Encryption."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Schlüssel wurde für das Zielkonto kopiert und überprüft, aber die Bereinigung des ursprünglichen Eintrags ist fehlgeschlagen. Behalte den Zielschlüssel. Den alten Eintrag unter Gelöschtes Konto kannst du unter Einstellungen → Verschlüsselung löschen."
+          }
+        }
+      }
+    },
+    "encryption.reassign.rollbackFailed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The copied key could not be verified, and its cleanup failed. The original key has been kept. Delete the destination account’s entry in Settings → Encryption before retrying; it may be missing its key bytes and block transfers."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der kopierte Schlüssel konnte nicht überprüft werden, und seine Bereinigung ist fehlgeschlagen. Der ursprüngliche Schlüssel wurde beibehalten. Lösche vor einem erneuten Versuch den Eintrag des Zielkontos unter Einstellungen → Verschlüsselung; ihm können die Schlüsselbytes fehlen, wodurch Übertragungen blockiert werden."
+          }
+        }
+      }
+    },
     "encryption.account.deleted" : {
       "extractionState" : "manual",
       "localizations" : {

@@ -157,8 +157,8 @@ extension S3Browsing {
 
 /// Persistence boundary for per-bucket BYOK encryption keys. Phase
 /// 13.15. The metadata lives in SwiftData, the actual key bytes in
-/// the Keychain — implementations write to both atomically so a key
-/// can never end up with metadata-but-no-bytes (or vice versa).
+/// the Keychain. Deletion failures can leave stale metadata; callers
+/// must handle missing bytes without falling back to plaintext.
 public protocol EncryptionKeyStoring: Sendable {
     /// Every registered key's metadata.
     func all() async throws -> [BucketEncryptionKey]
@@ -193,25 +193,42 @@ public protocol EncryptionKeyStoring: Sendable {
 public enum EncryptionKeyReassignmentError: Error, Sendable {
     case conflict
     case verificationFailed
+    case rollbackFailed
+    case sourceCleanupFailed
 }
 
 public extension EncryptionKeyStoring {
     /// Keep the source recoverable until the destination is persisted and verified.
     func reassign(_ key: BucketEncryptionKey, to accountID: UUID) async throws -> BucketEncryptionKey {
         let originalBytes = try await keyMaterial(id: key.id)
-        let replacement = try await copyForReassignment(key, to: accountID)
+        var copiedKey: BucketEncryptionKey?
+        let replacement: BucketEncryptionKey
         do {
+            replacement = try await copyForReassignment(key, to: accountID)
+            copiedKey = replacement
             let stored = try await self.key(accountID: accountID, bucket: key.bucket)
             let copiedBytes = try await keyMaterial(id: replacement.id)
             guard stored == replacement, copiedBytes == originalBytes else {
                 throw EncryptionKeyReassignmentError.verificationFailed
             }
-            try await delete(id: key.id)
-            return replacement
         } catch {
-            try? await delete(id: replacement.id)
+            if let copiedKey {
+                do {
+                    try await delete(id: copiedKey.id)
+                } catch {
+                    throw EncryptionKeyReassignmentError.rollbackFailed
+                }
+            }
             throw error
         }
+        // Never roll back a verified copy: source cleanup can fail after
+        // deleting its bytes, making the destination the only recoverable key.
+        do {
+            try await delete(id: key.id)
+        } catch {
+            throw EncryptionKeyReassignmentError.sourceCleanupFailed
+        }
+        return replacement
     }
 }
 
