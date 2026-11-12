@@ -200,13 +200,18 @@ public extension EncryptionKeyStoring {
     func reassign(_ key: BucketEncryptionKey, to accountID: UUID) async throws -> BucketEncryptionKey {
         let originalBytes = try await keyMaterial(id: key.id)
         let replacement = try await copyForReassignment(key, to: accountID)
-        let stored = try await self.key(accountID: accountID, bucket: key.bucket)
-        let copiedBytes = try await keyMaterial(id: replacement.id)
-        guard stored == replacement, copiedBytes == originalBytes else {
-            throw EncryptionKeyReassignmentError.verificationFailed
+        do {
+            let stored = try await self.key(accountID: accountID, bucket: key.bucket)
+            let copiedBytes = try await keyMaterial(id: replacement.id)
+            guard stored == replacement, copiedBytes == originalBytes else {
+                throw EncryptionKeyReassignmentError.verificationFailed
+            }
+            try await delete(id: key.id)
+            return replacement
+        } catch {
+            try? await delete(id: replacement.id)
+            throw error
         }
-        try await delete(id: key.id)
-        return replacement
     }
 }
 

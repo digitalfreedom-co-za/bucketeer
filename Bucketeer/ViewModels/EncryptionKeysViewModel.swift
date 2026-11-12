@@ -17,6 +17,8 @@ final class EncryptionKeysViewModel {
     var accounts: [S3Account] = []
     var error: BucketeerError?
 
+    private var accountsLoaded = false
+
     private let keyStore: any EncryptionKeyStoring
     private let accountStore: any AccountStoring
     private let gate: BucketEncryptionGate
@@ -43,12 +45,14 @@ final class EncryptionKeysViewModel {
     /// Also mirrors the key list for the File Provider extension, so
     /// every create, delete and launch refreshes it.
     func reload() async {
+        accountsLoaded = false
         do {
             keys = try await keyStore.all()
             if let encryptedBucketListURL {
                 try EncryptedBucketList.write(keys, to: encryptedBucketListURL)
             }
             accounts = try await accountStore.all()
+            accountsLoaded = true
             error = nil
         } catch let bucketeerError as BucketeerError {
             error = bucketeerError
@@ -74,6 +78,7 @@ final class EncryptionKeysViewModel {
     }
 
     func reassign(_ key: BucketEncryptionKey, to account: S3Account) async -> Bool {
+        guard isOrphaned(key) else { return false }
         do {
             try await mountController.whileUnmounted(account: account, bucket: key.bucket) {
                 _ = try await keyStore.reassign(key, to: account.id)
@@ -83,7 +88,7 @@ final class EncryptionKeysViewModel {
             await reload()
             return error == nil
         } catch {
-            // A failed source cleanup can leave both entries. Refresh the
+            // A failed rollback can leave both entries. Refresh the
             // mirror and caches even when the move reports an error.
             await gate.invalidate(accountID: key.accountID, bucket: key.bucket)
             await gate.invalidate(accountID: account.id, bucket: key.bucket)
@@ -105,7 +110,7 @@ final class EncryptionKeysViewModel {
     }
 
     func isOrphaned(_ key: BucketEncryptionKey) -> Bool {
-        !accounts.contains { $0.id == key.accountID }
+        accountsLoaded && !accounts.contains { $0.id == key.accountID }
     }
 
     func delete(_ key: BucketEncryptionKey) async {
@@ -128,6 +133,7 @@ final class EncryptionKeysViewModel {
 
     /// Resolve an account UUID back to a display name for the list.
     func accountName(for id: UUID) -> String {
-        accounts.first(where: { $0.id == id })?.name ?? String(localized: "encryption.account.deleted")
+        guard accountsLoaded else { return id.uuidString }
+        return accounts.first(where: { $0.id == id })?.name ?? String(localized: "encryption.account.deleted")
     }
 }

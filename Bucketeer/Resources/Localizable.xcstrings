@@ -507,121 +507,121 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Encryption keys: %lld. These keys are kept, not deleted. Objects encrypted with them can only be read again after reassigning the key to an account. Manage them in Settings → Encryption keys."
+            "value" : "Encryption keys: %lld. These keys are kept, not deleted. Objects encrypted with them can only be read again after reassigning the key to an account. Manage them in Settings → Encryption."
           }
         },
         "en-GB" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Encryption keys: %lld. These keys are kept, not deleted. Objects encrypted with them can only be read again after reassigning the key to an account. Manage them in Settings → Encryption keys."
+            "value" : "Encryption keys: %lld. These keys are kept, not deleted. Objects encrypted with them can only be read again after reassigning the key to an account. Manage them in Settings → Encryption."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Verschlüsselungsschlüssel: %lld. Diese Schlüssel bleiben erhalten und werden nicht gelöscht. Damit verschlüsselte Objekte können erst wieder gelesen werden, nachdem der Schlüssel einem Konto neu zugewiesen wurde. Verwalte sie unter Einstellungen → Verschlüsselungsschlüssel."
+            "value" : "Verschlüsselungsschlüssel: %lld. Diese Schlüssel bleiben erhalten und werden nicht gelöscht. Damit verschlüsselte Objekte können erst wieder gelesen werden, nachdem der Schlüssel einem Konto neu zugewiesen wurde. Verwalte sie unter Einstellungen → Verschlüsselung."
           }
         },
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Šifrovací klíče: %lld. Tyto klíče zůstanou zachovány, nebudou smazány. Objekty jimi zašifrované lze znovu číst až po přiřazení klíče k účtu. Spravujte je v Nastavení → Šifrovací klíče."
+            "value" : "Šifrovací klíče: %lld. Tyto klíče zůstanou zachovány, nebudou smazány. Objekty jimi zašifrované lze znovu číst až po přiřazení klíče k účtu. Spravujte je v Nastavení → Šifrování."
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Krypteringsnøgler: %lld. Disse nøgler bevares og slettes ikke. Objekter krypteret med dem kan først læses igen, når nøglen er tildelt en konto. Administrer dem under Indstillinger → Krypteringsnøgler."
+            "value" : "Krypteringsnøgler: %lld. Disse nøgler bevares og slettes ikke. Objekter krypteret med dem kan først læses igen, når nøglen er tildelt en konto. Administrer dem under Indstillinger → Kryptering."
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Κλειδιά κρυπτογράφησης: %lld. Αυτά τα κλειδιά διατηρούνται και δεν διαγράφονται. Τα αντικείμενα που κρυπτογραφήθηκαν με αυτά μπορούν να διαβαστούν ξανά μόνο μετά την εκ νέου ανάθεση του κλειδιού σε λογαριασμό. Διαχειριστείτε τα στις Ρυθμίσεις → Κλειδιά κρυπτογράφησης."
+            "value" : "Κλειδιά κρυπτογράφησης: %lld. Αυτά τα κλειδιά διατηρούνται και δεν διαγράφονται. Τα αντικείμενα που κρυπτογραφήθηκαν με αυτά μπορούν να διαβαστούν ξανά μόνο μετά την εκ νέου ανάθεση του κλειδιού σε λογαριασμό. Διαχειριστείτε τα στις Ρυθμίσεις → Κρυπτογράφηση."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Claves de cifrado: %lld. Estas claves se conservan, no se eliminan. Los objetos cifrados con ellas solo podrán volver a leerse tras reasignar la clave a una cuenta. Gestiónalas en Ajustes → Claves de cifrado."
+            "value" : "Claves de cifrado: %lld. Estas claves se conservan, no se eliminan. Los objetos cifrados con ellas solo podrán volver a leerse tras reasignar la clave a una cuenta. Gestiónalas en Ajustes → Cifrado."
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Salausavaimia: %lld. Nämä avaimet säilytetään, eikä niitä poisteta. Niillä salattuja objekteja voi lukea uudelleen vasta, kun avain on määritetty tilille. Hallitse niitä kohdassa Asetukset → Salausavaimet."
+            "value" : "Salausavaimia: %lld. Nämä avaimet säilytetään, eikä niitä poisteta. Niillä salattuja objekteja voi lukea uudelleen vasta, kun avain on määritetty tilille. Hallitse niitä kohdassa Asetukset → Salaus."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Clés de chiffrement : %lld. Ces clés sont conservées et ne sont pas supprimées. Les objets chiffrés avec ces clés ne pourront être relus qu’après réattribution de la clé à un compte. Gérez-les dans Réglages → Clés de chiffrement."
+            "value" : "Clés de chiffrement : %lld. Ces clés sont conservées et ne sont pas supprimées. Les objets chiffrés avec ces clés ne pourront être relus qu’après réattribution de la clé à un compte. Gérez-les dans Réglages → Chiffrement."
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Titkosítási kulcsok: %lld. Ezek a kulcsok megmaradnak, nem törlődnek. A velük titkosított objektumok csak akkor olvashatók újra, ha a kulcsot egy fiókhoz rendeli. Kezelésük: Beállítások → Titkosítási kulcsok."
+            "value" : "Titkosítási kulcsok: %lld. Ezek a kulcsok megmaradnak, nem törlődnek. A velük titkosított objektumok csak akkor olvashatók újra, ha a kulcsot egy fiókhoz rendeli. Kezelésük: Beállítások → Titkosítás."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chiavi di crittografia: %lld. Queste chiavi vengono conservate, non eliminate. Gli oggetti crittografati con esse potranno essere letti di nuovo solo dopo aver riassegnato la chiave a un account. Gestiscile in Impostazioni → Chiavi di crittografia."
+            "value" : "Chiavi di crittografia: %lld. Queste chiavi vengono conservate, non eliminate. Gli oggetti crittografati con esse potranno essere letti di nuovo solo dopo aver riassegnato la chiave a un account. Gestiscile in Impostazioni → Crittografia."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "暗号鍵：%lld 個。これらの鍵は削除されず、保持されます。これらの鍵で暗号化されたオブジェクトを再び読み取るには、鍵をアカウントに再割り当てする必要があります。「設定」→「暗号鍵」で管理できます。"
+            "value" : "暗号鍵：%lld 個。これらの鍵は削除されず、保持されます。これらの鍵で暗号化されたオブジェクトを再び読み取るには、鍵をアカウントに再割り当てする必要があります。「設定」→「暗号化」で管理できます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "암호화 키: %lld개. 이 키는 삭제되지 않고 유지됩니다. 이 키로 암호화된 객체를 다시 읽으려면 키를 계정에 다시 할당해야 합니다. 설정 → 암호화 키에서 관리하세요."
+            "value" : "암호화 키: %lld개. 이 키는 삭제되지 않고 유지됩니다. 이 키로 암호화된 객체를 다시 읽으려면 키를 계정에 다시 할당해야 합니다. 설정 → 암호화에서 관리하세요."
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Krypteringsnøkler: %lld. Disse nøklene beholdes og slettes ikke. Objekter kryptert med dem kan først leses igjen etter at nøkkelen er tilordnet en konto. Administrer dem i Innstillinger → Krypteringsnøkler."
+            "value" : "Krypteringsnøkler: %lld. Disse nøklene beholdes og slettes ikke. Objekter kryptert med dem kan først leses igjen etter at nøkkelen er tilordnet en konto. Administrer dem i Innstillinger → Kryptering."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Versleutelingssleutels: %lld. Deze sleutels blijven behouden en worden niet verwijderd. Objecten die ermee zijn versleuteld, kunnen pas weer worden gelezen nadat de sleutel aan een account is toegewezen. Beheer ze via Instellingen → Versleutelingssleutels."
+            "value" : "Versleutelingssleutels: %lld. Deze sleutels blijven behouden en worden niet verwijderd. Objecten die ermee zijn versleuteld, kunnen pas weer worden gelezen nadat de sleutel aan een account is toegewezen. Beheer ze via Instellingen → Versleuteling."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Klucze szyfrowania: %lld. Te klucze zostaną zachowane, a nie usunięte. Obiekty zaszyfrowane tymi kluczami będzie można ponownie odczytać dopiero po przypisaniu klucza do konta. Zarządzaj nimi w Ustawienia → Klucze szyfrowania."
+            "value" : "Klucze szyfrowania: %lld. Te klucze zostaną zachowane, a nie usunięte. Obiekty zaszyfrowane tymi kluczami będzie można ponownie odczytać dopiero po przypisaniu klucza do konta. Zarządzaj nimi w Ustawienia → Szyfrowanie."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chaves de criptografia: %lld. Estas chaves serão mantidas, não excluídas. Os objetos criptografados com elas só poderão ser lidos novamente após reatribuir a chave a uma conta. Gerencie-as em Ajustes → Chaves de criptografia."
+            "value" : "Chaves de criptografia: %lld. Estas chaves serão mantidas, não excluídas. Os objetos criptografados com elas só poderão ser lidos novamente após reatribuir a chave a uma conta. Gerencie-as em Ajustes → Criptografia."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chaves de encriptação: %lld. Estas chaves serão mantidas, não eliminadas. Os objetos encriptados com elas só poderão ser lidos novamente após reatribuir a chave a uma conta. Faça a gestão em Definições → Chaves de encriptação."
+            "value" : "Chaves de encriptação: %lld. Estas chaves serão mantidas, não eliminadas. Os objetos encriptados com elas só poderão ser lidos novamente após reatribuir a chave a uma conta. Faça a gestão em Definições → Encriptação."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ключи шифрования: %lld. Эти ключи сохраняются и не удаляются. Зашифрованные ими объекты можно будет снова прочитать только после назначения ключа учётной записи. Управляйте ими в разделе Настройки → Ключи шифрования."
+            "value" : "Ключи шифрования: %lld. Эти ключи сохраняются и не удаляются. Зашифрованные ими объекты можно будет снова прочитать только после назначения ключа учётной записи. Управляйте ими в разделе Настройки → Шифрование."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Krypteringsnycklar: %lld. Dessa nycklar behålls och raderas inte. Objekt som krypterats med dem kan läsas igen först när nyckeln har tilldelats ett konto. Hantera dem i Inställningar → Krypteringsnycklar."
+            "value" : "Krypteringsnycklar: %lld. Dessa nycklar behålls och raderas inte. Objekt som krypterats med dem kan läsas igen först när nyckeln har tilldelats ett konto. Hantera dem i Inställningar → Kryptering."
           }
         }
       }

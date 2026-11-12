@@ -17,6 +17,18 @@ final class EncryptionKeyReassignmentTests: XCTestCase {
         XCTAssertEqual(Set(unchanged), Set([source, occupied]))
 
         await store.delete(id: occupied.id)
+        await store.failNextLookups(1)
+        do {
+            _ = try await store.reassign(source, to: targetID)
+            XCTFail("A failed verification read must roll back the replacement")
+        } catch let error as CocoaError {
+            XCTAssertEqual(error.code, .fileReadNoPermission)
+        }
+        let rolledBack = await store.all()
+        XCTAssertEqual(rolledBack, [source])
+        let preservedBytes = try await store.keyMaterial(id: source.id)
+        XCTAssertEqual(preservedBytes, originalBytes)
+
         let moved = try await store.reassign(source, to: targetID)
         let remaining = await store.all()
         let movedBytes = try await store.keyMaterial(id: moved.id)

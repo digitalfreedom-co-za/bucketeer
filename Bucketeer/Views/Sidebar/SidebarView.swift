@@ -182,9 +182,7 @@ struct SidebarView: View {
         ) { account in
             Button("action.delete", role: .destructive) {
                 Task {
-                    if let error = await viewModel.delete(account: account) {
-                        deletionError = error.localizedDescription
-                    }
+                    _ = await viewModel.delete(account: account)
                     await container.encryptionKeysViewModel.reload()
                 }
                 pendingDeletion = nil
@@ -205,7 +203,7 @@ struct SidebarView: View {
             get: { deletionError != nil },
             set: { if !$0 { deletionError = nil } }
         )) {
-            Button("action.cancel", role: .cancel) { deletionError = nil }
+            Button("action.ok", role: .cancel) { deletionError = nil }
         } message: {
             Text(deletionError ?? "")
         }
