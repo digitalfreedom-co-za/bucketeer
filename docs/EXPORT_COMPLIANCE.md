@@ -39,7 +39,7 @@ classification below.
 | Hash for resumable-upload fingerprints | SHA-256 | Apple CryptoKit (`SHA256`) |
 | Hash for the cross-account temp manifest | SHA-256 | Apple CryptoKit |
 
-Every algorithm is a **standard symmetric cipher, MAC, or hash**.
+Every algorithm is a **standard symmetric cipher, MAC, or hash**, and PBKDF2 is a standard KDF.
 The app's own encryption, signing and hashing use Apple CryptoKit and CommonCrypto;
 the one bundled third-party cryptographic implementation is BoringSSL
 inside swift-nio-ssl (transitive dependency of Soto, see table). It
@@ -62,7 +62,8 @@ outside the EAR's encryption controls. It is released as mass market:
    from the App Store; no MDM, no field engineering.
 3. **Cryptographic functionality cannot easily be changed by the
    user** and is **fully described** — fixed AES-256-GCM envelope
-   documented in this file, `CHANGELOG.md` (13.15), and the
+   documented in this file, `CHANGELOG.md` (13.15),
+   `docs/KEY_BACKUP_FORMAT.md`, and the
    `BucketeerEnvelope` / `ObjectEncryptor` source comments (cipher,
    256-bit key, 96-bit nonce, AAD header, user-held key custody).
 

@@ -1,4 +1,4 @@
-<!-- doc-id: BUCKETEER_PRIVACY_POLICY | lang: de | area: app | version: 1.0.1 | valid-from: 2026-11-12 | translation-of: BUCKETEER_PRIVACY_POLICY en 1.0.1 (PRIVACY_POLICY.md) | review: not counsel-reviewed; AI legal review (Anwalt role) completed 2026-11-09, not a licensed counsel review | owner: Marcel R. G. Berger -->
+<!-- doc-id: BUCKETEER_PRIVACY_POLICY | lang: de | area: app | version: 1.0.2 | valid-from: 2026-11-12 | translation-of: BUCKETEER_PRIVACY_POLICY en 1.0.2 (PRIVACY_POLICY.md) | review: not counsel-reviewed; AI legal review (Anwalt role) completed 2026-11-09, not a licensed counsel review | owner: Marcel R. G. Berger -->
 # Datenschutzerklärung
 
 *Wie Bucketeer für macOS mit deinen Daten umgeht.*
@@ -57,6 +57,7 @@ Nichts davon wird an den Anbieter gesendet.
 | Papierkorb (Metadaten von Objekten, die du in Bucketeer gelöscht hast, und bis zu einer von dir festgelegten Größe eine lokale Kopie ihres Inhalts) | Lokale Datenbank und Cache-Ordner im eigenen Container der App | Dir ermöglichen, gelöschte Objekte wiederherzustellen. Einträge werden nach der von dir festgelegten Aufbewahrungsdauer entfernt (Standard 30 Tage) |
 | Regeln für automatisches Tagging, Prüfpunkte für fortsetzbare Uploads | Lokale Datenbanken im eigenen Container der App | Deine Tagging-Regeln anwenden; unterbrochene Uploads fortsetzen |
 | Verschlüsselungsschlüssel (nur wenn du für einen Bucket die clientseitige Verschlüsselung aktivierst) | Schlüsselmaterial im macOS-Schlüsselbund, Schlüsselbezeichnungen in einer lokalen Datenbank | Objekte auf deinem Mac ver- und entschlüsseln (siehe Abschnitt 6) |
+| Sicherung der Verschlüsselungsschlüssel (optional, nur wenn du exportierst) | Eine mit einer Passphrase geschützte .bktkeys-Datei an einem Ort, den du im macOS-Speicherdialog wählst | Dir ermöglichen, Schlüssel auf diesem Mac oder einem anderen Mac wiederherzustellen (siehe Abschnitt 6) |
 | Einstellungen (Bandbreitenbegrenzung, Papierkorb- und Spotlight-Einstellungen, Menüleistenmodus) | Lokale Einstellungen der App | Deine Auswahl speichern |
 | Vorschau-Cache | Temporärer Ordner der App, begrenzt auf 2 GiB | Vorschauen anzeigen, ohne erneut herunterzuladen |
 | Dateien, die du mit einer anderen App öffnest (Öffnen / Öffnen mit) | Temporärer Ordner der App | Der anderen App die Bearbeitung ermöglichen und deine Speicherungen hochladen; gelöscht, sobald der Speicheranbieter deine letzte Speicherung erhalten hat |
@@ -135,11 +136,23 @@ macOS-Schlüsselbund. Objekte werden vor dem Upload auf deinem Mac mit
 AES-256-GCM verschlüsselt und nach dem Download auf deinem Mac
 entschlüsselt. Dein Speicheranbieter erhält nur die verschlüsselten Daten.
 
-Der Schlüssel wird nicht mit anderen Geräten synchronisiert, und der
-Anbieter hat keine Kopie. Wenn du den Schlüssel löschst oder den Zugriff
-auf den Schlüsselbund dieses Macs verlierst, können die verschlüsselten
-Objekte nicht entschlüsselt werden, und der Anbieter kann sie nicht
-wiederherstellen. Objektnamen und Metadaten werden nicht verschlüsselt.
+Der Anbieter hat keine Kopie des Schlüssels. Die Kopie im Schlüsselbund
+wird nicht mit anderen Geräten und nicht über iCloud synchronisiert. Du
+kannst Schlüssel optional in eine mit einer Passphrase geschützte
+.bktkeys-Sicherung exportieren, nachdem du dich als Gerätebesitzer
+authentifiziert hast (Touch ID oder dein Mac-Passwort). Die Datei
+enthält das Schlüsselmaterial und Bezeichnungen wie Konto- und
+Bucket-Namen, verschlüsselt mit deiner Passphrase. Die App schreibt nur
+diese verschlüsselte Datei über den macOS-Speicherdialog und sendet sie
+nicht über das Netzwerk. Wenn du die Datei in einem synchronisierten
+oder geteilten Ordner speicherst oder später dorthin kopierst, zum
+Beispiel in iCloud Drive, verlässt die verschlüsselte Sicherung diesen
+Mac nach den Bedingungen dieses Dienstes. Bewahre Datei und Passphrase
+auf: Wenn du den Schlüssel löschst oder den Zugriff auf den
+Schlüsselbund dieses Macs verlierst und keine nutzbare Sicherung hast,
+können die verschlüsselten Objekte nicht entschlüsselt werden, und der
+Anbieter kann sie nicht wiederherstellen. Objektnamen und Metadaten
+werden nicht verschlüsselt.
 
 ---
 
@@ -255,10 +268,12 @@ von Kindern.
 ## 14. Sicherheit
 
 - Die App und ihre Finder-Erweiterung laufen in der macOS App Sandbox.
-- Zugangsdaten und Verschlüsselungsschlüssel werden im macOS-Schlüsselbund
-  aufbewahrt, sind nur verfügbar, solange der Mac entsperrt ist, und
-  werden nicht über iCloud synchronisiert. Sie werden weder in
-  Protokolldateien geschrieben noch in Fehlermeldungen angezeigt.
+- Zugangsdaten und die Schlüsselbund-Kopie der Verschlüsselungsschlüssel
+  werden im macOS-Schlüsselbund aufbewahrt, sind nur verfügbar, solange
+  der Mac entsperrt ist, und werden nicht über iCloud synchronisiert.
+  Sie werden weder in Protokolldateien geschrieben noch in
+  Fehlermeldungen angezeigt. Eine optionale Schlüsselsicherung wird nur
+  gespeichert, wenn du sie exportierst, wie in Abschnitt 6 beschrieben.
 - Verbindungen zu Speicher-Endpunkten nutzen TLS, ausgenommen eine
   Endpunktadresse, die du selbst mit http:// eingibst (siehe Abschnitt 4).
   Anfragen werden auf deinem Mac signiert (AWS Signature Version 4 oder

@@ -143,7 +143,8 @@ and the month has been verified against the App Store release date.
 > - Background sync between any two locations across providers (Pro),
 >   plus watch folders that auto-upload on every change
 > - Client-side AES-256-GCM encryption per bucket — keys live in
->   your Keychain only, never in the cloud
+>   your Keychain and can optionally be exported as a
+>   passphrase-protected backup
 > - Soft-delete trash with one-click restore from a local cache
 > - Bucket dashboard, version browser, metadata + tags editor,
 >   lifecycle / CORS / policy viewer
