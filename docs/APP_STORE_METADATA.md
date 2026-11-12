@@ -3,7 +3,7 @@
 Drafts for App Store Connect. Update price and screenshots after the
 first TestFlight cycle. The v1.0 marketing surface includes the 13.x
 feature block (activity log, soft-delete trash, dashboard, versions
-browser, metadata editor, auto-tagging, resumable transfers, deep
+browser, metadata editor, auto-tagging, resumable uploads, deep
 links + Shortcuts, Spotlight indexing, cross-account copy, client-
 side encryption, hardware-key preview).
 
@@ -46,17 +46,20 @@ side encryption, hardware-key preview).
 >   folders** that auto-upload on every change *(Bucketeer Pro)*
 > - **Menubar mode** keeps mounts and sync alive when the main window
 >   is closed *(Bucketeer Pro)*
-> - **Resumable multipart upload and download** — interrupted ≥ 50 MB
->   uploads pick up where they left off after a crash or sleep
+> - **Resumable multipart uploads** (S3-compatible providers,
+>   unencrypted buckets) — interrupted uploads of 50 MB or more
+>   continue from the last completed part when the same file is added
+>   to the same folder again
 > - **Bandwidth throttle** with sensible presets so transfers don't
 >   saturate your uplink during calls
 > - **Client-side AES-256-GCM encryption per bucket** with keys in
 >   your local Keychain. Encrypted uploads are transparently sealed
 >   on the way out and unsealed on the way back in
 > - **Soft-delete trash** with one-click restore from a local cache
->   you control (default cap 100 MB per object, 30-day retention)
+>   you control (default cap 100 MiB per object, 30-day retention)
 > - **Bucket dashboard** with object count, total size, top-10
->   largest, and an honest monthly-cost estimate per provider
+>   largest, and an honest monthly-cost estimate for known providers
+>   (none for custom endpoints)
 > - **Object version browser**, **metadata + tags editor**, and a
 >   read-only **lifecycle / CORS / policy viewer** for the buckets
 >   that expose them
@@ -130,8 +133,9 @@ and the month has been verified against the App Store release date.
 >   and any S3-compatible endpoint
 > - Upload, download, delete, rename, create folders, with multipart
 >   transfers and live progress
-> - Resumable uploads for files ≥ 50 MB — interruptions cost a single
->   in-flight part on the next launch
+> - Resumable uploads for files ≥ 50 MB (S3-compatible providers,
+>   unencrypted buckets) — add the same file to the same folder again
+>   to continue from the last completed part
 > - Inline Quick Look preview plus Spacebar full-window preview
 > - Drag and drop between Finder and Bucketeer, plus intra-app and
 >   cross-account drags
@@ -217,6 +221,14 @@ is in `docs/RELEASE_v1.0.md` section 2.
 | Price tier | Tier 15 (~€14.99) |
 | Family Sharing | Enabled |
 
+| Field | Value |
+|---|---|
+| Reference name | Bucketeer Pro 14-day Trial |
+| Product ID | `za.co.digitalfreedom.bucketeer.pro.trial` |
+| Type | Non-Consumable |
+| Price tier | Free |
+| Family Sharing | Disabled |
+
 Promotion image: 1024×1024 px PNG with Bucketeer Pro badge.
 
 ---
@@ -253,7 +265,7 @@ one) so the data looks plausible.
 
 - [ ] App Store Connect: create app record with bundle id
       `za.co.digitalfreedom.Bucketeer`
-- [ ] Upload Bucketeer Pro IAP (see table above)
+- [ ] Upload both Bucketeer Pro IAPs (see tables above)
 - [ ] Add 20 InfoPlist.strings translations (already in repo)
 - [ ] Add localised App Store descriptions (drafts above are en/de;
       the other 18 store locales follow the same convention)
