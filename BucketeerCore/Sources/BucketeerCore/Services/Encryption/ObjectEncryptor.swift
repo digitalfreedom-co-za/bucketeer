@@ -33,6 +33,48 @@ public enum BucketeerEnvelope {
     public static let headerSize: Int = magic.count + 1 + reservedZeroes.count
     public static let nonceSize: Int = 12
 
+    public static let s3MetadataKey = "bucketeer-enc"
+    public static let azureMetadataKey = "bucketeerenc"
+
+    public static func isMarked(_ metadata: [String: String]?, name: String = s3MetadataKey) -> Bool {
+        metadata?.contains { $0.key.lowercased() == name && $0.value == "1" } == true
+    }
+
+    /// A metadata replacement must never strip an existing encryption marker.
+    public static func preservingMarker(in metadata: [String: String], from original: [String: String]?,
+                                        name: String = s3MetadataKey) -> [String: String] {
+        guard isMarked(original, name: name) else { return metadata }
+        var result = metadata.filter { $0.key.lowercased() != name }
+        result[name] = "1"
+        return result
+    }
+
+    /// Nil means unchanged plaintext; a value is authenticated plaintext.
+    /// Only structural legacy errors permit fallback. Authentication failures
+    /// (including reserved-header tampering) always fail closed.
+    public static func decryptedPayload(_ data: Data, marked: Bool, key: SymmetricKey?) throws -> Data? {
+        guard let key else {
+            let validHeader = data.count >= headerSize + nonceSize + 16 && data.starts(with: headerBytes())
+            if marked || validHeader { throw EncryptionError.noKeyForBucket }
+            return nil
+        }
+        guard marked || data.starts(with: magic) else { return nil }
+        do {
+            return try open(envelope: data, key: key)
+        } catch EncryptionError.badEnvelope where !marked {
+            return nil
+        } catch EncryptionError.unsupportedVersion where !marked {
+            return nil
+        }
+    }
+
+    public static func finalizeDownload(at url: URL, marked: Bool, key: SymmetricKey?) throws {
+        let data = try Data(contentsOf: url, options: .mappedIfSafe)
+        if let plaintext = try decryptedPayload(data, marked: marked, key: key) {
+            try plaintext.write(to: url, options: .atomic)
+        }
+    }
+
     /// Encrypt `plaintext` under `key` and wrap with the Bucketeer
     /// envelope header.
     ///
@@ -111,22 +153,6 @@ public enum BucketeerEnvelope {
         header.append(version)
         header.append(contentsOf: reservedZeroes)
         return header
-    }
-
-    /// Quick "does this blob look like a Bucketeer-encrypted
-    /// object?" check — used by the download path so unprotected
-    /// objects pass through untouched.
-    public static func looksEncrypted(_ data: Data) -> Bool {
-        guard data.count >= headerSize else { return false }
-        return Array(data.prefix(magic.count)) == magic
-    }
-
-    /// `looksEncrypted` for a file on disk; reads only the header.
-    public static func fileLooksEncrypted(at url: URL) -> Bool {
-        guard let handle = try? FileHandle(forReadingFrom: url) else { return false }
-        defer { try? handle.close() }
-        let header = (try? handle.read(upToCount: headerSize)) ?? Data()
-        return looksEncrypted(header)
     }
 }
 

@@ -270,6 +270,22 @@ public struct AzureBlobObjectStore: S3Browsing {
         // metadata-name rule, and reject non-ASCII values which
         // Azure rejects with HTTP 400 anyway.
         if let metadata, !metadata.isEmpty {
+            // Copy Blob replaces metadata when any metadata header is supplied.
+            var head = URLRequest(url: builder.blobPropertiesURL(container: fromBucket, blob: fromKey))
+            head.httpMethod = "HEAD"
+            signer.sign(&head)
+            let (_, response) = try await session.azureData(for: head)
+            guard let http = response as? HTTPURLResponse else {
+                throw URLError(.badServerResponse)
+            }
+            if let mapped = Self.mapHTTP(http, body: nil, bucket: fromBucket, key: fromKey) { throw mapped }
+            let markerName = BucketeerEnvelope.azureMetadataKey
+            let original = [markerName: http.value(forHTTPHeaderField: "x-ms-meta-" + markerName) ?? ""]
+            let metadata = BucketeerEnvelope.preservingMarker(in: metadata, from: original, name: markerName)
+            if account.provider.conditionalRequests.contains(.copySourceIfMatch),
+               conditions["x-ms-source-if-match"] == nil, let etag = http.value(forHTTPHeaderField: "ETag") {
+                request.setValue(etag, forHTTPHeaderField: "x-ms-source-if-match")
+            }
             for (key, value) in metadata {
                 let lowerKey = key.lowercased()
                 guard AzureRequestBuilder.isValidAzureMetadataName(lowerKey),
@@ -702,6 +718,9 @@ public struct AzureBlobObjectStore: S3Browsing {
                 AzureRequestBuilder.sanitiseHeaderValue(v),
                 forHTTPHeaderField: "x-ms-meta-" + lowerKey
             )
+        }
+        if headHTTP.value(forHTTPHeaderField: "x-ms-meta-" + BucketeerEnvelope.azureMetadataKey) == "1" {
+            metaRequest.setValue("1", forHTTPHeaderField: "x-ms-meta-" + BucketeerEnvelope.azureMetadataKey)
         }
         signer.sign(&metaRequest)
         try await fireAndCheck(request: metaRequest, bucket: bucket, key: key)

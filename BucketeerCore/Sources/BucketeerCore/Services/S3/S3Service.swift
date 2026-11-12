@@ -193,6 +193,9 @@ public struct S3Service: S3Browsing {
         let s3 = try await factory.client(for: account)
         do {
             var source = try await Self.copySource(s3: s3, bucket: fromBucket, key: fromKey)
+            let metadata = metadata.map {
+                BucketeerEnvelope.preservingMarker(in: $0, from: source.properties.metadata)
+            }
             if S3MultipartCopy.needsParts(size: source.size, provider: account.provider) {
                 source.metadata = metadata
                 _ = try await S3MultipartCopy.copy(source, toBucket: toBucket, toKey: toKey, precondition: nil,
@@ -202,6 +205,7 @@ public struct S3Service: S3Browsing {
             _ = try await s3.copyObject(.init(
                 bucket: toBucket,
                 copySource: S3MultipartCopy.copySourceHeader(bucket: fromBucket, key: fromKey, versionId: nil),
+                copySourceIfMatch: account.provider.conditionalRequests.contains(.copySourceIfMatch) ? ETag.quoted(source.etag) : nil,
                 key: toKey,
                 metadata: metadata,
                 metadataDirective: metadata != nil ? .replace : nil
@@ -491,9 +495,13 @@ public struct S3Service: S3Browsing {
     ) async throws {
         let s3 = try await factory.client(for: account)
         let encodedSource = S3MultipartCopy.copySourceHeader(bucket: bucket, key: key, versionId: nil)
-        let userMetadata = metadata.userMetadata.isEmpty ? nil : metadata.userMetadata
         do {
             var source = try await Self.copySource(s3: s3, bucket: bucket, key: key)
+            var metadata = metadata
+            metadata.userMetadata = BucketeerEnvelope.preservingMarker(
+                in: metadata.userMetadata, from: source.properties.metadata
+            )
+            let userMetadata = metadata.userMetadata.isEmpty ? nil : metadata.userMetadata
             if S3MultipartCopy.needsParts(size: source.size, provider: account.provider) {
                 source.replacement = metadata
                 // Completes only over the object that was read: a write
@@ -503,7 +511,8 @@ public struct S3Service: S3Browsing {
                                                    provider: account.provider, copier: SotoObjectWriter(s3: s3))
             } else {
                 try await Self.replaceMetadata(s3: s3, bucket: bucket, key: key, encodedSource: encodedSource,
-                                               metadata: metadata, userMetadata: userMetadata)
+                                               metadata: metadata, userMetadata: userMetadata, sourceETag: source.etag,
+                                               enforced: account.provider.conditionalRequests)
             }
         } catch {
             throw Self.map(error, bucket: bucket, key: key)
@@ -526,7 +535,8 @@ public struct S3Service: S3Browsing {
     }
 
     private static func replaceMetadata(s3: S3, bucket: String, key: String, encodedSource: String,
-                                        metadata: ObjectMetadata, userMetadata: [String: String]?) async throws {
+                                        metadata: ObjectMetadata, userMetadata: [String: String]?, sourceETag: String,
+                                        enforced: S3Provider.ConditionalRequests) async throws {
         _ = try await s3.copyObject(.init(
             bucket: bucket,
             cacheControl: metadata.cacheControl.isEmpty ? nil : metadata.cacheControl,
@@ -534,6 +544,7 @@ public struct S3Service: S3Browsing {
             contentEncoding: metadata.contentEncoding.isEmpty ? nil : metadata.contentEncoding,
             contentType: metadata.contentType.isEmpty ? nil : metadata.contentType,
             copySource: encodedSource,
+            copySourceIfMatch: enforced.contains(.copySourceIfMatch) ? ETag.quoted(sourceETag) : nil,
             key: key,
             metadata: userMetadata,
             metadataDirective: .replace,

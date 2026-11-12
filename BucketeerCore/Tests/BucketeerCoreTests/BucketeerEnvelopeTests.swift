@@ -57,15 +57,6 @@ struct BucketeerEnvelopeTests {
         }
     }
 
-    @Test("looksEncrypted catches Bucketeer envelopes and ignores plain data")
-    func recognisesPrefix() throws {
-        let key = SymmetricKey(size: .bits256)
-        let envelope = try BucketeerEnvelope.seal(plaintext: Data("x".utf8), key: key)
-        #expect(BucketeerEnvelope.looksEncrypted(envelope))
-        #expect(!BucketeerEnvelope.looksEncrypted(Data("hello".utf8)))
-        #expect(!BucketeerEnvelope.looksEncrypted(Data()))
-    }
-
     @Test("Empty plaintext round-trips")
     func emptyPlaintext() throws {
         let key = SymmetricKey(size: .bits256)

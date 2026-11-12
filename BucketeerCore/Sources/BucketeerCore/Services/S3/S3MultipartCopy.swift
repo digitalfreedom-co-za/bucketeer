@@ -243,7 +243,7 @@ public enum S3MultipartCopy {
                 bucket: toBucket, cacheControl: kept.cacheControl, contentDisposition: kept.contentDisposition,
                 contentEncoding: kept.contentEncoding, contentLanguage: kept.contentLanguage,
                 contentType: kept.contentType, expires: kept.expires, key: toKey,
-                metadata: source.metadata ?? kept.metadata, storageClass: kept.storageClass, tagging: tagging,
+                metadata: source.metadata.map { BucketeerEnvelope.preservingMarker(in: $0, from: kept.metadata) } ?? kept.metadata, storageClass: kept.storageClass, tagging: tagging,
                 websiteRedirectLocation: kept.websiteRedirectLocation
             )
         }
@@ -251,7 +251,7 @@ public enum S3MultipartCopy {
             bucket: toBucket, cacheControl: replacement.cacheControl.nonEmpty,
             contentDisposition: replacement.contentDisposition.nonEmpty,
             contentEncoding: replacement.contentEncoding.nonEmpty, contentType: replacement.contentType.nonEmpty,
-            key: toKey, metadata: replacement.userMetadata.isEmpty ? nil : replacement.userMetadata,
+            key: toKey, metadata: BucketeerEnvelope.preservingMarker(in: replacement.userMetadata, from: source.properties.metadata),
             storageClass: replacement.storageClass.flatMap(S3.StorageClass.init(rawValue:)), tagging: tagging
         )
     }

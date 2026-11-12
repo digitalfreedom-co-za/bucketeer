@@ -67,6 +67,7 @@ public struct AzureBlobTransporter: Sendable {
         blob: String,
         localURL: URL,
         contentType: String?,
+        encrypted: Bool = false,
         precondition: WritePrecondition? = nil,
         progress: @Sendable @escaping (Int64, Int64) async -> Void
     ) async throws -> String? {
@@ -89,6 +90,7 @@ public struct AzureBlobTransporter: Sendable {
                 localURL: localURL,
                 fileSize: fileSize,
                 contentType: contentType,
+                encrypted: encrypted,
                 precondition: precondition
             )
             await progress(fileSize, fileSize)
@@ -102,6 +104,7 @@ public struct AzureBlobTransporter: Sendable {
                 localURL: localURL,
                 fileSize: fileSize,
                 contentType: contentType,
+                encrypted: encrypted,
                 precondition: precondition,
                 progress: progress
             )
@@ -116,6 +119,7 @@ public struct AzureBlobTransporter: Sendable {
         localURL: URL,
         fileSize: Int64,
         contentType: String?,
+        encrypted: Bool = false,
         precondition: WritePrecondition?
     ) async throws -> String? {
         let data: Data
@@ -131,6 +135,9 @@ public struct AzureBlobTransporter: Sendable {
         request.setValue(String(fileSize), forHTTPHeaderField: "Content-Length")
         if let contentType {
             request.setValue(contentType, forHTTPHeaderField: "Content-Type")
+        }
+        if encrypted {
+            request.setValue("1", forHTTPHeaderField: "x-ms-meta-" + BucketeerEnvelope.azureMetadataKey)
         }
         Self.apply(precondition, to: &request)
         request.httpBody = data
@@ -155,6 +162,7 @@ public struct AzureBlobTransporter: Sendable {
         localURL: URL,
         fileSize: Int64,
         contentType: String?,
+        encrypted: Bool = false,
         precondition: WritePrecondition?,
         progress: @Sendable @escaping (Int64, Int64) async -> Void
     ) async throws -> String? {
@@ -234,6 +242,7 @@ public struct AzureBlobTransporter: Sendable {
             blob: blob,
             blockIDs: blockIDs,
             contentType: contentType,
+            encrypted: encrypted,
             precondition: precondition
         )
         await progress(fileSize, fileSize)
@@ -275,6 +284,7 @@ public struct AzureBlobTransporter: Sendable {
         blob: String,
         blockIDs: [String],
         contentType: String?,
+        encrypted: Bool = false,
         precondition: WritePrecondition?
     ) async throws -> String? {
         let body = AzureRequestBuilder.blockListXML(blockIDs: blockIDs)
@@ -289,6 +299,9 @@ public struct AzureBlobTransporter: Sendable {
         }
         // Staged blocks are invisible until this commit, so the
         // precondition belongs here.
+        if encrypted {
+            request.setValue("1", forHTTPHeaderField: "x-ms-meta-" + BucketeerEnvelope.azureMetadataKey)
+        }
         Self.apply(precondition, to: &request)
         request.httpBody = body
         signer.sign(&request)
@@ -343,6 +356,7 @@ public struct AzureBlobTransporter: Sendable {
     /// blobs short-circuit to an empty local file. Every GET is pinned
     /// to the version the HEAD reported; with `ifMatch` that version
     /// must be `ifMatch`, otherwise `.preconditionFailed` is thrown.
+    @discardableResult
     public func download(
         account: S3Account,
         container: String,
@@ -350,7 +364,7 @@ public struct AzureBlobTransporter: Sendable {
         localURL: URL,
         ifMatch expectedVersion: String? = nil,
         progress: @Sendable @escaping (Int64, Int64) async -> Void
-    ) async throws {
+    ) async throws -> Bool {
         let signer = try await credentialsCache.signer(for: account)
         let builder = AzureRequestBuilder(account: account)
 
@@ -377,17 +391,17 @@ public struct AzureBlobTransporter: Sendable {
         }
 
         // The existing file is replaced only by a complete download.
-        try await StagedDownload.write(to: localURL) { staging in
+        return try await StagedDownload.write(to: localURL) { staging in
             if total == 0 {
                 try Data().write(to: staging)
                 await progress(0, 0)
-                return
+                return headHTTP.value(forHTTPHeaderField: "x-ms-meta-" + BucketeerEnvelope.azureMetadataKey) == "1"
             }
 
             await progress(0, total)
 
             if total < Self.multipartThreshold {
-                try await singleShotDownload(
+                return try await singleShotDownload(
                     builder: builder,
                     signer: signer,
                     container: container,
@@ -408,6 +422,7 @@ public struct AzureBlobTransporter: Sendable {
                     total: total,
                     progress: progress
                 )
+                return headHTTP.value(forHTTPHeaderField: "x-ms-meta-" + BucketeerEnvelope.azureMetadataKey) == "1"
             }
         }
     }
@@ -421,7 +436,7 @@ public struct AzureBlobTransporter: Sendable {
         localURL: URL,
         total: Int64,
         progress: @Sendable @escaping (Int64, Int64) async -> Void
-    ) async throws {
+    ) async throws -> Bool {
         var request = URLRequest(url: builder.blobDownloadURL(container: container, blob: blob))
         request.httpMethod = "GET"
         if let version {
@@ -442,6 +457,7 @@ public struct AzureBlobTransporter: Sendable {
         await limiter?.consume(bytes: data.count)
         try data.write(to: localURL)
         await progress(total, total)
+        return http.value(forHTTPHeaderField: "x-ms-meta-" + BucketeerEnvelope.azureMetadataKey) == "1"
     }
 
     /// `version` is the ETag the HEAD reported. Every range is
