@@ -78,6 +78,11 @@ final class CrossAccountCopyCoordinator {
         keepSource: Bool,
         allowsDecryptedCopies: Bool
     ) async -> [(key: String, error: BucketeerError?)] {
+        // Read before the consent check, so a key removed afterwards
+        // makes the round-trip uploads fail instead of store plaintext.
+        let destinationRequiresKey = await encryptionGate?.hasKey(
+            accountID: destinationAccount.id, bucket: destinationBucket
+        ) ?? false
         if !allowsDecryptedCopies, await isEncryptedToPlain(
             sourceAccount: sourceAccount, sourceBucket: sourceBucket,
             destinationAccount: destinationAccount, destinationBucket: destinationBucket
@@ -135,7 +140,8 @@ final class CrossAccountCopyCoordinator {
                         sourceKey: key,
                         destinationAccount: destinationAccount,
                         destinationBucket: destinationBucket,
-                        destinationKey: destinationKey
+                        destinationKey: destinationKey,
+                        requiresEncryption: destinationRequiresKey
                     )
                 }
                 if let movedVersion, try await !browser.deleteIfUnchanged(
@@ -276,7 +282,8 @@ final class CrossAccountCopyCoordinator {
         sourceKey: String,
         destinationAccount: S3Account,
         destinationBucket: String,
-        destinationKey: String
+        destinationKey: String,
+        requiresEncryption: Bool
     ) async throws {
         // Keep the plaintext staging
         // file inside the App-private Application Support directory
@@ -327,7 +334,9 @@ final class CrossAccountCopyCoordinator {
             bucket: destinationBucket,
             key: destinationKey,
             localURL: temp,
-            contentType: nil
+            contentType: nil,
+            bypassEncryption: false,
+            requiresEncryption: requiresEncryption
         )
         let uploadState = await transferManager.awaitCompletion(id: uploadID)
         switch uploadState {
