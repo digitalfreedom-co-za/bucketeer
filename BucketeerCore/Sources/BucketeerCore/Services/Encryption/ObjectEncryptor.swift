@@ -96,7 +96,7 @@ public enum BucketeerEnvelope {
     public static func seal(plaintext: Data, key: SymmetricKey) throws -> Data {
         var offset = plaintext.startIndex
         var output = Data()
-        output.reserveCapacity(Int(encryptedLength(plaintextLength: Int64(plaintext.count))))
+        try output.reserveCapacity(Int(encryptedLength(plaintextLength: Int64(plaintext.count))))
         try sealStream(key: key, read: { count in
             let end = plaintext.index(offset, offsetBy: min(count, plaintext.endIndex - offset))
             defer { offset = end }

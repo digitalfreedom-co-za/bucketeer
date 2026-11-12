@@ -769,7 +769,9 @@ actor TransferManager: Transferring {
     private func finalizeDownloadDecryption(item: QueuedItem, marked: Bool) async -> String? {
         do {
             if item.bypassDecryption {
-                _ = try Data(contentsOf: item.task.localURL, options: .mappedIfSafe)
+                // Only prove the staged file is readable; trash payloads can
+                // reach gigabytes and must not be loaded into memory.
+                try FileHandle(forReadingFrom: item.task.localURL).close()
                 return nil
             }
             let key = try await encryptionGate?.sendableKey(

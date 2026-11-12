@@ -37,9 +37,17 @@ public extension BucketeerEnvelope {
 
     /// Object size of a v0x02 envelope for `plaintextLength` bytes:
     /// header + plaintext + one tag per segment, where an empty payload
-    /// still has one (empty, final) segment.
-    static func encryptedLength(plaintextLength: Int64, segmentSize: Int = defaultSegmentSize) -> Int64 {
-        let segments = max(1, (plaintextLength + Int64(segmentSize) - 1) / Int64(segmentSize))
+    /// still has one (empty, final) segment. Throws `badEnvelope` for a
+    /// negative length, an unsupported segment size or more segments than
+    /// the UInt32 segment index can address.
+    static func encryptedLength(plaintextLength: Int64, segmentSize: Int = defaultSegmentSize) throws -> Int64 {
+        guard plaintextLength >= 0, segmentSizeRange.contains(segmentSize) else {
+            throw EncryptionError.badEnvelope
+        }
+        let size = Int64(segmentSize)
+        let segments = max(1, plaintextLength / size + (plaintextLength % size == 0 ? 0 : 1))
+        guard segments <= StreamLayout.maxSegmentCount else { throw EncryptionError.badEnvelope }
+        // At most 2^32 segments of at most 16 MiB: the sum stays far below Int64.max.
         return Int64(streamingHeaderSize) + plaintextLength + segments * Int64(tagSize)
     }
 
@@ -292,6 +300,9 @@ struct StreamingHeader {
 /// Every segment but the last carries a full segment of plaintext; the
 /// last carries 1...segment size bytes, or 0 when it is the only one.
 struct StreamLayout {
+    /// The segment index is a UInt32.
+    static let maxSegmentCount = Int64(UInt32.max) + 1
+
     let segmentCount: Int64
     /// Ciphertext plus tag of the final segment.
     let finalSegmentLength: Int
@@ -299,14 +310,16 @@ struct StreamLayout {
 
     init(encryptedLength: Int64, segmentSize: Int) throws {
         let tag = Int64(BucketeerEnvelope.tagSize)
-        let stride = Int64(segmentSize) + tag
-        let body = encryptedLength - Int64(StreamingHeader.size)
-        guard BucketeerEnvelope.segmentSizeRange.contains(segmentSize), body >= tag else {
+        // Validate before any arithmetic so extreme inputs cannot overflow.
+        guard BucketeerEnvelope.segmentSizeRange.contains(segmentSize),
+              encryptedLength >= Int64(StreamingHeader.size) + tag else {
             throw EncryptionError.badEnvelope
         }
-        let count = (body + stride - 1) / stride
+        let stride = Int64(segmentSize) + tag
+        let body = encryptedLength - Int64(StreamingHeader.size)
+        let count = body / stride + (body % stride == 0 ? 0 : 1)
         let last = body - (count - 1) * stride
-        guard count <= Int64(UInt32.max) + 1, last >= (count == 1 ? tag : tag + 1) else {
+        guard count <= Self.maxSegmentCount, last >= (count == 1 ? tag : tag + 1) else {
             throw EncryptionError.badEnvelope
         }
         segmentCount = count

@@ -41,7 +41,7 @@ struct StreamingEnvelopeTests {
         try input.close()
         try output.close()
         let sealedLength = try fileSize(sealedURL)
-        #expect(sealedLength == BucketeerEnvelope.encryptedLength(plaintextLength: plaintextLength))
+        #expect(try sealedLength == BucketeerEnvelope.encryptedLength(plaintextLength: plaintextLength))
         #expect(try BucketeerEnvelope.plaintextLength(encryptedLength: sealedLength) == plaintextLength)
 
         var largestOpenIO = 0
@@ -60,25 +60,35 @@ struct StreamingEnvelopeTests {
         #expect(largestOpenIO <= segmentSize + BucketeerEnvelope.tagSize)
     }
 
-    @Test("Fixtures written outside the app decrypt through the file path", arguments: [
+    struct Fixture: Sendable {
+        let hex: String
+        let plaintext: Data
+    }
+
+    /// Explicitly typed so the test macro does not have to infer a tuple
+    /// array from long string concatenations.
+    static let fixtures: [Fixture] = [
         // v0x01: header, nonce A0…AB, AES-GCM over the whole payload.
-        ("42434b5401000000a0a1a2a3a4a5a6a7a8a9aaaba46d1f4620bf67da1045f1e37f4af1fe1cc93e71f1ce620af57652f30d"
-            + "ce7f413abf72101c263ab5c5b78a5e5d1181", Data("Bucketeer v0x01 legacy fixture\n".utf8)),
+        Fixture(hex: "42434b5401000000a0a1a2a3a4a5a6a7a8a9aaaba46d1f4620bf67da1045f1e37f4af1fe1cc93e71f1ce620af57652f30d"
+            + "ce7f413abf72101c263ab5c5b78a5e5d1181",
+            plaintext: Data("Bucketeer v0x01 legacy fixture\n".utf8)),
         // v0x02: 64-byte segments, salt 10…2F, nonce prefix C0…C6, 100 bytes (i * 7 + 3).
-        ("42434b540200000000000040101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2fc0c1c2c3"
+        Fixture(hex: "42434b540200000000000040101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2fc0c1c2c3"
             + "c4c5c63b202b6ef4296cad7a37c6612953019d7def343aeb1f7d27bc5f75d4258d40103e41b052a6b9d289d3bd79ba5e"
             + "37024e66266b01bdf52b22724388d91a8eb6f9b7c1d5662889f98a443d3440a885bd39ee404a8eb494beee08b592bf8d"
             + "218fa33382b755d0e3777b4b44cdde97a21509dc8a97bcdb8062efd838f7fa6ce28e5eecd3c6db",
-         Data((0..<100).map { UInt8(truncatingIfNeeded: $0 * 7 + 3) }))
-    ])
-    func fixturesDecrypt(hex: String, plaintext: Data) throws {
+            plaintext: Data((0..<100).map { (index: Int) -> UInt8 in UInt8(truncatingIfNeeded: index * 7 + 3) }))
+    ]
+
+    @Test("Fixtures written outside the app decrypt through the file path", arguments: fixtures)
+    func fixturesDecrypt(fixture: Fixture) throws {
         let directory = try temporaryDirectory()
         defer { try? FileManager.default.removeItem(at: directory) }
         for marked in [true, false] {
             let url = directory.appendingPathComponent("object-\(marked)")
-            try Self.data(hex: hex).write(to: url)
+            try Self.data(hex: fixture.hex).write(to: url)
             try BucketeerEnvelope.finalizeDownload(at: url, marked: marked, key: Self.fixtureKey)
-            #expect(try Data(contentsOf: url) == plaintext)
+            #expect(try Data(contentsOf: url) == fixture.plaintext)
         }
     }
 
@@ -127,7 +137,7 @@ struct StreamingEnvelopeTests {
     }
 
     @Test("Segment boundaries round-trip through the file API with the predicted length",
-          arguments: [0, 1, 64, 128, 129])
+          arguments: [0, 1, 64, 128, 129] as [Int])
     func segmentBoundaries(length: Int) throws {
         let directory = try temporaryDirectory()
         defer { try? FileManager.default.removeItem(at: directory) }
@@ -140,12 +150,53 @@ struct StreamingEnvelopeTests {
 
         try BucketeerEnvelope.sealFile(at: plainURL, to: sealedURL, key: key, segmentSize: Self.smallSegment)
         let sealedLength = try fileSize(sealedURL)
-        #expect(sealedLength == BucketeerEnvelope.encryptedLength(plaintextLength: Int64(length),
+        #expect(try sealedLength == BucketeerEnvelope.encryptedLength(plaintextLength: Int64(length),
                                                                   segmentSize: Self.smallSegment))
         #expect(try BucketeerEnvelope.plaintextLength(encryptedLength: sealedLength,
                                                       segmentSize: Self.smallSegment) == Int64(length))
         try BucketeerEnvelope.openFile(at: sealedURL, to: openedURL, key: key)
         #expect(try Data(contentsOf: openedURL) == plaintext)
+    }
+
+    /// Segment count at which the UInt32 segment index runs out.
+    private static let indexLimit = Int64(UInt32.max) + 1
+
+    static let invalidPlaintextLengths: [(Int64, Int)] = [
+        (-1, smallSegment),
+        (0, 0),
+        (0, Int.max),
+        (Int64.max, BucketeerEnvelope.defaultSegmentSize),
+        (indexLimit * Int64(smallSegment) + 1, smallSegment)
+    ]
+
+    @Test("Length calculations reject impossible inputs instead of trapping",
+          arguments: invalidPlaintextLengths)
+    func encryptedLengthRejects(length: Int64, segmentSize: Int) {
+        #expect(throws: EncryptionError.badEnvelope) {
+            try BucketeerEnvelope.encryptedLength(plaintextLength: length, segmentSize: segmentSize)
+        }
+    }
+
+    static let invalidEncryptedLengths: [(Int64, Int)] = [
+        (Int64.min, smallSegment),
+        (Int64.max, smallSegment),
+        (Int64.max, 0),
+        (Int64.max, Int.max)
+    ]
+
+    @Test("Envelope lengths no v0x02 object can have throw instead of trapping",
+          arguments: invalidEncryptedLengths)
+    func plaintextLengthRejects(length: Int64, segmentSize: Int) {
+        #expect(throws: EncryptionError.badEnvelope) {
+            try BucketeerEnvelope.plaintextLength(encryptedLength: length, segmentSize: segmentSize)
+        }
+    }
+
+    @Test("The largest addressable payload maps back to itself")
+    func indexLimitRoundTrips() throws {
+        let length = Self.indexLimit * Int64(Self.smallSegment)
+        let encrypted = try BucketeerEnvelope.encryptedLength(plaintextLength: length, segmentSize: Self.smallSegment)
+        #expect(try BucketeerEnvelope.plaintextLength(encryptedLength: encrypted, segmentSize: Self.smallSegment) == length)
     }
 
     // MARK: - Helpers
