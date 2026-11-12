@@ -10,7 +10,8 @@ import SwiftData
 import BucketeerCore
 
 /// Business rules for when a sync job may start: the entitlement gate,
-/// on-launch jobs, interval schedules, and restarting a cancelled job.
+/// on-launch jobs, interval schedules, restarting a cancelled job, and
+/// refusing to store decrypted copies in a bucket without a key.
 /// Everything runs on in-memory stores and the in-memory object store.
 final class SyncEngineSchedulingTests: XCTestCase {
 
@@ -56,6 +57,20 @@ final class SyncEngineSchedulingTests: XCTestCase {
         let status = await fixture.collectedStatuses()[fixture.job.id]
         XCTAssertEqual(status?.phase, .finished, "the cancelled run must not overwrite the restart's status")
     }
+
+    func testEncryptedSourceIntoBucketWithoutKeyIsRefusedAndSaysWhy() async throws {
+        let fixture = try await Fixture(authorized: true, schedule: .manual, encryptedSource: true)
+        await fixture.browser.put(bucket: "source", key: "report.pdf", size: 1)
+        await fixture.engine.runNow(id: fixture.job.id)
+
+        let status = try await fixture.firstStatus { $0.phase == .failed }
+        XCTAssertEqual(status.message, """
+        The source bucket is encrypted, but the destination bucket has no encryption key. \
+        Turn on “Store unencrypted copies of encrypted files” in the job to allow this sync.
+        """)
+        let copied = await fixture.browser.storedKeys(in: "destination")
+        XCTAssertTrue(copied.isEmpty)
+    }
 }
 
 private struct Fixture {
@@ -64,7 +79,7 @@ private struct Fixture {
     let browser: InMemoryS3Browser
     private let collector: StatusCollector
 
-    init(authorized: Bool, schedule: SyncSchedule) async throws {
+    init(authorized: Bool, schedule: SyncSchedule, encryptedSource: Bool = false) async throws {
         let container = try SharedStore.makeInMemoryContainer()
         let accountStore = AccountStore(modelContainer: container)
         let jobStore = SyncJobStore(modelContainer: container)
@@ -85,6 +100,9 @@ private struct Fixture {
             jobStore: jobStore,
             browser: browser,
             transferManager: TransferManager(factory: S3ClientFactory(keychainStore: InMemoryKeychain())),
+            encryptionGate: BucketEncryptionGate(keyStore: InMemoryEncryptionKeyStore(
+                encryptedBuckets: encryptedSource ? [(account.id, "source")] : []
+            )),
             isAuthorized: { authorized }
         )
         if case .manual = schedule {

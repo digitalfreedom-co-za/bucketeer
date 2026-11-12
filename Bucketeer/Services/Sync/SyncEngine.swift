@@ -377,6 +377,16 @@ actor SyncEngine {
             }
         }
 
+        if !job.allowsDecryptedCopies, await storesDecryptedCopies(job) {
+            updateStatus(id: job.id, run: token, phase: .failed, message: String(
+                localized: "sync.error.encryptedToPlain",
+                defaultValue: """
+                The source bucket is encrypted, but the destination bucket has no encryption key. \
+                Turn on “Store unencrypted copies of encrypted files” in the job to allow this sync.
+                """
+            ))
+            return
+        }
         let context: SyncRunContext
         do {
             context = try await resolveContext(for: job)
@@ -851,6 +861,21 @@ actor SyncEngine {
                 destinationRoot: destinationRoot
             )
         }
+    }
+
+    /// Bucket-to-bucket job whose source is encrypted and whose
+    /// destination has no key: the round trip would store plaintext.
+    private func storesDecryptedCopies(_ job: SyncJob) async -> Bool {
+        guard let encryptionGate,
+              case let .s3(sourceAccountID, sourceBucket, _) = job.source,
+              case let .s3(destinationAccountID, destinationBucket, _) = job.destination
+        else { return false }
+        return await encryptionGate.isEncryptedToPlain(
+            sourceAccountID: sourceAccountID,
+            sourceBucket: sourceBucket,
+            destinationAccountID: destinationAccountID,
+            destinationBucket: destinationBucket
+        )
     }
 
     private func executeS3ToS3(
