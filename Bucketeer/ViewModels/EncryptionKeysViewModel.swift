@@ -103,6 +103,7 @@ final class EncryptionKeysViewModel {
                 self.error = .unknown(message: String(localized: "encryption.reassign.rollbackFailed"))
             case EncryptionKeyReassignmentError.sourceCleanupFailed:
                 self.error = .unknown(message: String(localized: "encryption.reassign.sourceCleanupFailed"))
+                return true
             default:
                 self.error = error as? BucketeerError ?? .unknown(message: error.localizedDescription)
             }
