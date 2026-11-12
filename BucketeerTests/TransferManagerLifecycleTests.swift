@@ -102,6 +102,18 @@ final class TransferManagerLifecycleTests: XCTestCase {
         _ = await manager.awaitCompletion(id: unrequired)
 
         XCTAssertTrue(RefusingAzureStub.requested(blob: "unrequired.txt"), "uploads without the requirement still go out")
+
+        let staleKey = await keyStore.create(label: "Stale", accountID: account.id, bucket: "stale")
+        await keyStore.failNextDeletes(1)
+        do {
+            try await keyStore.delete(id: staleKey.id)
+        } catch let error as CocoaError where error.code == .fileWriteNoPermission {}
+        let missingMaterial = await manager.enqueueUpload(
+            account: account, bucket: "stale", key: "missing-material.txt",
+            localURL: file, contentType: nil, destinationHadKey: false
+        )
+        let missingMaterialState = await manager.awaitCompletion(id: missingMaterial)
+        XCTAssertEqual(missingMaterialState, .failed(message: EncryptionError.keyRemoved.localizedDescription))
     }
 
     func testUploadDistinguishesLookupFailureFromUnknownPreflightWithoutAKey() async throws {

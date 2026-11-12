@@ -456,8 +456,9 @@ actor TransferManager: Transferring {
                 accountID: item.account.id,
                 bucket: item.task.bucket
             )?.key
-        } catch EncryptionError.keyRemoved {
-            setState(id: id, state: .failed(message: String(localized: "error.encryptionKeyRemoved")))
+        } catch let error as EncryptionError where error == .keyRemoved {
+            let message = item.destinationHadKey ? String(localized: "error.encryptionKeyRemoved") : errorMessage(error)
+            setState(id: id, state: .failed(message: message))
             return
         } catch {
             setState(id: id, state: .failed(message: errorMessage(error)))
