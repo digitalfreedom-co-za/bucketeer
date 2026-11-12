@@ -1,4 +1,4 @@
-<!-- doc-id: BUCKETEER_PRIVACY_POLICY | lang: en | area: app | version: 1.0.1 | valid-from: 2026-11-12 | baseline: legal shared/PRIVACY_POLICY.en.md, Bucketeer product adaptation; baseline version at derivation not recorded (legal b938e59 carries PRIVACY_POLICY 2.3.1) | owner: Marcel R. G. Berger -->
+<!-- doc-id: BUCKETEER_PRIVACY_POLICY | lang: en | area: app | version: 1.0.2 | valid-from: 2026-11-12 | baseline: legal shared/PRIVACY_POLICY.en.md, Bucketeer product adaptation; baseline version at derivation not recorded (legal b938e59 carries PRIVACY_POLICY 2.3.1) | owner: Marcel R. G. Berger -->
 # Privacy Policy
 
 *How Bucketeer for macOS handles your data.*
@@ -59,6 +59,7 @@ None of the following is sent to the provider.
 | Trash (metadata of objects you deleted in Bucketeer and, up to a size limit you set, a local copy of their content) | Local database and cache folder in the App's own container | Let you restore objects you deleted. Entries are removed after the retention period you set (default 30 days) |
 | Auto-tag rules, resumable-upload checkpoints | Local databases in the App's own container | Apply your tagging rules; resume interrupted uploads |
 | Encryption keys (only if you enable client-side encryption for a bucket) | Key material in the macOS Keychain, key labels in a local database | Encrypt and decrypt objects on your Mac (see section 6) |
+| Encryption key backup (optional, only if you export) | A passphrase-protected .bktkeys file at a location you choose in the macOS save dialog | Let you restore keys on this Mac or another Mac (see section 6) |
 | Settings (bandwidth limit, trash and Spotlight settings, menubar mode) | The App's local preferences | Remember your choices |
 | Preview cache | Temporary folder of the App, limited to 2 GiB | Show previews without downloading again |
 | Files you open with another app (Open / Open With) | Temporary folder of the App | Let the other app edit the file and upload your saves; deleted once the storage provider has your last save |
@@ -132,10 +133,20 @@ are encrypted with AES-256-GCM on your Mac before upload and decrypted
 on your Mac after download. Your storage provider receives only the
 encrypted data.
 
-The key is not synchronised to other devices and the provider has no
-copy. If you delete the key or lose access to this Mac's Keychain, the
-encrypted objects cannot be decrypted, and the provider cannot recover
-them. Object names and metadata are not encrypted.
+The provider has no copy of the key. The Keychain copy is not
+synchronised to other devices and is not synchronised via iCloud. You
+can optionally export keys to a passphrase-protected .bktkeys backup
+after authenticating as the device owner (Touch ID or your Mac
+password). The file contains the key material and labels such as
+account and bucket names, encrypted with your passphrase. The App
+writes only that encrypted file through the macOS save dialog and does
+not send it over the network. If you save or later copy the file to a
+synced or shared location, for example iCloud Drive, the encrypted
+backup leaves this Mac under the terms of that service. Keep both the
+file and the passphrase: if you delete the key or lose access to this
+Mac's Keychain and have no usable backup, the encrypted objects cannot
+be decrypted, and the provider cannot recover them. Object names and
+metadata are not encrypted.
 
 ---
 
@@ -245,9 +256,11 @@ therefore does not knowingly process personal data of children.
 ## 14. Security
 
 - The App and its Finder extension run in the macOS App Sandbox.
-- Credentials and encryption keys are kept in the macOS Keychain, only
-  available while the Mac is unlocked and not synchronised via iCloud.
-  They are not written to log files or shown in error messages.
+- Credentials and the Keychain copy of encryption keys are kept in the
+  macOS Keychain, only available while the Mac is unlocked and not
+  synchronised via iCloud. They are not written to log files or shown
+  in error messages. An optional key backup is stored only if you
+  export it, as described in section 6.
 - Connections to storage endpoints use TLS, except an endpoint address
   you enter yourself with http:// (see section 4). Requests are
   signed on your Mac (AWS Signature Version 4 or Azure Shared Key);

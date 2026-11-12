@@ -31,8 +31,8 @@ for the development history.
 - **Hardware-key unlock (CryptoTokenKit)**: in development for v1.1;
   the technical preview only appears in Debug builds
 - **Client-side encryption per bucket**: AES-256-GCM on the Mac before
-  upload, decryption on download, key kept in the Keychain and not
-  exportable
+  upload, decryption on download, key kept in the Keychain and
+  optionally exportable as a passphrase-protected `.bktkeys` backup
 
 ### Browsing and transfers
 

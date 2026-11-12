@@ -53,7 +53,8 @@ side encryption). Hardware-key unlock is deferred to v1.1.
 > - **Bandwidth throttle** with sensible presets so transfers don't
 >   saturate your uplink during calls
 > - **Client-side AES-256-GCM encryption per bucket** with keys in
->   your local Keychain. Encrypted uploads are transparently sealed
+>   your local Keychain, optionally exportable as a passphrase-protected
+>   backup. Encrypted uploads are transparently sealed
 >   on the way out and unsealed on the way back in
 > - **Soft-delete trash** with one-click restore from a local cache
 >   you control (default cap 100 MiB per object, 30-day retention)
@@ -143,7 +144,8 @@ and the month has been verified against the App Store release date.
 > - Background sync between any two locations across providers (Pro),
 >   plus watch folders that auto-upload on every change
 > - Client-side AES-256-GCM encryption per bucket — keys live in
->   your Keychain only, never in the cloud
+>   your Keychain and can optionally be exported as a
+>   passphrase-protected backup
 > - Soft-delete trash with one-click restore from a local cache
 > - Bucket dashboard, version browser, metadata + tags editor,
 >   lifecycle / CORS / policy viewer
@@ -155,6 +157,7 @@ and the month has been verified against the App Store release date.
 > - Bandwidth throttle, menubar background mode (Pro)
 > - 14-day Pro trial, then €14.99 one-time purchase for lifetime Pro
 >   — Family Sharing included
+> - Privacy Policy updated to version 1.0.2
 
 ## Support URL
 
