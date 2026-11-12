@@ -135,6 +135,13 @@ actor BucketEncryptionGate {
         )
     }
 
+    /// Whether the bucket definitely has a key. Copy, drag and sync
+    /// record this before the round trip so its uploads fail instead
+    /// of storing plaintext when the key is removed in the meantime.
+    func hasKey(accountID: UUID, bucket: String) async -> Bool {
+        await keyState(accountID: accountID, bucket: bucket) == .encrypted
+    }
+
     private func keyState(accountID: UUID, bucket: String) async -> KeyState {
         do {
             return try await key(accountID: accountID, bucket: bucket) != nil ? .encrypted : .plain

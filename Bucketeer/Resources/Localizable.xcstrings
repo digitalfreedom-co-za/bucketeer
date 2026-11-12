@@ -34664,6 +34664,131 @@
         }
       }
     },
+    "error.encryptionKeyRemoved" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cílový bucket měl při zahájení přenosu šifrovací klíč, ale klíč byl mezitím odstraněn. Soubor nebyl nahrán."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Destinationens bucket havde en krypteringsnøgle, da overførslen startede, men nøglen er blevet fjernet. Filen blev ikke uploadet."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Ziel-Bucket hatte beim Start der Übertragung einen Schlüssel, der inzwischen entfernt wurde. Die Datei wurde nicht hochgeladen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το bucket προορισμού είχε κλειδί κρυπτογράφησης όταν ξεκίνησε η μεταφορά, αλλά το κλειδί έχει αφαιρεθεί. Το αρχείο δεν μεταφορτώθηκε."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The destination bucket had an encryption key when the transfer started, but the key has been removed. The file was not uploaded."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The destination bucket had an encryption key when the transfer started, but the key has been removed. The file was not uploaded."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El bucket de destino tenía una clave de cifrado cuando empezó la transferencia, pero la clave se ha eliminado. El archivo no se ha subido."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kohdebucketilla oli salausavain siirron alkaessa, mutta avain on poistettu. Tiedostoa ei ladattu."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le bucket de destination avait une clé de chiffrement au début du transfert, mais la clé a été supprimée. Le fichier n’a pas été envoyé."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A cél bucket az átvitel indításakor rendelkezett titkosítási kulccsal, de a kulcsot azóta eltávolították. A fájl nem lett feltöltve."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il bucket di destinazione aveva una chiave di crittografia all’avvio del trasferimento, ma la chiave è stata rimossa. Il file non è stato caricato."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "転送の開始時には宛先のバケットに暗号鍵が設定されていましたが、その鍵は削除されました。ファイルはアップロードされていません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전송을 시작할 때 대상 버킷에 암호화 키가 있었지만 키가 제거되었습니다. 파일이 업로드되지 않았습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Målbucketen hadde en krypteringsnøkkel da overføringen startet, men nøkkelen er fjernet. Filen ble ikke lastet opp."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De doelbucket had een versleutelingssleutel toen de overdracht begon, maar de sleutel is verwijderd. Het bestand is niet geüpload."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Docelowy bucket miał klucz szyfrowania w chwili rozpoczęcia przesyłania, ale klucz został usunięty. Plik nie został wysłany."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O bucket de destino tinha uma chave de criptografia quando a transferência começou, mas a chave foi removida. O arquivo não foi enviado."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O bucket de destino tinha uma chave de encriptação quando a transferência começou, mas a chave foi removida. O ficheiro não foi carregado."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Когда передача началась, у бакета назначения был ключ шифрования, но ключ удалён. Файл не загружен."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Målbucketen hade en krypteringsnyckel när överföringen startade, men nyckeln har tagits bort. Filen laddades inte upp."
+          }
+        }
+      }
+    },
     "error.featureNotSupported" : {
       "extractionState" : "manual",
       "localizations" : {
