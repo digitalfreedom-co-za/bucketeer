@@ -166,6 +166,10 @@ private actor FakeKeyStore: EncryptionKeyStoring {
         return key
     }
 
+    func copyForReassignment(_ key: BucketEncryptionKey, to accountID: UUID) throws -> BucketEncryptionKey {
+        throw CocoaError(.featureUnsupported)
+    }
+
     func keyMaterial(id: UUID) -> Data { Data(count: 32) }
 
     func delete(id: UUID) {

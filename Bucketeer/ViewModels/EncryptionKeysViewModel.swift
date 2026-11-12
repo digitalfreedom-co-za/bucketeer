@@ -17,6 +17,8 @@ final class EncryptionKeysViewModel {
     var accounts: [S3Account] = []
     var error: BucketeerError?
 
+    private var accountsLoaded = false
+
     private let keyStore: any EncryptionKeyStoring
     private let accountStore: any AccountStoring
     private let gate: BucketEncryptionGate
@@ -49,10 +51,13 @@ final class EncryptionKeysViewModel {
                 try EncryptedBucketList.write(keys, to: encryptedBucketListURL)
             }
             accounts = try await accountStore.all()
+            accountsLoaded = true
             error = nil
         } catch let bucketeerError as BucketeerError {
+            accountsLoaded = false
             error = bucketeerError
         } catch {
+            accountsLoaded = false
             self.error = .unknown(message: error.localizedDescription)
         }
     }
@@ -71,6 +76,47 @@ final class EncryptionKeysViewModel {
         } catch {
             self.error = .unknown(message: error.localizedDescription)
         }
+    }
+
+    func reassign(_ key: BucketEncryptionKey, to account: S3Account) async -> Bool {
+        guard isOrphaned(key) else { return false }
+        do {
+            try await mountController.whileUnmounted(account: account, bucket: key.bucket) {
+                _ = try await keyStore.reassign(key, to: account.id)
+            }
+            await gate.invalidate(accountID: key.accountID, bucket: key.bucket)
+            await gate.invalidate(accountID: account.id, bucket: key.bucket)
+            await reload()
+            return true
+        } catch {
+            // A failed rollback can leave both entries. Refresh the
+            // mirror and caches even when the move reports an error.
+            await gate.invalidate(accountID: key.accountID, bucket: key.bucket)
+            await gate.invalidate(accountID: account.id, bucket: key.bucket)
+            await reload()
+            switch error {
+            case EncryptionKeyReassignmentError.conflict:
+                self.error = .unknown(message: String(localized: "encryption.reassign.conflict"))
+            case EncryptionKeyReassignmentError.verificationFailed:
+                self.error = .unknown(message: String(localized: "encryption.reassign.verificationFailed"))
+            case EncryptionKeyReassignmentError.rollbackFailed:
+                self.error = .unknown(message: String(localized: "encryption.reassign.rollbackFailed"))
+            case EncryptionKeyReassignmentError.sourceCleanupFailed:
+                self.error = .unknown(message: String(localized: "encryption.reassign.sourceCleanupFailed"))
+                return true
+            default:
+                self.error = error as? BucketeerError ?? .unknown(message: error.localizedDescription)
+            }
+            return false
+        }
+    }
+
+    func keyCount(accountID: UUID) async throws -> Int {
+        try await keyStore.all().filter { $0.accountID == accountID }.count
+    }
+
+    func isOrphaned(_ key: BucketEncryptionKey) -> Bool {
+        accountsLoaded && !accounts.contains { $0.id == key.accountID }
     }
 
     func delete(_ key: BucketEncryptionKey) async {
@@ -93,6 +139,7 @@ final class EncryptionKeysViewModel {
 
     /// Resolve an account UUID back to a display name for the list.
     func accountName(for id: UUID) -> String {
-        accounts.first(where: { $0.id == id })?.name ?? "(unknown)"
+        guard accountsLoaded else { return id.uuidString }
+        return accounts.first(where: { $0.id == id })?.name ?? String(localized: "encryption.account.deleted")
     }
 }

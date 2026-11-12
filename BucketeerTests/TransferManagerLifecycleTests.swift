@@ -91,7 +91,7 @@ final class TransferManagerLifecycleTests: XCTestCase {
         let laterLookup = await gate.keyState(accountID: account.id, bucket: "keyed")
         let requiresKey = destination.requiresEncryption
         for key in await keyStore.all() where key.bucket == "keyed" {
-            await keyStore.delete(id: key.id)
+            try await keyStore.delete(id: key.id)
         }
         await gate.invalidate(accountID: account.id, bucket: "keyed")
 
@@ -202,6 +202,10 @@ private actor BlockingKeyStore: EncryptionKeyStoring {
     func create(label: String, accountID: UUID, bucket: String) -> BucketEncryptionKey {
         BucketEncryptionKey(label: label, accountID: accountID, bucket: bucket)
     }
+    func copyForReassignment(_ key: BucketEncryptionKey, to accountID: UUID) throws -> BucketEncryptionKey {
+        throw CocoaError(.featureUnsupported)
+    }
+
     func keyMaterial(id: UUID) -> Data { Data(count: 32) }
     func delete(id: UUID) {}
 }

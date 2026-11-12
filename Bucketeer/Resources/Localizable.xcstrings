@@ -1,6 +1,881 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "encryption.reassign.sourceCleanupFailed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The key was copied and verified for the destination account, but cleanup of the original entry failed. Keep the destination key. You can delete the old entry under Deleted account in Settings → Encryption."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Schlüssel wurde für das Zielkonto kopiert und überprüft, aber die Bereinigung des ursprünglichen Eintrags ist fehlgeschlagen. Behalte den Zielschlüssel. Den alten Eintrag unter Gelöschtes Konto kannst du unter Einstellungen → Verschlüsselung löschen."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The key was copied and verified for the destination account, but cleanup of the original entry failed. Keep the destination key. You can delete the old entry under Deleted account in Settings → Encryption."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klíč byl zkopírován a ověřen pro cílový účet, ale odstranění původního záznamu selhalo. Ponechte cílový klíč. Starý záznam pod označením Smazaný účet můžete smazat v Nastavení → Šifrování."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nøglen blev kopieret og bekræftet for destinationskontoen, men den oprindelige post kunne ikke fjernes. Behold destinationsnøglen. Du kan slette den gamle post under Slettet konto i Indstillinger → Kryptering."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το κλειδί αντιγράφηκε και επαληθεύτηκε για τον λογαριασμό προορισμού, αλλά η διαγραφή της αρχικής καταχώρισης απέτυχε. Κρατήστε το κλειδί προορισμού. Μπορείτε να διαγράψετε την παλιά καταχώριση με την ένδειξη Διαγραμμένος λογαριασμός στις Ρυθμίσεις → Κρυπτογράφηση."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La clave se ha copiado y verificado para la cuenta de destino, pero no se ha podido eliminar la entrada original. Conserva la clave de destino. Puedes eliminar la entrada antigua bajo Cuenta eliminada en Ajustes → Cifrado."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avain kopioitiin ja varmistettiin kohdetiliä varten, mutta alkuperäisen merkinnän poistaminen epäonnistui. Säilytä kohdetilin avain. Voit poistaa vanhan merkinnän nimellä Poistettu tili kohdasta Asetukset → Salaus."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La clé a été copiée et vérifiée pour le compte de destination, mais la suppression de l’entrée d’origine a échoué. Conservez la clé de destination. Vous pouvez supprimer l’ancienne entrée sous Compte supprimé dans Réglages → Chiffrement."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A kulcs másolása és ellenőrzése a célfiókhoz sikerült, de az eredeti bejegyzés eltávolítása sikertelen volt. Tartsd meg a célfiók kulcsát. A régi bejegyzést a Törölt fiók alatt törölheted a Beállítások → Titkosítás részben."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La chiave è stata copiata e verificata per l’account di destinazione, ma la rimozione della voce originale non è riuscita. Conserva la chiave di destinazione. Puoi eliminare la vecchia voce sotto Account eliminato in Impostazioni → Crittografia."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "鍵は移動先アカウントにコピーされ、検証されましたが、元の項目の削除に失敗しました。移動先の鍵は保持してください。設定 → 暗号化で「削除されたアカウント」の古い項目を削除できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대상 계정으로 키를 복사하고 확인했지만 원래 항목을 삭제하지 못했습니다. 대상 계정의 키는 유지하세요. 설정 → 암호화의 삭제된 계정 아래에서 이전 항목을 삭제할 수 있습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nøkkelen ble kopiert og bekreftet for målkontoen, men den opprinnelige oppføringen kunne ikke fjernes. Behold målkontoens nøkkel. Du kan slette den gamle oppføringen under Slettet konto i Innstillinger → Kryptering."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De sleutel is gekopieerd en geverifieerd voor het doelaccount, maar het verwijderen van de oorspronkelijke vermelding is mislukt. Behoud de sleutel van het doelaccount. Je kunt de oude vermelding onder Verwijderd account verwijderen in Instellingen → Versleuteling."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klucz został skopiowany i zweryfikowany dla konta docelowego, ale usunięcie oryginalnego wpisu nie powiodło się. Zachowaj klucz konta docelowego. Stary wpis oznaczony jako Usunięte konto możesz usunąć w Ustawienia → Szyfrowanie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A chave foi copiada e verificada para a conta de destino, mas a remoção da entrada original falhou. Mantenha a chave de destino. Você pode excluir a entrada antiga em Conta excluída, em Ajustes → Criptografia."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A chave foi copiada e verificada para a conta de destino, mas a remoção da entrada original falhou. Mantém a chave de destino. Podes eliminar a entrada antiga em Conta eliminada, em Definições → Encriptação."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ключ скопирован и проверен для целевой учётной записи, но удалить исходную запись не удалось. Сохраните ключ целевой учётной записи. Старую запись с пометкой «Удалённая учётная запись» можно удалить в разделе Настройки → Шифрование."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nyckeln kopierades och verifierades för målkontot, men den ursprungliga posten kunde inte tas bort. Behåll målkontots nyckel. Du kan radera den gamla posten under Raderat konto i Inställningar → Kryptering."
+          }
+        }
+      }
+    },
+    "encryption.reassign.rollbackFailed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The copied key could not be verified, and its cleanup failed. The original key has been kept. Delete the destination account’s entry in Settings → Encryption before retrying; it may be missing its key bytes and block transfers."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der kopierte Schlüssel konnte nicht überprüft werden, und seine Bereinigung ist fehlgeschlagen. Der ursprüngliche Schlüssel wurde beibehalten. Lösche vor einem erneuten Versuch den Eintrag des Zielkontos unter Einstellungen → Verschlüsselung; ihm können die Schlüsselbytes fehlen, wodurch Übertragungen blockiert werden."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The copied key could not be verified, and its cleanup failed. The original key has been kept. Delete the destination account’s entry in Settings → Encryption before retrying; it may be missing its key bytes and block transfers."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zkopírovaný klíč se nepodařilo ověřit a jeho odstranění selhalo. Původní klíč byl zachován. Před dalším pokusem smažte záznam cílového účtu v Nastavení → Šifrování; mohou mu chybět bajty klíče, což může blokovat přenosy."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den kopierede nøgle kunne ikke bekræftes, og den kunne ikke fjernes. Den oprindelige nøgle er bevaret. Slet destinationskontoens post i Indstillinger → Kryptering, før du prøver igen; den kan mangle nøgledata og blokere overførsler."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Δεν ήταν δυνατή η επαλήθευση του αντιγραμμένου κλειδιού και η διαγραφή του απέτυχε. Το αρχικό κλειδί διατηρήθηκε. Διαγράψτε την καταχώριση του λογαριασμού προορισμού στις Ρυθμίσεις → Κρυπτογράφηση πριν δοκιμάσετε ξανά· ενδέχεται να λείπουν τα δεδομένα του κλειδιού και να εμποδίζονται οι μεταφορές."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo verificar la clave copiada y tampoco se pudo eliminar. Se ha conservado la clave original. Elimina la entrada de la cuenta de destino en Ajustes → Cifrado antes de volver a intentarlo; podrían faltarle los datos de la clave y bloquear las transferencias."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopioitua avainta ei voitu varmistaa, ja sen poistaminen epäonnistui. Alkuperäinen avain on säilytetty. Poista kohdetilin merkintä kohdasta Asetukset → Salaus ennen uutta yritystä; siitä saattaa puuttua avaimen tavut, mikä voi estää siirrot."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La clé copiée n’a pas pu être vérifiée et sa suppression a échoué. La clé d’origine a été conservée. Supprimez l’entrée du compte de destination dans Réglages → Chiffrement avant de réessayer ; les données de sa clé peuvent être manquantes et bloquer les transferts."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A másolt kulcs ellenőrzése és eltávolítása sikertelen volt. Az eredeti kulcs megmaradt. Újabb próbálkozás előtt töröld a célfiók bejegyzését a Beállítások → Titkosítás alatt; hiányozhatnak a kulcs adatai, ami megakadályozhatja az átvitelt."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile verificare la chiave copiata e rimuoverla. La chiave originale è stata conservata. Elimina la voce dell’account di destinazione in Impostazioni → Crittografia prima di riprovare; potrebbe essere priva dei dati della chiave e bloccare i trasferimenti."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コピーした鍵を検証できず、その削除にも失敗しました。元の鍵は保持されています。再試行する前に、設定 → 暗号化で移動先アカウントの項目を削除してください。鍵のバイトデータが欠落している可能性があり、転送が妨げられることがあります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "복사한 키를 확인할 수 없으며 삭제에도 실패했습니다. 원래 키는 유지되었습니다. 다시 시도하기 전에 설정 → 암호화에서 대상 계정의 항목을 삭제하세요. 키 바이트 데이터가 누락되어 전송이 차단될 수 있습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den kopierte nøkkelen kunne ikke bekreftes, og den kunne ikke fjernes. Den opprinnelige nøkkelen er beholdt. Slett målkontoens oppføring i Innstillinger → Kryptering før du prøver igjen; den kan mangle nøkkeldata og blokkere overføringer."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De gekopieerde sleutel kon niet worden geverifieerd en het verwijderen ervan is mislukt. De oorspronkelijke sleutel is behouden. Verwijder de vermelding van het doelaccount in Instellingen → Versleuteling voordat je het opnieuw probeert; de sleutelgegevens kunnen ontbreken, waardoor overdrachten worden geblokkeerd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie udało się zweryfikować ani usunąć skopiowanego klucza. Oryginalny klucz został zachowany. Przed ponowną próbą usuń wpis konta docelowego w Ustawienia → Szyfrowanie; może w nim brakować danych klucza, co może blokować transfery."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível verificar a chave copiada, e sua remoção falhou. A chave original foi mantida. Exclua a entrada da conta de destino em Ajustes → Criptografia antes de tentar novamente; ela pode estar sem os dados da chave e bloquear as transferências."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível verificar a chave copiada e a sua remoção falhou. A chave original foi mantida. Elimina a entrada da conta de destino em Definições → Encriptação antes de tentares novamente; podem faltar os dados da chave, o que pode bloquear as transferências."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось проверить скопированный ключ, и его удаление завершилось ошибкой. Исходный ключ сохранён. Перед повторной попыткой удалите запись целевой учётной записи в разделе Настройки → Шифрование: в ней могут отсутствовать данные ключа, что может блокировать передачу файлов."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den kopierade nyckeln kunde inte verifieras och kunde inte heller tas bort. Den ursprungliga nyckeln har behållits. Radera målkontots post i Inställningar → Kryptering innan du försöker igen; den kan sakna nyckeldata och blockera överföringar."
+          }
+        }
+      }
+    },
+    "encryption.account.deleted" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleted account"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleted account"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gelöschtes Konto"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Smazaný účet"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slettet konto"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Διαγραμμένος λογαριασμός"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuenta eliminada"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poistettu tili"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compte supprimé"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Törölt fiók"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account eliminato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "削除されたアカウント"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "삭제된 계정"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slettet konto"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijderd account"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usunięte konto"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conta excluída"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conta eliminada"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалённая учётная запись"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Raderat konto"
+          }
+        }
+      }
+    },
+    "encryption.reassign.action" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reassign to account…"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reassign to account…"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konto neu zuweisen…"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přiřadit k účtu…"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tildel til konto…"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Εκ νέου ανάθεση σε λογαριασμό…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reasignar a una cuenta…"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Määritä toiselle tilille…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réattribuer à un compte…"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hozzárendelés másik fiókhoz…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riassegna a un account…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アカウントに再割り当て…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "계정에 다시 할당…"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilordne til konto…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opnieuw toewijzen aan account…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przypisz ponownie do konta…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reatribuir a uma conta…"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reatribuir a uma conta…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Назначить другой учётной записи…"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tilldela till konto…"
+          }
+        }
+      }
+    },
+    "encryption.reassign.conflict" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This account already has a key for this bucket. Choose another account; no key was overwritten."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This account already has a key for this bucket. Choose another account; no key was overwritten."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Konto hat bereits einen Schlüssel für diesen Bucket. Wähle ein anderes Konto; kein Schlüssel wurde überschrieben."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tento účet již má klíč pro tento bucket. Vyberte jiný účet; žádný klíč nebyl přepsán."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne konto har allerede en nøgle til denne bucket. Vælg en anden konto; ingen nøgle blev overskrevet."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αυτός ο λογαριασμός έχει ήδη κλειδί για αυτόν τον κάδο. Επιλέξτε άλλον λογαριασμό. Κανένα κλειδί δεν αντικαταστάθηκε."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta cuenta ya tiene una clave para este bucket. Elige otra cuenta; no se ha sobrescrito ninguna clave."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tällä tilillä on jo avain tälle säiliölle. Valitse toinen tili. Avaimia ei korvattu."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce compte possède déjà une clé pour ce bucket. Choisissez un autre compte ; aucune clé n’a été écrasée."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ehhez a tárolóhoz már tartozik kulcs ebben a fiókban. Válasszon másik fiókot; egyetlen kulcs sem lett felülírva."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo account ha già una chiave per questo bucket. Scegli un altro account; nessuna chiave è stata sovrascritta."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このアカウントには、このバケットの鍵がすでにあります。別のアカウントを選択してください。鍵は上書きされていません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 계정에는 이 버킷의 키가 이미 있습니다. 다른 계정을 선택하세요. 덮어쓴 키는 없습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne kontoen har allerede en nøkkel for denne bucketen. Velg en annen konto; ingen nøkkel ble overskrevet."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dit account heeft al een sleutel voor deze bucket. Kies een ander account; er is geen sleutel overschreven."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To konto ma już klucz dla tego zasobnika. Wybierz inne konto; żaden klucz nie został nadpisany."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta conta já tem uma chave para este bucket. Escolha outra conta; nenhuma chave foi sobrescrita."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta conta já tem uma chave para este bucket. Escolha outra conta; nenhuma chave foi substituída."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "У этой учётной записи уже есть ключ для этого бакета. Выберите другую учётную запись. Ни один ключ не был перезаписан."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Det här kontot har redan en nyckel för denna bucket. Välj ett annat konto; ingen nyckel har skrivits över."
+          }
+        }
+      }
+    },
+    "encryption.reassign.verificationFailed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The copied key could not be verified. The original key has been kept."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The copied key could not be verified. The original key has been kept."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der kopierte Schlüssel konnte nicht überprüft werden. Der ursprüngliche Schlüssel wurde beibehalten."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zkopírovaný klíč se nepodařilo ověřit. Původní klíč byl zachován."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den kopierede nøgle kunne ikke bekræftes. Den oprindelige nøgle er bevaret."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Δεν ήταν δυνατή η επαλήθευση του αντιγραμμένου κλειδιού. Το αρχικό κλειδί διατηρήθηκε."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo verificar la clave copiada. Se ha conservado la clave original."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopioitua avainta ei voitu varmistaa. Alkuperäinen avain on säilytetty."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La clé copiée n’a pas pu être vérifiée. La clé d’origine a été conservée."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A másolt kulcs ellenőrzése nem sikerült. Az eredeti kulcs megmaradt."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile verificare la chiave copiata. La chiave originale è stata conservata."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コピーした鍵を検証できませんでした。元の鍵は保持されています。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "복사한 키를 확인할 수 없습니다. 원래 키는 유지되었습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den kopierte nøkkelen kunne ikke bekreftes. Den opprinnelige nøkkelen er beholdt."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De gekopieerde sleutel kon niet worden geverifieerd. De oorspronkelijke sleutel is behouden."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie udało się zweryfikować skopiowanego klucza. Oryginalny klucz został zachowany."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível verificar a chave copiada. A chave original foi mantida."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível verificar a chave copiada. A chave original foi mantida."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось проверить скопированный ключ. Исходный ключ сохранён."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den kopierade nyckeln kunde inte verifieras. Den ursprungliga nyckeln har behållits."
+          }
+        }
+      }
+    },
+    "account.delete.encryptionWarning %lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encryption keys: %lld. These keys are kept, not deleted. Objects encrypted with them can only be read again after reassigning the key to an account. Manage them in Settings → Encryption."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encryption keys: %lld. These keys are kept, not deleted. Objects encrypted with them can only be read again after reassigning the key to an account. Manage them in Settings → Encryption."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verschlüsselungsschlüssel: %lld. Diese Schlüssel bleiben erhalten und werden nicht gelöscht. Damit verschlüsselte Objekte können erst wieder gelesen werden, nachdem der Schlüssel einem Konto neu zugewiesen wurde. Verwalte sie unter Einstellungen → Verschlüsselung."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Šifrovací klíče: %lld. Tyto klíče zůstanou zachovány, nebudou smazány. Objekty jimi zašifrované lze znovu číst až po přiřazení klíče k účtu. Spravujte je v Nastavení → Šifrování."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Krypteringsnøgler: %lld. Disse nøgler bevares og slettes ikke. Objekter krypteret med dem kan først læses igen, når nøglen er tildelt en konto. Administrer dem under Indstillinger → Kryptering."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κλειδιά κρυπτογράφησης: %lld. Αυτά τα κλειδιά διατηρούνται και δεν διαγράφονται. Τα αντικείμενα που κρυπτογραφήθηκαν με αυτά μπορούν να διαβαστούν ξανά μόνο μετά την εκ νέου ανάθεση του κλειδιού σε λογαριασμό. Διαχειριστείτε τα στις Ρυθμίσεις → Κρυπτογράφηση."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claves de cifrado: %lld. Estas claves se conservan, no se eliminan. Los objetos cifrados con ellas solo podrán volver a leerse tras reasignar la clave a una cuenta. Gestiónalas en Ajustes → Cifrado."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salausavaimia: %lld. Nämä avaimet säilytetään, eikä niitä poisteta. Niillä salattuja objekteja voi lukea uudelleen vasta, kun avain on määritetty tilille. Hallitse niitä kohdassa Asetukset → Salaus."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clés de chiffrement : %lld. Ces clés sont conservées et ne sont pas supprimées. Les objets chiffrés avec ces clés ne pourront être relus qu’après réattribution de la clé à un compte. Gérez-les dans Réglages → Chiffrement."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Titkosítási kulcsok: %lld. Ezek a kulcsok megmaradnak, nem törlődnek. A velük titkosított objektumok csak akkor olvashatók újra, ha a kulcsot egy fiókhoz rendeli. Kezelésük: Beállítások → Titkosítás."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chiavi di crittografia: %lld. Queste chiavi vengono conservate, non eliminate. Gli oggetti crittografati con esse potranno essere letti di nuovo solo dopo aver riassegnato la chiave a un account. Gestiscile in Impostazioni → Crittografia."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暗号鍵：%lld 個。これらの鍵は削除されず、保持されます。これらの鍵で暗号化されたオブジェクトを再び読み取るには、鍵をアカウントに再割り当てする必要があります。「設定」→「暗号化」で管理できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "암호화 키: %lld개. 이 키는 삭제되지 않고 유지됩니다. 이 키로 암호화된 객체를 다시 읽으려면 키를 계정에 다시 할당해야 합니다. 설정 → 암호화에서 관리하세요."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Krypteringsnøkler: %lld. Disse nøklene beholdes og slettes ikke. Objekter kryptert med dem kan først leses igjen etter at nøkkelen er tilordnet en konto. Administrer dem i Innstillinger → Kryptering."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versleutelingssleutels: %lld. Deze sleutels blijven behouden en worden niet verwijderd. Objecten die ermee zijn versleuteld, kunnen pas weer worden gelezen nadat de sleutel aan een account is toegewezen. Beheer ze via Instellingen → Versleuteling."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klucze szyfrowania: %lld. Te klucze zostaną zachowane, a nie usunięte. Obiekty zaszyfrowane tymi kluczami będzie można ponownie odczytać dopiero po przypisaniu klucza do konta. Zarządzaj nimi w Ustawienia → Szyfrowanie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chaves de criptografia: %lld. Estas chaves serão mantidas, não excluídas. Os objetos criptografados com elas só poderão ser lidos novamente após reatribuir a chave a uma conta. Gerencie-as em Ajustes → Criptografia."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chaves de encriptação: %lld. Estas chaves serão mantidas, não eliminadas. Os objetos encriptados com elas só poderão ser lidos novamente após reatribuir a chave a uma conta. Faça a gestão em Definições → Encriptação."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ключи шифрования: %lld. Эти ключи сохраняются и не удаляются. Зашифрованные ими объекты можно будет снова прочитать только после назначения ключа учётной записи. Управляйте ими в разделе Настройки → Шифрование."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Krypteringsnycklar: %lld. Dessa nycklar behålls och raderas inte. Objekt som krypterats med dem kan läsas igen först när nyckeln har tilldelats ett konto. Hantera dem i Inställningar → Kryptering."
+          }
+        }
+      }
+    },
     "" : {
 
     },

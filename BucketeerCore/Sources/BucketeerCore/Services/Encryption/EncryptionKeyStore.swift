@@ -15,9 +15,9 @@ import SwiftData
 /// Two storage layers — metadata in the host's
 /// `BucketeerEncryptionKeys.store` SwiftData container, raw 32-byte
 /// keys in the macOS Keychain under
-/// `AppEnvironment.keychainServiceEncryption`. Every code path that
-/// writes one writes the other in the same async function so callers
-/// can never observe a partial state.
+/// `AppEnvironment.keychainServiceEncryption`. Writes update both
+/// layers, but failures can leave stale metadata. Callers
+/// must refuse encryption when the corresponding bytes are missing.
 ///
 /// The store deliberately does **not** expose the raw key as a
 /// `SymmetricKey` — callers wrap the returned `Data` themselves at
@@ -86,6 +86,32 @@ public actor EncryptionKeyStore: EncryptionKeyStoring {
         return metadata
     }
 
+    public func copyForReassignment(_ key: BucketEncryptionKey, to accountID: UUID) throws -> BucketEncryptionKey {
+        // No suspension between the conflict check and save: competing writes
+        // on this store cannot claim the same destination bucket.
+        let bucket = key.bucket
+        let descriptor = FetchDescriptor<BucketEncryptionKeyRecord>(
+            predicate: #Predicate { $0.accountID == accountID && $0.bucket == bucket }
+        )
+        guard try modelContext.fetch(descriptor).isEmpty else {
+            throw EncryptionKeyReassignmentError.conflict
+        }
+        let bytes = try readKeychain(id: key.id)
+        let replacement = BucketEncryptionKey(
+            label: key.label, accountID: accountID, bucket: bucket, createdAt: key.createdAt
+        )
+        try writeKeychain(id: replacement.id, bytes: bytes)
+        do {
+            modelContext.insert(BucketEncryptionKeyRecord(key: replacement))
+            try modelContext.save()
+        } catch {
+            modelContext.rollback()
+            try? deleteKeychain(id: replacement.id)
+            throw BucketeerError.persistenceFailure(message: error.localizedDescription)
+        }
+        return replacement
+    }
+
     public func keyMaterial(id: UUID) async throws -> Data {
         let bytes = try readKeychain(id: id)
         // Every key in this store is an
@@ -104,10 +130,9 @@ public actor EncryptionKeyStore: EncryptionKeyStoring {
         // Delete the Keychain bytes
         // *before* the SwiftData metadata. A Keychain failure here
         // throws; we never end up with raw key material on disk that
-        // has no visible record pointing at it. Metadata-without-
-        // key is harmless (the snapshot view shows a stale entry the
-        // user can re-delete); key-without-metadata is a real
-        // forensic-recovery hazard.
+        // has no visible record pointing at it. Stale metadata fails safe:
+        // transfers refuse missing bytes, and reassignment refuses the
+        // occupied bucket until the user deletes the stale entry and retries.
         try deleteKeychain(id: id)
         do {
             let descriptor = FetchDescriptor<BucketEncryptionKeyRecord>(
@@ -118,6 +143,7 @@ public actor EncryptionKeyStore: EncryptionKeyStoring {
                 try modelContext.save()
             }
         } catch {
+            modelContext.rollback()
             throw BucketeerError.persistenceFailure(message: error.localizedDescription)
         }
     }
@@ -125,7 +151,7 @@ public actor EncryptionKeyStore: EncryptionKeyStoring {
     // MARK: - Keychain helpers
 
     private func writeKeychain(id: UUID, bytes: Data) throws {
-        var query: [String: Any] = [
+        let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: AppEnvironment.keychainServiceEncryption,
             kSecAttrAccount as String: keychainAccount(for: id),
@@ -133,12 +159,10 @@ public actor EncryptionKeyStore: EncryptionKeyStoring {
             kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked,
             kSecAttrSynchronizable as String: false
         ]
-        SecItemDelete(query as CFDictionary)
         let status = SecItemAdd(query as CFDictionary, nil)
         if status != errSecSuccess {
             throw BucketeerError.keychainFailure(status: status)
         }
-        _ = query.removeValue(forKey: kSecValueData as String)
     }
 
     private func readKeychain(id: UUID) throws -> Data {

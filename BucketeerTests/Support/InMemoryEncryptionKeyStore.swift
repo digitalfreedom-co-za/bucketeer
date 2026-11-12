@@ -11,10 +11,13 @@ import BucketeerCore
 /// Encryption key store that never touches SwiftData or the Keychain.
 actor InMemoryEncryptionKeyStore: EncryptionKeyStoring {
     private var keys: [BucketEncryptionKey] = []
+    private var material: [UUID: Data] = [:]
     private var failingLookups = 0
+    private var failingDeletes = 0
 
     init(encryptedBuckets: [(accountID: UUID, bucket: String)] = []) {
         keys = encryptedBuckets.map { BucketEncryptionKey(label: "Key", accountID: $0.accountID, bucket: $0.bucket) }
+        material = Dictionary(uniqueKeysWithValues: keys.map { ($0.id, Data($0.id.uuidString.utf8.prefix(32))) })
     }
 
     func all() -> [BucketEncryptionKey] { keys }
@@ -35,12 +38,38 @@ actor InMemoryEncryptionKeyStore: EncryptionKeyStoring {
     func create(label: String, accountID: UUID, bucket: String) -> BucketEncryptionKey {
         let key = BucketEncryptionKey(label: label, accountID: accountID, bucket: bucket)
         keys.append(key)
+        material[key.id] = Data(key.id.uuidString.utf8.prefix(32))
         return key
     }
 
-    func keyMaterial(id: UUID) -> Data { Data(count: 32) }
+    func copyForReassignment(_ key: BucketEncryptionKey, to accountID: UUID) throws -> BucketEncryptionKey {
+        guard !keys.contains(where: { $0.accountID == accountID && $0.bucket == key.bucket }) else {
+            throw EncryptionKeyReassignmentError.conflict
+        }
+        let replacement = BucketEncryptionKey(
+            label: key.label, accountID: accountID, bucket: key.bucket, createdAt: key.createdAt
+        )
+        material[replacement.id] = try keyMaterial(id: key.id)
+        keys.append(replacement)
+        return replacement
+    }
 
-    func delete(id: UUID) {
+    func keyMaterial(id: UUID) throws -> Data {
+        guard let bytes = material[id] else { throw EncryptionError.noKeyForBucket }
+        return bytes
+    }
+
+    func failNextDeletes(_ count: Int) {
+        failingDeletes = count
+    }
+
+    func delete(id: UUID) throws {
+        material.removeValue(forKey: id)
+        if failingDeletes > 0 {
+            failingDeletes -= 1
+            // Model a metadata failure after the Keychain bytes are gone.
+            throw CocoaError(.fileWriteNoPermission)
+        }
         keys.removeAll { $0.id == id }
     }
 }
