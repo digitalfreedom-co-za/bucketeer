@@ -377,10 +377,12 @@ actor SyncEngine {
             }
         }
 
-        // Read before the consent check, so a key removed afterwards
-        // makes this run's uploads fail instead of store plaintext.
-        let destinationRequiresKey = await destinationHasKey(job)
-        if !job.allowsDecryptedCopies, await storesDecryptedCopies(job) {
+        // One lookup decides both the consent check and whether this
+        // run's uploads need a key, so a key removed afterwards makes
+        // them fail instead of store plaintext.
+        let destinationState = await destinationKeyState(job)
+        let destinationRequiresKey = destinationState.requiresEncryption
+        if !job.allowsDecryptedCopies, await storesDecryptedCopies(job, destination: destinationState) {
             updateStatus(id: job.id, run: token, phase: .failed, message: String(
                 localized: "sync.error.encryptedToPlain",
                 defaultValue: """
@@ -873,7 +875,7 @@ actor SyncEngine {
 
     /// Bucket-to-bucket job whose source is encrypted and whose
     /// destination has no key: the round trip would store plaintext.
-    private func storesDecryptedCopies(_ job: SyncJob) async -> Bool {
+    private func storesDecryptedCopies(_ job: SyncJob, destination: BucketEncryptionGate.KeyState) async -> Bool {
         guard let encryptionGate,
               case let .s3(sourceAccountID, sourceBucket, _) = job.source,
               case let .s3(destinationAccountID, destinationBucket, _) = job.destination
@@ -882,14 +884,15 @@ actor SyncEngine {
             sourceAccountID: sourceAccountID,
             sourceBucket: sourceBucket,
             destinationAccountID: destinationAccountID,
-            destinationBucket: destinationBucket
+            destinationBucket: destinationBucket,
+            destination: destination
         )
     }
 
-    /// Whether the job writes into a bucket that has a key right now.
-    private func destinationHasKey(_ job: SyncJob) async -> Bool {
-        guard let encryptionGate, case let .s3(accountID, bucket, _) = job.destination else { return false }
-        return await encryptionGate.hasKey(accountID: accountID, bucket: bucket)
+    /// Key state of the job's destination bucket; a local folder is plain.
+    private func destinationKeyState(_ job: SyncJob) async -> BucketEncryptionGate.KeyState {
+        guard let encryptionGate, case let .s3(accountID, bucket, _) = job.destination else { return .plain }
+        return await encryptionGate.keyState(accountID: accountID, bucket: bucket)
     }
 
     private func executeS3ToS3(

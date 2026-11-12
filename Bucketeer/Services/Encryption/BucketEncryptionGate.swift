@@ -102,6 +102,11 @@ actor BucketEncryptionGate {
         case plain
         /// The lookup failed (locked Keychain, store error).
         case unknown
+
+        /// Whether uploads into a bucket in this state must be sealed.
+        /// An unknown bucket may have a key, so it counts as keyed: the
+        /// upload then fails instead of storing plaintext.
+        var requiresEncryption: Bool { self != .plain }
     }
 
     /// Whether a copy from source to destination would decrypt encrypted
@@ -118,31 +123,44 @@ actor BucketEncryptionGate {
         return source != .plain && destination != .encrypted
     }
 
-    /// Looks up both buckets and applies `isEncryptedToPlain`. Callers
-    /// ask the user (copy, drag) or refuse (sync) before the round trip.
+    /// Looks up both buckets and applies `isEncryptedToPlain`, for the
+    /// UI to decide whether to ask before it starts a copy.
     func isEncryptedToPlain(
         sourceAccountID: UUID,
         sourceBucket: String,
         destinationAccountID: UUID,
         destinationBucket: String
     ) async -> Bool {
+        await isEncryptedToPlain(
+            sourceAccountID: sourceAccountID,
+            sourceBucket: sourceBucket,
+            destinationAccountID: destinationAccountID,
+            destinationBucket: destinationBucket,
+            destination: keyState(accountID: destinationAccountID, bucket: destinationBucket)
+        )
+    }
+
+    /// Same check against a destination state the caller looked up once
+    /// with `keyState`. Copy, drag and sync derive both the consent check
+    /// and the uploads' `requiresEncryption` from that one state, so a
+    /// lookup that fails once and succeeds later cannot skip both.
+    func isEncryptedToPlain(
+        sourceAccountID: UUID,
+        sourceBucket: String,
+        destinationAccountID: UUID,
+        destinationBucket: String,
+        destination: KeyState
+    ) async -> Bool {
         let sameBucket = sourceAccountID == destinationAccountID && sourceBucket == destinationBucket
         guard !sameBucket else { return false }
         return await Self.isEncryptedToPlain(
             source: keyState(accountID: sourceAccountID, bucket: sourceBucket),
-            destination: keyState(accountID: destinationAccountID, bucket: destinationBucket),
+            destination: destination,
             sameBucket: false
         )
     }
 
-    /// Whether the bucket definitely has a key. Copy, drag and sync
-    /// record this before the round trip so its uploads fail instead
-    /// of storing plaintext when the key is removed in the meantime.
-    func hasKey(accountID: UUID, bucket: String) async -> Bool {
-        await keyState(accountID: accountID, bucket: bucket) == .encrypted
-    }
-
-    private func keyState(accountID: UUID, bucket: String) async -> KeyState {
+    func keyState(accountID: UUID, bucket: String) async -> KeyState {
         do {
             return try await key(accountID: accountID, bucket: bucket) != nil ? .encrypted : .plain
         } catch {

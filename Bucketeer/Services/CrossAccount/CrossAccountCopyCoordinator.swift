@@ -78,15 +78,18 @@ final class CrossAccountCopyCoordinator {
         keepSource: Bool,
         allowsDecryptedCopies: Bool
     ) async -> [(key: String, error: BucketeerError?)] {
-        // Read before the consent check, so a key removed afterwards
-        // makes the round-trip uploads fail instead of store plaintext.
-        let destinationRequiresKey = await encryptionGate?.hasKey(
+        // One lookup decides both the consent check and whether the
+        // round-trip uploads need a key, so a key removed afterwards
+        // makes them fail instead of store plaintext.
+        let destinationState = await encryptionGate?.keyState(
             accountID: destinationAccount.id, bucket: destinationBucket
-        ) ?? false
-        if !allowsDecryptedCopies, await isEncryptedToPlain(
-            sourceAccount: sourceAccount, sourceBucket: sourceBucket,
-            destinationAccount: destinationAccount, destinationBucket: destinationBucket
-        ) {
+        ) ?? .plain
+        let destinationRequiresKey = destinationState.requiresEncryption
+        if !allowsDecryptedCopies, await encryptionGate?.isEncryptedToPlain(
+            sourceAccountID: sourceAccount.id, sourceBucket: sourceBucket,
+            destinationAccountID: destinationAccount.id, destinationBucket: destinationBucket,
+            destination: destinationState
+        ) == true {
             let refusal = BucketeerError.unknown(message: String(localized: "crossCopy.error.unencryptedDestination"))
             return keys.map { ($0, refusal) }
         }

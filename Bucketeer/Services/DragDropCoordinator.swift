@@ -35,6 +35,9 @@ final class DragDropCoordinator {
         let destinationAccount: S3Account
         let destinationBucket: String
         let destinationPrefix: String
+        /// The destination state at the drop: unknown or keyed buckets
+        /// still require a key when the user agreed to the drop.
+        let requiresEncryption: Bool
     }
 
     private let s3Browser: any S3Browsing
@@ -101,20 +104,24 @@ final class DragDropCoordinator {
         destinationBucket: String,
         destinationPrefix: String
     ) async {
-        // Read before the consent check, so a key removed afterwards
-        // makes the round-trip uploads fail instead of store plaintext.
-        let destinationRequiresKey = await encryptionGate?.hasKey(
+        // One lookup decides both the consent check and whether the
+        // round-trip uploads need a key, so a key removed afterwards
+        // makes them fail instead of store plaintext.
+        let destinationState = await encryptionGate?.keyState(
             accountID: destinationAccount.id, bucket: destinationBucket
-        ) ?? false
+        ) ?? .plain
+        let destinationRequiresKey = destinationState.requiresEncryption
         if let sourceBucket = await encryptedSourceBucket(
-            of: refs, destinationAccount: destinationAccount, destinationBucket: destinationBucket
+            of: refs, destinationAccount: destinationAccount, destinationBucket: destinationBucket,
+            destinationState: destinationState
         ) {
             pendingUnencryptedDrops.append(PendingUnencryptedDrop(
                 refs: refs,
                 sourceBucket: sourceBucket,
                 destinationAccount: destinationAccount,
                 destinationBucket: destinationBucket,
-                destinationPrefix: destinationPrefix
+                destinationPrefix: destinationPrefix,
+                requiresEncryption: destinationRequiresKey
             ))
             return
         }
@@ -127,7 +134,7 @@ final class DragDropCoordinator {
         discardUnencryptedDrop(pending)
         await drop(pending.refs, destinationAccount: pending.destinationAccount,
                    destinationBucket: pending.destinationBucket, destinationPrefix: pending.destinationPrefix,
-                   requiresEncryption: false)
+                   requiresEncryption: pending.requiresEncryption)
     }
 
     /// Forgets a drop the user cancelled. Other pending drops stay.
@@ -141,7 +148,8 @@ final class DragDropCoordinator {
     private func encryptedSourceBucket(
         of refs: [S3ObjectRef],
         destinationAccount: S3Account,
-        destinationBucket: String
+        destinationBucket: String,
+        destinationState: BucketEncryptionGate.KeyState
     ) async -> String? {
         guard let encryptionGate else { return nil }
         for ref in refs where !ref.isFolder {
@@ -150,7 +158,8 @@ final class DragDropCoordinator {
                 sourceAccountID: ref.accountID,
                 sourceBucket: ref.bucket,
                 destinationAccountID: destinationAccount.id,
-                destinationBucket: destinationBucket
+                destinationBucket: destinationBucket,
+                destination: destinationState
             ) {
                 return ref.bucket
             }
