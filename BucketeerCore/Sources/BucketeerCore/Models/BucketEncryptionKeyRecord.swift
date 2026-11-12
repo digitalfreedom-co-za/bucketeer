@@ -19,6 +19,7 @@ public final class BucketEncryptionKeyRecord {
     public var accountID: UUID
     public var bucket: String
     public var createdAt: Date
+    public var backupReady: Bool = false
 
     public init(key: BucketEncryptionKey) {
         self.id = key.id
@@ -26,6 +27,7 @@ public final class BucketEncryptionKeyRecord {
         self.accountID = key.accountID
         self.bucket = key.bucket
         self.createdAt = key.createdAt
+        self.backupReady = key.backupReady
     }
 
     public var snapshot: BucketEncryptionKey {
@@ -34,7 +36,8 @@ public final class BucketEncryptionKeyRecord {
             label: label,
             accountID: accountID,
             bucket: bucket,
-            createdAt: createdAt
+            createdAt: createdAt,
+            backupReady: backupReady
         )
     }
 }

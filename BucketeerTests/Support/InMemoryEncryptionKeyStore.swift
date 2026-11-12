@@ -16,7 +16,7 @@ actor InMemoryEncryptionKeyStore: EncryptionKeyStoring {
     private var failingDeletes = 0
 
     init(encryptedBuckets: [(accountID: UUID, bucket: String)] = []) {
-        keys = encryptedBuckets.map { BucketEncryptionKey(label: "Key", accountID: $0.accountID, bucket: $0.bucket) }
+        keys = encryptedBuckets.map { BucketEncryptionKey(label: "Key", accountID: $0.accountID, bucket: $0.bucket, backupReady: true) }
         material = Dictionary(uniqueKeysWithValues: keys.map { ($0.id, Data($0.id.uuidString.utf8.prefix(32))) })
     }
 
@@ -36,7 +36,7 @@ actor InMemoryEncryptionKeyStore: EncryptionKeyStoring {
     }
 
     func create(label: String, accountID: UUID, bucket: String) -> BucketEncryptionKey {
-        let key = BucketEncryptionKey(label: label, accountID: accountID, bucket: bucket)
+        let key = BucketEncryptionKey(label: label, accountID: accountID, bucket: bucket, backupReady: true)
         keys.append(key)
         material[key.id] = Data(key.id.uuidString.utf8.prefix(32))
         return key
@@ -52,6 +52,14 @@ actor InMemoryEncryptionKeyStore: EncryptionKeyStoring {
         material[replacement.id] = try keyMaterial(id: key.id)
         keys.append(replacement)
         return replacement
+    }
+
+    func importKey(_ entry: KeyBackupEntry, replacing expectedID: UUID?) throws {
+        throw CocoaError(.featureUnsupported)
+    }
+
+    func markBackupReady(id: UUID) throws {
+        throw CocoaError(.featureUnsupported)
     }
 
     func keyMaterial(id: UUID) throws -> Data {

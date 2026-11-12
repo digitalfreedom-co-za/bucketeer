@@ -312,6 +312,14 @@ private actor BlockingKeyStore: EncryptionKeyStoring {
         try await keys.copyForReassignment(key, to: accountID)
     }
 
+    func importKey(_ entry: KeyBackupEntry, replacing expectedID: UUID?) throws {
+        throw CocoaError(.featureUnsupported)
+    }
+
+    func markBackupReady(id: UUID) throws {
+        throw CocoaError(.featureUnsupported)
+    }
+
     func keyMaterial(id: UUID) async throws -> Data { try await keys.keyMaterial(id: id) }
     func delete(id: UUID) async throws { try await keys.delete(id: id) }
 }

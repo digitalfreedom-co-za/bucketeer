@@ -170,6 +170,14 @@ private actor FakeKeyStore: EncryptionKeyStoring {
         throw CocoaError(.featureUnsupported)
     }
 
+    func importKey(_ entry: KeyBackupEntry, replacing expectedID: UUID?) throws {
+        throw CocoaError(.featureUnsupported)
+    }
+
+    func markBackupReady(id: UUID) throws {
+        throw CocoaError(.featureUnsupported)
+    }
+
     func keyMaterial(id: UUID) -> Data { Data(count: 32) }
 
     func delete(id: UUID) {

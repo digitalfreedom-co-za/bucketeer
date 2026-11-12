@@ -1,6 +1,256 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "encryption.backup.conflict" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Different key exists"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Different key exists"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Existuje jiný klíč"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En anden nøgle findes"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anderer Schlüssel vorhanden"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Υπάρχει διαφορετικό κλειδί"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Existe una clave diferente"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eri avain on olemassa"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une autre clé existe"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Másik kulcs létezik"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esiste una chiave diversa"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "異なる鍵が存在"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다른 키가 있음"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En annen nøkkel finnes"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Andere sleutel aanwezig"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Istnieje inny klucz"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Existe uma chave diferente"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Existe uma chave diferente"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Существует другой ключ"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En annan nyckel finns"
+          }
+        }
+      }
+    },
+    "encryption.backup.hint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use at least 12 characters. Several unrelated words make a stronger passphrase. Both fields must match."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use at least 12 characters. Several unrelated words make a stronger passphrase. Both fields must match."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Použijte alespoň 12 znaků. Několik nesouvisejících slov vytvoří silnější heslovou frázi. Obě pole se musí shodovat."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brug mindst 12 tegn. Flere ord uden indbyrdes sammenhæng giver en stærkere adgangssætning. Begge felter skal være ens."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwende mindestens 12 Zeichen. Mehrere zusammenhanglose Wörter ergeben eine stärkere Passphrase. Beide Felder müssen übereinstimmen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Χρησιμοποιήστε τουλάχιστον 12 χαρακτήρες. Πολλές άσχετες λέξεις δημιουργούν ισχυρότερη φράση. Τα δύο πεδία πρέπει να ταιριάζουν."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa al menos 12 caracteres. Varias palabras sin relación crean una frase más segura. Ambos campos deben coincidir."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Käytä vähintään 12 merkkiä. Useat toisiinsa liittymättömät sanat muodostavat vahvemman salalauseen. Kenttien on vastattava toisiaan."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilisez au moins 12 caractères. Plusieurs mots sans rapport forment une phrase plus robuste. Les deux champs doivent correspondre."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Használjon legalább 12 karaktert. Több, egymáshoz nem kapcsolódó szó erősebb jelmondatot alkot. A két mezőnek egyeznie kell."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa almeno 12 caratteri. Più parole non correlate rendono la frase più sicura. I due campi devono coincidere."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "12文字以上を使用してください。関連のない複数の単語を使うと、より強力になります。両方の入力欄が一致する必要があります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "12자 이상을 사용하세요. 서로 관련 없는 여러 단어를 사용하면 더 강력한 암호 구문이 됩니다. 두 입력란이 일치해야 합니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bruk minst 12 tegn. Flere ord uten sammenheng gir en sterkere passfrase. Begge feltene må være like."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebruik minimaal 12 tekens. Meerdere niet-verwante woorden maken een sterkere wachtzin. Beide velden moeten overeenkomen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Użyj co najmniej 12 znaków. Kilka niepowiązanych słów tworzy silniejszą frazę. Oba pola muszą być zgodne."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use pelo menos 12 caracteres. Várias palavras sem relação formam uma frase mais forte. Os dois campos devem coincidir."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilize pelo menos 12 caracteres. Várias palavras sem relação formam uma frase mais forte. Os dois campos têm de coincidir."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Используйте не менее 12 символов. Несколько несвязанных слов делают фразу надёжнее. Оба поля должны совпадать."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Använd minst 12 tecken. Flera orelaterade ord ger en starkare lösenfras. Båda fälten måste stämma överens."
+          }
+        }
+      }
+    },
     "encryption.error.authenticationFailed" : {
       "extractionState" : "manual",
       "localizations" : {
