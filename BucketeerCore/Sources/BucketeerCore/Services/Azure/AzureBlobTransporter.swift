@@ -627,12 +627,8 @@ private actor DownloadWriter {
         guard let handle else {
             throw BucketeerError.unknown(message: String(localized: "transfer.error.downloadIncomplete", bundle: .module))
         }
-        do {
-            try handle.seek(toOffset: UInt64(offset))
-            try handle.write(contentsOf: data)
-        } catch {
-            throw BucketeerError.unknown(message: String(localized: "transfer.error.writeFailed \(error.localizedDescription)", bundle: .module))
-        }
+        try handle.seek(toOffset: UInt64(offset))
+        try handle.write(contentsOf: data)
         bytesSoFar += Int64(data.count)
         await callback(bytesSoFar, total)
     }

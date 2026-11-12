@@ -61,6 +61,7 @@ actor TransferManager: Transferring {
         /// the copy started: without a key at upload time the transfer
         /// fails instead of storing plaintext.
         var requiresEncryption: Bool = false
+        var destinationHadKey: Bool = false
         /// Condition the server must check before it accepts the write
         /// (Open With round-trip). `nil` = unconditional.
         var precondition: WritePrecondition? = nil
@@ -85,6 +86,7 @@ actor TransferManager: Transferring {
                 bypassDecryption: bypassDecryption,
                 bypassEncryption: bypassEncryption,
                 requiresEncryption: requiresEncryption,
+                destinationHadKey: destinationHadKey,
                 precondition: precondition
             )
         }
@@ -222,6 +224,7 @@ actor TransferManager: Transferring {
             state: .queued,
             startedAt: Date()
         )
+        let destinationHadKey = await encryptionGate?.hadKey(accountID: account.id, bucket: bucket) ?? false
         items[id] = QueuedItem(
             account: account,
             task: task,
@@ -229,6 +232,7 @@ actor TransferManager: Transferring {
             fileSize: fileSize,
             bypassEncryption: bypassEncryption,
             requiresEncryption: requiresEncryption,
+            destinationHadKey: destinationHadKey,
             precondition: precondition
         )
         order.append(id)
@@ -457,7 +461,10 @@ actor TransferManager: Transferring {
             return
         }
         if item.requiresEncryption, encryptionKey == nil, !item.bypassEncryption {
-            setState(id: id, state: .failed(message: String(localized: "transfer.error.destinationNoKey")))
+            let message = item.destinationHadKey
+                ? String(localized: "error.encryptionKeyRemoved")
+                : String(localized: "transfer.error.destinationNoKey")
+            setState(id: id, state: .failed(message: message))
             return
         }
         if let key = encryptionKey {

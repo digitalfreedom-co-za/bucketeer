@@ -49,7 +49,7 @@ struct RunSyncJobIntent: AppIntent {
         let live = try await container.syncJobStore.all()
         guard let match = live.first(where: { $0.id == job.id }) else {
             throw BucketeerError.unknown(
-                message: String(localized: "sync.error.contextIncomplete")
+                message: String(localized: "sync.error.jobMissing")
             )
         }
         await container.syncEngine.runNow(id: match.id)

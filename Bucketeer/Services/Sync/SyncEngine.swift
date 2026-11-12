@@ -1070,7 +1070,7 @@ actor SyncEngine {
             return true
         case .localFolder:
             guard let root = context.localRoot else {
-                throw BucketeerError.unknown(message: String(localized: "sync.error.localFolderUnavailable"))
+                throw BucketeerError.unknown(message: String(localized: "sync.error.localFolderUnavailableDuringDelete"))
             }
             return try LocalFolderWriter.deleteIfUnchanged(
                 relativeKey: orphan.key, under: root, fingerprint: LocalFileFingerprint(orphan)
@@ -1096,7 +1096,7 @@ actor SyncEngine {
             )
         case .localFolder:
             guard let root = context.localRoot else {
-                throw BucketeerError.unknown(message: String(localized: "sync.error.localFolderUnavailable"))
+                throw BucketeerError.unknown(message: String(localized: "sync.error.localFolderUnavailableDuringDelete"))
             }
             return try LocalFolderWriter.deleteIfUnchanged(
                 relativeKey: entry.sourceKey, under: root, fingerprint: LocalFileFingerprint(entry.source)

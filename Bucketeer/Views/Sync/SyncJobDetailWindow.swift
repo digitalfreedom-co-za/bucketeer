@@ -174,7 +174,7 @@ struct SyncJobDetailWindow: View {
                 self.job = match
                 self.loadError = nil
             } else {
-                self.loadError = .unknown(message: "No sync job with id \(jobID).")
+                self.loadError = .unknown(message: String(localized: "sync.error.jobMissing"))
             }
         } catch let error as BucketeerError {
             self.loadError = error

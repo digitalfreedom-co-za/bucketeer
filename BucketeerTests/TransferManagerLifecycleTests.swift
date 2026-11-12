@@ -115,6 +115,50 @@ final class TransferManagerLifecycleTests: XCTestCase {
         XCTAssertTrue(RefusingAzureStub.requested(blob: "unrequired.txt"), "uploads without the requirement still go out")
     }
 
+    func testConfirmedEncryptedToPlainCopyDoesNotReportAnUnobservedKeyAsRemoved() async throws {
+        let keyStore = InMemoryEncryptionKeyStore(encryptedBuckets: [(account.id, "vault")])
+        let gate = BucketEncryptionGate(keyStore: keyStore)
+        let manager = try await makeManager(encryptionGate: gate)
+        let file = folder.appendingPathComponent("confirmed-copy.txt")
+        try Data("plaintext".utf8).write(to: file)
+        let destination = await gate.keyState(accountID: account.id, bucket: "public")
+        let asksForConsent = await gate.isEncryptedToPlain(
+            sourceAccountID: account.id, sourceBucket: "vault",
+            destinationAccountID: account.id, destinationBucket: "public",
+            destination: destination
+        )
+        XCTAssertEqual(destination, .plain)
+        XCTAssertTrue(asksForConsent)
+
+        // Consent permits plaintext, but does not turn a later lookup
+        // failure into evidence that a key was removed.
+        await gate.invalidate(accountID: account.id, bucket: "public")
+        await keyStore.failNextLookups(1)
+        let failedLookup = await manager.enqueueUpload(
+            account: account, bucket: "public", key: "lookup-failed.txt",
+            localURL: file, contentType: nil,
+            bypassEncryption: false, requiresEncryption: destination.requiresEncryption
+        )
+        let lookupState = await manager.awaitCompletion(id: failedLookup)
+        let cause = CocoaError(.fileReadNoPermission).localizedDescription
+        XCTAssertEqual(lookupState, .failed(message: String(localized: "encryption.error.lookupFailed \(cause)")))
+        XCTAssertFalse(RefusingAzureStub.requested(blob: "lookup-failed.txt"))
+
+        // An unknown preflight still requires encryption. If the next
+        // lookup establishes that no key exists, it is not a removed key.
+        await keyStore.failNextLookups(1)
+        let unknown = await gate.keyState(accountID: account.id, bucket: "public")
+        XCTAssertEqual(unknown, .unknown)
+        let missingKey = await manager.enqueueUpload(
+            account: account, bucket: "public", key: "no-key.txt",
+            localURL: file, contentType: nil,
+            bypassEncryption: false, requiresEncryption: unknown.requiresEncryption
+        )
+        let missingState = await manager.awaitCompletion(id: missingKey)
+        XCTAssertEqual(missingState, .failed(message: String(localized: "transfer.error.destinationNoKey")))
+        XCTAssertFalse(RefusingAzureStub.requested(blob: "no-key.txt"))
+    }
+
     // MARK: - Helpers
 
     private func makeManager(encryptionGate: BucketEncryptionGate? = nil) async throws -> TransferManager {

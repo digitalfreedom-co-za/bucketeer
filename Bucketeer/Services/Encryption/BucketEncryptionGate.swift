@@ -33,6 +33,9 @@ actor BucketEncryptionGate {
         let expiresAt: Date
     }
     private var cache: [String: CacheEntry] = [:]
+    // Retain the last definite state across invalidation so queued uploads
+    // can distinguish a removed key from a destination never known to have one.
+    private var knownKeyedBuckets: Set<String> = []
     /// Bumped by `invalidate`; a lookup that started before an
     /// invalidation is discarded and repeated.
     private var generations: [String: Int] = [:]
@@ -58,9 +61,18 @@ actor BucketEncryptionGate {
             // The key was created or deleted while the store answered:
             // that answer may describe the old state.
             guard generations[cacheKey, default: 0] == generation else { continue }
+            if resolved != nil {
+                knownKeyedBuckets.insert(cacheKey)
+            } else {
+                knownKeyedBuckets.remove(cacheKey)
+            }
             cache[cacheKey] = CacheEntry(key: resolved, expiresAt: Date().addingTimeInterval(ttl))
             return resolved
         }
+    }
+
+    func hadKey(accountID: UUID, bucket: String) -> Bool {
+        knownKeyedBuckets.contains(Self.cacheKey(accountID: accountID, bucket: bucket))
     }
 
     /// Same lookup as `key`, boxed so a TransferManager actor can await it.
@@ -187,6 +199,10 @@ actor BucketEncryptionGate {
                 return nil
             }
             return SymmetricKey(data: try await keyStore.keyMaterial(id: meta.id))
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch EncryptionError.keyRemoved {
+            throw EncryptionError.keyRemoved
         } catch {
             throw BucketeerError.unknown(message: String(localized: "encryption.error.lookupFailed \(error.localizedDescription)"))
         }

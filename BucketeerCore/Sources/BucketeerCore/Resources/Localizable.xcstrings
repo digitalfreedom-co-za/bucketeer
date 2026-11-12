@@ -2005,9 +2005,27 @@
       "extractionState" : "manual",
       "localizations" : {
         "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kopírování nebylo dokončeno do %lld sekund."
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Kopírování nebylo dokončeno do %lld sekundy."
+                }
+              },
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Kopírování nebylo dokončeno do %lld sekund."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Kopírování nebylo dokončeno do %lld sekund."
+                }
+              }
+            }
           }
         },
         "da" : {
@@ -2095,9 +2113,33 @@
           }
         },
         "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kopiowanie nie zostało ukończone w ciągu %lld sekund."
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Kopiowanie nie zostało ukończone w ciągu %lld sekundy."
+                }
+              },
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Kopiowanie nie zostało ukończone w ciągu %lld sekund."
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Kopiowanie nie zostało ukończone w ciągu %lld sekund."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Kopiowanie nie zostało ukończone w ciągu %lld sekundy."
+                }
+              }
+            }
           }
         },
         "pt-BR" : {
@@ -2113,9 +2155,33 @@
           }
         },
         "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Копирование не завершилось за %lld секунд."
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Копирование не завершилось за %lld секунду."
+                }
+              },
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Копирование не завершилось за %lld секунды."
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Копирование не завершилось за %lld секунд."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Копирование не завершилось за %lld секунды."
+                }
+              }
+            }
           }
         },
         "sv" : {
@@ -3132,7 +3198,7 @@
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Stahování vrátilo %lld bajtů; očekáváno %lld."
+            "value" : "Počet stažených bajtů: %lld; očekáváno: %lld."
           }
         },
         "da" : {
@@ -3222,7 +3288,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pobieranie zwróciło %lld bajtów; oczekiwano %lld."
+            "value" : "Liczba pobranych bajtów: %lld; oczekiwano: %lld."
           }
         },
         "pt-BR" : {
@@ -3240,7 +3306,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "При загрузке получено %lld байт; ожидалось %lld."
+            "value" : "Количество загруженных байтов: %lld; ожидалось: %lld."
           }
         },
         "sv" : {
@@ -3747,131 +3813,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Servern returnerade HTTP %lld med ett okänt svarsinnehåll."
-          }
-        }
-      }
-    },
-    "transfer.error.writeFailed %@" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stažený soubor se nepodařilo zapsat: %@"
-          }
-        },
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Den hentede fil kunne ikke skrives: %@"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Die heruntergeladene Datei konnte nicht geschrieben werden: %@"
-          }
-        },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Δεν ήταν δυνατή η εγγραφή του ληφθέντος αρχείου: %@"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Could not write the downloaded file: %@"
-          }
-        },
-        "en-GB" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Could not write the downloaded file: %@"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se pudo escribir el archivo descargado: %@"
-          }
-        },
-        "fi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ladattua tiedostoa ei voitu kirjoittaa: %@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Impossible d’écrire le fichier téléchargé : %@"
-          }
-        },
-        "hu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nem sikerült írni a letöltött fájlt: %@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Impossibile scrivere il file scaricato: %@"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ダウンロードしたファイルを書き込めませんでした：%@"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "다운로드한 파일을 쓸 수 없습니다: %@"
-          }
-        },
-        "nb" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Den nedlastede filen kunne ikke skrives: %@"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Het gedownloade bestand kon niet worden geschreven: %@"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nie można zapisać pobranego pliku: %@"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Não foi possível gravar o arquivo baixado: %@"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Não foi possível escrever o ficheiro descarregado: %@"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Не удалось записать загруженный файл: %@"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Det gick inte att skriva den hämtade filen: %@"
           }
         }
       }
