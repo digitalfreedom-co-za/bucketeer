@@ -74,13 +74,23 @@ final class TransferManagerLifecycleTests: XCTestCase {
     }
 
     func testUploadIntoABucketWhoseKeyWasRemovedAfterThePreflightSendsNothing() async throws {
-        let keyStore = InMemoryEncryptionKeyStore(encryptedBuckets: [(account.id, "keyed")])
+        let keyStore = InMemoryEncryptionKeyStore(encryptedBuckets: [(account.id, "vault"), (account.id, "keyed")])
         let gate = BucketEncryptionGate(keyStore: keyStore)
         let manager = try await makeManager(encryptionGate: gate)
         let file = folder.appendingPathComponent("plain.txt")
         try Data("plaintext".utf8).write(to: file)
-        let requiresKey = await gate.hasKey(accountID: account.id, bucket: "keyed")
-        for key in await keyStore.all() {
+        // The preflight lookup of the destination fails; the consent
+        // check reuses that state, while a later lookup finds the key.
+        await keyStore.failNextLookups(1)
+        let destination = await gate.keyState(accountID: account.id, bucket: "keyed")
+        let asksForConsent = await gate.isEncryptedToPlain(
+            sourceAccountID: account.id, sourceBucket: "vault",
+            destinationAccountID: account.id, destinationBucket: "keyed",
+            destination: destination
+        )
+        let laterLookup = await gate.keyState(accountID: account.id, bucket: "keyed")
+        let requiresKey = destination.requiresEncryption
+        for key in await keyStore.all() where key.bucket == "keyed" {
             await keyStore.delete(id: key.id)
         }
         await gate.invalidate(accountID: account.id, bucket: "keyed")
@@ -93,7 +103,10 @@ final class TransferManagerLifecycleTests: XCTestCase {
                                                      localURL: file, contentType: nil)
         _ = await manager.awaitCompletion(id: unrequired)
 
-        XCTAssertTrue(requiresKey)
+        XCTAssertEqual(destination, .unknown)
+        XCTAssertTrue(asksForConsent, "an unreadable destination may have no key")
+        XCTAssertEqual(laterLookup, .encrypted)
+        XCTAssertTrue(requiresKey, "a failed lookup must not drop the key requirement")
         XCTAssertEqual(refusedState, .failed(message: """
         The destination bucket had an encryption key when the transfer started, but the key has \
         been removed. The file was not uploaded.

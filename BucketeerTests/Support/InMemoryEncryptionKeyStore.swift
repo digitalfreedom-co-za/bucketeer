@@ -11,6 +11,7 @@ import BucketeerCore
 /// Encryption key store that never touches SwiftData or the Keychain.
 actor InMemoryEncryptionKeyStore: EncryptionKeyStoring {
     private var keys: [BucketEncryptionKey] = []
+    private var failingLookups = 0
 
     init(encryptedBuckets: [(accountID: UUID, bucket: String)] = []) {
         keys = encryptedBuckets.map { BucketEncryptionKey(label: "Key", accountID: $0.accountID, bucket: $0.bucket) }
@@ -18,8 +19,17 @@ actor InMemoryEncryptionKeyStore: EncryptionKeyStoring {
 
     func all() -> [BucketEncryptionKey] { keys }
 
-    func key(accountID: UUID, bucket: String) -> BucketEncryptionKey? {
-        keys.first { $0.accountID == accountID && $0.bucket == bucket }
+    /// The next `count` lookups throw, like a locked Keychain.
+    func failNextLookups(_ count: Int) {
+        failingLookups = count
+    }
+
+    func key(accountID: UUID, bucket: String) throws -> BucketEncryptionKey? {
+        if failingLookups > 0 {
+            failingLookups -= 1
+            throw CocoaError(.fileReadNoPermission)
+        }
+        return keys.first { $0.accountID == accountID && $0.bucket == bucket }
     }
 
     func create(label: String, accountID: UUID, bucket: String) -> BucketEncryptionKey {
