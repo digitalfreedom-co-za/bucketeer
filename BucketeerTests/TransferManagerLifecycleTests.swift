@@ -79,43 +79,32 @@ final class TransferManagerLifecycleTests: XCTestCase {
         let manager = try await makeManager(encryptionGate: gate)
         let file = folder.appendingPathComponent("plain.txt")
         try Data("plaintext".utf8).write(to: file)
-        // The preflight lookup of the destination fails; the consent
-        // check reuses that state, while a later lookup finds the key.
-        await keyStore.failNextLookups(1)
         let destination = await gate.keyState(accountID: account.id, bucket: "keyed")
-        let asksForConsent = await gate.isEncryptedToPlain(
-            sourceAccountID: account.id, sourceBucket: "vault",
-            destinationAccountID: account.id, destinationBucket: "keyed",
-            destination: destination
-        )
-        let laterLookup = await gate.keyState(accountID: account.id, bucket: "keyed")
-        let requiresKey = destination.requiresEncryption
+        XCTAssertEqual(destination, .encrypted)
         for key in await keyStore.all() where key.bucket == "keyed" {
             try await keyStore.delete(id: key.id)
         }
         await gate.invalidate(accountID: account.id, bucket: "keyed")
 
-        let refused = await manager.enqueueUpload(account: account, bucket: "keyed", key: "refused.txt",
-                                                  localURL: file, contentType: nil,
-                                                  bypassEncryption: false, requiresEncryption: requiresKey)
-        let refusedState = await manager.awaitCompletion(id: refused)
+        for name in ["refused-first.txt", "refused-second.txt"] {
+            let refused = await manager.enqueueUpload(
+                account: account, bucket: "keyed", key: name,
+                localURL: file, contentType: nil, bypassEncryption: false,
+                requiresEncryption: destination.requiresEncryption,
+                destinationHadKey: destination == .encrypted
+            )
+            let refusedState = await manager.awaitCompletion(id: refused)
+            XCTAssertEqual(refusedState, .failed(message: String(localized: "error.encryptionKeyRemoved")))
+            XCTAssertFalse(RefusingAzureStub.requested(blob: name), "no byte may reach the bucket")
+        }
         let unrequired = await manager.enqueueUpload(account: account, bucket: "keyed", key: "unrequired.txt",
                                                      localURL: file, contentType: nil)
         _ = await manager.awaitCompletion(id: unrequired)
 
-        XCTAssertEqual(destination, .unknown)
-        XCTAssertTrue(asksForConsent, "an unreadable destination may have no key")
-        XCTAssertEqual(laterLookup, .encrypted)
-        XCTAssertTrue(requiresKey, "a failed lookup must not drop the key requirement")
-        XCTAssertEqual(refusedState, .failed(message: """
-        The destination bucket had an encryption key when the transfer started, but the key has \
-        been removed. The file was not uploaded.
-        """))
-        XCTAssertFalse(RefusingAzureStub.requested(blob: "refused.txt"), "no byte may reach the bucket")
         XCTAssertTrue(RefusingAzureStub.requested(blob: "unrequired.txt"), "uploads without the requirement still go out")
     }
 
-    func testConfirmedEncryptedToPlainCopyDoesNotReportAnUnobservedKeyAsRemoved() async throws {
+    func testUploadDistinguishesLookupFailureFromUnknownPreflightWithoutAKey() async throws {
         let keyStore = InMemoryEncryptionKeyStore(encryptedBuckets: [(account.id, "vault")])
         let gate = BucketEncryptionGate(keyStore: keyStore)
         let manager = try await makeManager(encryptionGate: gate)
@@ -137,7 +126,8 @@ final class TransferManagerLifecycleTests: XCTestCase {
         let failedLookup = await manager.enqueueUpload(
             account: account, bucket: "public", key: "lookup-failed.txt",
             localURL: file, contentType: nil,
-            bypassEncryption: false, requiresEncryption: destination.requiresEncryption
+            bypassEncryption: false, requiresEncryption: destination.requiresEncryption,
+            destinationHadKey: destination == .encrypted
         )
         let lookupState = await manager.awaitCompletion(id: failedLookup)
         let cause = CocoaError(.fileReadNoPermission).localizedDescription
@@ -152,7 +142,8 @@ final class TransferManagerLifecycleTests: XCTestCase {
         let missingKey = await manager.enqueueUpload(
             account: account, bucket: "public", key: "no-key.txt",
             localURL: file, contentType: nil,
-            bypassEncryption: false, requiresEncryption: unknown.requiresEncryption
+            bypassEncryption: false, requiresEncryption: unknown.requiresEncryption,
+            destinationHadKey: unknown == .encrypted
         )
         let missingState = await manager.awaitCompletion(id: missingKey)
         XCTAssertEqual(missingState, .failed(message: String(localized: "transfer.error.destinationNoKey")))

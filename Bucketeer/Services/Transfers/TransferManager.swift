@@ -209,6 +209,7 @@ actor TransferManager: Transferring {
         contentType: String?,
         bypassEncryption: Bool,
         requiresEncryption: Bool = false,
+        destinationHadKey: Bool = false,
         precondition: WritePrecondition? = nil
     ) async -> UUID {
         let id = UUID()
@@ -224,7 +225,6 @@ actor TransferManager: Transferring {
             state: .queued,
             startedAt: Date()
         )
-        let destinationHadKey = await encryptionGate?.hadKey(accountID: account.id, bucket: bucket) ?? false
         items[id] = QueuedItem(
             account: account,
             task: task,
@@ -456,6 +456,9 @@ actor TransferManager: Transferring {
                 accountID: item.account.id,
                 bucket: item.task.bucket
             )?.key
+        } catch EncryptionError.keyRemoved {
+            setState(id: id, state: .failed(message: String(localized: "error.encryptionKeyRemoved")))
+            return
         } catch {
             setState(id: id, state: .failed(message: errorMessage(error)))
             return

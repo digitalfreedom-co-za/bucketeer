@@ -89909,6 +89909,131 @@
         }
       }
     },
+    "error.encryptedNoKey" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objekt je zašifrovaný, ale pro tento bucket není nastaven žádný klíč."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objektet er krypteret, men der er ikke konfigureret nogen nøgle til denne bucket."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Objekt ist verschlüsselt, aber für diesen Bucket ist kein Schlüssel hinterlegt."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το αντικείμενο είναι κρυπτογραφημένο, αλλά δεν έχει ρυθμιστεί κλειδί για αυτό το bucket."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The object is encrypted, but no key is configured for this bucket."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The object is encrypted, but no key is configured for this bucket."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El objeto está cifrado, pero no hay ninguna clave configurada para este bucket."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objekti on salattu, mutta tälle bucketille ei ole määritetty avainta."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’objet est chiffré, mais aucune clé n’est configurée pour ce bucket."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Az objektum titkosított, de ehhez a buckethez nincs beállítva kulcs."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’oggetto è crittografato, ma per questo bucket non è configurata alcuna chiave."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オブジェクトは暗号化されていますが、このバケットには暗号鍵が設定されていません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "객체가 암호화되어 있지만 이 버킷에 구성된 키가 없습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objektet er kryptert, men ingen nøkkel er konfigurert for denne bucketen."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het object is versleuteld, maar er is geen sleutel geconfigureerd voor deze bucket."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obiekt jest zaszyfrowany, ale dla tego bucketu nie skonfigurowano klucza."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O objeto está criptografado, mas nenhuma chave está configurada para este bucket."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O objeto está encriptado, mas não há nenhuma chave configurada para este bucket."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Объект зашифрован, но для этого бакета не настроен ключ."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objektet är krypterat, men ingen nyckel är konfigurerad för denna bucket."
+          }
+        }
+      }
+    },
     "error.encryptionKeyRemoved" : {
       "extractionState" : "manual",
       "localizations" : {

@@ -381,7 +381,6 @@ actor SyncEngine {
         // run's uploads need a key, so a key removed afterwards makes
         // them fail instead of store plaintext.
         let destinationState = await destinationKeyState(job)
-        let destinationRequiresKey = destinationState.requiresEncryption
         if !job.allowsDecryptedCopies, await storesDecryptedCopies(job, destination: destinationState) {
             updateStatus(id: job.id, run: token, phase: .failed, message: String(
                 localized: "sync.error.encryptedToPlain",
@@ -394,7 +393,7 @@ actor SyncEngine {
         }
         let context: SyncRunContext
         do {
-            context = try await resolveContext(for: job, destinationRequiresKey: destinationRequiresKey)
+            context = try await resolveContext(for: job, destinationState: destinationState)
         } catch {
             updateStatus(
                 id: job.id,
@@ -644,19 +643,19 @@ actor SyncEngine {
     struct SyncRunContext: Sendable {
         let source: EndpointContext
         let destination: EndpointContext
-        /// The destination bucket had a key when the run started.
-        let destinationRequiresKey: Bool
+        /// The destination key state observed at preflight.
+        let destinationState: BucketEncryptionGate.KeyState
     }
 
     /// Resolve both sides of the job into the runtime context the rest
     /// of the engine needs: S3 sides get an `S3Account`, local sides
     /// get a security-scoped URL with the scope already started.
-    private func resolveContext(for job: SyncJob, destinationRequiresKey: Bool) async throws -> SyncRunContext {
+    private func resolveContext(for job: SyncJob, destinationState: BucketEncryptionGate.KeyState) async throws -> SyncRunContext {
         let accounts = try await accountStore.all()
         return SyncRunContext(
             source: try resolveEndpointContext(for: job.source, accounts: accounts),
             destination: try resolveEndpointContext(for: job.destination, accounts: accounts),
-            destinationRequiresKey: destinationRequiresKey
+            destinationState: destinationState
         )
     }
 
@@ -833,7 +832,7 @@ actor SyncEngine {
                 destinationBucket: dstBucket,
                 sourceAccount: context.source.account,
                 destinationAccount: context.destination.account,
-                requiresEncryption: context.destinationRequiresKey
+                destinationState: context.destinationState
             )
 
         case (.s3(_, let srcBucket, _), .localFolder):
@@ -858,7 +857,7 @@ actor SyncEngine {
                 sourceRoot: sourceRoot,
                 destinationAccount: destinationAccount,
                 destinationBucket: dstBucket,
-                requiresEncryption: context.destinationRequiresKey
+                destinationState: context.destinationState
             )
 
         case (.localFolder, .localFolder):
@@ -902,7 +901,7 @@ actor SyncEngine {
         destinationBucket: String,
         sourceAccount: S3Account?,
         destinationAccount: S3Account?,
-        requiresEncryption: Bool
+        destinationState: BucketEncryptionGate.KeyState
     ) async throws {
         guard let sourceAccount, let destinationAccount else {
             throw BucketeerError.unknown(message: String(localized: "sync.error.contextIncomplete"))
@@ -946,7 +945,8 @@ actor SyncEngine {
             localURL: staging,
             contentType: nil,
             bypassEncryption: false,
-            requiresEncryption: requiresEncryption
+            requiresEncryption: destinationState.requiresEncryption,
+            destinationHadKey: destinationState == .encrypted
         )
         registerActiveTransfer(run: token, transferID: uploadID)
         defer { unregisterActiveTransfer(run: token, transferID: uploadID) }
@@ -993,7 +993,7 @@ actor SyncEngine {
         sourceRoot: URL,
         destinationAccount: S3Account,
         destinationBucket: String,
-        requiresEncryption: Bool
+        destinationState: BucketEncryptionGate.KeyState
     ) async throws {
         // Path-traversal guard: even on the local
         // *source* side, a malicious sync-job definition could carry
@@ -1013,7 +1013,8 @@ actor SyncEngine {
             localURL: sourceFile,
             contentType: nil,
             bypassEncryption: false,
-            requiresEncryption: requiresEncryption
+            requiresEncryption: destinationState.requiresEncryption,
+            destinationHadKey: destinationState == .encrypted
         )
         registerActiveTransfer(run: token, transferID: uploadID)
         defer { unregisterActiveTransfer(run: token, transferID: uploadID) }

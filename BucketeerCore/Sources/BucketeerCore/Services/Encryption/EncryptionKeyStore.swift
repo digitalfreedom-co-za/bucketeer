@@ -176,7 +176,7 @@ public actor EncryptionKeyStore: EncryptionKeyStoring {
         var item: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &item)
         if status == errSecItemNotFound {
-            throw BucketeerError.unknown(message: String(localized: "encryption.error.keyRemoved", bundle: .module))
+            throw EncryptionError.keyRemoved
         }
         if status != errSecSuccess {
             throw BucketeerError.keychainFailure(status: status)

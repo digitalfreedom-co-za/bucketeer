@@ -84,7 +84,6 @@ final class CrossAccountCopyCoordinator {
         let destinationState = await encryptionGate?.keyState(
             accountID: destinationAccount.id, bucket: destinationBucket
         ) ?? .plain
-        let destinationRequiresKey = destinationState.requiresEncryption
         if !allowsDecryptedCopies, await encryptionGate?.isEncryptedToPlain(
             sourceAccountID: sourceAccount.id, sourceBucket: sourceBucket,
             destinationAccountID: destinationAccount.id, destinationBucket: destinationBucket,
@@ -144,7 +143,7 @@ final class CrossAccountCopyCoordinator {
                         destinationAccount: destinationAccount,
                         destinationBucket: destinationBucket,
                         destinationKey: destinationKey,
-                        requiresEncryption: destinationRequiresKey
+                        destinationState: destinationState
                     )
                 }
                 if let movedVersion, try await !browser.deleteIfUnchanged(
@@ -286,7 +285,7 @@ final class CrossAccountCopyCoordinator {
         destinationAccount: S3Account,
         destinationBucket: String,
         destinationKey: String,
-        requiresEncryption: Bool
+        destinationState: BucketEncryptionGate.KeyState
     ) async throws {
         // Keep the plaintext staging
         // file inside the App-private Application Support directory
@@ -339,7 +338,8 @@ final class CrossAccountCopyCoordinator {
             localURL: temp,
             contentType: nil,
             bypassEncryption: false,
-            requiresEncryption: requiresEncryption
+            requiresEncryption: destinationState.requiresEncryption,
+            destinationHadKey: destinationState == .encrypted
         )
         let uploadState = await transferManager.awaitCompletion(id: uploadID)
         switch uploadState {
