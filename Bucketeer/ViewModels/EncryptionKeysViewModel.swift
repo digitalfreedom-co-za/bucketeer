@@ -158,13 +158,17 @@ final class EncryptionKeysViewModel {
     }
 }
 
-/// S3 bucket naming rules for a manually entered bucket: 3–63
-/// characters of lowercase letters, digits, dots and hyphens, starting
-/// and ending with a letter or digit.
+/// S3 general-purpose bucket naming rules for a manually entered
+/// bucket: 3–63 characters of lowercase letters, digits, dots and
+/// hyphens, starting and ending with a letter or digit, no adjacent
+/// dots, not an IP address and none of the reserved prefixes and
+/// suffixes.
 enum S3BucketName {
     private static let allowedCharacters = Set("abcdefghijklmnopqrstuvwxyz0123456789.-")
     private static let edgeCharacters = Set("abcdefghijklmnopqrstuvwxyz0123456789")
     private static let lengthRange = 3...63
+    private static let reservedPrefixes = ["xn--", "sthree-", "amzn-s3-demo-"]
+    private static let reservedSuffixes = ["-s3alias", "--ol-s3", ".mrap", "--x-s3", "--table-s3"]
 
     static func isValid(_ name: String) -> Bool {
         guard lengthRange.contains(name.count),
@@ -173,5 +177,14 @@ enum S3BucketName {
         return name.allSatisfy(allowedCharacters.contains)
             && edgeCharacters.contains(first)
             && edgeCharacters.contains(last)
+            && !name.contains("..")
+            && !isIPAddress(name)
+            && !reservedPrefixes.contains { name.hasPrefix($0) }
+            && !reservedSuffixes.contains { name.hasSuffix($0) }
+    }
+
+    private static func isIPAddress(_ name: String) -> Bool {
+        let parts = name.split(separator: ".", omittingEmptySubsequences: false)
+        return parts.count == 4 && parts.allSatisfy { !$0.isEmpty && $0.allSatisfy(\.isNumber) }
     }
 }
