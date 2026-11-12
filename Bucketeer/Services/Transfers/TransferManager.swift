@@ -57,6 +57,10 @@ actor TransferManager: Transferring {
         /// Set on the trash restore of a cached envelope: the bytes are
         /// already sealed and must not be sealed a second time.
         var bypassEncryption: Bool = false
+        /// Set on round-trip uploads into a bucket that had a key when
+        /// the copy started: without a key at upload time the transfer
+        /// fails instead of storing plaintext.
+        var requiresEncryption: Bool = false
         /// Condition the server must check before it accepts the write
         /// (Open With round-trip). `nil` = unconditional.
         var precondition: WritePrecondition? = nil
@@ -80,6 +84,7 @@ actor TransferManager: Transferring {
                 fileSize: fileSize ?? self.fileSize,
                 bypassDecryption: bypassDecryption,
                 bypassEncryption: bypassEncryption,
+                requiresEncryption: requiresEncryption,
                 precondition: precondition
             )
         }
@@ -190,8 +195,9 @@ actor TransferManager: Transferring {
     }
 
     /// Variant for the trash restore, which re-uploads an object's raw
-    /// bytes. Outside the protocol for the same reason as the
-    /// `bypassDecryption` download variant.
+    /// bytes, and for round trips that must not store plaintext
+    /// (`requiresEncryption`). Outside the protocol for the same reason
+    /// as the `bypassDecryption` download variant.
     @discardableResult
     func enqueueUpload(
         account: S3Account,
@@ -200,6 +206,7 @@ actor TransferManager: Transferring {
         localURL: URL,
         contentType: String?,
         bypassEncryption: Bool,
+        requiresEncryption: Bool = false,
         precondition: WritePrecondition? = nil
     ) async -> UUID {
         let id = UUID()
@@ -221,6 +228,7 @@ actor TransferManager: Transferring {
             contentType: contentType,
             fileSize: fileSize,
             bypassEncryption: bypassEncryption,
+            requiresEncryption: requiresEncryption,
             precondition: precondition
         )
         order.append(id)
@@ -446,6 +454,16 @@ actor TransferManager: Transferring {
             )?.key
         } catch {
             setState(id: id, state: .failed(message: errorMessage(error)))
+            return
+        }
+        if item.requiresEncryption, encryptionKey == nil, !item.bypassEncryption {
+            setState(id: id, state: .failed(message: String(
+                localized: "error.encryptionKeyRemoved",
+                defaultValue: """
+                The destination bucket had an encryption key when the transfer started, but the key has \
+                been removed. The file was not uploaded.
+                """
+            )))
             return
         }
         if let key = encryptionKey {

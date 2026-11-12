@@ -8,9 +8,10 @@
 import XCTest
 import BucketeerCore
 
-/// Rules: every observer of the queue sees every terminal state, and a
+/// Rules: every observer of the queue sees every terminal state, a
 /// cancelled transfer reports completion only once its worker stopped
-/// using the file. Azure requests go to a stub that refuses them; the
+/// using the file, and an upload that needs a key never goes out
+/// without one. Azure requests go to a stub that refuses them; the
 /// Keychain and key store are in memory.
 final class TransferManagerLifecycleTests: XCTestCase {
     private let account = S3Account(name: "Test", provider: .azureBlob, accountID: "teststorage")
@@ -72,6 +73,48 @@ final class TransferManagerLifecycleTests: XCTestCase {
         XCTAssertEqual(state, .cancelled)
     }
 
+    func testUploadIntoABucketWhoseKeyWasRemovedAfterThePreflightSendsNothing() async throws {
+        let keyStore = InMemoryEncryptionKeyStore(encryptedBuckets: [(account.id, "vault"), (account.id, "keyed")])
+        let gate = BucketEncryptionGate(keyStore: keyStore)
+        let manager = try await makeManager(encryptionGate: gate)
+        let file = folder.appendingPathComponent("plain.txt")
+        try Data("plaintext".utf8).write(to: file)
+        // The preflight lookup of the destination fails; the consent
+        // check reuses that state, while a later lookup finds the key.
+        await keyStore.failNextLookups(1)
+        let destination = await gate.keyState(accountID: account.id, bucket: "keyed")
+        let asksForConsent = await gate.isEncryptedToPlain(
+            sourceAccountID: account.id, sourceBucket: "vault",
+            destinationAccountID: account.id, destinationBucket: "keyed",
+            destination: destination
+        )
+        let laterLookup = await gate.keyState(accountID: account.id, bucket: "keyed")
+        let requiresKey = destination.requiresEncryption
+        for key in await keyStore.all() where key.bucket == "keyed" {
+            await keyStore.delete(id: key.id)
+        }
+        await gate.invalidate(accountID: account.id, bucket: "keyed")
+
+        let refused = await manager.enqueueUpload(account: account, bucket: "keyed", key: "refused.txt",
+                                                  localURL: file, contentType: nil,
+                                                  bypassEncryption: false, requiresEncryption: requiresKey)
+        let refusedState = await manager.awaitCompletion(id: refused)
+        let unrequired = await manager.enqueueUpload(account: account, bucket: "keyed", key: "unrequired.txt",
+                                                     localURL: file, contentType: nil)
+        _ = await manager.awaitCompletion(id: unrequired)
+
+        XCTAssertEqual(destination, .unknown)
+        XCTAssertTrue(asksForConsent, "an unreadable destination may have no key")
+        XCTAssertEqual(laterLookup, .encrypted)
+        XCTAssertTrue(requiresKey, "a failed lookup must not drop the key requirement")
+        XCTAssertEqual(refusedState, .failed(message: """
+        The destination bucket had an encryption key when the transfer started, but the key has \
+        been removed. The file was not uploaded.
+        """))
+        XCTAssertFalse(RefusingAzureStub.requested(blob: "refused.txt"), "no byte may reach the bucket")
+        XCTAssertTrue(RefusingAzureStub.requested(blob: "unrequired.txt"), "uploads without the requirement still go out")
+    }
+
     // MARK: - Helpers
 
     private func makeManager(encryptionGate: BucketEncryptionGate? = nil) async throws -> TransferManager {
@@ -108,13 +151,24 @@ private actor Flag {
     func set() { isSet = true }
 }
 
-/// Answers every Azure request with a server error.
+/// Answers every Azure request with a server error and remembers the
+/// requested paths.
 private final class RefusingAzureStub: URLProtocol {
+    private static let lock = NSLock()
+    nonisolated(unsafe) private static var paths: [String] = []
+
+    static func requested(blob: String) -> Bool {
+        lock.withLock { paths.contains { $0.hasSuffix("/" + blob) } }
+    }
+
     override class func canInit(with request: URLRequest) -> Bool { true }
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
     override func stopLoading() {}
 
     override func startLoading() {
+        if let path = request.url?.path {
+            Self.lock.withLock { Self.paths.append(path) }
+        }
         let response = HTTPURLResponse(url: request.url!, statusCode: 500, httpVersion: "HTTP/1.1",
                                        headerFields: ["x-ms-error-code": "InternalError"])!
         client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)

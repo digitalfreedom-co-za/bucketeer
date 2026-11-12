@@ -377,9 +377,24 @@ actor SyncEngine {
             }
         }
 
+        // One lookup decides both the consent check and whether this
+        // run's uploads need a key, so a key removed afterwards makes
+        // them fail instead of store plaintext.
+        let destinationState = await destinationKeyState(job)
+        let destinationRequiresKey = destinationState.requiresEncryption
+        if !job.allowsDecryptedCopies, await storesDecryptedCopies(job, destination: destinationState) {
+            updateStatus(id: job.id, run: token, phase: .failed, message: String(
+                localized: "sync.error.encryptedToPlain",
+                defaultValue: """
+                The source bucket is encrypted, but the destination bucket has no encryption key. \
+                Turn on “Store unencrypted copies of encrypted files” in the job to allow this sync.
+                """
+            ))
+            return
+        }
         let context: SyncRunContext
         do {
-            context = try await resolveContext(for: job)
+            context = try await resolveContext(for: job, destinationRequiresKey: destinationRequiresKey)
         } catch {
             updateStatus(
                 id: job.id,
@@ -629,16 +644,19 @@ actor SyncEngine {
     struct SyncRunContext: Sendable {
         let source: EndpointContext
         let destination: EndpointContext
+        /// The destination bucket had a key when the run started.
+        let destinationRequiresKey: Bool
     }
 
     /// Resolve both sides of the job into the runtime context the rest
     /// of the engine needs: S3 sides get an `S3Account`, local sides
     /// get a security-scoped URL with the scope already started.
-    private func resolveContext(for job: SyncJob) async throws -> SyncRunContext {
+    private func resolveContext(for job: SyncJob, destinationRequiresKey: Bool) async throws -> SyncRunContext {
         let accounts = try await accountStore.all()
         return SyncRunContext(
             source: try resolveEndpointContext(for: job.source, accounts: accounts),
-            destination: try resolveEndpointContext(for: job.destination, accounts: accounts)
+            destination: try resolveEndpointContext(for: job.destination, accounts: accounts),
+            destinationRequiresKey: destinationRequiresKey
         )
     }
 
@@ -814,7 +832,8 @@ actor SyncEngine {
                 sourceBucket: srcBucket,
                 destinationBucket: dstBucket,
                 sourceAccount: context.source.account,
-                destinationAccount: context.destination.account
+                destinationAccount: context.destination.account,
+                requiresEncryption: context.destinationRequiresKey
             )
 
         case (.s3(_, let srcBucket, _), .localFolder):
@@ -838,7 +857,8 @@ actor SyncEngine {
                 run: token,
                 sourceRoot: sourceRoot,
                 destinationAccount: destinationAccount,
-                destinationBucket: dstBucket
+                destinationBucket: dstBucket,
+                requiresEncryption: context.destinationRequiresKey
             )
 
         case (.localFolder, .localFolder):
@@ -853,13 +873,36 @@ actor SyncEngine {
         }
     }
 
+    /// Bucket-to-bucket job whose source is encrypted and whose
+    /// destination has no key: the round trip would store plaintext.
+    private func storesDecryptedCopies(_ job: SyncJob, destination: BucketEncryptionGate.KeyState) async -> Bool {
+        guard let encryptionGate,
+              case let .s3(sourceAccountID, sourceBucket, _) = job.source,
+              case let .s3(destinationAccountID, destinationBucket, _) = job.destination
+        else { return false }
+        return await encryptionGate.isEncryptedToPlain(
+            sourceAccountID: sourceAccountID,
+            sourceBucket: sourceBucket,
+            destinationAccountID: destinationAccountID,
+            destinationBucket: destinationBucket,
+            destination: destination
+        )
+    }
+
+    /// Key state of the job's destination bucket; a local folder is plain.
+    private func destinationKeyState(_ job: SyncJob) async -> BucketEncryptionGate.KeyState {
+        guard let encryptionGate, case let .s3(accountID, bucket, _) = job.destination else { return .plain }
+        return await encryptionGate.keyState(accountID: accountID, bucket: bucket)
+    }
+
     private func executeS3ToS3(
         entry: SyncPlanner.PlanEntry,
         run token: UUID,
         sourceBucket: String,
         destinationBucket: String,
         sourceAccount: S3Account?,
-        destinationAccount: S3Account?
+        destinationAccount: S3Account?,
+        requiresEncryption: Bool
     ) async throws {
         guard let sourceAccount, let destinationAccount else {
             throw BucketeerError.unknown(message: "Sync context incomplete.")
@@ -901,7 +944,9 @@ actor SyncEngine {
             bucket: destinationBucket,
             key: entry.destinationKey,
             localURL: staging,
-            contentType: nil
+            contentType: nil,
+            bypassEncryption: false,
+            requiresEncryption: requiresEncryption
         )
         registerActiveTransfer(run: token, transferID: uploadID)
         defer { unregisterActiveTransfer(run: token, transferID: uploadID) }
@@ -947,7 +992,8 @@ actor SyncEngine {
         run token: UUID,
         sourceRoot: URL,
         destinationAccount: S3Account,
-        destinationBucket: String
+        destinationBucket: String,
+        requiresEncryption: Bool
     ) async throws {
         // Path-traversal guard: even on the local
         // *source* side, a malicious sync-job definition could carry
@@ -965,7 +1011,9 @@ actor SyncEngine {
             bucket: destinationBucket,
             key: entry.destinationKey,
             localURL: sourceFile,
-            contentType: nil
+            contentType: nil,
+            bypassEncryption: false,
+            requiresEncryption: requiresEncryption
         )
         registerActiveTransfer(run: token, transferID: uploadID)
         defer { unregisterActiveTransfer(run: token, transferID: uploadID) }

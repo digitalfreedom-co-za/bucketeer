@@ -14,11 +14,14 @@ struct CrossAccountCopySheet: View {
     let sourceBucket: String
     let keys: [String]
     let accounts: [S3Account]
+    /// Whether the copy would store decrypted files in a bucket without a key.
+    let isEncryptedToPlain: @Sendable (_ destAccount: S3Account, _ destBucket: String) async -> Bool
     let onSubmit: @Sendable (
         _ destAccount: S3Account,
         _ destBucket: String,
         _ destPrefix: String,
-        _ keepSource: Bool
+        _ keepSource: Bool,
+        _ allowsDecryptedCopies: Bool
     ) async -> [(key: String, error: BucketeerError?)]
 
     @Environment(\.dismiss) private var dismiss
@@ -28,6 +31,7 @@ struct CrossAccountCopySheet: View {
     @State private var keepSource: Bool = true
     @State private var inFlight: Bool = false
     @State private var resultSummary: String?
+    @State private var confirmingUnencryptedCopy = false
 
     var body: some View {
         NavigationStack {
@@ -97,6 +101,15 @@ struct CrossAccountCopySheet: View {
             }
         }
         .frame(minWidth: 520, minHeight: 460)
+        .alert("encryption.plainCopy.title", isPresented: $confirmingUnencryptedCopy) {
+            Button("action.cancel", role: .cancel) {}
+                .keyboardShortcut(.defaultAction)
+            Button("encryption.plainCopy.confirm", role: .destructive) {
+                Task { await copy(allowsDecryptedCopies: true) }
+            }
+        } message: {
+            Text("encryption.plainCopy.message \(sourceBucket) \(trimmedDestinationBucket)")
+        }
     }
 
     // MARK: - Helpers
@@ -106,19 +119,37 @@ struct CrossAccountCopySheet: View {
     }
 
     private var isValid: Bool {
-        selectedAccount != nil
-            && !destinationBucket.trimmingCharacters(in: .whitespaces).isEmpty
+        selectedAccount != nil && !trimmedDestinationBucket.isEmpty
     }
 
+    private var trimmedDestinationBucket: String {
+        destinationBucket.trimmingCharacters(in: .whitespaces)
+    }
+
+    /// Asks once for the whole selection before anything is decrypted
+    /// into a bucket without a key.
     private func submit() async {
+        guard let selectedAccount else { return }
+        inFlight = true
+        let needsConfirmation = await isEncryptedToPlain(selectedAccount, trimmedDestinationBucket)
+        inFlight = false
+        if needsConfirmation {
+            confirmingUnencryptedCopy = true
+        } else {
+            await copy(allowsDecryptedCopies: false)
+        }
+    }
+
+    private func copy(allowsDecryptedCopies: Bool) async {
         guard let selectedAccount else { return }
         inFlight = true
         defer { inFlight = false }
         let outcomes = await onSubmit(
             selectedAccount,
-            destinationBucket.trimmingCharacters(in: .whitespaces),
+            trimmedDestinationBucket,
             destinationPrefix.trimmingCharacters(in: .whitespaces),
-            keepSource
+            keepSource,
+            allowsDecryptedCopies
         )
         let failed = outcomes.filter { $0.error != nil }
         if failed.isEmpty {
