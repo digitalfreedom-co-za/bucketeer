@@ -90790,121 +90790,121 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Will be encrypted"
+            "value" : "Encryption expected"
           }
         },
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bude zašifrováno"
+            "value" : "Očekává se šifrování"
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bliver krypteret"
+            "value" : "Kryptering forventes"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wird verschlüsselt"
+            "value" : "Verschlüsselung erwartet"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Θα κρυπτογραφηθεί"
+            "value" : "Αναμένεται κρυπτογράφηση"
           }
         },
         "en-GB" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Will be encrypted"
+            "value" : "Encryption expected"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Se cifrará"
+            "value" : "Cifrado previsto"
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Salataan"
+            "value" : "Salaus odotettavissa"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sera chiffré"
+            "value" : "Chiffrement prévu"
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Titkosítva lesz"
+            "value" : "Titkosítás várható"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Verrà crittografato"
+            "value" : "Crittografia prevista"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "暗号化予定"
+            "value" : "暗号化見込み"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "암호화 예정"
+            "value" : "암호화 예상"
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Blir kryptert"
+            "value" : "Kryptering forventet"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wordt versleuteld"
+            "value" : "Versleuteling verwacht"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zostanie zaszyfrowany"
+            "value" : "Szyfrowanie oczekiwane"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Será criptografado"
+            "value" : "Criptografia prevista"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Será encriptado"
+            "value" : "Encriptação prevista"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Будет зашифровано"
+            "value" : "Ожидается шифрование"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kommer att krypteras"
+            "value" : "Kryptering förväntas"
           }
         }
       }

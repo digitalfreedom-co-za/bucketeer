@@ -140,7 +140,8 @@ struct ContentView: View {
     @ViewBuilder
     private var contentPane: some View {
         if case .transfersRoot = sidebarSelection {
-            TransferListView(viewModel: container.transferQueueViewModel)
+            TransferListView(viewModel: container.transferQueueViewModel,
+                             encryptionKeys: container.encryptionKeysViewModel)
         } else if case .syncRoot = sidebarSelection {
             SyncJobListView(viewModel: container.syncJobListViewModel)
         } else {

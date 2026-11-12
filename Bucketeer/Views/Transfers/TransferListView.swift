@@ -10,6 +10,7 @@ import BucketeerCore
 
 struct TransferListView: View {
     @Bindable var viewModel: TransferQueueViewModel
+    let encryptionKeys: EncryptionKeysViewModel
 
     var body: some View {
         Group {
@@ -39,7 +40,7 @@ struct TransferListView: View {
     private var list: some View {
         List {
             ForEach(viewModel.tasks) { task in
-                TransferRow(task: task) {
+                TransferRow(task: task, encryptionKeys: encryptionKeys) {
                     Task { await viewModel.cancel(task.id) }
                 }
             }
@@ -50,6 +51,7 @@ struct TransferListView: View {
 
 private struct TransferRow: View {
     let task: TransferTask
+    let encryptionKeys: EncryptionKeysViewModel
     let onCancel: () -> Void
 
     var body: some View {
@@ -65,7 +67,7 @@ private struct TransferRow: View {
                             .font(.callout)
                             .lineLimit(1)
                             .truncationMode(.middle)
-                        UploadEncryptionBadge(task: task)
+                        UploadEncryptionBadge(task: task, encryptionKeys: encryptionKeys)
                             .font(.caption)
                     }
                     Text("\(task.bucket)/\(task.key)")

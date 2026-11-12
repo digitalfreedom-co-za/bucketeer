@@ -26,10 +26,12 @@ struct EncryptedBadge: View {
 
 /// Encryption marker of an upload row. The bucket's key state comes
 /// from the in-memory key list, so rows never hit the Keychain and a
-/// queued row follows key creation, deletion and reassignment.
+/// queued row follows key creation, deletion and reassignment. The key
+/// list is passed in rather than read from the environment, so a host
+/// that forgets to inject the container cannot crash the row.
 struct UploadEncryptionBadge: View {
-    @Environment(AppContainer.self) private var container
     let task: TransferTask
+    let encryptionKeys: EncryptionKeysViewModel
 
     var body: some View {
         switch task.encryptionMarker(bucketHasKey: bucketHasKey) {
@@ -47,7 +49,7 @@ struct UploadEncryptionBadge: View {
     }
 
     private var bucketHasKey: Bool {
-        container.encryptionKeysViewModel.isEncrypted(accountID: task.accountID, bucket: task.bucket)
+        encryptionKeys.isEncrypted(accountID: task.accountID, bucket: task.bucket)
     }
 }
 
