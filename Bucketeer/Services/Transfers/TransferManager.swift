@@ -444,19 +444,23 @@ actor TransferManager: Transferring {
         }
 
         // Phase 13.15 — if the destination bucket has a BYOK key
-        // registered, seal the file into a sandboxed temp envelope
-        // first and rewrite QueuedItem to point at it. The rest of
-        // the upload pipeline (Soto helper / resumable / multipart /
-        // single PUT) sees the encrypted file as if it were the
-        // user-selected one.
+        // registered, seal the file segment by segment (#39) into a
+        // private temp envelope first and rewrite QueuedItem to point at
+        // it. The rest of the upload pipeline (single PUT / multipart)
+        // sees the encrypted file as if it were the user-selected one.
         var item = item
         var encryptionCleanup: URL? = nil
-        let encryptionKey: SymmetricKey?
+        defer {
+            if let encryptionCleanup {
+                try? FileManager.default.removeItem(at: encryptionCleanup)
+            }
+        }
+        let encryptionKey: SendableSymmetricKey?
         do {
             encryptionKey = item.bypassEncryption ? nil : try await encryptionGate?.uploadKey(
                 accountID: item.account.id,
                 bucket: item.task.bucket
-            )?.key
+            )
         } catch EncryptionError.backupNotConfirmed {
             setState(id: id, state: .failed(message: EncryptionError.backupNotConfirmed.localizedDescription))
             return
@@ -479,21 +483,18 @@ actor TransferManager: Transferring {
         markEncrypted(id: id, encrypted)
         if let key = encryptionKey {
             do {
-                let plaintext = try Data(contentsOf: url, options: .mappedIfSafe)
-                let envelope = try BucketeerEnvelope.seal(plaintext: plaintext, key: key)
-                let temp = FileManager.default.temporaryDirectory
-                    .appendingPathComponent("bucketeer-enc-\(UUID().uuidString).bin")
-                try envelope.write(to: temp, options: .atomic)
-                item = item.with(localURL: temp, fileSize: Int64(envelope.count))
-                encryptionCleanup = temp
+                let directory = try Self.makeEncryptionDirectory()
+                encryptionCleanup = directory
+                let envelope = directory.appendingPathComponent("payload.bckt", isDirectory: false)
+                let size = try await Self.seal(url, to: envelope, key: key)
+                item = item.with(localURL: envelope, fileSize: size)
             } catch {
-                setState(id: id, state: .failed(message: errorMessage(error)))
+                if error is CancellationError || Task.isCancelled {
+                    setState(id: id, state: .cancelled)
+                } else {
+                    setState(id: id, state: .failed(message: errorMessage(error)))
+                }
                 return
-            }
-        }
-        defer {
-            if let temp = encryptionCleanup {
-                try? FileManager.default.removeItem(at: temp)
             }
         }
 
@@ -513,7 +514,14 @@ actor TransferManager: Transferring {
         }
 
         do {
+            // Freshly sealed envelopes skip the resumable path: a resume
+            // needs the identical ciphertext, but every attempt seals
+            // with a new random salt into a temp file that is deleted
+            // afterwards, so its checkpoint could never match again and
+            // would only strand parts on the server. The multipart path
+            // below reads part by part and aborts on failure.
             if item.precondition == nil,
+               encryptionKey == nil,
                item.fileSize >= S3ResumableUploader.resumableThreshold,
                let resumableUploader {
                 // Phase 13.10 — files large enough that an interruption
@@ -610,7 +618,8 @@ actor TransferManager: Transferring {
             }
             if let failure = await finalizeDownloadDecryption(item: staged, marked: marked) {
                 StagedDownload.discard(staging)
-                setState(id: id, state: .failed(message: failure))
+                // Decryption checks for cancellation once per segment.
+                setState(id: id, state: Task.isCancelled ? .cancelled : .failed(message: failure))
                 return
             }
             // A cancel during decryption must not replace the file.
@@ -760,13 +769,15 @@ actor TransferManager: Transferring {
     private func finalizeDownloadDecryption(item: QueuedItem, marked: Bool) async -> String? {
         do {
             if item.bypassDecryption {
-                _ = try Data(contentsOf: item.task.localURL, options: .mappedIfSafe)
+                // Only prove the staged file is readable; trash payloads can
+                // reach gigabytes and must not be loaded into memory.
+                try FileHandle(forReadingFrom: item.task.localURL).close()
                 return nil
             }
             let key = try await encryptionGate?.sendableKey(
                 accountID: item.account.id, bucket: item.task.bucket
-            )?.key
-            try BucketeerEnvelope.finalizeDownload(at: item.task.localURL, marked: marked, key: key)
+            )
+            try await Self.decrypt(item.task.localURL, marked: marked, key: key)
             return nil
         } catch {
             return encryptionErrorMessage(error)
@@ -778,11 +789,56 @@ actor TransferManager: Transferring {
     func cachedPayloadIsEncrypted(at url: URL, marked: Bool, accountID: UUID, bucket: String) async throws -> Bool {
         if marked { return true }
         // Without a key the upload never encrypts, so the restore is byte-exact.
-        guard let key = try await encryptionGate?.sendableKey(accountID: accountID, bucket: bucket)?.key else {
+        guard let key = try await encryptionGate?.sendableKey(accountID: accountID, bucket: bucket) else {
             return false
         }
-        let data = try Data(contentsOf: url, options: .mappedIfSafe)
-        return try BucketeerEnvelope.decryptedPayload(data, marked: marked, key: key) != nil
+        return try await Self.isEncrypted(url, marked: marked, key: key)
+    }
+
+    // Envelope work runs off the actor: sealing or decrypting gigabytes
+    // must not stall the progress updates of the other transfers.
+
+    /// A fresh owner-only folder for one upload's envelope, removed with
+    /// the upload whatever its outcome.
+    private static func makeEncryptionDirectory() throws -> URL {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("BucketeerEncryptedUploads", isDirectory: true)
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true,
+                                                attributes: [.posixPermissions: 0o700])
+        return directory
+    }
+
+    /// Seals `source` into `envelope` and returns the envelope's size.
+    private static func seal(_ source: URL, to envelope: URL, key: SendableSymmetricKey) async throws -> Int64 {
+        try await offActor {
+            try BucketeerEnvelope.sealFile(at: source, to: envelope, key: key.key)
+            let size = try FileManager.default.attributesOfItem(atPath: envelope.path)[.size] as? NSNumber
+            return size?.int64Value ?? 0
+        }
+    }
+
+    private static func decrypt(_ url: URL, marked: Bool, key: SendableSymmetricKey?) async throws {
+        try await offActor {
+            try BucketeerEnvelope.finalizeDownload(at: url, marked: marked, key: key?.key)
+        }
+    }
+
+    private static func isEncrypted(_ url: URL, marked: Bool, key: SendableSymmetricKey) async throws -> Bool {
+        try await offActor {
+            try BucketeerEnvelope.payloadIsEncrypted(at: url, marked: marked, key: key.key)
+        }
+    }
+
+    /// Runs synchronous work on the global executor and forwards
+    /// cancellation, which the envelope codec checks once per segment.
+    private static func offActor<T: Sendable>(_ work: @escaping @Sendable () throws -> T) async throws -> T {
+        let task = Task.detached(priority: .utility) { try work() }
+        return try await withTaskCancellationHandler {
+            try await task.value
+        } onCancel: {
+            task.cancel()
+        }
     }
 
     private func encryptionErrorMessage(_ error: Error) -> String {
