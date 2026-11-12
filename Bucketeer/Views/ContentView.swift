@@ -58,14 +58,11 @@ struct ContentView: View {
         }
         .alert(
             "encryption.plainCopy.title",
-            isPresented: Binding(
-                get: { container.dragDropCoordinator.pendingUnencryptedDrop != nil },
-                set: { if !$0 { container.dragDropCoordinator.pendingUnencryptedDrop = nil } }
-            ),
-            presenting: container.dragDropCoordinator.pendingUnencryptedDrop
+            isPresented: unencryptedDropAlertPresented,
+            presenting: container.dragDropCoordinator.pendingUnencryptedDrops.first
         ) { drop in
             Button("action.cancel", role: .cancel) {
-                container.dragDropCoordinator.pendingUnencryptedDrop = nil
+                container.dragDropCoordinator.discardUnencryptedDrop(drop)
             }
             .keyboardShortcut(.defaultAction)
             Button("encryption.plainCopy.confirm", role: .destructive) {
@@ -126,6 +123,18 @@ struct ContentView: View {
         } message: { entry in
             Text(container.openWithController.recoveryMessage(for: entry))
         }
+    }
+
+    /// Dismissing discards only the drop the alert was built for: the
+    /// confirm task may already have removed it, and the next pending
+    /// drop must stay for its own alert.
+    private var unencryptedDropAlertPresented: Binding<Bool> {
+        let coordinator = container.dragDropCoordinator
+        let shown = coordinator.pendingUnencryptedDrops.first
+        return Binding(
+            get: { !coordinator.pendingUnencryptedDrops.isEmpty },
+            set: { if !$0, let shown { coordinator.discardUnencryptedDrop(shown) } }
+        )
     }
 
     @ViewBuilder

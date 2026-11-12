@@ -23,11 +23,13 @@ final class DragDropCoordinator {
     /// Most recent drop failure, surfaced via an alert in `ContentView`.
     /// Cleared by the alert's dismiss button.
     var lastError: BucketeerError?
-    /// A drop that would store decrypted copies in a bucket without a
-    /// key. `ContentView` asks the user and calls `confirmUnencryptedDrop`.
-    var pendingUnencryptedDrop: PendingUnencryptedDrop?
+    /// Drops that would store decrypted copies in a bucket without a
+    /// key, oldest first. `ContentView` asks about the first and calls
+    /// `confirmUnencryptedDrop` or `discardUnencryptedDrop`.
+    private(set) var pendingUnencryptedDrops: [PendingUnencryptedDrop] = []
 
-    struct PendingUnencryptedDrop {
+    struct PendingUnencryptedDrop: Identifiable {
+        let id = UUID()
         let refs: [S3ObjectRef]
         let sourceBucket: String
         let destinationAccount: S3Account
@@ -92,34 +94,45 @@ final class DragDropCoordinator {
 
     /// Handle one drop of object refs. A drop that would decrypt files
     /// from an encrypted bucket into a bucket without a key waits in
-    /// `pendingUnencryptedDrop`; the user is asked once for the whole drop.
+    /// `pendingUnencryptedDrops`; the user is asked once for the whole drop.
     func dropObjectRefs(
         _ refs: [S3ObjectRef],
         destinationAccount: S3Account,
         destinationBucket: String,
         destinationPrefix: String
     ) async {
+        // Read before the consent check, so a key removed afterwards
+        // makes the round-trip uploads fail instead of store plaintext.
+        let destinationRequiresKey = await encryptionGate?.hasKey(
+            accountID: destinationAccount.id, bucket: destinationBucket
+        ) ?? false
         if let sourceBucket = await encryptedSourceBucket(
             of: refs, destinationAccount: destinationAccount, destinationBucket: destinationBucket
         ) {
-            pendingUnencryptedDrop = PendingUnencryptedDrop(
+            pendingUnencryptedDrops.append(PendingUnencryptedDrop(
                 refs: refs,
                 sourceBucket: sourceBucket,
                 destinationAccount: destinationAccount,
                 destinationBucket: destinationBucket,
                 destinationPrefix: destinationPrefix
-            )
+            ))
             return
         }
-        await drop(refs, destinationAccount: destinationAccount,
-                   destinationBucket: destinationBucket, destinationPrefix: destinationPrefix)
+        await drop(refs, destinationAccount: destinationAccount, destinationBucket: destinationBucket,
+                   destinationPrefix: destinationPrefix, requiresEncryption: destinationRequiresKey)
     }
 
     /// Runs a drop the user accepted to store unencrypted.
     func confirmUnencryptedDrop(_ pending: PendingUnencryptedDrop) async {
-        pendingUnencryptedDrop = nil
+        discardUnencryptedDrop(pending)
         await drop(pending.refs, destinationAccount: pending.destinationAccount,
-                   destinationBucket: pending.destinationBucket, destinationPrefix: pending.destinationPrefix)
+                   destinationBucket: pending.destinationBucket, destinationPrefix: pending.destinationPrefix,
+                   requiresEncryption: false)
+    }
+
+    /// Forgets a drop the user cancelled. Other pending drops stay.
+    func discardUnencryptedDrop(_ pending: PendingUnencryptedDrop) {
+        pendingUnencryptedDrops.removeAll { $0.id == pending.id }
     }
 
     /// The first source bucket of the drop that is encrypted while the
@@ -149,14 +162,16 @@ final class DragDropCoordinator {
         _ refs: [S3ObjectRef],
         destinationAccount: S3Account,
         destinationBucket: String,
-        destinationPrefix: String
+        destinationPrefix: String,
+        requiresEncryption: Bool
     ) async {
         for ref in refs {
             await dropObjectRef(
                 ref,
                 destinationAccount: destinationAccount,
                 destinationBucket: destinationBucket,
-                destinationPrefix: destinationPrefix
+                destinationPrefix: destinationPrefix,
+                requiresEncryption: requiresEncryption
             )
         }
     }
@@ -174,7 +189,8 @@ final class DragDropCoordinator {
         _ ref: S3ObjectRef,
         destinationAccount: S3Account,
         destinationBucket: String,
-        destinationPrefix: String
+        destinationPrefix: String,
+        requiresEncryption: Bool
     ) async {
         // Folder drops require recursive enumeration of the source
         // prefix — out of scope for v1. Drop on the
@@ -243,7 +259,8 @@ final class DragDropCoordinator {
                 ref: ref,
                 destinationAccount: destinationAccount,
                 destinationBucket: destinationBucket,
-                destinationKey: destinationKey
+                destinationKey: destinationKey,
+                requiresEncryption: requiresEncryption
             )
         }
     }
@@ -253,7 +270,8 @@ final class DragDropCoordinator {
         ref: S3ObjectRef,
         destinationAccount: S3Account,
         destinationBucket: String,
-        destinationKey: String
+        destinationKey: String,
+        requiresEncryption: Bool
     ) async {
         // Staging file inside the temp dir. We clean up after both
         // halves finish regardless of outcome — sandbox temp dir is
@@ -297,7 +315,9 @@ final class DragDropCoordinator {
             bucket: destinationBucket,
             key: destinationKey,
             localURL: staging,
-            contentType: contentType
+            contentType: contentType,
+            bypassEncryption: false,
+            requiresEncryption: requiresEncryption
         )
         let uploadResult = await transferManager.awaitCompletion(id: uploadID)
         if case .failed(let message) = uploadResult {
