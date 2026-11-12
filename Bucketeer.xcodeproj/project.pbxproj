@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		43A100000000000000000001 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 43A100000000000000000002 /* Localizable.xcstrings */; };
 		02889BB64F8F2750EF4AC632 /* BucketeerCore in Frameworks */ = {isa = PBXBuildFile; productRef = 2F723E91389E0B5E98DE6CC6 /* BucketeerCore */; };
 		0BEE6471623AAC6F3BB9D0BD /* BucketeerCore in Frameworks */ = {isa = PBXBuildFile; productRef = CFCORE001000000000000002 /* BucketeerCore */; };
 		133FAFA24EC97D38781E0489 /* FileProviderItemResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D403121BCBAD37A574715302 /* FileProviderItemResolver.swift */; };
@@ -51,6 +52,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		43A100000000000000000002 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Bucketeer/Resources/Localizable.xcstrings; sourceTree = SOURCE_ROOT; };
 		126DCFB84C5369747D5A2364 /* ExtensionContainer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExtensionContainer.swift; path = ExtensionContainer.swift; sourceTree = "<group>"; };
 		241487FA4B5FD959C2DC8EC9 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		4225AB9B545123E428D2F397 /* Bucketeer File Provider.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Bucketeer File Provider.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -154,6 +156,7 @@
 				D403121BCBAD37A574715302 /* FileProviderItemResolver.swift */,
 				EA0CE48458241096873407A7 /* S3DirectFetch.swift */,
 				241487FA4B5FD959C2DC8EC9 /* PrivacyInfo.xcprivacy */,
+				43A100000000000000000002 /* Localizable.xcstrings */,
 				DA1BCB3AA28BF1C8521B52D9 /* FinderChangeTracker.swift */,
 			);
 			name = "Bucketeer File Provider";
@@ -345,6 +348,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6D8546F79FFFCB15C28887E5 /* PrivacyInfo.xcprivacy in Resources */,
+				43A100000000000000000001 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

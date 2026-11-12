@@ -180,7 +180,7 @@ public enum LocalFolderWriter {
         guard code != EISDIR else {
             throw BucketeerError.providerError(
                 statusCode: 409,
-                message: "A folder named \(destination.lastPathComponent) already exists in the destination, so the file was not written over it."
+                message: String(localized: "sync.error.folderExists \(destination.lastPathComponent)", bundle: .module)
             )
         }
         throw POSIXError(POSIXErrorCode(rawValue: code) ?? .EIO)
@@ -325,14 +325,14 @@ public enum LocalFolderWriter {
         guard !relativeKey.isEmpty else {
             throw BucketeerError.providerError(
                 statusCode: 400,
-                message: "Empty relative key — refusing to operate on the folder root itself."
+                message: String(localized: "sync.error.emptyPath", bundle: .module)
             )
         }
         // Reject absolute paths outright.
         if relativeKey.hasPrefix("/") || relativeKey.hasPrefix("\\") {
             throw BucketeerError.providerError(
                 statusCode: 400,
-                message: "Relative key resolves to an absolute path: \(relativeKey)"
+                message: String(localized: "sync.error.absolutePath \(relativeKey)", bundle: .module)
             )
         }
         // Reject any path component that's `.` or `..` — even one
@@ -342,13 +342,13 @@ public enum LocalFolderWriter {
         for component in components where component == ".." || component == "." {
             throw BucketeerError.providerError(
                 statusCode: 400,
-                message: "Relative key contains a path-traversal component: \(relativeKey)"
+                message: String(localized: "sync.error.traversalPath \(relativeKey)", bundle: .module)
             )
         }
         if components.contains(where: { $0.allSatisfy(\.isWhitespace) }) {
             throw BucketeerError.providerError(
                 statusCode: 400,
-                message: "Relative key contains an empty path component: \(relativeKey)"
+                message: String(localized: "sync.error.emptyComponent \(relativeKey)", bundle: .module)
             )
         }
         let candidate = root.appending(path: relativeKey).standardizedFileURL
@@ -356,7 +356,7 @@ public enum LocalFolderWriter {
         guard candidate.path.hasPrefix(rootStandard.path + "/") || candidate.path == rootStandard.path else {
             throw BucketeerError.providerError(
                 statusCode: 400,
-                message: "Relative key escapes the sync root: \(relativeKey)"
+                message: String(localized: "sync.error.outsideRoot \(relativeKey)", bundle: .module)
             )
         }
         // A symlink inside the root would let two keys (or a key and a
@@ -368,7 +368,7 @@ public enum LocalFolderWriter {
         guard resolved.caseInsensitiveCompare(expected) == .orderedSame else {
             throw BucketeerError.providerError(
                 statusCode: 400,
-                message: "Relative key passes through a symbolic link: \(relativeKey)"
+                message: String(localized: "sync.error.symbolicLink \(relativeKey)", bundle: .module)
             )
         }
         return candidate

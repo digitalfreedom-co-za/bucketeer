@@ -182,9 +182,13 @@ actor BucketEncryptionGate {
     }
 
     private func resolve(accountID: UUID, bucket: String) async throws -> SymmetricKey? {
-        guard let meta = try await keyStore.key(accountID: accountID, bucket: bucket) else {
-            return nil
+        do {
+            guard let meta = try await keyStore.key(accountID: accountID, bucket: bucket) else {
+                return nil
+            }
+            return SymmetricKey(data: try await keyStore.keyMaterial(id: meta.id))
+        } catch {
+            throw BucketeerError.unknown(message: String(localized: "encryption.error.lookupFailed \(error.localizedDescription)"))
         }
-        return SymmetricKey(data: try await keyStore.keyMaterial(id: meta.id))
     }
 }

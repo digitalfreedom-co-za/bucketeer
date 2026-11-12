@@ -39,7 +39,7 @@ final class ExtensionContainer: Sendable {
             throw NSError(
                 domain: "BucketeerFileProvider",
                 code: 1,
-                userInfo: [NSLocalizedDescriptionKey: "App Group container is not available — entitlement missing or not yet provisioned."]
+                userInfo: [NSLocalizedDescriptionKey: String(localized: "fileProvider.error.appGroup")]
             )
         }
         self.encryptedBucketListURL = EncryptedBucketList.url(inGroupContainer: groupURL)
@@ -78,7 +78,7 @@ final class ExtensionContainer: Sendable {
         throw NSError(
             domain: NSCocoaErrorDomain,
             code: NSFeatureUnsupportedError,
-            userInfo: [NSLocalizedDescriptionKey: "This bucket uses client-side encryption and can't be used in Finder. Open it in the Bucketeer window instead."]
+            userInfo: [NSLocalizedDescriptionKey: String(localized: "mount.error.encryptedBucket")]
         )
     }
 
@@ -90,7 +90,7 @@ final class ExtensionContainer: Sendable {
         throw NSError(
             domain: NSCocoaErrorDomain,
             code: NSFeatureUnsupportedError,
-            userInfo: [NSLocalizedDescriptionKey: "Changing files of a mounted bucket in Finder needs Bucketeer Pro. The files stay readable; open Bucketeer to unlock Pro."]
+            userInfo: [NSLocalizedDescriptionKey: String(localized: "fileProvider.error.proRequired")]
         )
     }
 

@@ -63,7 +63,7 @@ public actor EncryptionKeyStore: EncryptionKeyStoring {
         // rotation lands in a future phase as an explicit action.
         if let existing = try await key(accountID: accountID, bucket: bucket) {
             throw BucketeerError.unknown(
-                message: "Bucket \(bucket) already has key \"\(existing.label)\"."
+                message: String(localized: "encryption.error.existingKey \(bucket) \(existing.label)", bundle: .module)
             )
         }
         let key = SymmetricKey(size: .bits256)
@@ -120,7 +120,7 @@ public actor EncryptionKeyStore: EncryptionKeyStoring {
         // to CryptoKit, which would silently key under it.
         guard bytes.count == 32 else {
             throw BucketeerError.unknown(
-                message: "Encryption key on disk is not 32 bytes (got \(bytes.count))."
+                message: String(localized: "encryption.error.invalidKeySize \(bytes.count)", bundle: .module)
             )
         }
         return bytes
@@ -176,7 +176,7 @@ public actor EncryptionKeyStore: EncryptionKeyStoring {
         var item: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &item)
         if status == errSecItemNotFound {
-            throw EncryptionError.noKeyForBucket
+            throw BucketeerError.unknown(message: String(localized: "encryption.error.keyRemoved", bundle: .module))
         }
         if status != errSecSuccess {
             throw BucketeerError.keychainFailure(status: status)

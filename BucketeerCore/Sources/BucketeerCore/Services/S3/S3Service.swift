@@ -749,7 +749,7 @@ public struct S3Service: S3Browsing {
                 return .objectNotFound(key: key ?? "?")
             case S3ErrorType.accessDenied.errorCode:
                 let status = Int(s3Error.context?.responseCode.code ?? 403)
-                let message = s3Error.context?.message ?? "Access denied"
+                let message = s3Error.context?.message ?? String(localized: "transfer.error.accessDenied", bundle: .module)
                 return .providerError(statusCode: status, message: message)
             default:
                 let status = Int(s3Error.context?.responseCode.code ?? 0)
@@ -764,7 +764,7 @@ public struct S3Service: S3Browsing {
                 .trimmingCharacters(in: .whitespacesAndNewlines)
             let snippet = String(body.prefix(240))
             let message = snippet.isEmpty
-                ? "Server returned HTTP \(status) with an unrecognised response body."
+                ? String(localized: "transfer.error.unrecognizedResponse \(status)", bundle: .module)
                 : "HTTP \(status): \(snippet)"
             if status == 401 || status == 403 {
                 return .authenticationFailed

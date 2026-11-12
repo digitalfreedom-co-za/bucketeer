@@ -160,7 +160,7 @@ final class CrossAccountCopyCoordinator {
                         accountName: destinationAccount.name,
                         bucket: destinationBucket,
                         key: destinationKey,
-                        message: "Cross-account from \(sourceAccount.name)/\(sourceBucket)/\(key)"
+                        message: String(localized: "transfer.activity.copySource \(sourceAccount.name) \(sourceBucket) \(key)")
                     )
                 )
                 results.append((key, nil))
@@ -329,7 +329,7 @@ final class CrossAccountCopyCoordinator {
         case .cancelled:
             throw BucketeerError.cancelled
         default:
-            throw BucketeerError.unknown(message: "Download did not finish.")
+            throw BucketeerError.unknown(message: String(localized: "transfer.error.downloadIncomplete"))
         }
 
         let uploadID = await transferManager.enqueueUpload(
@@ -350,7 +350,7 @@ final class CrossAccountCopyCoordinator {
         case .cancelled:
             throw BucketeerError.cancelled
         default:
-            throw BucketeerError.unknown(message: "Upload did not finish.")
+            throw BucketeerError.unknown(message: String(localized: "transfer.error.uploadIncomplete"))
         }
     }
 

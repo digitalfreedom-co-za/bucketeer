@@ -278,7 +278,7 @@ extension SotoObjectWriter: S3ObjectCopying {
 
     public func createMultipartCopy(_ request: S3.CreateMultipartUploadRequest) async throws -> String {
         guard let uploadID = try await s3.createMultipartUpload(request).uploadId else {
-            throw BucketeerError.providerError(statusCode: 0, message: "The provider returned no multipart upload ID.")
+            throw BucketeerError.providerError(statusCode: 0, message: String(localized: "transfer.error.missingUploadID", bundle: .module))
         }
         return uploadID
     }
@@ -303,7 +303,7 @@ extension SotoObjectWriter: S3ObjectCopying {
             uploadId: uploadID
         ))
         guard let etag = output.copyPartResult.eTag else {
-            throw BucketeerError.providerError(statusCode: 0, message: "The provider returned no ETag for part \(partNumber).")
+            throw BucketeerError.providerError(statusCode: 0, message: String(localized: "transfer.error.missingETag \(partNumber)", bundle: .module))
         }
         return etag
     }

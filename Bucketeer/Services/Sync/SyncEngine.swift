@@ -667,7 +667,7 @@ actor SyncEngine {
         switch endpoint {
         case .s3(let accountID, _, _):
             guard let account = accounts.first(where: { $0.id == accountID }) else {
-                throw BucketeerError.unknown(message: "Sync account no longer exists.")
+                throw BucketeerError.unknown(message: String(localized: "transfer.error.accountMissing"))
             }
             return EndpointContext(
                 account: account,
@@ -770,12 +770,12 @@ actor SyncEngine {
         switch endpoint {
         case .s3(_, let bucket, let prefix):
             guard let account = context.account else {
-                throw BucketeerError.unknown(message: "Missing S3 account for endpoint.")
+                throw BucketeerError.unknown(message: String(localized: "transfer.error.accountMissing"))
             }
             return try await listS3Recursively(account: account, bucket: bucket, prefix: prefix)
         case .localFolder:
             guard let root = context.localRoot else {
-                throw BucketeerError.unknown(message: "Local folder root could not be resolved.")
+                throw BucketeerError.unknown(message: String(localized: "sync.error.localFolderUnavailable"))
             }
             return try LocalFolderEnumerator.enumerate(at: root)
         }
@@ -839,7 +839,7 @@ actor SyncEngine {
         case (.s3(_, let srcBucket, _), .localFolder):
             guard let sourceAccount = context.source.account,
                   let destinationRoot = context.destination.localRoot
-            else { throw BucketeerError.unknown(message: "Sync context incomplete.") }
+            else { throw BucketeerError.unknown(message: String(localized: "sync.error.contextIncomplete")) }
             try await executeS3ToLocal(
                 entry: entry,
                 run: token,
@@ -851,7 +851,7 @@ actor SyncEngine {
         case (.localFolder, .s3(_, let dstBucket, _)):
             guard let sourceRoot = context.source.localRoot,
                   let destinationAccount = context.destination.account
-            else { throw BucketeerError.unknown(message: "Sync context incomplete.") }
+            else { throw BucketeerError.unknown(message: String(localized: "sync.error.contextIncomplete")) }
             try await executeLocalToS3(
                 entry: entry,
                 run: token,
@@ -864,7 +864,7 @@ actor SyncEngine {
         case (.localFolder, .localFolder):
             guard let sourceRoot = context.source.localRoot,
                   let destinationRoot = context.destination.localRoot
-            else { throw BucketeerError.unknown(message: "Sync context incomplete.") }
+            else { throw BucketeerError.unknown(message: String(localized: "sync.error.contextIncomplete")) }
             try await executeLocalToLocal(
                 entry: entry,
                 sourceRoot: sourceRoot,
@@ -905,7 +905,7 @@ actor SyncEngine {
         requiresEncryption: Bool
     ) async throws {
         guard let sourceAccount, let destinationAccount else {
-            throw BucketeerError.unknown(message: "Sync context incomplete.")
+            throw BucketeerError.unknown(message: String(localized: "sync.error.contextIncomplete"))
         }
         let encryptionAllowsServerCopy = await encryptionGate?.allowsServerSideCopy(
             sourceAccountID: sourceAccount.id,
@@ -1064,13 +1064,13 @@ actor SyncEngine {
         switch endpoint {
         case .s3(_, let bucket, _):
             guard let account = context.account else {
-                throw BucketeerError.unknown(message: "Sync context incomplete.")
+                throw BucketeerError.unknown(message: String(localized: "sync.error.contextIncomplete"))
             }
             try await browser.delete(account: account, bucket: bucket, keys: [orphan.key])
             return true
         case .localFolder:
             guard let root = context.localRoot else {
-                throw BucketeerError.unknown(message: "Local folder root unavailable.")
+                throw BucketeerError.unknown(message: String(localized: "sync.error.localFolderUnavailable"))
             }
             return try LocalFolderWriter.deleteIfUnchanged(
                 relativeKey: orphan.key, under: root, fingerprint: LocalFileFingerprint(orphan)
@@ -1089,14 +1089,14 @@ actor SyncEngine {
         switch endpoint {
         case .s3(_, let bucket, _):
             guard let account = context.account else {
-                throw BucketeerError.unknown(message: "Sync context incomplete.")
+                throw BucketeerError.unknown(message: String(localized: "sync.error.contextIncomplete"))
             }
             return try await browser.deleteIfUnchanged(
                 account: account, bucket: bucket, key: entry.sourceKey, etag: entry.source.etag
             )
         case .localFolder:
             guard let root = context.localRoot else {
-                throw BucketeerError.unknown(message: "Local folder root unavailable.")
+                throw BucketeerError.unknown(message: String(localized: "sync.error.localFolderUnavailable"))
             }
             return try LocalFolderWriter.deleteIfUnchanged(
                 relativeKey: entry.sourceKey, under: root, fingerprint: LocalFileFingerprint(entry.source)
@@ -1115,7 +1115,7 @@ actor SyncEngine {
         case .queued, .running:
             // awaitCompletion only returns terminal states by contract;
             // a non-terminal value here is a logic bug in TransferManager.
-            throw BucketeerError.unknown(message: "Transfer returned a non-terminal state from awaitCompletion.")
+            throw BucketeerError.unknown(message: String(localized: "transfer.error.incomplete"))
         }
     }
 
@@ -1191,7 +1191,7 @@ actor SyncEngine {
         }
         let message: String?
         if status.planned > 0 || status.completed > 0 || status.failed > 0 {
-            message = "planned: \(status.planned), completed: \(status.completed), failed: \(status.failed)"
+            message = String(localized: "sync.summary.run \(status.completed) \(status.failed) \(status.planned)")
         } else {
             message = status.message
         }

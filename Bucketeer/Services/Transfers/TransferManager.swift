@@ -457,13 +457,7 @@ actor TransferManager: Transferring {
             return
         }
         if item.requiresEncryption, encryptionKey == nil, !item.bypassEncryption {
-            setState(id: id, state: .failed(message: String(
-                localized: "error.encryptionKeyRemoved",
-                defaultValue: """
-                The destination bucket had an encryption key when the transfer started, but the key has \
-                been removed. The file was not uploaded.
-                """
-            )))
+            setState(id: id, state: .failed(message: String(localized: "transfer.error.destinationNoKey")))
             return
         }
         if let key = encryptionKey {
@@ -683,7 +677,7 @@ actor TransferManager: Transferring {
         guard let azure else {
             setState(
                 id: id,
-                state: .failed(message: "Azure transport not configured.")
+                state: .failed(message: String(localized: "transfer.error.azureUnavailable"))
             )
             return
         }
@@ -727,7 +721,7 @@ actor TransferManager: Transferring {
     private func downloadFromAzure(item: QueuedItem) async throws -> Bool {
         let id = item.task.id
         guard let azure else {
-            throw BucketeerError.unknown(message: "Azure transport not configured.")
+            throw BucketeerError.unknown(message: String(localized: "transfer.error.azureUnavailable"))
         }
         return try await azure.download(
             account: item.account,

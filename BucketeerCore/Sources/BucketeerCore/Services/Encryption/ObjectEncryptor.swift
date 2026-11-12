@@ -156,11 +156,23 @@ public enum BucketeerEnvelope {
     }
 }
 
-/// Domain errors for the encryption layer. Translated to
-/// `BucketeerError` at the host boundary.
-public enum EncryptionError: Error, Sendable, Equatable {
+/// Errors localized in the shared package for both the app and File Provider.
+public enum EncryptionError: LocalizedError, Sendable, Equatable {
     case badEnvelope
     case unsupportedVersion
     case authenticationFailed
     case noKeyForBucket
+
+    public var errorDescription: String? {
+        switch self {
+        case .badEnvelope:
+            String(localized: "encryption.error.badEnvelope", bundle: .module)
+        case .unsupportedVersion:
+            String(localized: "encryption.error.unsupportedVersion", bundle: .module)
+        case .authenticationFailed:
+            String(localized: "encryption.error.authenticationFailed", bundle: .module)
+        case .noKeyForBucket:
+            String(localized: "error.encryptedNoKey", bundle: .module)
+        }
+    }
 }
