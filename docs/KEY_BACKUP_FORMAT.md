@@ -43,7 +43,7 @@ or logs are produced.
 
 The review compares account UUID plus bucket, not display names. Equal key
 bytes are skipped after checking the current store again. Missing Keychain bytes
-with surviving metadata are restored automatically against the reviewed local ID. A different existing key defaults to keep existing.
+with surviving metadata are restored against the reviewed local ID after the user confirms the import. A different existing key defaults to keep existing.
 Replacement requires a per-key choice and destructive confirmation. The store
 rechecks the expected existing key ID when applying that choice; a stale
 choice fails instead of replacing a subsequently changed key. New keys use
