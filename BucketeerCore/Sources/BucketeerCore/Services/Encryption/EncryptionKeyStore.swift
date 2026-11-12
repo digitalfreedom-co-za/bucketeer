@@ -163,7 +163,9 @@ public actor EncryptionKeyStore: EncryptionKeyStoring {
             predicate: #Predicate { $0.accountID == accountID && $0.bucket == bucket }
         )
         let existing = try modelContext.fetch(descriptor).first
-        let oldBytes = try existing.map { try readKeychain(id: $0.id) }
+        let oldBytes: Data?
+        do { oldBytes = try existing.map { try readKeychain(id: $0.id) } }
+        catch EncryptionError.keyRemoved { oldBytes = nil }
         guard try KeyBackupService.shouldImport(entry, existing: existing?.snapshot,
                                                 existingBytes: oldBytes, replacing: expectedID) else { return }
         let replacement = BucketEncryptionKey(label: entry.label, accountID: accountID, bucket: bucket,
@@ -179,7 +181,7 @@ public actor EncryptionKeyStore: EncryptionKeyStoring {
             try? deleteKeychain(id: replacement.id)
             throw error
         }
-        if let oldID { try deleteKeychain(id: oldID) }
+        if let oldID, oldBytes != nil { try deleteKeychain(id: oldID) }
     }
 
     // MARK: - Keychain helpers

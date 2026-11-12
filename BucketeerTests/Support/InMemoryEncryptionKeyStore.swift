@@ -15,8 +15,8 @@ actor InMemoryEncryptionKeyStore: EncryptionKeyStoring {
     private var failingLookups = 0
     private var failingDeletes = 0
 
-    init(encryptedBuckets: [(accountID: UUID, bucket: String)] = []) {
-        keys = encryptedBuckets.map { BucketEncryptionKey(label: "Key", accountID: $0.accountID, bucket: $0.bucket, backupReady: true) }
+    init(encryptedBuckets: [(accountID: UUID, bucket: String)] = [], backupReady: Bool = true) {
+        keys = encryptedBuckets.map { BucketEncryptionKey(label: "Key", accountID: $0.accountID, bucket: $0.bucket, backupReady: backupReady) }
         material = Dictionary(uniqueKeysWithValues: keys.map { ($0.id, Data($0.id.uuidString.utf8.prefix(32))) })
     }
 

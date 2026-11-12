@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import LocalAuthentication
 import BucketeerCore
 
 /// Drives the Settings → Encryption tab. Phase 13.15. Lists every
@@ -30,6 +31,7 @@ final class EncryptionKeysViewModel {
     /// the browser toolbar and the upload flow cost one hash lookup.
     private var encryptedBuckets: Set<EncryptedBucket> = []
 
+    private let authenticateExport: @MainActor () async throws -> Bool
     private let keyStore: any EncryptionKeyStoring
     private let accountStore: any AccountStoring
     private let s3Browser: any S3Browsing
@@ -46,8 +48,13 @@ final class EncryptionKeysViewModel {
         s3Browser: any S3Browsing,
         gate: BucketEncryptionGate,
         mountController: MountController,
-        encryptedBucketListURL: URL?
+        encryptedBucketListURL: URL?,
+        authenticateExport: @escaping @MainActor () async throws -> Bool = {
+            try await LAContext().evaluatePolicy(.deviceOwnerAuthentication,
+                localizedReason: String(localized: "encryption.backup.authenticate"))
+        }
     ) {
+        self.authenticateExport = authenticateExport
         self.keyStore = keyStore
         self.accountStore = accountStore
         self.s3Browser = s3Browser
@@ -135,12 +142,16 @@ final class EncryptionKeysViewModel {
     }
 
     func exportKeys(ids: Set<UUID>, passphrase: String, confirmation: String, to url: URL) async throws {
+        guard try await authenticateExport() else { throw KeyBackupError.deviceAuthenticationFailed }
         let names = Dictionary(uniqueKeysWithValues: accounts.map { ($0.id, $0.name) })
         let ciphertext = try await keyStore.exportKeys(ids: ids, accountNames: names,
                                                        passphrase: passphrase, confirmation: confirmation)
         try KeyBackupService.write(ciphertext, to: url)
         // Never mark a cancelled or failed save as a backup.
-        for id in ids { try await keyStore.markBackupReady(id: id) }
+        for id in ids {
+            do { try await keyStore.markBackupReady(id: id) }
+            catch EncryptionError.keyRemoved { continue }
+        }
         try await refresh()
     }
 
@@ -153,9 +164,10 @@ final class EncryptionKeysViewModel {
 
     func importKeys(_ plan: [KeyImportPlan], replacements: Set<UUID>) async throws {
         do {
-            for item in plan where item.state != .identical {
+            for item in plan {
                 if item.state == .conflict && !replacements.contains(item.id) { continue }
-                let expectedID = item.state == .conflict ? item.existingID : nil
+                // Recheck every reviewed identity, including previously identical entries.
+                let expectedID = item.existingID
                 if let account = accounts.first(where: { $0.id == item.entry.accountID }) {
                     try await mountController.whileUnmounted(account: account, bucket: item.entry.bucket) {
                         try await keyStore.importKey(item.entry, replacing: expectedID)

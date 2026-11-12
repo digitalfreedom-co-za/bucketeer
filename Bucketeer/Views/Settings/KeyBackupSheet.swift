@@ -1,6 +1,5 @@
 import AppKit
 import BucketeerCore
-import LocalAuthentication
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -8,6 +7,7 @@ struct KeyBackupSheet: View {
     let viewModel: EncryptionKeysViewModel
     /// Nil imports; a nonempty selection exports these local keys.
     let exportIDs: Set<UUID>?
+    var onClose: (() -> Void)? = nil
     @Environment(\.dismiss) private var dismiss
     @State private var passphrase = ""
     @State private var confirmation = ""
@@ -25,7 +25,7 @@ struct KeyBackupSheet: View {
                 List(plan) { item in
                     VStack(alignment: .leading, spacing: 4) {
                         Text("\(item.entry.label) · \(item.entry.bucket)")
-                        Text(viewModel.accountName(for: item.entry.accountID))
+                        Text(item.state == .unknownAccount ? (item.entry.accountDisplayName ?? viewModel.accountName(for: item.entry.accountID)) : viewModel.accountName(for: item.entry.accountID))
                             .foregroundStyle(.secondary)
                         Text(stateLabel(item.state)).font(.caption)
                         if item.state == .conflict {
@@ -51,10 +51,10 @@ struct KeyBackupSheet: View {
                     Text("encryption.backup.hint").font(.footnote).foregroundStyle(.secondary)
                 }
             }
-            Text("encryption.backup.warning").font(.footnote).foregroundStyle(.orange)
+            if exportIDs != nil { Text("encryption.backup.warning").font(.footnote).foregroundStyle(.orange) }
             if let errorMessage { Text(errorMessage).foregroundStyle(.red) }
             HStack {
-                Button("action.cancel", role: .cancel) { clearSecrets(); dismiss() }
+                Button("action.cancel", role: .cancel) { clearSecrets(); dismiss(); onClose?() }
                 Spacer()
                 if busy { ProgressView().controlSize(.small) }
                 Button(LocalizedStringKey(exportIDs == nil ? "encryption.backup.import" : "encryption.backup.export")) {
@@ -93,6 +93,7 @@ struct KeyBackupSheet: View {
 
     private func stateLabel(_ state: KeyImportPlan.State) -> LocalizedStringKey {
         switch state {
+        case .missingLocal: "encryption.backup.restore"
         case .new: "encryption.backup.new"
         case .identical: "encryption.backup.identical"
         case .conflict: "encryption.backup.conflict"
@@ -113,10 +114,6 @@ struct KeyBackupSheet: View {
             defer { busy = false }
             do {
                 if let exportIDs {
-                    // Authenticate immediately before reading any key material.
-                    let context = LAContext()
-                    guard try await context.evaluatePolicy(.deviceOwnerAuthentication,
-                        localizedReason: String(localized: "encryption.backup.authenticate")) else { return }
                     let panel = NSSavePanel()
                     panel.allowedContentTypes = [UTType(filenameExtension: "bktkeys") ?? .data]
                     panel.nameFieldStringValue = "Bucketeer.bktkeys"
@@ -137,23 +134,52 @@ struct KeyBackupSheet: View {
                 }
                 clearSecrets()
                 dismiss()
+                onClose?()
             } catch {
+                if error as? KeyBackupError == .staleConflict {
+                    plan = nil
+                    replacements = []
+                }
                 errorMessage = error.localizedDescription
             }
         }
     }
 }
 
-extension EncryptionKeysViewModel {
+@MainActor
+final class KeyBackupPresenter: NSObject, NSWindowDelegate {
+    weak var viewModel: EncryptionKeysViewModel?
+    private var window: NSWindow?
+
+    func windowWillClose(_ notification: Notification) {
+        window?.contentViewController = nil
+        window = nil
+    }
+
     /// The shared transfer gate invokes this only for a key without a saved
     /// backup or prior acknowledgement. Cancellation leaves the transfer blocked.
-    static func confirmBackupRisk(_ key: BucketEncryptionKey) async -> Bool {
+    func confirmBackupRisk(_ key: BucketEncryptionKey) async -> Bool {
         let alert = NSAlert()
         alert.alertStyle = .warning
         alert.messageText = key.label + " · " + key.bucket
         alert.informativeText = String(localized: "encryption.backup.warning")
         alert.addButton(withTitle: String(localized: "action.cancel"))
         alert.addButton(withTitle: String(localized: "encryption.backup.acknowledge"))
-        return alert.runModal() == .alertSecondButtonReturn
+        alert.addButton(withTitle: String(localized: "encryption.backup.export"))
+        let response = alert.runModal()
+        if response == .alertThirdButtonReturn, let viewModel {
+            if let window, window.isVisible {
+                window.makeKeyAndOrderFront(nil)
+                return false
+            }
+            let controller = NSHostingController(rootView: KeyBackupSheet(viewModel: viewModel, exportIDs: [key.id], onClose: { [weak self] in self?.window?.close(); self?.window = nil }))
+            let exportWindow = NSWindow(contentViewController: controller)
+            exportWindow.isReleasedWhenClosed = false
+            exportWindow.delegate = self
+            window = exportWindow
+            exportWindow.center()
+            exportWindow.makeKeyAndOrderFront(nil)
+        }
+        return response == .alertSecondButtonReturn
     }
 }

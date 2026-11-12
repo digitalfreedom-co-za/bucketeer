@@ -3,14 +3,18 @@ import CryptoKit
 import Foundation
 import Security
 
-public struct KeyBackupEntry: Codable, Sendable, Identifiable {
+public struct KeyBackupEntry: Codable, Sendable, Identifiable, CustomStringConvertible, CustomDebugStringConvertible, CustomReflectable {
     public let id: UUID
     public let accountID: UUID
     public let accountDisplayName: String?
     public let bucket: String
     public let label: String
-    public var rawKey: Data
+    public internal(set) var rawKey: Data
     public let createdAt: Date
+
+    public var description: String { "KeyBackupEntry(rawKey: <redacted>)" }
+    public var debugDescription: String { description }
+    public var customMirror: Mirror { Mirror(self, children: ["rawKey": "<redacted>"]) }
 
     public init(id: UUID, accountID: UUID, accountDisplayName: String?, bucket: String,
                 label: String, rawKey: Data, createdAt: Date) {
@@ -24,16 +28,20 @@ public struct KeyBackupEntry: Codable, Sendable, Identifiable {
     }
 }
 
-public struct KeyImportPlan: Identifiable, Sendable {
-    public enum State: Sendable { case new, identical, conflict, unknownAccount }
+public struct KeyImportPlan: Identifiable, Sendable, CustomStringConvertible, CustomDebugStringConvertible, CustomReflectable {
+    public enum State: Sendable { case new, identical, conflict, unknownAccount, missingLocal }
     public let entry: KeyBackupEntry
     public let state: State
     public let existingID: UUID?
     public var id: UUID { entry.id }
+    public var description: String { "KeyImportPlan(entry: <redacted>)" }
+    public var debugDescription: String { description }
+    public var customMirror: Mirror { Mirror(self, children: ["entry": "<redacted>"]) }
 }
 
 public enum KeyBackupError: LocalizedError, Equatable, Sendable {
     case badMagic, unsupportedVersion, unsupportedKDF, invalidIterations, invalidPayload
+    case deviceAuthenticationFailed, invalidFileExtension
     case authenticationFailed, invalidPassphrase, randomFailure, derivationFailed, staleConflict
 
     public var errorDescription: String? {
@@ -41,11 +49,15 @@ public enum KeyBackupError: LocalizedError, Equatable, Sendable {
         case .unsupportedVersion, .unsupportedKDF:
             String(localized: "encryption.error.unsupportedVersion", bundle: .module)
         case .authenticationFailed:
-            String(localized: "encryption.error.authenticationFailed", bundle: .module)
+            String(localized: "encryption.backup.error.wrongPassphrase", bundle: .module)
         case .invalidPassphrase:
             String(localized: "encryption.backup.hint", bundle: .module)
         case .staleConflict:
-            String(localized: "encryption.backup.conflict", bundle: .module)
+            String(localized: "encryption.backup.error.stale", bundle: .module)
+        case .deviceAuthenticationFailed:
+            String(localized: "encryption.backup.error.authentication", bundle: .module)
+        case .invalidFileExtension:
+            String(localized: "encryption.backup.error.extension", bundle: .module)
         default:
             String(localized: "encryption.error.badEnvelope", bundle: .module)
         }
@@ -103,7 +115,8 @@ public enum KeyBackupService {
 
     /// Only encrypted bytes ever reach the filesystem, including atomic staging.
     public static func write(_ ciphertext: Data, to url: URL) throws {
-        guard url.pathExtension.lowercased() == "bktkeys", ciphertext.starts(with: magic) else {
+        guard url.pathExtension.lowercased() == "bktkeys" else { throw KeyBackupError.invalidFileExtension }
+        guard ciphertext.starts(with: magic) else {
             throw KeyBackupError.invalidPayload
         }
         try ciphertext.write(to: url, options: [.atomic, .completeFileProtection])
@@ -122,7 +135,7 @@ public enum KeyBackupService {
         guard entry.rawKey.count == 32, !entry.bucket.isEmpty else { throw KeyBackupError.invalidPayload }
         if existingBytes == entry.rawKey { return false }
         if let existing {
-            guard let expectedID else { return false }
+            guard let expectedID else { throw KeyBackupError.staleConflict }
             guard existing.id == expectedID else { throw KeyBackupError.staleConflict }
         } else if expectedID != nil {
             throw KeyBackupError.staleConflict
@@ -150,7 +163,7 @@ public enum KeyBackupService {
     }
 
     private static func derive(_ passphrase: String, salt: Data, iterations: UInt32) throws -> SymmetricKey {
-        var password = Array(passphrase.utf8)
+        var password = Array(passphrase.precomposedStringWithCanonicalMapping.utf8)
         let passwordCount = password.count
         // Ensure a non-null pointer even for an empty import passphrase.
         password.append(0)
@@ -196,7 +209,8 @@ public extension EncryptionKeyStoring {
             let existing = try await key(accountID: entry.accountID, bucket: entry.bucket)
             let state: KeyImportPlan.State
             if let existing {
-                state = try await keyMaterial(id: existing.id) == entry.rawKey ? .identical : .conflict
+                do { state = try await keyMaterial(id: existing.id) == entry.rawKey ? .identical : .conflict }
+                catch EncryptionError.keyRemoved { state = .missingLocal }
             } else {
                 state = knownAccountIDs.contains(entry.accountID) ? .new : .unknownAccount
             }

@@ -162,6 +162,7 @@ public enum EncryptionError: LocalizedError, Sendable, Equatable {
     case unsupportedVersion
     case authenticationFailed
     case keyRemoved
+    case backupNotConfirmed
     case noKeyForBucket
 
     public var errorDescription: String? {
@@ -174,6 +175,8 @@ public enum EncryptionError: LocalizedError, Sendable, Equatable {
             String(localized: "encryption.error.authenticationFailed", bundle: .module)
         case .keyRemoved:
             String(localized: "encryption.error.keyRemoved", bundle: .module)
+        case .backupNotConfirmed:
+            String(localized: "encryption.backup.error.notConfirmed", bundle: .module)
         case .noKeyForBucket:
             String(localized: "error.encryptedNoKey", bundle: .module)
         }

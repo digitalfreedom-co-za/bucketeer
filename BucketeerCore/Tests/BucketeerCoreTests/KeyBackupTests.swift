@@ -14,13 +14,13 @@ struct KeyBackupTests {
         let bytes = try await store.keyMaterial(id: key.id)
         let object = try BucketeerEnvelope.seal(plaintext: Data("precious object".utf8), key: SymmetricKey(data: bytes))
         let backup = try await store.exportKeys(ids: [key.id], accountNames: [:], passphrase: passphrase, confirmation: passphrase)
-        try await store.delete(id: key.id)
+        let clean = BackupMemoryStore()
         let entries = try KeyBackupService.open(backup, passphrase: passphrase)
-        let plan = try await store.importPlan(entries, knownAccountIDs: [])
+        let plan = try await clean.importPlan(entries, knownAccountIDs: [])
         #expect(plan.first?.state == .unknownAccount)
-        try await store.importKey(entries[0], replacing: nil)
-        let restored = try #require(try await store.key(accountID: key.accountID, bucket: key.bucket))
-        let restoredBytes = try await store.keyMaterial(id: restored.id)
+        try await clean.importKey(entries[0], replacing: nil)
+        let restored = try #require(try await clean.key(accountID: key.accountID, bucket: key.bucket))
+        let restoredBytes = try await clean.keyMaterial(id: restored.id)
         #expect(try BucketeerEnvelope.open(envelope: object, key: SymmetricKey(data: restoredBytes)) == Data("precious object".utf8))
     }
 
@@ -49,18 +49,63 @@ struct KeyBackupTests {
         let store = BackupMemoryStore()
         let original = entry()
         try await store.importKey(original, replacing: nil)
-        var conflict = original
-        conflict.rawKey = Data(repeating: 7, count: 32)
+        let conflict = KeyBackupEntry(id: original.id, accountID: original.accountID, accountDisplayName: nil, bucket: original.bucket, label: original.label, rawKey: Data(repeating: 7, count: 32), createdAt: original.createdAt)
         let fresh = entry()
         let orphan = entry()
         let plan = try await store.importPlan([original, conflict, fresh, orphan], knownAccountIDs: [original.accountID, fresh.accountID])
         #expect(plan.map(\.state) == [.identical, .conflict, .new, .unknownAccount])
-        try await store.importKey(conflict, replacing: nil)
+        await #expect(throws: KeyBackupError.staleConflict) { try await store.importKey(conflict, replacing: nil) }
         let stored = try #require(try await store.key(accountID: original.accountID, bucket: original.bucket))
         #expect(try await store.keyMaterial(id: stored.id) == original.rawKey)
         try await store.importKey(conflict, replacing: stored.id)
         let replaced = try #require(try await store.key(accountID: original.accountID, bucket: original.bucket))
         #expect(try await store.keyMaterial(id: replaced.id) == conflict.rawKey)
+        // The formerly identical plan must not overwrite a replacement or
+        // silently succeed after its local key has been removed.
+        await #expect(throws: KeyBackupError.staleConflict) {
+            try await store.importKey(original, replacing: plan[0].existingID)
+        }
+        try await store.delete(id: replaced.id)
+        await #expect(throws: KeyBackupError.staleConflict) {
+            try await store.importKey(original, replacing: plan[0].existingID)
+        }
+    }
+
+    @Test("Missing Keychain bytes can be restored without deleting metadata")
+    func missingMaterial() async throws {
+        let store = BackupMemoryStore()
+        let original = entry()
+        try await store.importKey(original, replacing: nil)
+        let stored = try #require(try await store.key(accountID: original.accountID, bucket: original.bucket))
+        await store.removeMaterial(id: stored.id)
+        let plan = try await store.importPlan([original], knownAccountIDs: [original.accountID])
+        #expect(plan.first?.state == .missingLocal)
+        #expect(plan.first?.existingID == stored.id)
+        try await store.importKey(original, replacing: stored.id)
+        let restored = try #require(try await store.key(accountID: original.accountID, bucket: original.bucket))
+        #expect(try await store.keyMaterial(id: restored.id) == original.rawKey)
+    }
+
+    @Test("Canonically equivalent passphrases open the same backup")
+    func normalizedPassphrase() throws {
+        let composed = "caf\u{e9} recovery words"
+        let decomposed = "cafe\u{301} recovery words"
+        let backup = try KeyBackupService.seal([entry()], passphrase: composed, confirmation: decomposed)
+        #expect(try KeyBackupService.open(backup, passphrase: decomposed).count == 1)
+    }
+
+    @Test("Backup entries and plans redact key material from diagnostics")
+    func redactedDiagnostics() async throws {
+        let original = entry()
+        let plan = try await BackupMemoryStore().importPlan([original], knownAccountIDs: [])
+        for value: Any in [original, plan[0]] {
+            var output = ""
+            dump(value, to: &output)
+            #expect(output.contains("<redacted>"))
+            #expect(!output.contains("32 bytes"))
+            #expect(String(reflecting: value).contains("<redacted>"))
+            #expect(Mirror(reflecting: value).children.allSatisfy { $0.value is String })
+        }
     }
 
     private func entry() -> KeyBackupEntry {
@@ -85,6 +130,7 @@ private actor BackupMemoryStore: EncryptionKeyStoring {
         material[key.id] = SymmetricKey(size: .bits256).withUnsafeBytes { Data($0) }
         return key
     }
+    func removeMaterial(id: UUID) { material.removeValue(forKey: id) }
     func delete(id: UUID) {
         metadata.removeAll { $0.id == id }
         material.removeValue(forKey: id)
@@ -94,7 +140,7 @@ private actor BackupMemoryStore: EncryptionKeyStoring {
     }
     func importKey(_ entry: KeyBackupEntry, replacing expectedID: UUID?) throws {
         let existing = key(accountID: entry.accountID, bucket: entry.bucket)
-        guard try KeyBackupService.shouldImport(entry, existing: existing, existingBytes: existing.map { try keyMaterial(id: $0.id) }, replacing: expectedID) else { return }
+        guard try KeyBackupService.shouldImport(entry, existing: existing, existingBytes: existing.flatMap { material[$0.id] }, replacing: expectedID) else { return }
         if let existing { delete(id: existing.id) }
         let key = BucketEncryptionKey(label: entry.label, accountID: entry.accountID, bucket: entry.bucket, createdAt: entry.createdAt)
         metadata.append(key)

@@ -34,6 +34,8 @@ actor BucketEncryptionGate {
         let expiresAt: Date
     }
     private var cache: [String: CacheEntry] = [:]
+    private var declinedBackups: [UUID: Date] = [:]
+    private let declineTTL: TimeInterval = 60
     private var backupAuthorizations: [UUID: Task<Void, Error>] = [:]
     /// Bumped by `invalidate`; a lookup that started before an
     /// invalidation is discarded and repeated.
@@ -87,6 +89,8 @@ actor BucketEncryptionGate {
             return nil
         } catch is CancellationError {
             throw CancellationError()
+        } catch EncryptionError.backupNotConfirmed {
+            throw EncryptionError.backupNotConfirmed
         } catch EncryptionError.keyRemoved {
             throw EncryptionError.keyRemoved
         } catch {
@@ -95,6 +99,8 @@ actor BucketEncryptionGate {
     }
 
     private func authorizeBackup(_ metadata: BucketEncryptionKey) async throws {
+        declinedBackups = declinedBackups.filter { $0.value > Date() }
+        if declinedBackups[metadata.id] != nil { throw EncryptionError.backupNotConfirmed }
         if let pending = backupAuthorizations[metadata.id] {
             try await pending.value
             return
@@ -103,7 +109,10 @@ actor BucketEncryptionGate {
             guard let current = try await keyStore.key(accountID: metadata.accountID, bucket: metadata.bucket),
                   current.id == metadata.id else { throw EncryptionError.keyRemoved }
             if current.backupReady { return }
-            guard await confirmBackup(current) else { throw CancellationError() }
+            guard await confirmBackup(current) else {
+                declinedBackups[current.id] = Date().addingTimeInterval(declineTTL)
+                throw EncryptionError.backupNotConfirmed
+            }
             try await keyStore.markBackupReady(id: current.id)
         }
         backupAuthorizations[metadata.id] = pending

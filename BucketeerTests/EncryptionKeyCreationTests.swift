@@ -64,10 +64,28 @@ final class EncryptionKeyCreationTests: XCTestCase {
         XCTAssertNil(viewModel.error)
     }
 
+    func testExportRefusesUnapprovedAuthenticationBeforeSaving() async throws {
+        let directory = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let destination = directory.appending(path: "backup.bktkeys")
+        var authentications = 0
+        let viewModel = makeViewModel(authenticateExport: { authentications += 1; return false })
+        do {
+            try await viewModel.exportKeys(ids: [], passphrase: "recovery passphrase", confirmation: "recovery passphrase", to: destination)
+            XCTFail("Export requires authentication")
+        } catch let error as KeyBackupError {
+            XCTAssertEqual(error, .deviceAuthenticationFailed)
+        }
+        XCTAssertEqual(authentications, 1)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: destination.path))
+    }
+
     private func makeViewModel(
         keyStore: InMemoryEncryptionKeyStore = InMemoryEncryptionKeyStore(),
         browser: InMemoryS3Browser = InMemoryS3Browser(),
-        mirrorURL: URL? = nil
+        mirrorURL: URL? = nil,
+        authenticateExport: @escaping @MainActor () async throws -> Bool = { false }
     ) -> EncryptionKeysViewModel {
         EncryptionKeysViewModel(
             keyStore: keyStore,
@@ -75,7 +93,8 @@ final class EncryptionKeyCreationTests: XCTestCase {
             s3Browser: browser,
             gate: BucketEncryptionGate(keyStore: keyStore),
             mountController: MountController(encryptionKeyStore: keyStore, registry: NoMountedDomains()),
-            encryptedBucketListURL: mirrorURL
+            encryptedBucketListURL: mirrorURL,
+            authenticateExport: authenticateExport
         )
     }
 }
