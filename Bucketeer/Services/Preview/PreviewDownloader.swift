@@ -27,17 +27,17 @@ struct PreviewDownloader: Sendable {
         bucket: String,
         key: String,
         to localURL: URL
-    ) async throws {
+    ) async throws -> Bool {
         switch account.provider.family {
         case .s3:
-            try await fetchFromS3(
+            return try await fetchFromS3(
                 account: account,
                 bucket: bucket,
                 key: key,
                 to: localURL
             )
         case .azureBlob:
-            try await azureTransporter.download(
+            return try await azureTransporter.download(
                 account: account,
                 container: bucket,
                 blob: key,
@@ -52,7 +52,7 @@ struct PreviewDownloader: Sendable {
         bucket: String,
         key: String,
         to localURL: URL
-    ) async throws {
+    ) async throws -> Bool {
         let s3 = try await s3Factory.client(for: account)
 
         // Pre-flight HEAD to learn size — small objects use single-shot
@@ -76,21 +76,22 @@ struct PreviewDownloader: Sendable {
         do {
             if size == 0 {
                 FileManager.default.createFile(atPath: localURL.path, contents: nil)
-                return
+                return BucketeerEnvelope.isMarked(head.metadata)
             }
             if size < multipartThreshold {
                 let response = try await s3.getObject(.init(bucket: bucket, key: key))
                 let buffer = try await response.body.collect(upTo: Int(size) + 1)
                 let data = Data(buffer.readableBytesView)
                 try data.write(to: localURL)
-                return
+                return BucketeerEnvelope.isMarked(response.metadata)
             }
             _ = try await s3.multipartDownload(
-                .init(bucket: bucket, key: key),
+                .init(bucket: bucket, ifMatch: head.eTag, key: key),
                 partSize: partSize,
                 filename: localURL.path,
                 progress: { @Sendable _ in }
             )
+            return BucketeerEnvelope.isMarked(head.metadata)
         } catch {
             try? FileManager.default.removeItem(at: localURL)
             throw Self.translate(error)

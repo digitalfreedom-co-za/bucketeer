@@ -223,7 +223,8 @@ final class AppContainer {
             downloader: PreviewDownloader(
                 s3Factory: clientFactory,
                 azureTransporter: azureTransporter
-            )
+            ),
+            encryptionGate: bucketEncryptionGate
         )
 
         self.modelContainer = modelContainer

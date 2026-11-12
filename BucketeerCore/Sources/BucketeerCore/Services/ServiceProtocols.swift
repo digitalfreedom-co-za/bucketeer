@@ -276,12 +276,12 @@ public protocol ActivityLogging: Sendable {
 public protocol TrashStoring: Sendable {
     /// Persist a fresh trash entry. Returns the assigned record id
     /// so the caller can later attach a cached payload via
-    /// `markCached(id:fileName:)`.
+    /// `markCached(id:fileName:encryptionMarked:)`.
     func record(_ item: TrashedItem) async
 
     /// Mark an existing record as having a cached payload on disk.
     /// Idempotent; no-op if the record was forgotten in the meantime.
-    func markCached(id: UUID, fileName: String) async
+    func markCached(id: UUID, fileName: String, encryptionMarked: Bool) async
 
     /// Update the cache status of an existing record without writing
     /// a fileName (e.g. flip to `.skippedTooLarge` or `.failed`).

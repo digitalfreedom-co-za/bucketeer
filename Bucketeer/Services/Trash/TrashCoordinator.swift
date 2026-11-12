@@ -143,7 +143,8 @@ final class TrashCoordinator {
         let state = await transferManager.awaitCompletion(id: downloadID)
         switch state {
         case .completed:
-            await trashStore.markCached(id: id, fileName: fileName)
+            let marked = await transferManager.takeDownloadedMarker(id: downloadID)
+            await trashStore.markCached(id: id, fileName: fileName, encryptionMarked: marked)
         default:
             try? FileManager.default.removeItem(at: destURL)
             await trashStore.markStatus(id: id, status: .failed)
@@ -169,13 +170,24 @@ final class TrashCoordinator {
         }
         // The capture keeps an encrypted object's envelope as-is; sealing
         // it again on upload would leave the restored object unreadable.
+        let encrypted: Bool
+        do {
+            encrypted = try await transferManager.cachedPayloadIsEncrypted(
+                at: fileURL, marked: item.encryptionMarked, accountID: account.id, bucket: item.bucket
+            )
+        } catch EncryptionError.noKeyForBucket {
+            return String(localized: "error.encryptedNoKey",
+                          defaultValue: "The object is encrypted, but no key is configured for this bucket.")
+        } catch {
+            return error.localizedDescription
+        }
         let id = await transferManager.enqueueUpload(
             account: account,
             bucket: item.bucket,
             key: item.key,
             localURL: fileURL,
             contentType: item.contentType,
-            bypassEncryption: BucketeerEnvelope.fileLooksEncrypted(at: fileURL)
+            bypassEncryption: encrypted
         )
         let state = await transferManager.awaitCompletion(id: id)
         switch state {

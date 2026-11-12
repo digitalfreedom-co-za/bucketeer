@@ -137,6 +137,13 @@ actor TransferManager: Transferring {
     /// Conditional uploads the server refused with 412. Read once by
     /// `uploadConditionally` and then dropped.
     private var preconditionRefused: Set<UUID> = []
+    /// Raw trash downloads retain their GET marker until the capture consumes it.
+    private var downloadedMarkers: [UUID: Bool] = [:]
+
+    func takeDownloadedMarker(id: UUID) -> Bool {
+        downloadedMarkers.removeValue(forKey: id) ?? false
+    }
+
     /// ETag each conditional upload's write answered with. Read once by
     /// `uploadConditionally` and then dropped.
     private var writtenETags: [UUID: String] = [:]
@@ -461,8 +468,11 @@ actor TransferManager: Transferring {
             }
         }
 
+        let encrypted = encryptionKey != nil || item.bypassEncryption
+        let metadata = encrypted ? [BucketeerEnvelope.s3MetadataKey: "1"] : nil
+
         if item.account.provider.family == .azureBlob {
-            await performAzureUpload(item: item)
+            await performAzureUpload(item: item, encrypted: encrypted)
             return
         }
 
@@ -489,6 +499,7 @@ actor TransferManager: Transferring {
                     key: item.task.key,
                     localURL: item.task.localURL,
                     contentType: item.contentType,
+                    metadata: metadata,
                     fileSize: total,
                     progress: { @Sendable [weak self] bytes in
                         await self?.setState(
@@ -509,7 +520,7 @@ actor TransferManager: Transferring {
                     contentType: item.contentType,
                     precondition: item.precondition,
                     enforced: item.account.provider.conditionalRequests,
-                    writer: SotoObjectWriter(s3: s3),
+                    writer: SotoObjectWriter(s3: s3, metadata: metadata),
                     progress: { @Sendable [weak self] bytes in
                         await self?.setState(id: id, state: .running(bytesTransferred: bytes, totalBytes: total))
                         await self?.chargeMultipartLimiter(id: id, observedBytes: bytes)
@@ -563,12 +574,13 @@ actor TransferManager: Transferring {
         let staging = StagedDownload.stagingURL(for: url)
         let staged = item.with(localURL: staging)
         do {
+            let marked: Bool
             if item.account.provider.family == .azureBlob {
-                try await downloadFromAzure(item: staged)
+                marked = try await downloadFromAzure(item: staged)
             } else {
-                try await downloadFromS3(item: staged)
+                marked = try await downloadFromS3(item: staged)
             }
-            if let failure = await finalizeDownloadDecryption(item: staged) {
+            if let failure = await finalizeDownloadDecryption(item: staged, marked: marked) {
                 StagedDownload.discard(staging)
                 setState(id: id, state: .failed(message: failure))
                 return
@@ -576,6 +588,7 @@ actor TransferManager: Transferring {
             // A cancel during decryption must not replace the file.
             try Task.checkCancellation()
             try StagedDownload.publish(staging, to: url)
+            if item.bypassDecryption { downloadedMarkers[id] = marked }
             setState(id: id, state: .completed)
         } catch {
             StagedDownload.discard(staging)
@@ -587,7 +600,7 @@ actor TransferManager: Transferring {
         }
     }
 
-    private func downloadFromS3(item: QueuedItem) async throws {
+    private func downloadFromS3(item: QueuedItem) async throws -> Bool {
         let id = item.task.id
         let s3 = try await factory.client(for: item.account)
 
@@ -607,7 +620,7 @@ actor TransferManager: Transferring {
             // Soto's multipartDownload refuses zero-length objects;
             // create the expected empty file ourselves.
             try Data().write(to: item.task.localURL)
-            return
+            return BucketeerEnvelope.isMarked(head.metadata)
         }
 
         if total < Self.multipartThreshold {
@@ -626,11 +639,11 @@ actor TransferManager: Transferring {
                 id: id,
                 state: .running(bytesTransferred: total, totalBytes: total)
             )
-            return
+            return BucketeerEnvelope.isMarked(response.metadata)
         }
 
         _ = try await s3.multipartDownload(
-            .init(bucket: item.task.bucket, key: item.task.key),
+            .init(bucket: item.task.bucket, ifMatch: head.eTag, key: item.task.key),
             partSize: Self.multipartPartSize,
             filename: item.task.localURL.path,
             progress: { @Sendable [weak self] fraction in
@@ -642,11 +655,12 @@ actor TransferManager: Transferring {
                 await self?.chargeMultipartLimiter(id: id, observedBytes: bytes)
             }
         )
+        return BucketeerEnvelope.isMarked(head.metadata)
     }
 
     // MARK: - Azure transports
 
-    private func performAzureUpload(item: QueuedItem) async {
+    private func performAzureUpload(item: QueuedItem, encrypted: Bool) async {
         let id = item.task.id
         guard let azure else {
             setState(
@@ -663,6 +677,7 @@ actor TransferManager: Transferring {
                 blob: item.task.key,
                 localURL: item.task.localURL,
                 contentType: item.contentType,
+                encrypted: encrypted,
                 precondition: item.precondition,
                 progress: { @Sendable [weak self] bytes, totalBytes in
                     await self?.setState(
@@ -691,12 +706,12 @@ actor TransferManager: Transferring {
         }
     }
 
-    private func downloadFromAzure(item: QueuedItem) async throws {
+    private func downloadFromAzure(item: QueuedItem) async throws -> Bool {
         let id = item.task.id
         guard let azure else {
             throw BucketeerError.unknown(message: "Azure transport not configured.")
         }
-        try await azure.download(
+        return try await azure.download(
             account: item.account,
             container: item.task.bucket,
             blob: item.task.key,
@@ -712,83 +727,38 @@ actor TransferManager: Transferring {
 
     // MARK: - Encryption finalisation (Phase 13.15)
 
-    /// Inspect the just-downloaded staging file. If it starts with the
-    /// Bucketeer envelope magic AND we have a key for the
-    /// (account, bucket) pair, decrypt it in place before it is
-    /// published to the destination.
-    ///
-    /// Called from every download completion site so encryption is
-    /// transparent regardless of single-shot vs multipart path.
-    ///
-    /// Returns `nil` on success (including "nothing to decrypt") or
-    /// the failure message when the file is an envelope we could not
-    /// open. Callers translate that into a `.failed` transfer state —
-    /// a green checkmark on a file that is still ciphertext would be
-    /// a silent failure.
-    private func finalizeDownloadDecryption(item: QueuedItem) async -> String? {
-        // Trash-capture downloads pass
-        // `bypassDecryption = true` so the local cache keeps the
-        // raw envelope instead of holding plaintext copies of
-        // encrypted objects.
-        if item.bypassDecryption { return nil }
-        guard let encryptionGate else { return nil }
-        let url = item.task.localURL
-        guard FileManager.default.fileExists(atPath: url.path) else { return nil }
-        guard let data = try? Data(contentsOf: url, options: .mappedIfSafe) else { return nil }
-        guard BucketeerEnvelope.looksEncrypted(data) else { return nil }
-        let lookedUpKey: SymmetricKey?
+    /// Read and authenticate before publishing. Trash capture retains raw bytes
+    /// and persists the response marker alongside its cached payload.
+    private func finalizeDownloadDecryption(item: QueuedItem, marked: Bool) async -> String? {
         do {
-            lookedUpKey = try await encryptionGate.sendableKey(
-                accountID: item.account.id,
-                bucket: item.task.bucket
+            if item.bypassDecryption {
+                _ = try Data(contentsOf: item.task.localURL, options: .mappedIfSafe)
+                return nil
+            }
+            let key = try await encryptionGate?.sendableKey(
+                accountID: item.account.id, bucket: item.task.bucket
             )?.key
-        } catch {
-            return errorMessage(error)
-        }
-        guard let key = lookedUpKey else {
-            // Fail closed. The object is a Bucketeer
-            // envelope but no key exists for this (account, bucket) —
-            // e.g. the user deleted the key. A `.completed` transfer
-            // would hand them ciphertext with a green checkmark.
-            let message = String(
-                localized: "error.encryptedNoKey",
-                defaultValue: "The object is encrypted, but no key is configured for this bucket."
-            )
-            await activityLog?.record(
-                ActivityEntry(
-                    kind: .download,
-                    status: .failure,
-                    accountID: item.account.id,
-                    accountName: item.account.name,
-                    bucket: item.task.bucket,
-                    key: item.task.key,
-                    errorMessage: message
-                )
-            )
-            return message
-        }
-        do {
-            let plaintext = try BucketeerEnvelope.open(envelope: data, key: key)
-            try plaintext.write(to: url, options: .atomic)
+            try BucketeerEnvelope.finalizeDownload(at: item.task.localURL, marked: marked, key: key)
             return nil
         } catch {
-            // Report the failure — the caller discards the staging
-            // file and marks the transfer `.failed`, so neither
-            // ciphertext nor a green checkmark reaches the destination.
-            let message = "Decryption failed: \(error.localizedDescription)"
-            await activityLog?.record(
-                ActivityEntry(
-                    kind: .download,
-                    status: .failure,
-                    accountID: item.account.id,
-                    accountName: item.account.name,
-                    bucket: item.task.bucket,
-                    key: item.task.key,
-                    errorMessage: message
-                )
-            )
-            return message
+            return encryptionErrorMessage(error)
         }
+    }
+
+    /// Validate cached ciphertext before bypassing upload encryption. Plain
+    /// files still use the normal upload gate, including BCKT-prefixed files.
+    func cachedPayloadIsEncrypted(at url: URL, marked: Bool, accountID: UUID, bucket: String) async throws -> Bool {
+        let key = try await encryptionGate?.sendableKey(accountID: accountID, bucket: bucket)?.key
+        let data = try Data(contentsOf: url, options: .mappedIfSafe)
+        return try BucketeerEnvelope.decryptedPayload(data, marked: marked, key: key) != nil
+    }
+
+    private func encryptionErrorMessage(_ error: Error) -> String {
+        if error as? EncryptionError == .noKeyForBucket {
+            return String(localized: "error.encryptedNoKey",
+                          defaultValue: "The object is encrypted, but no key is configured for this bucket.")
+        }
+        return errorMessage(error)
     }
 
     // MARK: - Bandwidth (Phase 13.2)

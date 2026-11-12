@@ -46,6 +46,7 @@ public struct TrashedItem: Identifiable, Hashable, Sendable {
     public let deletedAt: Date
     public let expiresAt: Date
     public var cacheStatus: TrashCacheStatus
+    public var encryptionMarked: Bool
     public var cachedFileName: String?
 
     public init(
@@ -60,7 +61,8 @@ public struct TrashedItem: Identifiable, Hashable, Sendable {
         deletedAt: Date = Date(),
         expiresAt: Date,
         cacheStatus: TrashCacheStatus = .pending,
-        cachedFileName: String? = nil
+        cachedFileName: String? = nil,
+        encryptionMarked: Bool = false
     ) {
         self.id = id
         self.accountID = accountID
@@ -74,6 +76,7 @@ public struct TrashedItem: Identifiable, Hashable, Sendable {
         self.expiresAt = expiresAt
         self.cacheStatus = cacheStatus
         self.cachedFileName = cachedFileName
+        self.encryptionMarked = encryptionMarked
     }
 
     /// Convenience for the UI — the last path component of the key,

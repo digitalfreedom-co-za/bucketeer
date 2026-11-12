@@ -47,9 +47,11 @@ actor PreviewCache {
     private var inflight: [String: Task<URL, Error>] = [:]
 
     private let downloader: PreviewDownloader
+    private let encryptionGate: BucketEncryptionGate?
 
-    init(downloader: PreviewDownloader, root: URL? = nil) {
+    init(downloader: PreviewDownloader, encryptionGate: BucketEncryptionGate? = nil, root: URL? = nil) {
         self.downloader = downloader
+        self.encryptionGate = encryptionGate
         let dir = root ?? FileManager.default
             .temporaryDirectory
             .appending(path: "BucketeerPreviews", directoryHint: .isDirectory)
@@ -118,6 +120,7 @@ actor PreviewCache {
         }
         let url = fileURL(for: hash, key: object.key)
         let downloader = self.downloader
+        let encryptionGate = self.encryptionGate
         let task = Task { () throws -> URL in
             // Download beside the final path and move on success: a
             // file at `url` is treated as a complete cache hit, so a
@@ -125,13 +128,14 @@ actor PreviewCache {
             let partial = url.appendingPathExtension("part")
             try? FileManager.default.removeItem(at: partial)
             defer { try? FileManager.default.removeItem(at: partial) }
-            try await downloader.fetch(
+            let marked = try await downloader.fetch(
                 account: account,
                 bucket: bucket,
                 key: object.key,
                 to: partial
             )
-            try Self.rejectEncryptedPayload(at: partial)
+            let key = try await encryptionGate?.sendableKey(accountID: account.id, bucket: bucket)?.key
+            try Self.rejectEncryptedPayload(at: partial, marked: marked, key: key)
             try? FileManager.default.removeItem(at: url)
             try FileManager.default.moveItem(at: partial, to: url)
             return url
@@ -152,11 +156,20 @@ actor PreviewCache {
         }
     }
 
-    /// Previews never decrypt: the cache lives on disk, and plaintext
-    /// copies of encrypted objects must not outlive the transfer that
-    /// asked for them (same rule as the trash cache).
-    private static func rejectEncryptedPayload(at url: URL) throws {
-        guard BucketeerEnvelope.fileLooksEncrypted(at: url) else { return }
+    /// Authenticate to distinguish legacy envelopes from plain BCKT prefixes,
+    /// but preserve the preview policy: never persist decrypted plaintext.
+    private static func rejectEncryptedPayload(at url: URL, marked: Bool, key: SymmetricKey?) throws {
+        let data = try Data(contentsOf: url, options: .mappedIfSafe)
+        let plaintext: Data?
+        do {
+            plaintext = try BucketeerEnvelope.decryptedPayload(data, marked: marked, key: key)
+        } catch EncryptionError.noKeyForBucket {
+            throw BucketeerError.unknown(message: String(
+                localized: "error.encryptedNoKey",
+                defaultValue: "The object is encrypted, but no key is configured for this bucket."
+            ))
+        }
+        guard plaintext != nil else { return }
         throw BucketeerError.unknown(message: String(
             localized: "preview.error.encrypted",
             defaultValue: "Previews aren't available for encrypted objects. Download the object to open it."
