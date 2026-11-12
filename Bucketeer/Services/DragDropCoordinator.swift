@@ -23,6 +23,17 @@ final class DragDropCoordinator {
     /// Most recent drop failure, surfaced via an alert in `ContentView`.
     /// Cleared by the alert's dismiss button.
     var lastError: BucketeerError?
+    /// A drop that would store decrypted copies in a bucket without a
+    /// key. `ContentView` asks the user and calls `confirmUnencryptedDrop`.
+    var pendingUnencryptedDrop: PendingUnencryptedDrop?
+
+    struct PendingUnencryptedDrop {
+        let refs: [S3ObjectRef]
+        let sourceBucket: String
+        let destinationAccount: S3Account
+        let destinationBucket: String
+        let destinationPrefix: String
+    }
 
     private let s3Browser: any S3Browsing
     private let transferManager: TransferManager
@@ -79,6 +90,77 @@ final class DragDropCoordinator {
 
     // MARK: - Object-ref drops (intra-app)
 
+    /// Handle one drop of object refs. A drop that would decrypt files
+    /// from an encrypted bucket into a bucket without a key waits in
+    /// `pendingUnencryptedDrop`; the user is asked once for the whole drop.
+    func dropObjectRefs(
+        _ refs: [S3ObjectRef],
+        destinationAccount: S3Account,
+        destinationBucket: String,
+        destinationPrefix: String
+    ) async {
+        if let sourceBucket = await encryptedSourceBucket(
+            of: refs, destinationAccount: destinationAccount, destinationBucket: destinationBucket
+        ) {
+            pendingUnencryptedDrop = PendingUnencryptedDrop(
+                refs: refs,
+                sourceBucket: sourceBucket,
+                destinationAccount: destinationAccount,
+                destinationBucket: destinationBucket,
+                destinationPrefix: destinationPrefix
+            )
+            return
+        }
+        await drop(refs, destinationAccount: destinationAccount,
+                   destinationBucket: destinationBucket, destinationPrefix: destinationPrefix)
+    }
+
+    /// Runs a drop the user accepted to store unencrypted.
+    func confirmUnencryptedDrop(_ pending: PendingUnencryptedDrop) async {
+        pendingUnencryptedDrop = nil
+        await drop(pending.refs, destinationAccount: pending.destinationAccount,
+                   destinationBucket: pending.destinationBucket, destinationPrefix: pending.destinationPrefix)
+    }
+
+    /// The first source bucket of the drop that is encrypted while the
+    /// destination has no key. Ignores refs the drop skips anyway:
+    /// folders and cross-account refs without the Pro unlock.
+    private func encryptedSourceBucket(
+        of refs: [S3ObjectRef],
+        destinationAccount: S3Account,
+        destinationBucket: String
+    ) async -> String? {
+        guard let encryptionGate else { return nil }
+        for ref in refs where !ref.isFolder {
+            if ref.accountID != destinationAccount.id, !entitlements.isUnlocked(.s3ToS3Copy) { continue }
+            if await encryptionGate.isEncryptedToPlain(
+                sourceAccountID: ref.accountID,
+                sourceBucket: ref.bucket,
+                destinationAccountID: destinationAccount.id,
+                destinationBucket: destinationBucket
+            ) {
+                return ref.bucket
+            }
+        }
+        return nil
+    }
+
+    private func drop(
+        _ refs: [S3ObjectRef],
+        destinationAccount: S3Account,
+        destinationBucket: String,
+        destinationPrefix: String
+    ) async {
+        for ref in refs {
+            await dropObjectRef(
+                ref,
+                destinationAccount: destinationAccount,
+                destinationBucket: destinationBucket,
+                destinationPrefix: destinationPrefix
+            )
+        }
+    }
+
     /// Handle a dropped `S3ObjectRef`. Resolves to one of three paths:
     /// - **No-op** when the source and destination resolve to the same
     ///   key (drag onto self).
@@ -88,7 +170,7 @@ final class DragDropCoordinator {
     /// - **Round-trip** download → upload when source and destination
     ///   live on different accounts. Uses a temp file in the sandbox
     ///   container as the staging spot.
-    func dropObjectRef(
+    private func dropObjectRef(
         _ ref: S3ObjectRef,
         destinationAccount: S3Account,
         destinationBucket: String,

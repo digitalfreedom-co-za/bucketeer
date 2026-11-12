@@ -44,8 +44,27 @@ final class CrossAccountCopyCoordinator {
         self.encryptionGate = encryptionGate
     }
 
+    /// Whether the copy would decrypt objects of an encrypted source
+    /// bucket and store them unencrypted in the destination. The UI asks
+    /// the user before it calls `copy` with `allowsDecryptedCopies`.
+    func isEncryptedToPlain(
+        sourceAccount: S3Account,
+        sourceBucket: String,
+        destinationAccount: S3Account,
+        destinationBucket: String
+    ) async -> Bool {
+        await encryptionGate?.isEncryptedToPlain(
+            sourceAccountID: sourceAccount.id,
+            sourceBucket: sourceBucket,
+            destinationAccountID: destinationAccount.id,
+            destinationBucket: destinationBucket
+        ) ?? false
+    }
+
     /// Perform the copy. `keepSource == false` deletes the source
     /// object after a successful destination write — i.e. "move".
+    /// Without `allowsDecryptedCopies` nothing is copied from an
+    /// encrypted bucket into one without a key.
     /// Returns the per-object outcome so the UI can summarise
     /// failures without exploding the error banner.
     @discardableResult
@@ -56,8 +75,16 @@ final class CrossAccountCopyCoordinator {
         destinationAccount: S3Account,
         destinationBucket: String,
         destinationPrefix: String,
-        keepSource: Bool
+        keepSource: Bool,
+        allowsDecryptedCopies: Bool
     ) async -> [(key: String, error: BucketeerError?)] {
+        if !allowsDecryptedCopies, await isEncryptedToPlain(
+            sourceAccount: sourceAccount, sourceBucket: sourceBucket,
+            destinationAccount: destinationAccount, destinationBucket: destinationBucket
+        ) {
+            let refusal = BucketeerError.unknown(message: String(localized: "crossCopy.error.unencryptedDestination"))
+            return keys.map { ($0, refusal) }
+        }
         var results: [(key: String, error: BucketeerError?)] = []
         // Once either side of the copy
         // touches a BYOK-protected bucket, we MUST go through the

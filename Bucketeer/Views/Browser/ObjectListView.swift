@@ -185,7 +185,15 @@ struct ObjectListView: View {
                 sourceBucket: target.bucket,
                 keys: target.keys,
                 accounts: container.accountListViewModel.accounts,
-                onSubmit: { destAcc, destBucket, destPrefix, keepSource in
+                isEncryptedToPlain: { destAcc, destBucket in
+                    await container.crossAccountCopyCoordinator.isEncryptedToPlain(
+                        sourceAccount: target.account,
+                        sourceBucket: target.bucket,
+                        destinationAccount: destAcc,
+                        destinationBucket: destBucket
+                    )
+                },
+                onSubmit: { destAcc, destBucket, destPrefix, keepSource, allowsDecryptedCopies in
                     await container.crossAccountCopyCoordinator.copy(
                         sourceAccount: target.account,
                         sourceBucket: target.bucket,
@@ -193,7 +201,8 @@ struct ObjectListView: View {
                         destinationAccount: destAcc,
                         destinationBucket: destBucket,
                         destinationPrefix: destPrefix,
-                        keepSource: keepSource
+                        keepSource: keepSource,
+                        allowsDecryptedCopies: allowsDecryptedCopies
                     )
                 }
             )
@@ -375,14 +384,12 @@ struct ObjectListView: View {
         else { return false }
         let prefix = viewModel.prefix
         Task {
-            for ref in refs {
-                await container.dragDropCoordinator.dropObjectRef(
-                    ref,
-                    destinationAccount: account,
-                    destinationBucket: bucket,
-                    destinationPrefix: prefix
-                )
-            }
+            await container.dragDropCoordinator.dropObjectRefs(
+                refs,
+                destinationAccount: account,
+                destinationBucket: bucket,
+                destinationPrefix: prefix
+            )
         }
         return true
     }

@@ -160,14 +160,12 @@ extension BucketListView {
     private func handleObjectRefDrop(_ refs: [S3ObjectRef], into bucket: String) -> Bool {
         guard let destinationAccount = viewModel.account else { return false }
         Task {
-            for ref in refs {
-                await container.dragDropCoordinator.dropObjectRef(
-                    ref,
-                    destinationAccount: destinationAccount,
-                    destinationBucket: bucket,
-                    destinationPrefix: ""
-                )
-            }
+            await container.dragDropCoordinator.dropObjectRefs(
+                refs,
+                destinationAccount: destinationAccount,
+                destinationBucket: bucket,
+                destinationPrefix: ""
+            )
         }
         return true
     }

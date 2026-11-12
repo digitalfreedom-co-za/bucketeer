@@ -57,6 +57,24 @@ struct ContentView: View {
             Text(error.errorDescription ?? "")
         }
         .alert(
+            "encryption.plainCopy.title",
+            isPresented: Binding(
+                get: { container.dragDropCoordinator.pendingUnencryptedDrop != nil },
+                set: { if !$0 { container.dragDropCoordinator.pendingUnencryptedDrop = nil } }
+            ),
+            presenting: container.dragDropCoordinator.pendingUnencryptedDrop
+        ) { drop in
+            Button("action.cancel", role: .cancel) {
+                container.dragDropCoordinator.pendingUnencryptedDrop = nil
+            }
+            .keyboardShortcut(.defaultAction)
+            Button("encryption.plainCopy.confirm", role: .destructive) {
+                Task { await container.dragDropCoordinator.confirmUnencryptedDrop(drop) }
+            }
+        } message: { drop in
+            Text("encryption.plainCopy.message \(drop.sourceBucket) \(drop.destinationBucket)")
+        }
+        .alert(
             "browser.action.errorTitle",
             isPresented: Binding(
                 get: { container.mountController.lastError != nil },
