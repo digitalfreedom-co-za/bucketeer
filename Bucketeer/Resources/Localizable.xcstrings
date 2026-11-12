@@ -85285,6 +85285,881 @@
           }
         }
       }
+    },
+    "encryption.plainCopy.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uložit nešifrované kopie?"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gem ukrypterede kopier?"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unverschlüsselte Kopien speichern?"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αποθήκευση μη κρυπτογραφημένων αντιγράφων;"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Store Unencrypted Copies?"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Store Unencrypted Copies?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Guardar copias sin cifrar?"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tallennetaanko salaamattomat kopiot?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrer des copies non chiffrées ?"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menti a titkosítatlan másolatokat?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salvare copie non crittografate?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暗号化されていないコピーを保存しますか？"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "암호화되지 않은 사본을 저장하시겠습니까?"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lagre ukrypterte kopier?"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Onversleutelde kopieën bewaren?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zapisać niezaszyfrowane kopie?"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salvar cópias não criptografadas?"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar cópias não encriptadas?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохранить незашифрованные копии?"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spara okrypterade kopior?"
+          }
+        }
+      }
+    },
+    "encryption.plainCopy.message %@ %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%1$@“ je šifrovaný, ale „%2$@“ nemá šifrovací klíč. Soubory budou dešifrovány a v cíli uloženy nešifrované."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "»%1$@« er krypteret, men »%2$@« har ingen krypteringsnøgle. Filerne bliver dekrypteret og gemt ukrypteret i destinationen."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%1$@“ ist verschlüsselt, aber „%2$@“ hat keinen Schlüssel. Die Dateien werden entschlüsselt und im Ziel unverschlüsselt gespeichert."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το «%1$@» είναι κρυπτογραφημένο, αλλά το «%2$@» δεν έχει κλειδί κρυπτογράφησης. Τα αρχεία θα αποκρυπτογραφηθούν και θα αποθηκευτούν χωρίς κρυπτογράφηση στον προορισμό."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@” is encrypted, but “%2$@” has no encryption key. The files will be decrypted and stored unencrypted in the destination."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@” is encrypted, but “%2$@” has no encryption key. The files will be decrypted and stored unencrypted in the destination."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@” está cifrado, pero “%2$@” no tiene clave de cifrado. Los archivos se descifrarán y se guardarán sin cifrar en el destino."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "”%1$@” on salattu, mutta kohteella ”%2$@” ei ole salausavainta. Tiedostojen salaus puretaan ja ne tallennetaan kohteeseen salaamattomina."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "« %1$@ » est chiffré, mais « %2$@ » n’a pas de clé de chiffrement. Les fichiers seront déchiffrés et enregistrés sans chiffrement dans la destination."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A(z) „%1$@” titkosított, de a(z) „%2$@” nem rendelkezik titkosítási kulccsal. A fájlok visszafejtve, titkosítatlanul kerülnek a célhelyre."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@” è crittografato, ma “%2$@” non ha una chiave di crittografia. I file verranno decrittografati e salvati senza crittografia nella destinazione."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「%1$@」は暗号化されていますが、「%2$@」には鍵が設定されていません。ファイルは復号され、暗号化されないまま宛先に保存されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%1$@’은(는) 암호화되어 있지만 ‘%2$@’에는 암호화 키가 없습니다. 파일이 복호화되어 대상에 암호화되지 않은 상태로 저장됩니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«%1$@» er kryptert, men «%2$@» har ingen krypteringsnøkkel. Filene blir dekryptert og lagret ukryptert i målet."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%1$@’ is versleuteld, maar ‘%2$@’ heeft geen versleutelingssleutel. De bestanden worden ontsleuteld en onversleuteld in de bestemming bewaard."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%1$@” jest zaszyfrowany, ale „%2$@” nie ma klucza szyfrowania. Pliki zostaną odszyfrowane i zapisane w miejscu docelowym bez szyfrowania."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@” está criptografado, mas “%2$@” não tem chave de criptografia. Os arquivos serão descriptografados e salvos sem criptografia no destino."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«%1$@» está encriptado, mas «%2$@» não tem chave de encriptação. Os ficheiros serão desencriptados e guardados sem encriptação no destino."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«%1$@» зашифрован, но у «%2$@» нет ключа шифрования. Файлы будут расшифрованы и сохранены в месте назначения без шифрования."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "”%1$@” är krypterad, men ”%2$@” har ingen krypteringsnyckel. Filerna dekrypteras och sparas okrypterade i målet."
+          }
+        }
+      }
+    },
+    "encryption.plainCopy.confirm" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uložit nešifrovaně"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gem ukrypteret"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unverschlüsselt speichern"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αποθήκευση χωρίς κρυπτογράφηση"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Store Unencrypted"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Store Unencrypted"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar sin cifrar"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tallenna salaamattomina"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrer sans chiffrement"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mentés titkosítás nélkül"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salva senza crittografia"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暗号化せずに保存"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "암호화하지 않고 저장"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lagre ukryptert"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Onversleuteld bewaren"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zapisz bez szyfrowania"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salvar sem criptografia"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar sem encriptação"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохранить без шифрования"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spara okrypterat"
+          }
+        }
+      }
+    },
+    "crossCopy.error.unencryptedDestination" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nezkopírováno: cílový bucket nemá šifrovací klíč a uložení nešifrovaných kopií nebylo potvrzeno."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ikke kopieret: Destinationens bucket har ingen krypteringsnøgle, og lagring af ukrypterede kopier blev ikke bekræftet."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht kopiert: Der Ziel-Bucket hat keinen Schlüssel, und das unverschlüsselte Speichern wurde nicht bestätigt."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Δεν αντιγράφηκε: το bucket προορισμού δεν έχει κλειδί κρυπτογράφησης και η αποθήκευση μη κρυπτογραφημένων αντιγράφων δεν επιβεβαιώθηκε."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not copied: the destination bucket has no encryption key, and storing unencrypted copies was not confirmed."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not copied: the destination bucket has no encryption key, and storing unencrypted copies was not confirmed."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No copiado: el bucket de destino no tiene clave de cifrado y no se confirmó guardar copias sin cifrar."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ei kopioitu: kohdebucketilla ei ole salausavainta, eikä salaamattomien kopioiden tallennusta vahvistettu."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non copié : le bucket de destination n’a pas de clé de chiffrement et l’enregistrement de copies non chiffrées n’a pas été confirmé."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nem lett másolva: a cél bucket nem rendelkezik titkosítási kulccsal, és a titkosítatlan másolatok mentését nem erősítette meg."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non copiato: il bucket di destinazione non ha una chiave di crittografia e il salvataggio di copie non crittografate non è stato confermato."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コピーされませんでした: 宛先のバケットに鍵が設定されておらず、暗号化なしでの保存が確認されていません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "복사되지 않음: 대상 버킷에 암호화 키가 없으며 암호화되지 않은 사본 저장이 확인되지 않았습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ikke kopiert: Målbucketen har ingen krypteringsnøkkel, og lagring av ukrypterte kopier ble ikke bekreftet."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niet gekopieerd: de doelbucket heeft geen versleutelingssleutel en het bewaren van onversleutelde kopieën is niet bevestigd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie skopiowano: docelowy bucket nie ma klucza szyfrowania, a zapis niezaszyfrowanych kopii nie został potwierdzony."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não copiado: o bucket de destino não tem chave de criptografia e o salvamento de cópias não criptografadas não foi confirmado."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não copiado: o bucket de destino não tem chave de encriptação e não foi confirmado guardar cópias não encriptadas."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не скопировано: у бакета назначения нет ключа шифрования, а сохранение незашифрованных копий не подтверждено."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inte kopierat: Målbucketen har ingen krypteringsnyckel, och sparande av okrypterade kopior bekräftades inte."
+          }
+        }
+      }
+    },
+    "sync.field.allowsDecryptedCopies" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ukládat nešifrované kopie šifrovaných souborů"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gem ukrypterede kopier af krypterede filer"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unverschlüsselte Kopien verschlüsselter Dateien speichern"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αποθήκευση μη κρυπτογραφημένων αντιγράφων κρυπτογραφημένων αρχείων"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Store unencrypted copies of encrypted files"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Store unencrypted copies of encrypted files"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar copias sin cifrar de archivos cifrados"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tallenna salattujen tiedostojen salaamattomat kopiot"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrer des copies non chiffrées des fichiers chiffrés"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Titkosított fájlok titkosítatlan másolatainak mentése"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salva copie non crittografate dei file crittografati"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暗号化されたファイルを暗号化せずにコピーして保存"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "암호화된 파일의 암호화되지 않은 사본 저장"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lagre ukrypterte kopier av krypterte filer"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Onversleutelde kopieën van versleutelde bestanden bewaren"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zapisuj niezaszyfrowane kopie zaszyfrowanych plików"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salvar cópias não criptografadas de arquivos criptografados"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar cópias não encriptadas de ficheiros encriptados"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохранять незашифрованные копии зашифрованных файлов"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spara okrypterade kopior av krypterade filer"
+          }
+        }
+      }
+    },
+    "sync.allowsDecryptedCopies.hint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Platí, když je zdrojový bucket šifrovaný a cílový bucket nemá šifrovací klíč: soubory se dešifrují a uloží nešifrované. Když je volba vypnutá, taková úloha se nespustí."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gælder, når kildens bucket er krypteret, og destinationens bucket ikke har nogen krypteringsnøgle: Filerne dekrypteres og gemmes ukrypteret. Når indstillingen er slået fra, kører et sådant job ikke."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gilt, wenn der Quell-Bucket verschlüsselt ist und der Ziel-Bucket keinen Schlüssel hat: Die Dateien werden entschlüsselt und unverschlüsselt gespeichert. Ist die Option aus, läuft ein solcher Auftrag nicht."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ισχύει όταν το bucket προέλευσης είναι κρυπτογραφημένο και το bucket προορισμού δεν έχει κλειδί κρυπτογράφησης: τα αρχεία αποκρυπτογραφούνται και αποθηκεύονται χωρίς κρυπτογράφηση. Όταν η επιλογή είναι ανενεργή, μια τέτοια εργασία δεν εκτελείται."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Applies when the source bucket is encrypted and the destination bucket has no encryption key: files are decrypted and stored unencrypted. When this is off, such a job does not run."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Applies when the source bucket is encrypted and the destination bucket has no encryption key: files are decrypted and stored unencrypted. When this is off, such a job does not run."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se aplica cuando el bucket de origen está cifrado y el de destino no tiene clave de cifrado: los archivos se descifran y se guardan sin cifrar. Si está desactivada, esa tarea no se ejecuta."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koskee tilannetta, jossa lähdebucket on salattu eikä kohdebucketilla ole salausavainta: tiedostojen salaus puretaan ja ne tallennetaan salaamattomina. Kun asetus on pois päältä, tällaista työtä ei suoriteta."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "S’applique lorsque le bucket source est chiffré et que le bucket de destination n’a pas de clé de chiffrement : les fichiers sont déchiffrés et enregistrés sans chiffrement. Si l’option est désactivée, une telle tâche ne s’exécute pas."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Akkor érvényes, ha a forrás bucket titkosított, a cél bucket pedig nem rendelkezik titkosítási kulccsal: a fájlok visszafejtve, titkosítatlanul kerülnek mentésre. Ha a beállítás ki van kapcsolva, az ilyen feladat nem fut le."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si applica quando il bucket di origine è crittografato e quello di destinazione non ha una chiave di crittografia: i file vengono decrittografati e salvati senza crittografia. Se l’opzione è disattivata, un job di questo tipo non viene eseguito."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ソースのバケットが暗号化されていて、宛先のバケットに鍵が設定されていない場合に適用されます。ファイルは復号され、暗号化されないまま保存されます。オフの場合、このようなジョブは実行されません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "소스 버킷이 암호화되어 있고 대상 버킷에 암호화 키가 없을 때 적용됩니다. 파일이 복호화되어 암호화되지 않은 상태로 저장됩니다. 이 옵션이 꺼져 있으면 해당 작업은 실행되지 않습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gjelder når kildebucketen er kryptert og målbucketen ikke har noen krypteringsnøkkel: Filene dekrypteres og lagres ukryptert. Når innstillingen er av, kjøres ikke en slik jobb."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geldt als de bronbucket versleuteld is en de doelbucket geen versleutelingssleutel heeft: de bestanden worden ontsleuteld en onversleuteld bewaard. Staat deze optie uit, dan wordt zo’n synchronisatie niet uitgevoerd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dotyczy sytuacji, gdy źródłowy bucket jest zaszyfrowany, a docelowy nie ma klucza szyfrowania: pliki są odszyfrowywane i zapisywane bez szyfrowania. Gdy opcja jest wyłączona, takie zadanie nie zostanie uruchomione."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vale quando o bucket de origem está criptografado e o bucket de destino não tem chave de criptografia: os arquivos são descriptografados e salvos sem criptografia. Com a opção desativada, essa tarefa não é executada."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplica-se quando o bucket de origem está encriptado e o bucket de destino não tem chave de encriptação: os ficheiros são desencriptados e guardados sem encriptação. Com a opção desativada, essa tarefa não é executada."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Действует, когда исходный бакет зашифрован, а у бакета назначения нет ключа шифрования: файлы расшифровываются и сохраняются без шифрования. Если параметр выключен, такое задание не запускается."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gäller när källbucketen är krypterad och målbucketen saknar krypteringsnyckel: filerna dekrypteras och sparas okrypterade. När alternativet är av körs inte ett sådant jobb."
+          }
+        }
+      }
+    },
+    "sync.error.encryptedToPlain" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zdrojový bucket je šifrovaný, ale cílový bucket nemá šifrovací klíč. Chcete-li tuto synchronizaci povolit, zapněte v úloze volbu „Ukládat nešifrované kopie šifrovaných souborů“."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kildens bucket er krypteret, men destinationens bucket har ingen krypteringsnøgle. Slå »Gem ukrypterede kopier af krypterede filer« til i jobbet for at tillade denne synkronisering."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Quell-Bucket ist verschlüsselt, aber der Ziel-Bucket hat keinen Schlüssel. Aktiviere im Auftrag „Unverschlüsselte Kopien verschlüsselter Dateien speichern“, um diese Synchronisierung zuzulassen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το bucket προέλευσης είναι κρυπτογραφημένο, αλλά το bucket προορισμού δεν έχει κλειδί κρυπτογράφησης. Ενεργοποιήστε την επιλογή «Αποθήκευση μη κρυπτογραφημένων αντιγράφων κρυπτογραφημένων αρχείων» στην εργασία για να επιτρέψετε αυτόν τον συγχρονισμό."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The source bucket is encrypted, but the destination bucket has no encryption key. Turn on “Store unencrypted copies of encrypted files” in the job to allow this sync."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The source bucket is encrypted, but the destination bucket has no encryption key. Turn on “Store unencrypted copies of encrypted files” in the job to allow this sync."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El bucket de origen está cifrado, pero el bucket de destino no tiene clave de cifrado. Activa “Guardar copias sin cifrar de archivos cifrados” en la tarea para permitir esta sincronización."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lähdebucket on salattu, mutta kohdebucketilla ei ole salausavainta. Salli tämä synkronointi ottamalla työssä käyttöön ”Tallenna salattujen tiedostojen salaamattomat kopiot”."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le bucket source est chiffré, mais le bucket de destination n’a pas de clé de chiffrement. Activez « Enregistrer des copies non chiffrées des fichiers chiffrés » dans la tâche pour autoriser cette synchronisation."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A forrás bucket titkosított, de a cél bucket nem rendelkezik titkosítási kulccsal. A szinkronizálás engedélyezéséhez kapcsolja be a feladatban a „Titkosított fájlok titkosítatlan másolatainak mentése” beállítást."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il bucket di origine è crittografato, ma il bucket di destinazione non ha una chiave di crittografia. Attiva “Salva copie non crittografate dei file crittografati” nel job per consentire questa sincronizzazione."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ソースのバケットは暗号化されていますが、宛先のバケットには鍵が設定されていません。この同期を許可するには、ジョブで「暗号化されたファイルを暗号化せずにコピーして保存」をオンにしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "소스 버킷은 암호화되어 있지만 대상 버킷에는 암호화 키가 없습니다. 이 동기화를 허용하려면 작업에서 ‘암호화된 파일의 암호화되지 않은 사본 저장’을 켜십시오."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kildebucketen er kryptert, men målbucketen har ingen krypteringsnøkkel. Slå på «Lagre ukrypterte kopier av krypterte filer» i jobben for å tillate denne synkroniseringen."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De bronbucket is versleuteld, maar de doelbucket heeft geen versleutelingssleutel. Schakel ‘Onversleutelde kopieën van versleutelde bestanden bewaren’ in bij de synchronisatie om dit toe te staan."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Źródłowy bucket jest zaszyfrowany, ale docelowy bucket nie ma klucza szyfrowania. Aby zezwolić na tę synchronizację, włącz w zadaniu opcję „Zapisuj niezaszyfrowane kopie zaszyfrowanych plików”."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O bucket de origem está criptografado, mas o bucket de destino não tem chave de criptografia. Ative “Salvar cópias não criptografadas de arquivos criptografados” na tarefa para permitir esta sincronização."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O bucket de origem está encriptado, mas o bucket de destino não tem chave de encriptação. Ative «Guardar cópias não encriptadas de ficheiros encriptados» na tarefa para permitir esta sincronização."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Исходный бакет зашифрован, но у бакета назначения нет ключа шифрования. Чтобы разрешить эту синхронизацию, включите в задании параметр «Сохранять незашифрованные копии зашифрованных файлов»."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Källbucketen är krypterad, men målbucketen har ingen krypteringsnyckel. Aktivera ”Spara okrypterade kopior av krypterade filer” i jobbet för att tillåta den här synkroniseringen."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"
