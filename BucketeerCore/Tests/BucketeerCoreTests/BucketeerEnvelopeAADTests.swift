@@ -40,5 +40,4 @@ struct BucketeerEnvelopeAADTests {
             #expect(error == .authenticationFailed || error == .badEnvelope)
         }
     }
-
 }

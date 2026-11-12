@@ -749,7 +749,10 @@ actor TransferManager: Transferring {
     /// envelopes must authenticate before bypassing upload encryption.
     func cachedPayloadIsEncrypted(at url: URL, marked: Bool, accountID: UUID, bucket: String) async throws -> Bool {
         if marked { return true }
-        let key = try await encryptionGate?.sendableKey(accountID: accountID, bucket: bucket)?.key
+        // Without a key the upload never encrypts, so the restore is byte-exact.
+        guard let key = try await encryptionGate?.sendableKey(accountID: accountID, bucket: bucket)?.key else {
+            return false
+        }
         let data = try Data(contentsOf: url, options: .mappedIfSafe)
         return try BucketeerEnvelope.decryptedPayload(data, marked: marked, key: key) != nil
     }
