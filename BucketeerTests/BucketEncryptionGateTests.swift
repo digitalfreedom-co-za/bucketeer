@@ -48,6 +48,29 @@ final class BucketEncryptionGateTests: XCTestCase {
         XCTAssertEqual(prompts, 1)
     }
 
+    func testServerSideCopyMatrix() async {
+        let otherAccountID = UUID()
+        let store = InMemoryEncryptionKeyStore(encryptedBuckets: [(accountID, "vault"), (accountID, "archive")])
+        let gate = BucketEncryptionGate(keyStore: store)
+        let cases: [(String, UUID, String, Bool)] = [
+            ("vault", accountID, "vault", true),
+            ("public", accountID, "public", true),
+            ("public", accountID, "other", true),
+            ("vault", accountID, "public", false),
+            ("public", accountID, "vault", false),
+            ("vault", accountID, "archive", false),
+            ("vault", otherAccountID, "vault", false),
+            ("public", otherAccountID, "public", true)
+        ]
+        for (source, destinationAccount, destination, expected) in cases {
+            let allowed = await gate.allowsServerSideCopy(
+                sourceAccountID: accountID, sourceBucket: source,
+                destinationAccountID: destinationAccount, destinationBucket: destination
+            )
+            XCTAssertEqual(allowed, expected, "\(source) → \(destinationAccount)/\(destination)")
+        }
+    }
+
     // MARK: - Encrypted to plain
 
     func testEncryptedSourceIntoBucketWithoutKeyIsEncryptedToPlain() {
