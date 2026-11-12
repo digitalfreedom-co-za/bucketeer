@@ -96,6 +96,53 @@ actor BucketEncryptionGate {
         return await !isEncrypted(accountID: destinationAccountID, bucket: destinationBucket)
     }
 
+    /// Key state of one bucket as far as routing can tell.
+    enum KeyState: Sendable {
+        case encrypted
+        case plain
+        /// The lookup failed (locked Keychain, store error).
+        case unknown
+    }
+
+    /// Whether a copy from source to destination would decrypt encrypted
+    /// objects and store the plaintext in a bucket without a key. Inside
+    /// one bucket the envelope is kept. An unknown state counts against
+    /// the user: an unreadable source may be encrypted, an unreadable
+    /// destination may have no key.
+    nonisolated static func isEncryptedToPlain(
+        source: KeyState,
+        destination: KeyState,
+        sameBucket: Bool
+    ) -> Bool {
+        guard !sameBucket else { return false }
+        return source != .plain && destination != .encrypted
+    }
+
+    /// Looks up both buckets and applies `isEncryptedToPlain`. Callers
+    /// ask the user (copy, drag) or refuse (sync) before the round trip.
+    func isEncryptedToPlain(
+        sourceAccountID: UUID,
+        sourceBucket: String,
+        destinationAccountID: UUID,
+        destinationBucket: String
+    ) async -> Bool {
+        let sameBucket = sourceAccountID == destinationAccountID && sourceBucket == destinationBucket
+        guard !sameBucket else { return false }
+        return await Self.isEncryptedToPlain(
+            source: keyState(accountID: sourceAccountID, bucket: sourceBucket),
+            destination: keyState(accountID: destinationAccountID, bucket: destinationBucket),
+            sameBucket: false
+        )
+    }
+
+    private func keyState(accountID: UUID, bucket: String) async -> KeyState {
+        do {
+            return try await key(accountID: accountID, bucket: bucket) != nil ? .encrypted : .plain
+        } catch {
+            return .unknown
+        }
+    }
+
     /// Invalidate the cache for one bucket — called after the user
     /// creates / deletes a key in the editor so the next transfer
     /// sees the change immediately rather than after the TTL.

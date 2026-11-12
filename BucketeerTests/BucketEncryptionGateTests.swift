@@ -10,7 +10,9 @@ import BucketeerCore
 
 /// Rule: once encryption is turned on for a bucket, no transfer may
 /// still see the bucket as unencrypted — not even one whose lookup was
-/// already running. In-memory key store only.
+/// already running. A copy that would decrypt an encrypted bucket into a
+/// bucket without a key is recognised before it starts. In-memory key
+/// store only.
 final class BucketEncryptionGateTests: XCTestCase {
     private let accountID = UUID()
 
@@ -28,6 +30,48 @@ final class BucketEncryptionGateTests: XCTestCase {
         let laterAnswer = try await gate.key(accountID: accountID, bucket: "photos")
         XCTAssertNotNil(pendingAnswer)
         XCTAssertNotNil(laterAnswer)
+    }
+
+    // MARK: - Encrypted to plain
+
+    func testEncryptedSourceIntoBucketWithoutKeyIsEncryptedToPlain() {
+        XCTAssertTrue(isEncryptedToPlain(.encrypted, .plain))
+        XCTAssertTrue(isEncryptedToPlain(.encrypted, .unknown), "an unreadable destination may have no key")
+        XCTAssertTrue(isEncryptedToPlain(.unknown, .plain), "an unreadable source may be encrypted")
+    }
+
+    func testEncryptedDestinationKeepsDataEncrypted() {
+        XCTAssertFalse(isEncryptedToPlain(.encrypted, .encrypted))
+        XCTAssertFalse(isEncryptedToPlain(.unknown, .encrypted))
+    }
+
+    func testPlainSourceNeverCounts() {
+        XCTAssertFalse(isEncryptedToPlain(.plain, .plain))
+        XCTAssertFalse(isEncryptedToPlain(.plain, .encrypted))
+        XCTAssertFalse(isEncryptedToPlain(.plain, .unknown))
+    }
+
+    func testCopyInsideOneEncryptedBucketKeepsTheEnvelope() async {
+        let store = InMemoryEncryptionKeyStore(encryptedBuckets: [(accountID, "vault")])
+        let gate = BucketEncryptionGate(keyStore: store)
+
+        let sameBucket = await gate.isEncryptedToPlain(
+            sourceAccountID: accountID, sourceBucket: "vault",
+            destinationAccountID: accountID, destinationBucket: "vault"
+        )
+        let otherBucket = await gate.isEncryptedToPlain(
+            sourceAccountID: accountID, sourceBucket: "vault",
+            destinationAccountID: accountID, destinationBucket: "public"
+        )
+        XCTAssertFalse(sameBucket)
+        XCTAssertTrue(otherBucket)
+    }
+
+    private func isEncryptedToPlain(
+        _ source: BucketEncryptionGate.KeyState,
+        _ destination: BucketEncryptionGate.KeyState
+    ) -> Bool {
+        BucketEncryptionGate.isEncryptedToPlain(source: source, destination: destination, sameBucket: false)
     }
 }
 
