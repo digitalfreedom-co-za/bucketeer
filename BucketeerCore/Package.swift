@@ -12,6 +12,7 @@ import PackageDescription
 /// the host target.
 let package = Package(
     name: "BucketeerCore",
+    defaultLocalization: "en",
     platforms: [
         .macOS("15.8")
     ],
@@ -30,7 +31,8 @@ let package = Package(
             dependencies: [
                 .product(name: "SotoS3", package: "soto")
             ],
-            path: "Sources/BucketeerCore"
+            path: "Sources/BucketeerCore",
+            resources: [.process("Resources")]
         ),
         .testTarget(
             name: "BucketeerCoreTests",

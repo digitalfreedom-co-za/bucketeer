@@ -876,9 +876,7 @@
         }
       }
     },
-    "" : {
-
-    },
+    "" : {},
     "about.publisher.entity" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -36035,256 +36033,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "DNS-uppslagningen för endpointens värdnamn misslyckades. För andra leverantörer än AWS betyder detta oftast att URL:en med bucket som underdomän inte serveras — aktivera path-style-adressering under kontots avancerade inställningar."
-          }
-        }
-      }
-    },
-    "error.encryptedNoKey" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Objekt je zašifrovaný, ale pro tento bucket není nastaven žádný klíč."
-          }
-        },
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Objektet er krypteret, men der er ikke konfigureret nogen nøgle til denne bucket."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Das Objekt ist verschlüsselt, aber für diesen Bucket ist kein Schlüssel hinterlegt."
-          }
-        },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Το αντικείμενο είναι κρυπτογραφημένο, αλλά δεν έχει ρυθμιστεί κλειδί για αυτό το bucket."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The object is encrypted, but no key is configured for this bucket."
-          }
-        },
-        "en-GB" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The object is encrypted, but no key is configured for this bucket."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "El objeto está cifrado, pero no hay ninguna clave configurada para este bucket."
-          }
-        },
-        "fi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Objekti on salattu, mutta tälle bucketille ei ole määritetty avainta."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’objet est chiffré, mais aucune clé n’est configurée pour ce bucket."
-          }
-        },
-        "hu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Az objektum titkosított, de ehhez a buckethez nincs beállítva kulcs."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’oggetto è crittografato, ma per questo bucket non è configurata alcuna chiave."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "オブジェクトは暗号化されていますが、このバケットには暗号鍵が設定されていません。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "객체가 암호화되어 있지만 이 버킷에 구성된 키가 없습니다."
-          }
-        },
-        "nb" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Objektet er kryptert, men ingen nøkkel er konfigurert for denne bucketen."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Het object is versleuteld, maar er is geen sleutel geconfigureerd voor deze bucket."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Obiekt jest zaszyfrowany, ale dla tego bucketu nie skonfigurowano klucza."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O objeto está criptografado, mas nenhuma chave está configurada para este bucket."
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O objeto está encriptado, mas não há nenhuma chave configurada para este bucket."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Объект зашифрован, но для этого бакета не настроен ключ."
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Objektet är krypterat, men ingen nyckel är konfigurerad för denna bucket."
-          }
-        }
-      }
-    },
-    "error.encryptionKeyRemoved" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cílový bucket měl při zahájení přenosu šifrovací klíč, ale klíč byl mezitím odstraněn. Soubor nebyl nahrán."
-          }
-        },
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Destinationens bucket havde en krypteringsnøgle, da overførslen startede, men nøglen er blevet fjernet. Filen blev ikke uploadet."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Der Ziel-Bucket hatte beim Start der Übertragung einen Schlüssel, der inzwischen entfernt wurde. Die Datei wurde nicht hochgeladen."
-          }
-        },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Το bucket προορισμού είχε κλειδί κρυπτογράφησης όταν ξεκίνησε η μεταφορά, αλλά το κλειδί έχει αφαιρεθεί. Το αρχείο δεν μεταφορτώθηκε."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The destination bucket had an encryption key when the transfer started, but the key has been removed. The file was not uploaded."
-          }
-        },
-        "en-GB" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The destination bucket had an encryption key when the transfer started, but the key has been removed. The file was not uploaded."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "El bucket de destino tenía una clave de cifrado cuando empezó la transferencia, pero la clave se ha eliminado. El archivo no se ha subido."
-          }
-        },
-        "fi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kohdebucketilla oli salausavain siirron alkaessa, mutta avain on poistettu. Tiedostoa ei ladattu."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Le bucket de destination avait une clé de chiffrement au début du transfert, mais la clé a été supprimée. Le fichier n’a pas été envoyé."
-          }
-        },
-        "hu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A cél bucket az átvitel indításakor rendelkezett titkosítási kulccsal, de a kulcsot azóta eltávolították. A fájl nem lett feltöltve."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Il bucket di destinazione aveva una chiave di crittografia all’avvio del trasferimento, ma la chiave è stata rimossa. Il file non è stato caricato."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "転送の開始時には宛先のバケットに暗号鍵が設定されていましたが、その鍵は削除されました。ファイルはアップロードされていません。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "전송을 시작할 때 대상 버킷에 암호화 키가 있었지만 키가 제거되었습니다. 파일이 업로드되지 않았습니다."
-          }
-        },
-        "nb" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Målbucketen hadde en krypteringsnøkkel da overføringen startet, men nøkkelen er fjernet. Filen ble ikke lastet opp."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "De doelbucket had een versleutelingssleutel toen de overdracht begon, maar de sleutel is verwijderd. Het bestand is niet geüpload."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Docelowy bucket miał klucz szyfrowania w chwili rozpoczęcia przesyłania, ale klucz został usunięty. Plik nie został wysłany."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O bucket de destino tinha uma chave de criptografia quando a transferência começou, mas a chave foi removida. O arquivo não foi enviado."
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O bucket de destino tinha uma chave de encriptação quando a transferência começou, mas a chave foi removida. O ficheiro não foi carregado."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Когда передача началась, у бакета назначения был ключ шифрования, но ключ удалён. Файл не загружен."
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Målbucketen hade en krypteringsnyckel när överföringen startade, men nyckeln har tagits bort. Filen laddades inte upp."
           }
         }
       }
@@ -88407,6 +88155,2256 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Försök igen"
+          }
+        }
+      }
+    },
+    "transfer.error.azureUnavailable" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přenosy Azure nejsou nakonfigurovány."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Azure-overførsler er ikke konfigureret."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Azure-Übertragungen sind nicht konfiguriert."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Οι μεταφορές Azure δεν έχουν ρυθμιστεί."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Azure transfers are not configured."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Azure transfers are not configured."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las transferencias de Azure no están configuradas."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Azure-siirtoja ei ole määritetty."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les transferts Azure ne sont pas configurés."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Az Azure-átvitelek nincsenek beállítva."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I trasferimenti Azure non sono configurati."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Azure転送が設定されていません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Azure 전송이 구성되지 않았습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Azure-overføringer er ikke konfigurert."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Azure-overdrachten zijn niet geconfigureerd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transfery Azure nie są skonfigurowane."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As transferências do Azure não estão configuradas."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As transferências do Azure não estão configuradas."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Передачи Azure не настроены."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Azure-överföringar är inte konfigurerade."
+          }
+        }
+      }
+    },
+    "transfer.error.downloadIncomplete" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stahování nebylo dokončeno."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overførslen fra serveren blev ikke fuldført."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Download wurde nicht abgeschlossen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Η λήψη δεν ολοκληρώθηκε."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The download did not finish."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The download did not finish."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La descarga no finalizó."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lataus palvelimelta ei valmistunut."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le téléchargement n’a pas abouti."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A letöltés nem fejeződött be."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il download non è stato completato."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダウンロードが完了しませんでした。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다운로드가 완료되지 않았습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nedlastingen ble ikke fullført."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De download is niet voltooid."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pobieranie nie zostało ukończone."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O download não foi concluído."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A descarga não foi concluída."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загрузка с сервера не завершена."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hämtningen slutfördes inte."
+          }
+        }
+      }
+    },
+    "transfer.error.uploadIncomplete" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nahrávání nebylo dokončeno."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overførslen til serveren blev ikke fuldført."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Upload wurde nicht abgeschlossen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Η αποστολή δεν ολοκληρώθηκε."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The upload did not finish."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The upload did not finish."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La carga no finalizó."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lataus palvelimelle ei valmistunut."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’envoi n’a pas abouti."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A feltöltés nem fejeződött be."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il caricamento non è stato completato."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップロードが完了しませんでした。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업로드가 완료되지 않았습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opplastingen ble ikke fullført."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De upload is niet voltooid."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wysyłanie nie zostało ukończone."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O upload não foi concluído."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O envio não foi concluído."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загрузка на сервер не завершена."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uppladdningen slutfördes inte."
+          }
+        }
+      }
+    },
+    "transfer.error.accountMissing" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Účet pro přenos již není nakonfigurován."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overførselskontoen er ikke længere konfigureret."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Übertragungskonto ist nicht mehr konfiguriert."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ο λογαριασμός μεταφοράς δεν είναι πλέον ρυθμισμένος."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The transfer account is no longer configured."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The transfer account is no longer configured."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La cuenta de transferencia ya no está configurada."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siirtotiliä ei ole enää määritetty."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le compte de transfert n’est plus configuré."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Az átviteli fiók már nincs beállítva."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’account di trasferimento non è più configurato."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "転送用アカウントは現在設定されていません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전송 계정이 더 이상 구성되어 있지 않습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overføringskontoen er ikke lenger konfigurert."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het overdrachtsaccount is niet meer geconfigureerd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konto transferu nie jest już skonfigurowane."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A conta de transferência não está mais configurada."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A conta de transferência já não está configurada."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Учётная запись для передачи больше не настроена."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Överföringskontot är inte längre konfigurerat."
+          }
+        }
+      }
+    },
+    "sync.error.contextIncomplete" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfigurace synchronizace je neúplná."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synkroniseringskonfigurationen er ufuldstændig."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Synchronisierung ist unvollständig konfiguriert."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Η ρύθμιση συγχρονισμού είναι ελλιπής."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The sync configuration is incomplete."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The sync configuration is incomplete."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La configuración de sincronización está incompleta."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synkronoinnin määritys on puutteellinen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La configuration de synchronisation est incomplète."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A szinkronizálás beállítása hiányos."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La configurazione della sincronizzazione è incompleta."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同期設定が不完全です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동기화 구성이 불완전합니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synkroniseringsoppsettet er ufullstendig."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De synchronisatieconfiguratie is onvolledig."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfiguracja synchronizacji jest niekompletna."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A configuração de sincronização está incompleta."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A configuração de sincronização está incompleta."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройка синхронизации не завершена."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synkroniseringskonfigurationen är ofullständig."
+          }
+        }
+      }
+    },
+    "transfer.error.incomplete" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přenos nebyl dokončen."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overførslen blev ikke fuldført."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Übertragung wurde nicht abgeschlossen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Η μεταφορά δεν ολοκληρώθηκε."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The transfer did not finish."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The transfer did not finish."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La transferencia no finalizó."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siirto ei valmistunut."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le transfert n’a pas abouti."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Az átvitel nem fejeződött be."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il trasferimento non è stato completato."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "転送が完了しませんでした。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전송이 완료되지 않았습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overføringen ble ikke fullført."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De overdracht is niet voltooid."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transfer nie został ukończony."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A transferência não foi concluída."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A transferência não foi concluída."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Передача не завершена."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Överföringen slutfördes inte."
+          }
+        }
+      }
+    },
+    "transfer.error.appNotRunning" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otevřete Bucketeer a zkuste to znovu."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Åbn Bucketeer, og prøv igen."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Öffne Bucketeer und versuche es erneut."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ανοίξτε το Bucketeer και δοκιμάστε ξανά."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Bucketeer and try again."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Bucketeer and try again."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre Bucketeer e inténtalo de nuevo."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avaa Bucketeer ja yritä uudelleen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrez Bucketeer et réessayez."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nyissa meg a Bucketeert, és próbálja újra."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri Bucketeer e riprova."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeerを開いて、もう一度お試しください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer를 열고 다시 시도하세요."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Åpne Bucketeer og prøv igjen."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Bucketeer en probeer het opnieuw."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otwórz Bucketeer i spróbuj ponownie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abra o Bucketeer e tente novamente."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abra o Bucketeer e tente novamente."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Откройте Bucketeer и повторите попытку."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Öppna Bucketeer och försök igen."
+          }
+        }
+      }
+    },
+    "transfer.error.emptyDestination" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zadejte bucket a klíč objektu."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Angiv en bucket og en objektnøgle."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gib einen Bucket und einen Objektschlüssel ein."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Εισαγάγετε έναν κάδο και ένα κλειδί αντικειμένου."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a bucket and an object key."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a bucket and an object key."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introduce un bucket y una clave de objeto."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anna bucket ja objektiavain."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisissez un bucket et une clé d’objet."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adjon meg egy bucketet és egy objektumkulcsot."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inserisci un bucket e una chiave oggetto."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バケットとオブジェクトキーを入力してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "버킷과 객체 키를 입력하세요."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skriv inn en bucket og en objektnøkkel."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voer een bucket en een objectsleutel in."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podaj bucket i klucz obiektu."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Insira um bucket e uma chave de objeto."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introduza um bucket e uma chave de objeto."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Укажите бакет и ключ объекта."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ange en bucket och en objektnyckel."
+          }
+        }
+      }
+    },
+    "fileProvider.error.appGroup" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sdílený kontejner aplikace není dostupný. Zkontrolujte oprávnění App Group."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appens delte beholder er ikke tilgængelig. Kontrollér App Group-rettigheden."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der gemeinsame App-Container ist nicht verfügbar. Prüfe die App-Group-Berechtigung."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το κοινόχρηστο κοντέινερ της εφαρμογής δεν είναι διαθέσιμο. Ελέγξτε το δικαίωμα App Group."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The shared app container is unavailable. Check the App Group entitlement."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The shared app container is unavailable. Check the App Group entitlement."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El contenedor compartido de la app no está disponible. Comprueba el permiso App Group."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apin jaettu säiliö ei ole käytettävissä. Tarkista App Group -oikeus."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le conteneur partagé de l’app est indisponible. Vérifiez l’autorisation App Group."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Az alkalmazás megosztott tárolója nem érhető el. Ellenőrizze az App Group jogosultságot."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il contenitore condiviso dell’app non è disponibile. Verifica l’autorizzazione App Group."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリの共有コンテナを利用できません。App Groupのエンタイトルメントを確認してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱 공유 컨테이너를 사용할 수 없습니다. App Group 권한을 확인하세요."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appens delte beholder er utilgjengelig. Kontroller App Group-rettigheten."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De gedeelde appcontainer is niet beschikbaar. Controleer de App Group-bevoegdheid."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wspólny kontener aplikacji jest niedostępny. Sprawdź uprawnienie App Group."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O contêiner compartilhado do app não está disponível. Verifique a permissão App Group."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O contentor partilhado da aplicação não está disponível. Verifique a autorização App Group."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Общий контейнер приложения недоступен. Проверьте разрешение App Group."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appens delade behållare är inte tillgänglig. Kontrollera App Group-behörigheten."
+          }
+        }
+      }
+    },
+    "fileProvider.error.proRequired" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Úpravy souborů ve Finderu vyžadují Bucketeer Pro. Otevřete Bucketeer a odemkněte Pro; soubory zůstávají čitelné."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redigering af filer i Finder kræver Bucketeer Pro. Åbn Bucketeer for at låse Pro op; filerne kan stadig læses."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zum Bearbeiten von Dateien im Finder ist Bucketeer Pro erforderlich. Öffne Bucketeer, um Pro freizuschalten; Dateien bleiben lesbar."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Η επεξεργασία αρχείων στο Finder απαιτεί Bucketeer Pro. Ανοίξτε το Bucketeer για να ξεκλειδώσετε το Pro· τα αρχεία παραμένουν αναγνώσιμα."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editing files in Finder requires Bucketeer Pro. Open Bucketeer to unlock Pro; files remain readable."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editing files in Finder requires Bucketeer Pro. Open Bucketeer to unlock Pro; files remain readable."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar archivos en Finder requiere Bucketeer Pro. Abre Bucketeer para desbloquear Pro; los archivos siguen siendo legibles."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiedostojen muokkaaminen Finderissa edellyttää Bucketeer Prota. Avaa Bucketeer ottaaksesi Pron käyttöön; tiedostoja voi edelleen lukea."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La modification de fichiers dans le Finder nécessite Bucketeer Pro. Ouvrez Bucketeer pour débloquer Pro ; les fichiers restent lisibles."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A fájlok Finderben történő szerkesztéséhez Bucketeer Pro szükséges. Nyissa meg a Bucketeert a Pro feloldásához; a fájlok továbbra is olvashatók."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Per modificare file nel Finder è necessario Bucketeer Pro. Apri Bucketeer per sbloccare Pro; i file restano leggibili."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finderでファイルを編集するにはBucketeer Proが必要です。Bucketeerを開いてProを有効にしてください。ファイルの読み取りは引き続き可能です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finder에서 파일을 편집하려면 Bucketeer Pro가 필요합니다. Bucketeer를 열어 Pro를 활성화하세요. 파일은 계속 읽을 수 있습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redigering av filer i Finder krever Bucketeer Pro. Åpne Bucketeer for å låse opp Pro; filene kan fortsatt leses."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bestanden bewerken in Finder vereist Bucketeer Pro. Open Bucketeer om Pro te ontgrendelen; bestanden blijven leesbaar."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edytowanie plików w Finderze wymaga Bucketeer Pro. Otwórz Bucketeer, aby odblokować Pro; pliki nadal można odczytywać."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A edição de arquivos no Finder requer o Bucketeer Pro. Abra o Bucketeer para desbloquear o Pro; os arquivos continuam disponíveis para leitura."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A edição de ficheiros no Finder requer o Bucketeer Pro. Abra o Bucketeer para desbloquear o Pro; os ficheiros continuam disponíveis para leitura."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Для изменения файлов в Finder требуется Bucketeer Pro. Откройте Bucketeer, чтобы разблокировать Pro; файлы остаются доступными для чтения."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Att redigera filer i Finder kräver Bucketeer Pro. Öppna Bucketeer för att låsa upp Pro; filerna förblir läsbara."
+          }
+        }
+      }
+    },
+    "fileProvider.error.notInitialized" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File Provider není inicializován. Otevřete jednou Bucketeer a zkontrolujte oprávnění App Group."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File Provider er ikke initialiseret. Åbn Bucketeer én gang, og kontrollér App Group-rettigheden."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File Provider ist nicht initialisiert. Öffne Bucketeer einmal und prüfe die App-Group-Berechtigung."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το File Provider δεν έχει αρχικοποιηθεί. Ανοίξτε το Bucketeer μία φορά και ελέγξτε το δικαίωμα App Group."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File Provider is not initialized. Open Bucketeer once and check the App Group entitlement."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File Provider is not initialized. Open Bucketeer once and check the App Group entitlement."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File Provider no está inicializado. Abre Bucketeer una vez y comprueba el permiso App Group."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File Provideria ei ole alustettu. Avaa Bucketeer kerran ja tarkista App Group -oikeus."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File Provider n’est pas initialisé. Ouvrez Bucketeer une fois et vérifiez l’autorisation App Group."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A File Provider nincs inicializálva. Nyissa meg egyszer a Bucketeert, és ellenőrizze az App Group jogosultságot."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File Provider non è inizializzato. Apri Bucketeer una volta e verifica l’autorizzazione App Group."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File Providerが初期化されていません。Bucketeerを一度開き、App Groupのエンタイトルメントを確認してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File Provider가 초기화되지 않았습니다. Bucketeer를 한 번 열고 App Group 권한을 확인하세요."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File Provider er ikke initialisert. Åpne Bucketeer én gang og kontroller App Group-rettigheten."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File Provider is niet geïnitialiseerd. Open Bucketeer eenmaal en controleer de App Group-bevoegdheid."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File Provider nie został zainicjowany. Otwórz raz Bucketeer i sprawdź uprawnienie App Group."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O File Provider não foi inicializado. Abra o Bucketeer uma vez e verifique a permissão App Group."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O File Provider não foi inicializado. Abra o Bucketeer uma vez e verifique a autorização App Group."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File Provider не инициализирован. Откройте Bucketeer хотя бы один раз и проверьте разрешение App Group."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File Provider är inte initierad. Öppna Bucketeer en gång och kontrollera App Group-behörigheten."
+          }
+        }
+      }
+    },
+    "transfer.error.destinationNoKey" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cíl nemá šifrovací klíč. Soubor nebyl nahrán, protože tento přenos vyžaduje šifrování."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Destinationen har ingen krypteringsnøgle. Filen blev ikke overført, fordi denne overførsel kræver kryptering."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Ziel hat keinen Verschlüsselungsschlüssel. Die Datei wurde nicht hochgeladen, da diese Übertragung Verschlüsselung erfordert."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ο προορισμός δεν έχει κλειδί κρυπτογράφησης. Το αρχείο δεν στάλθηκε επειδή αυτή η μεταφορά απαιτεί κρυπτογράφηση."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The destination has no encryption key. The file was not uploaded because this transfer requires encryption."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The destination has no encryption key. The file was not uploaded because this transfer requires encryption."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El destino no tiene clave de cifrado. El archivo no se cargó porque esta transferencia requiere cifrado."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kohteella ei ole salausavainta. Tiedostoa ei ladattu, koska tämä siirto edellyttää salausta."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La destination n’a pas de clé de chiffrement. Le fichier n’a pas été envoyé, car ce transfert nécessite un chiffrement."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A célhoz nincs titkosítási kulcs. A fájl nem lett feltöltve, mert ez az átvitel titkosítást igényel."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La destinazione non ha una chiave di crittografia. Il file non è stato caricato perché questo trasferimento richiede la crittografia."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "転送先に暗号化キーがありません。この転送には暗号化が必要なため、ファイルはアップロードされませんでした。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대상에 암호화 키가 없습니다. 이 전송에는 암호화가 필요하므로 파일이 업로드되지 않았습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Målet har ingen krypteringsnøkkel. Filen ble ikke lastet opp fordi denne overføringen krever kryptering."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het doel heeft geen versleutelingssleutel. Het bestand is niet geüpload omdat deze overdracht versleuteling vereist."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miejsce docelowe nie ma klucza szyfrowania. Plik nie został wysłany, ponieważ ten transfer wymaga szyfrowania."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O destino não tem uma chave de criptografia. O arquivo não foi enviado porque esta transferência requer criptografia."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O destino não tem uma chave de cifragem. O ficheiro não foi enviado porque esta transferência requer cifragem."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "В месте назначения нет ключа шифрования. Файл не загружен, поскольку эта передача требует шифрования."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Målet saknar krypteringsnyckel. Filen laddades inte upp eftersom överföringen kräver kryptering."
+          }
+        }
+      }
+    },
+    "encryption.error.lookupFailed %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vyhledání šifrovacího klíče selhalo: %@"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opslag af krypteringsnøglen mislykkedes: %@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abfrage des Verschlüsselungsschlüssels fehlgeschlagen: %@"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Η αναζήτηση κλειδιού κρυπτογράφησης απέτυχε: %@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encryption key lookup failed: %@"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encryption key lookup failed: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error al buscar la clave de cifrado: %@"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salausavaimen haku epäonnistui: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Échec de la recherche de la clé de chiffrement : %@"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A titkosítási kulcs keresése sikertelen: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricerca della chiave di crittografia non riuscita: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暗号化キーの検索に失敗しました：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "암호화 키 조회 실패: %@"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oppslag av krypteringsnøkkel mislyktes: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opzoeken van versleutelingssleutel mislukt: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyszukiwanie klucza szyfrowania nie powiodło się: %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Falha na busca da chave de criptografia: %@"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Falha na pesquisa da chave de cifragem: %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось найти ключ шифрования: %@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sökningen efter krypteringsnyckeln misslyckades: %@"
+          }
+        }
+      }
+    },
+    "transfer.activity.copySource %@ %@ %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zkopírováno z %@/%@/%@"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopieret fra %@/%@/%@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopiert von %@/%@/%@"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αντιγράφηκε από %@/%@/%@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copied from %@/%@/%@"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copied from %@/%@/%@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiado desde %@/%@/%@"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopioitu kohteesta %@/%@/%@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copié depuis %@/%@/%@"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Másolva innen: %@/%@/%@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiato da %@/%@/%@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@/%@/%@からコピーしました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@/%@/%@에서 복사됨"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopiert fra %@/%@/%@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gekopieerd van %@/%@/%@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skopiowano z %@/%@/%@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiado de %@/%@/%@"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiado de %@/%@/%@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скопировано из %@/%@/%@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopierat från %@/%@/%@"
+          }
+        }
+      }
+    },
+    "error.encryptedNoKey" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objekt je zašifrovaný, ale pro tento bucket není nastaven žádný klíč."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objektet er krypteret, men der er ikke konfigureret nogen nøgle til denne bucket."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Objekt ist verschlüsselt, aber für diesen Bucket ist kein Schlüssel hinterlegt."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το αντικείμενο είναι κρυπτογραφημένο, αλλά δεν έχει ρυθμιστεί κλειδί για αυτό το bucket."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The object is encrypted, but no key is configured for this bucket."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The object is encrypted, but no key is configured for this bucket."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El objeto está cifrado, pero no hay ninguna clave configurada para este bucket."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objekti on salattu, mutta tälle bucketille ei ole määritetty avainta."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’objet est chiffré, mais aucune clé n’est configurée pour ce bucket."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Az objektum titkosított, de ehhez a buckethez nincs beállítva kulcs."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’oggetto è crittografato, ma per questo bucket non è configurata alcuna chiave."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オブジェクトは暗号化されていますが、このバケットには暗号鍵が設定されていません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "객체가 암호화되어 있지만 이 버킷에 구성된 키가 없습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objektet er kryptert, men ingen nøkkel er konfigurert for denne bucketen."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het object is versleuteld, maar er is geen sleutel geconfigureerd voor deze bucket."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obiekt jest zaszyfrowany, ale dla tego bucketu nie skonfigurowano klucza."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O objeto está criptografado, mas nenhuma chave está configurada para este bucket."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O objeto está encriptado, mas não há nenhuma chave configurada para este bucket."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Объект зашифрован, но для этого бакета не настроен ключ."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objektet är krypterat, men ingen nyckel är konfigurerad för denna bucket."
+          }
+        }
+      }
+    },
+    "error.encryptionKeyRemoved" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cílový bucket měl při zahájení přenosu šifrovací klíč, ale klíč byl mezitím odstraněn. Soubor nebyl nahrán."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Destinationens bucket havde en krypteringsnøgle, da overførslen startede, men nøglen er blevet fjernet. Filen blev ikke uploadet."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Ziel-Bucket hatte beim Start der Übertragung einen Schlüssel, der inzwischen entfernt wurde. Die Datei wurde nicht hochgeladen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το bucket προορισμού είχε κλειδί κρυπτογράφησης όταν ξεκίνησε η μεταφορά, αλλά το κλειδί έχει αφαιρεθεί. Το αρχείο δεν μεταφορτώθηκε."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The destination bucket had an encryption key when the transfer started, but the key has been removed. The file was not uploaded."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The destination bucket had an encryption key when the transfer started, but the key has been removed. The file was not uploaded."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El bucket de destino tenía una clave de cifrado cuando empezó la transferencia, pero la clave se ha eliminado. El archivo no se ha subido."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kohdebucketilla oli salausavain siirron alkaessa, mutta avain on poistettu. Tiedostoa ei ladattu."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le bucket de destination avait une clé de chiffrement au début du transfert, mais la clé a été supprimée. Le fichier n’a pas été envoyé."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A cél bucket az átvitel indításakor rendelkezett titkosítási kulccsal, de a kulcsot azóta eltávolították. A fájl nem lett feltöltve."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il bucket di destinazione aveva una chiave di crittografia all’avvio del trasferimento, ma la chiave è stata rimossa. Il file non è stato caricato."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "転送の開始時には宛先のバケットに暗号鍵が設定されていましたが、その鍵は削除されました。ファイルはアップロードされていません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전송을 시작할 때 대상 버킷에 암호화 키가 있었지만 키가 제거되었습니다. 파일이 업로드되지 않았습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Målbucketen hadde en krypteringsnøkkel da overføringen startet, men nøkkelen er fjernet. Filen ble ikke lastet opp."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De doelbucket had een versleutelingssleutel toen de overdracht begon, maar de sleutel is verwijderd. Het bestand is niet geüpload."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Docelowy bucket miał klucz szyfrowania w chwili rozpoczęcia przesyłania, ale klucz został usunięty. Plik nie został wysłany."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O bucket de destino tinha uma chave de criptografia quando a transferência começou, mas a chave foi removida. O arquivo não foi enviado."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O bucket de destino tinha uma chave de encriptação quando a transferência começou, mas a chave foi removida. O ficheiro não foi carregado."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Когда передача началась, у бакета назначения был ключ шифрования, но ключ удалён. Файл не загружен."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Målbucketen hade en krypteringsnyckel när överföringen startade, men nyckeln har tagits bort. Filen laddades inte upp."
+          }
+        }
+      }
+    },
+    "sync.error.jobMissing" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This sync job no longer exists."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This sync job no longer exists."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tato synchronizační úloha již neexistuje."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dette synkroniseringsjob findes ikke længere."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Synchronisierungsauftrag existiert nicht mehr."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αυτή η εργασία συγχρονισμού δεν υπάρχει πλέον."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta tarea de sincronización ya no existe."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tätä synkronointitehtävää ei enää ole."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette tâche de synchronisation n’existe plus."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ez a szinkronizálási feladat már nem létezik."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa attività di sincronizzazione non esiste più."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この同期ジョブはもう存在しません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 동기화 작업은 더 이상 존재하지 않습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne synkroniseringsjobben finnes ikke lenger."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze synchronisatietaak bestaat niet meer."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To zadanie synchronizacji już nie istnieje."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta tarefa de sincronização não existe mais."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta tarefa de sincronização já não existe."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Это задание синхронизации больше не существует."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Det här synkroniseringsjobbet finns inte längre."
+          }
+        }
+      }
+    },
+    "sync.error.localFolderUnavailableDuringDelete" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The local folder is no longer available. The remaining files were not deleted."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The local folder is no longer available. The remaining files were not deleted."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Místní složka již není dostupná. Zbývající soubory nebyly smazány."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den lokale mappe er ikke længere tilgængelig. De resterende filer blev ikke slettet."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der lokale Ordner ist nicht mehr verfügbar. Die verbleibenden Dateien wurden nicht gelöscht."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ο τοπικός φάκελος δεν είναι πλέον διαθέσιμος. Τα υπόλοιπα αρχεία δεν διαγράφηκαν."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La carpeta local ya no está disponible. Los archivos restantes no se eliminaron."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paikallinen kansio ei ole enää käytettävissä. Jäljellä olevia tiedostoja ei poistettu."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le dossier local n’est plus disponible. Les fichiers restants n’ont pas été supprimés."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A helyi mappa már nem érhető el. A fennmaradó fájlok nem lettek törölve."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La cartella locale non è più disponibile. I file rimanenti non sono stati eliminati."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ローカルフォルダはもう利用できません。残りのファイルは削除されませんでした。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "로컬 폴더를 더 이상 사용할 수 없습니다. 나머지 파일은 삭제되지 않았습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den lokale mappen er ikke lenger tilgjengelig. De gjenværende filene ble ikke slettet."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De lokale map is niet meer beschikbaar. De resterende bestanden zijn niet verwijderd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Folder lokalny nie jest już dostępny. Pozostałe pliki nie zostały usunięte."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A pasta local não está mais disponível. Os arquivos restantes não foram excluídos."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A pasta local já não está disponível. Os ficheiros restantes não foram eliminados."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Локальная папка больше недоступна. Оставшиеся файлы не были удалены."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den lokala mappen är inte längre tillgänglig. De återstående filerna raderades inte."
           }
         }
       }

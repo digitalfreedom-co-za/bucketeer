@@ -55,7 +55,7 @@ actor InMemoryEncryptionKeyStore: EncryptionKeyStoring {
     }
 
     func keyMaterial(id: UUID) throws -> Data {
-        guard let bytes = material[id] else { throw EncryptionError.noKeyForBucket }
+        guard let bytes = material[id] else { throw EncryptionError.keyRemoved }
         return bytes
     }
 

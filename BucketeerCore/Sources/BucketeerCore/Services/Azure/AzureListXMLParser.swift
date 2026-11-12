@@ -28,7 +28,7 @@ enum AzureListXMLParser {
             throw BucketeerError.providerError(
                 statusCode: 0,
                 message: parser.parserError?.localizedDescription
-                    ?? "Failed to parse Azure container list."
+                    ?? String(localized: "transfer.error.parseList \("Azure List Containers")", bundle: .module)
             )
         }
         return delegate.containers
@@ -64,7 +64,7 @@ enum AzureListXMLParser {
             throw BucketeerError.providerError(
                 statusCode: 0,
                 message: parser.parserError?.localizedDescription
-                    ?? "Failed to parse Azure blob list."
+                    ?? String(localized: "transfer.error.parseList \("Azure List Blobs")", bundle: .module)
             )
         }
         return BlobListing(

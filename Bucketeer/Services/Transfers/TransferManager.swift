@@ -61,6 +61,7 @@ actor TransferManager: Transferring {
         /// the copy started: without a key at upload time the transfer
         /// fails instead of storing plaintext.
         var requiresEncryption: Bool = false
+        var destinationHadKey: Bool = false
         /// Condition the server must check before it accepts the write
         /// (Open With round-trip). `nil` = unconditional.
         var precondition: WritePrecondition? = nil
@@ -85,6 +86,7 @@ actor TransferManager: Transferring {
                 bypassDecryption: bypassDecryption,
                 bypassEncryption: bypassEncryption,
                 requiresEncryption: requiresEncryption,
+                destinationHadKey: destinationHadKey,
                 precondition: precondition
             )
         }
@@ -207,6 +209,7 @@ actor TransferManager: Transferring {
         contentType: String?,
         bypassEncryption: Bool,
         requiresEncryption: Bool = false,
+        destinationHadKey: Bool = false,
         precondition: WritePrecondition? = nil
     ) async -> UUID {
         let id = UUID()
@@ -229,6 +232,7 @@ actor TransferManager: Transferring {
             fileSize: fileSize,
             bypassEncryption: bypassEncryption,
             requiresEncryption: requiresEncryption,
+            destinationHadKey: destinationHadKey,
             precondition: precondition
         )
         order.append(id)
@@ -452,18 +456,19 @@ actor TransferManager: Transferring {
                 accountID: item.account.id,
                 bucket: item.task.bucket
             )?.key
+        } catch let error as EncryptionError where error == .keyRemoved {
+            let message = item.destinationHadKey ? String(localized: "error.encryptionKeyRemoved") : errorMessage(error)
+            setState(id: id, state: .failed(message: message))
+            return
         } catch {
             setState(id: id, state: .failed(message: errorMessage(error)))
             return
         }
         if item.requiresEncryption, encryptionKey == nil, !item.bypassEncryption {
-            setState(id: id, state: .failed(message: String(
-                localized: "error.encryptionKeyRemoved",
-                defaultValue: """
-                The destination bucket had an encryption key when the transfer started, but the key has \
-                been removed. The file was not uploaded.
-                """
-            )))
+            let message = item.destinationHadKey
+                ? String(localized: "error.encryptionKeyRemoved")
+                : String(localized: "transfer.error.destinationNoKey")
+            setState(id: id, state: .failed(message: message))
             return
         }
         if let key = encryptionKey {
@@ -683,7 +688,7 @@ actor TransferManager: Transferring {
         guard let azure else {
             setState(
                 id: id,
-                state: .failed(message: "Azure transport not configured.")
+                state: .failed(message: String(localized: "transfer.error.azureUnavailable"))
             )
             return
         }
@@ -727,7 +732,7 @@ actor TransferManager: Transferring {
     private func downloadFromAzure(item: QueuedItem) async throws -> Bool {
         let id = item.task.id
         guard let azure else {
-            throw BucketeerError.unknown(message: "Azure transport not configured.")
+            throw BucketeerError.unknown(message: String(localized: "transfer.error.azureUnavailable"))
         }
         return try await azure.download(
             account: item.account,

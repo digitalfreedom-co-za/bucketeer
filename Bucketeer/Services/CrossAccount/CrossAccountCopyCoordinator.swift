@@ -84,7 +84,6 @@ final class CrossAccountCopyCoordinator {
         let destinationState = await encryptionGate?.keyState(
             accountID: destinationAccount.id, bucket: destinationBucket
         ) ?? .plain
-        let destinationRequiresKey = destinationState.requiresEncryption
         if !allowsDecryptedCopies, await encryptionGate?.isEncryptedToPlain(
             sourceAccountID: sourceAccount.id, sourceBucket: sourceBucket,
             destinationAccountID: destinationAccount.id, destinationBucket: destinationBucket,
@@ -144,7 +143,7 @@ final class CrossAccountCopyCoordinator {
                         destinationAccount: destinationAccount,
                         destinationBucket: destinationBucket,
                         destinationKey: destinationKey,
-                        requiresEncryption: destinationRequiresKey
+                        destinationState: destinationState
                     )
                 }
                 if let movedVersion, try await !browser.deleteIfUnchanged(
@@ -160,7 +159,7 @@ final class CrossAccountCopyCoordinator {
                         accountName: destinationAccount.name,
                         bucket: destinationBucket,
                         key: destinationKey,
-                        message: "Cross-account from \(sourceAccount.name)/\(sourceBucket)/\(key)"
+                        message: String(localized: "transfer.activity.copySource \(sourceAccount.name) \(sourceBucket) \(key)")
                     )
                 )
                 results.append((key, nil))
@@ -286,7 +285,7 @@ final class CrossAccountCopyCoordinator {
         destinationAccount: S3Account,
         destinationBucket: String,
         destinationKey: String,
-        requiresEncryption: Bool
+        destinationState: BucketEncryptionGate.KeyState
     ) async throws {
         // Keep the plaintext staging
         // file inside the App-private Application Support directory
@@ -329,7 +328,7 @@ final class CrossAccountCopyCoordinator {
         case .cancelled:
             throw BucketeerError.cancelled
         default:
-            throw BucketeerError.unknown(message: "Download did not finish.")
+            throw BucketeerError.unknown(message: String(localized: "transfer.error.downloadIncomplete"))
         }
 
         let uploadID = await transferManager.enqueueUpload(
@@ -339,7 +338,8 @@ final class CrossAccountCopyCoordinator {
             localURL: temp,
             contentType: nil,
             bypassEncryption: false,
-            requiresEncryption: requiresEncryption
+            requiresEncryption: destinationState.requiresEncryption,
+            destinationHadKey: destinationState == .encrypted
         )
         let uploadState = await transferManager.awaitCompletion(id: uploadID)
         switch uploadState {
@@ -350,7 +350,7 @@ final class CrossAccountCopyCoordinator {
         case .cancelled:
             throw BucketeerError.cancelled
         default:
-            throw BucketeerError.unknown(message: "Upload did not finish.")
+            throw BucketeerError.unknown(message: String(localized: "transfer.error.uploadIncomplete"))
         }
     }
 

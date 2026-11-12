@@ -42,7 +42,7 @@ final class EncryptionKeyReassignmentTests: XCTestCase {
         do {
             _ = try await store.keyMaterial(id: staleCopy.id)
             XCTFail("A stale destination entry must not supply key bytes")
-        } catch EncryptionError.noKeyForBucket {}
+        } catch EncryptionError.keyRemoved {}
         try await store.delete(id: staleCopy.id)
 
         await store.failNextDeletes(1)
@@ -69,7 +69,7 @@ final class EncryptionKeyReassignmentTests: XCTestCase {
         do {
             _ = try await store.keyMaterial(id: source.id)
             XCTFail("The old key entry must be removed after verification")
-        } catch EncryptionError.noKeyForBucket {}
+        } catch EncryptionError.keyRemoved {}
 
         let returned = try await store.reassign(moved, to: source.accountID)
         let returnedBytes = try await store.keyMaterial(id: returned.id)

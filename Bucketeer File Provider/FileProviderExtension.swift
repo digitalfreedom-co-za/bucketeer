@@ -282,7 +282,7 @@ final class FileProviderExtension: NSObject, @unchecked Sendable, NSFileProvider
         NSError(
             domain: NSFileProviderErrorDomain,
             code: NSFileProviderError.providerNotFound.rawValue,
-            userInfo: [NSLocalizedDescriptionKey: "Bucketeer File Provider container not initialised. Verify the App Group entitlement and that the host app has been launched at least once."]
+            userInfo: [NSLocalizedDescriptionKey: String(localized: "fileProvider.error.notInitialized")]
         )
     }
 }

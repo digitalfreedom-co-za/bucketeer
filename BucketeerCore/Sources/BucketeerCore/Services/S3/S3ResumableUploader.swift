@@ -155,7 +155,7 @@ public struct S3ResumableUploader: Sendable {
             ))
             try? await checkpointStore.delete(id: checkpoint.id)
             throw BucketeerError.unknown(
-                message: "Multipart upload requires a non-empty file."
+                message: String(localized: "transfer.error.emptyMultipart", bundle: .module)
             )
         }
         let handle: FileHandle
@@ -187,7 +187,7 @@ public struct S3ResumableUploader: Sendable {
             let chunkSize = Int(min(Int64(checkpoint.partSize), remaining))
             guard let chunk = try handle.read(upToCount: chunkSize) else {
                 throw BucketeerError.unknown(
-                    message: "Read returned no data at offset \(offset)."
+                    message: String(localized: "transfer.error.emptyRead \(offset)", bundle: .module)
                 )
             }
             let etag = try await uploadPart(
@@ -271,7 +271,7 @@ public struct S3ResumableUploader: Sendable {
         guard let uploadId = response.uploadId else {
             throw BucketeerError.providerError(
                 statusCode: 0,
-                message: "createMultipartUpload returned no uploadId."
+                message: String(localized: "transfer.error.missingUploadID", bundle: .module)
             )
         }
         let checkpoint = MultipartUploadCheckpoint(
@@ -340,7 +340,7 @@ public struct S3ResumableUploader: Sendable {
         guard let etag = response.eTag else {
             throw BucketeerError.providerError(
                 statusCode: 0,
-                message: "uploadPart \(partNumber) returned no ETag."
+                message: String(localized: "transfer.error.missingETag \(partNumber)", bundle: .module)
             )
         }
         return etag

@@ -37,7 +37,7 @@ final class DragDropCoordinator {
         let destinationPrefix: String
         /// The destination state at the drop: unknown or keyed buckets
         /// still require a key when the user agreed to the drop.
-        let requiresEncryption: Bool
+        let destinationState: BucketEncryptionGate.KeyState
     }
 
     private let s3Browser: any S3Browsing
@@ -110,7 +110,6 @@ final class DragDropCoordinator {
         let destinationState = await encryptionGate?.keyState(
             accountID: destinationAccount.id, bucket: destinationBucket
         ) ?? .plain
-        let destinationRequiresKey = destinationState.requiresEncryption
         if let sourceBucket = await encryptedSourceBucket(
             of: refs, destinationAccount: destinationAccount, destinationBucket: destinationBucket,
             destinationState: destinationState
@@ -121,12 +120,12 @@ final class DragDropCoordinator {
                 destinationAccount: destinationAccount,
                 destinationBucket: destinationBucket,
                 destinationPrefix: destinationPrefix,
-                requiresEncryption: destinationRequiresKey
+                destinationState: destinationState
             ))
             return
         }
         await drop(refs, destinationAccount: destinationAccount, destinationBucket: destinationBucket,
-                   destinationPrefix: destinationPrefix, requiresEncryption: destinationRequiresKey)
+                   destinationPrefix: destinationPrefix, destinationState: destinationState)
     }
 
     /// Runs a drop the user accepted to store unencrypted.
@@ -134,7 +133,7 @@ final class DragDropCoordinator {
         discardUnencryptedDrop(pending)
         await drop(pending.refs, destinationAccount: pending.destinationAccount,
                    destinationBucket: pending.destinationBucket, destinationPrefix: pending.destinationPrefix,
-                   requiresEncryption: pending.requiresEncryption)
+                   destinationState: pending.destinationState)
     }
 
     /// Forgets a drop the user cancelled. Other pending drops stay.
@@ -172,7 +171,7 @@ final class DragDropCoordinator {
         destinationAccount: S3Account,
         destinationBucket: String,
         destinationPrefix: String,
-        requiresEncryption: Bool
+        destinationState: BucketEncryptionGate.KeyState
     ) async {
         for ref in refs {
             await dropObjectRef(
@@ -180,7 +179,7 @@ final class DragDropCoordinator {
                 destinationAccount: destinationAccount,
                 destinationBucket: destinationBucket,
                 destinationPrefix: destinationPrefix,
-                requiresEncryption: requiresEncryption
+                destinationState: destinationState
             )
         }
     }
@@ -199,7 +198,7 @@ final class DragDropCoordinator {
         destinationAccount: S3Account,
         destinationBucket: String,
         destinationPrefix: String,
-        requiresEncryption: Bool
+        destinationState: BucketEncryptionGate.KeyState
     ) async {
         // Folder drops require recursive enumeration of the source
         // prefix — out of scope for v1. Drop on the
@@ -269,7 +268,7 @@ final class DragDropCoordinator {
                 destinationAccount: destinationAccount,
                 destinationBucket: destinationBucket,
                 destinationKey: destinationKey,
-                requiresEncryption: requiresEncryption
+                destinationState: destinationState
             )
         }
     }
@@ -280,7 +279,7 @@ final class DragDropCoordinator {
         destinationAccount: S3Account,
         destinationBucket: String,
         destinationKey: String,
-        requiresEncryption: Bool
+        destinationState: BucketEncryptionGate.KeyState
     ) async {
         // Staging file inside the temp dir. We clean up after both
         // halves finish regardless of outcome — sandbox temp dir is
@@ -326,7 +325,8 @@ final class DragDropCoordinator {
             localURL: staging,
             contentType: contentType,
             bypassEncryption: false,
-            requiresEncryption: requiresEncryption
+            requiresEncryption: destinationState.requiresEncryption,
+            destinationHadKey: destinationState == .encrypted
         )
         let uploadResult = await transferManager.awaitCompletion(id: uploadID)
         if case .failed(let message) = uploadResult {
