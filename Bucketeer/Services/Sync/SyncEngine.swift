@@ -579,8 +579,8 @@ actor SyncEngine {
 
         failed += plan.collisions.count + keptSources.count
         var summary = moveDeleteFailures > 0
-            ? "\(completed) ok / \(failed) failed (\(moveDeleteFailures) move-delete) / \(planned) planned"
-            : "\(completed) ok / \(failed) failed / \(planned) planned"
+            ? String(localized: "sync.summary.run \(completed) \(failed) \(planned) \(moveDeleteFailures)")
+            : String(localized: "sync.summary.run \(completed) \(failed) \(planned)")
         if !plan.collisions.isEmpty {
             summary += " · " + String(localized: "sync.summary.collisions \(plan.collisions.count)")
         }

@@ -166,7 +166,7 @@ struct AddEditAccountSheet: View {
             Picker("account.field.provider", selection: $provider) {
                 ForEach(S3Provider.allCases, id: \.self) { p in
                     Label {
-                        Text(p.displayName)
+                        Text(p.localizedDisplayName)
                     } icon: {
                         Image(systemName: p.iconSystemName)
                     }

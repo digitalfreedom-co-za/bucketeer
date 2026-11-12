@@ -34,7 +34,7 @@ struct CrossAccountCopySheet: View {
             Form {
                 Section("crossCopy.section.source") {
                     LabeledContent("crossCopy.field.account") {
-                        Text("\(sourceAccount.name) (\(sourceAccount.provider.displayName))")
+                        Text("\(sourceAccount.name) (\(sourceAccount.provider.localizedDisplayName))")
                             .foregroundStyle(.secondary)
                     }
                     LabeledContent("crossCopy.field.bucket") {
@@ -48,7 +48,7 @@ struct CrossAccountCopySheet: View {
                     Picker("crossCopy.field.account", selection: $selectedAccount) {
                         Text("crossCopy.account.none").tag(S3Account?.none)
                         ForEach(otherAccounts) { account in
-                            Text("\(account.name) — \(account.provider.displayName)")
+                            Text("\(account.name) — \(account.provider.localizedDisplayName)")
                                 .tag(S3Account?.some(account))
                         }
                     }
