@@ -51,6 +51,7 @@ public struct S3ResumableUploader: Sendable {
         key: String,
         localURL: URL,
         contentType: String?,
+        metadata: [String: String]? = nil,
         fileSize: Int64,
         progress: @Sendable @escaping (Int64) async -> Void
     ) async throws {
@@ -66,6 +67,7 @@ public struct S3ResumableUploader: Sendable {
                 key: key,
                 localURL: localURL,
                 contentType: contentType,
+                metadata: metadata,
                 fileSize: fileSize,
                 progress: progress
             )
@@ -84,6 +86,7 @@ public struct S3ResumableUploader: Sendable {
         key: String,
         localURL: URL,
         contentType: String?,
+        metadata: [String: String]? = nil,
         fileSize: Int64,
         progress: @Sendable @escaping (Int64) async -> Void
     ) async throws {
@@ -96,6 +99,7 @@ public struct S3ResumableUploader: Sendable {
             localURL: localURL,
             fileSize: fileSize,
             contentType: contentType,
+            metadata: metadata,
             s3: s3
         )
 
@@ -122,6 +126,7 @@ public struct S3ResumableUploader: Sendable {
                 localURL: localURL,
                 fileSize: fileSize,
                 contentType: contentType,
+                metadata: metadata,
                 s3: s3
             )
             serverParts = []
@@ -223,9 +228,13 @@ public struct S3ResumableUploader: Sendable {
         localURL: URL,
         fileSize: Int64,
         contentType: String?,
+        metadata: [String: String]? = nil,
         s3: S3
     ) async throws -> MultipartUploadCheckpoint {
+        // Initiation fixes metadata for the upload's lifetime. Do not resume
+        // an older unmarked upload when restoring a marked cached envelope.
         let fingerprint = MultipartUploadCheckpoint.fingerprint(for: localURL)
+            + (BucketeerEnvelope.isMarked(metadata) ? ":bucketeer-enc=1" : "")
         if let existing = try await checkpointStore.find(
             accountID: account.id,
             bucket: bucket,
@@ -256,7 +265,8 @@ public struct S3ResumableUploader: Sendable {
         let response = try await s3.createMultipartUpload(.init(
             bucket: bucket,
             contentType: contentType,
-            key: key
+            key: key,
+            metadata: metadata
         ))
         guard let uploadId = response.uploadId else {
             throw BucketeerError.providerError(

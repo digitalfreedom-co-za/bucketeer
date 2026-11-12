@@ -157,8 +157,11 @@ public enum S3FileUpload {
 public struct SotoObjectWriter: S3ObjectWriting {
     let s3: S3
 
-    public init(s3: S3) {
+    private let metadata: [String: String]?
+
+    public init(s3: S3, metadata: [String: String]? = nil) {
         self.s3 = s3
+        self.metadata = metadata
     }
 
     public func currentETag(bucket: String, key: String) async throws -> String? {
@@ -171,14 +174,14 @@ public struct SotoObjectWriter: S3ObjectWriting {
             try await s3.putObject(.init(
                 body: AWSHTTPBody(buffer: ByteBuffer(bytes: body)),
                 bucket: bucket, contentType: contentType,
-                ifMatch: ifMatch, ifNoneMatch: ifNoneMatch, key: key
+                ifMatch: ifMatch, ifNoneMatch: ifNoneMatch, key: key, metadata: metadata
             )).eTag
         }
     }
 
     public func createMultipartUpload(bucket: String, key: String, contentType: String?) async throws -> String {
         try await mapped(key: key) {
-            let output = try await s3.createMultipartUpload(.init(bucket: bucket, contentType: contentType, key: key))
+            let output = try await s3.createMultipartUpload(.init(bucket: bucket, contentType: contentType, key: key, metadata: metadata))
             guard let uploadID = output.uploadId else {
                 throw BucketeerError.providerError(statusCode: 0, message: "The provider returned no multipart upload ID.")
             }
