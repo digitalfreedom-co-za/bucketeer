@@ -33,7 +33,7 @@ struct EnvelopeDetectionTests {
     func legacy() throws {
         let key = SymmetricKey(size: .bits256)
         let plain = Data("payload".utf8)
-        var sealed = try BucketeerEnvelope.seal(plaintext: plain, key: key)
+        var sealed = try LegacyEnvelope.seal(plaintext: plain, key: key)
         #expect(try BucketeerEnvelope.decryptedPayload(sealed, marked: false, key: key) == plain)
         #expect(try BucketeerEnvelope.decryptedPayload(Data("BCKT plain text".utf8), marked: false, key: key) == nil)
         var unsupported = sealed
@@ -43,7 +43,7 @@ struct EnvelopeDetectionTests {
         #expect(throws: EncryptionError.authenticationFailed) {
             try BucketeerEnvelope.decryptedPayload(sealed, marked: false, key: key)
         }
-        var reserved = try BucketeerEnvelope.seal(plaintext: plain, key: key)
+        var reserved = try LegacyEnvelope.seal(plaintext: plain, key: key)
         reserved[6] ^= 1
         #expect(throws: EncryptionError.authenticationFailed) {
             try BucketeerEnvelope.decryptedPayload(reserved, marked: false, key: key)
@@ -63,11 +63,14 @@ struct EnvelopeDetectionTests {
         }
     }
 
-    @Test("Without a key valid legacy headers fail closed; plain bytes pass through")
+    @Test("Without a key valid envelope headers fail closed; plain bytes pass through")
     func unkeyed() throws {
-        let sealed = try BucketeerEnvelope.seal(plaintext: Data(), key: SymmetricKey(size: .bits256))
-        #expect(throws: EncryptionError.noKeyForBucket) {
-            try BucketeerEnvelope.decryptedPayload(sealed, marked: false, key: nil)
+        let sealed = try LegacyEnvelope.seal(plaintext: Data(), key: SymmetricKey(size: .bits256))
+        let streaming = try BucketeerEnvelope.seal(plaintext: Data(), key: SymmetricKey(size: .bits256))
+        for envelope in [sealed, streaming] {
+            #expect(throws: EncryptionError.noKeyForBucket) {
+                try BucketeerEnvelope.decryptedPayload(envelope, marked: false, key: nil)
+            }
         }
         var wrongMagic = sealed
         wrongMagic[0] = 0
@@ -75,8 +78,13 @@ struct EnvelopeDetectionTests {
         unsupported[4] = 2
         var reserved = sealed
         reserved[6] = 1
+        var streamingReserved = streaming
+        streamingReserved[6] = 1
+        var streamingSegmentSize = streaming
+        streamingSegmentSize[8] = 0xFF
         for data in [Data(), Data("plain".utf8), Data("BCKT plain".utf8),
-                     Data(sealed.dropLast()), wrongMagic, unsupported, reserved] {
+                     Data(sealed.dropLast()), wrongMagic, unsupported, reserved,
+                     Data(streaming.dropLast()), streamingReserved, streamingSegmentSize] {
             #expect(try BucketeerEnvelope.decryptedPayload(data, marked: false, key: nil) == nil)
         }
     }

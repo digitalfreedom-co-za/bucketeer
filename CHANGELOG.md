@@ -13,6 +13,23 @@ before that is internal phase work on the `development` branch.
 
 ## [Unreleased] — `development` branch
 
+### Encryption (#39)
+- Encrypted uploads and downloads of large files no longer load the
+  whole file into memory. New objects use envelope version 0x02:
+  1 MiB segments, each AES-256-GCM sealed under a per-object subkey
+  (HKDF-SHA256 with a random salt), with nonce and AAD binding the
+  header, the segment index and a final flag, so truncated, reordered
+  or extended objects fail authentication. Version 0x01 objects still
+  decrypt. A 1 GiB round trip peaks at about 25 MB resident memory.
+- Downloads decrypt segment by segment into a sibling file that
+  replaces the download only after the last segment authenticated.
+- Encrypted uploads seal into a private temp folder that is removed
+  whatever the outcome and
+  run off the transfer actor. They use the multipart path that aborts
+  on failure instead of the resumable one, whose checkpoints could
+  never match a freshly sealed file and stranded parts on the server.
+- Byte-level format of both versions: `docs/ARCHITECTURE.md` § 6.4.
+
 ### Release review (2026-11-12)
 - Settings → Security (hardware-key technical preview) is hidden in
   Release builds until v1.1 (#26).

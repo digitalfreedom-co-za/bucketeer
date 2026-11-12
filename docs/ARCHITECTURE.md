@@ -886,13 +886,13 @@ flowchart TD
     Enqueue --> Pump["pump()<br/>start up to maxConcurrent workers"]
     Pump --> Worker["startWorker(item)<br/>setState .running"]
     Worker --> EncryptGate{{"(13.15) BucketEncryptionGate<br/>has key for (account, bucket)?"}}
-    EncryptGate -->|"yes — upload only"| Seal["BucketeerEnvelope.seal<br/>AES-GCM with header as AAD<br/>writes temp file, rebuilds QueuedItem"]
+    EncryptGate -->|"yes — upload only"| Seal["BucketeerEnvelope.sealFile (v0x02)<br/>segment by segment, off the actor<br/>owner-only temp folder, rebuilds QueuedItem"]
     EncryptGate -->|"no"| Route
     Seal --> Route
     Route{{"item.account.provider.family"}}
     Route -->|"s3"| Size{{"item.fileSize"}}
     Route -->|"azureBlob"| Azure["AzureBlobTransporter<br/>(8 MiB blocks, ≤4 parallel,<br/>ranged 206-only download)<br/>(13.2) limiter charged per block"]
-    Size -->|"≥ 50 MB"| Resumable["(13.10) S3ResumableUploader<br/>createMultipartUpload → listParts →<br/>uploadPart loop with per-part<br/>SwiftData checkpoint + mtime fingerprint<br/>→ completeMultipartUpload"]
+    Size -->|"≥ 50 MB, not sealed for this upload"| Resumable["(13.10) S3ResumableUploader<br/>createMultipartUpload → listParts →<br/>uploadPart loop with per-part<br/>SwiftData checkpoint + mtime fingerprint<br/>→ completeMultipartUpload"]
     Size -->|"5–50 MB"| Soto["Soto multipartUpload helper<br/>(13.2) limiter charged per progress delta"]
     Size -->|"< 5 MB"| SinglePut["putObject single shot<br/>(13.2) limiter charged once"]
     Resumable --> Progress
@@ -901,7 +901,7 @@ flowchart TD
     Azure --> Progress
     Progress["setState .running(bytesTransferred, totalBytes)<br/>publishes snapshot to tasks AsyncStream"]
     Progress --> DownloadGate{{"download AND envelope on disk<br/>AND key available AND<br/>NOT bypassDecryption?"}}
-    DownloadGate -->|"yes"| Open["BucketeerEnvelope.open<br/>AES-GCM verify header AAD<br/>rewrite file in place"]
+    DownloadGate -->|"yes"| Open["BucketeerEnvelope.finalizeDownload<br/>v0x02 segment by segment, v0x01 in memory<br/>sibling file replaces staging file"]
     DownloadGate -->|"no"| Terminal
     Open --> Terminal
     Terminal["setState .completed / .failed / .cancelled<br/>terminalCache[id] = state<br/>resume every waiters[id]<br/>(13.1) recordTerminal → activity log<br/>cleanup temp envelope file"]
@@ -1055,6 +1055,77 @@ stateDiagram-v2
     Deleting --> Active: Keychain delete fails, nothing removed
 ```
 
+### 6.4 Encryption envelope
+
+Every encrypted object starts with the magic `BCKT` (`42 43 4B 54`) and
+a version byte. Objects carry the marker `bucketeer-enc: 1` (S3) or
+`bucketeerenc: 1` (Azure) in their metadata, written on every encrypted
+upload of either version; detection (#40) trusts the marker, and
+authenticates unmarked objects that start with `BCKT` before treating
+them as encrypted. Unmarked bytes with an invalid structure (unknown
+version, impossible length, out-of-range segment size) are plain
+objects; a failed tag check always fails closed. Integers are big-endian.
+
+**Version 0x01** (read only since #39; one GCM message, decrypted in memory)
+
+| Offset | Size | Field |
+|---|---|---|
+| 0 | 4 | magic `BCKT` |
+| 4 | 1 | version `0x01` |
+| 5 | 3 | reserved, `00 00 00` |
+| 8 | 12 | AES-GCM nonce, random |
+| 20 | N | ciphertext of the whole payload |
+| 20 + N | 16 | GCM tag |
+
+Key: the 32-byte bucket key. AAD: bytes 0–7. Length: `36 + P`.
+
+**Version 0x02** (written since #39; segmented, memory bounded by the segment size)
+
+| Offset | Size | Field |
+|---|---|---|
+| 0 | 4 | magic `BCKT` |
+| 4 | 1 | version `0x02` |
+| 5 | 3 | reserved, `00 00 00` |
+| 8 | 4 | segment size `S` in plaintext bytes (UInt32; written as 1 MiB, accepted 64 B … 16 MiB) |
+| 12 | 32 | salt, random per object |
+| 44 | 7 | nonce prefix, random per object |
+| 51 | … | segments `0 … n−1` |
+
+- Subkey: `K = HKDF-SHA256(ikm: bucket key, salt: salt, info: "Bucketeer envelope v2 segment key", 32 bytes)`.
+  A fresh subkey per object keeps nonces from repeating across objects.
+- Segment `i`: `ciphertext_i ‖ tag_i` (16-byte tag), AES-256-GCM under `K`.
+  Segments `0 … n−2` hold exactly `S` plaintext bytes; the final segment holds
+  `1 … S` bytes, or `0` when it is the only one (empty payload).
+- Position: `pos_i = UInt32(i) ‖ final_i`, where `final_i` is `01` for the last segment and `00` otherwise.
+- Nonce: `nonce prefix (7) ‖ pos_i (5)` = 12 bytes.
+- AAD: `header (bytes 0–50) ‖ pos_i`.
+- Segment count: `n = max(1, ⌈P / S⌉)`; length: `C = 51 + P + 16·n`.
+- Inverse (reader): `B = C − 51`, `n = ⌈B / (S + 16)⌉`, last segment length
+  `L = B − (n − 1)(S + 16)`, valid only if `B ≥ 16` and `L ≥ 17` for `n > 1`
+  (`L ≥ 16` for `n = 1`); then `P = B − 16·n`. Any other length is malformed.
+
+Because the index and the final flag are in both nonce and AAD, a
+reordered, duplicated or dropped segment fails its tag; cutting the
+envelope after a segment boundary turns a non-final segment into the
+last one and fails, cutting inside a segment leaves a final segment
+that fails, and appended bytes make the real final segment non-final.
+Changing any header byte changes the AAD (and, for the salt, the
+subkey). Segments are authenticated one by one, so a truncated object is
+only detected at its end: `finalizeDownload` decrypts into a sibling
+file and replaces the staged download only after the last segment
+authenticated; a failure removes the partial output.
+
+Uploads seal into an owner-only folder under the temp directory
+(`BucketeerEncryptedUploads/<UUID>/`), removed when the upload ends for
+any reason. Such uploads do not use the resumable uploader: resuming
+requires the identical ciphertext, but each attempt draws a new salt
+and nonce prefix, and deriving them deterministically from the file
+would reuse nonces whenever a file changes without changing its
+fingerprint. They take the multipart path of `S3FileUpload` instead,
+which reads part by part and aborts the upload on failure. Previews
+and the trash restore check authenticate segment by segment without
+writing plaintext.
+
 ---
 
 ## 7. Provisioning and signing topology
@@ -1134,6 +1205,7 @@ runs them in ~25 ms; no Xcode test target is required.
 | `AutoTagRuleEvaluator` (13.8) | 6 | empty list, disabled rules, empty-matches-all, `*`/`?` glob, case-insensitive MIME prefix, merge order |
 | `BucketeerDeepLink` (13.11) | 9+4 | grammar round-trip per case, prefix variants, bad UUID, missing bucket, case-insensitive scheme, percent-encoded key, query string ignored |
 | `BucketeerEnvelope` (13.15 + audit fix) | 9 | round-trip, header layout, wrong-key auth fail, garbage reject, prefix detection, tamper detection, **empty plaintext** (audit low #1), **version tamper** + **reserved tamper** (audit medium #1) |
+| `StreamingEnvelope` (#39) | 4 | 64 MiB file round trip with per-call I/O bounded by one segment, v0x01 and v0x02 fixtures written outside the app, truncation / reorder / append / bit flip / header changes fail and leave the download untouched, segment boundaries 0, 1, S, 2S, 2S+1 |
 | `TrashedItem.displayName` | 4 | multi-segment, single-segment, empty, trailing-slash folder-style |
 | **Total, all Core suites incl. those not listed** | **164** | test functions as of 2026-11-02 |
 

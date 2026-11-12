@@ -9,9 +9,10 @@ import Foundation
 import CryptoKit
 
 /// Bucketeer's wire envelope for client-side-encrypted objects.
-/// Phase 13.15.
+/// Phase 13.15; segmented version 0x02 since #39.
 ///
-/// Layout (on-disk / on-wire):
+/// New objects are written as version 0x02 (`StreamingEnvelope.swift`),
+/// which seals and opens segment by segment. Version 0x01 is still read:
 ///
 /// ```
 /// magic       4 bytes  "BCKT"
@@ -21,17 +22,15 @@ import CryptoKit
 /// ciphertext N bytes   payload (includes the GCM tag at the end)
 /// ```
 ///
-/// The format is intentionally simple: no key id is embedded because
-/// the user picks the key per bucket via the `EncryptionKeyStore`
-/// lookup. A future phase will add a 16-byte key fingerprint after
-/// the version byte so multi-key rotation can resolve which key was
-/// used.
+/// No key id is embedded: the user picks the key per bucket via the
+/// `EncryptionKeyStore` lookup. Byte-level specification of both
+/// versions: `docs/ARCHITECTURE.md`, section "Encryption envelope".
 public enum BucketeerEnvelope {
     public static let magic: [UInt8] = [0x42, 0x43, 0x4B, 0x54] // "BCKT"
-    public static let version: UInt8 = 0x01
+    public static let legacyVersion: UInt8 = 0x01
     public static let reservedZeroes: [UInt8] = [0x00, 0x00, 0x00]
-    public static let headerSize: Int = magic.count + 1 + reservedZeroes.count
-    public static let nonceSize: Int = 12
+    public static let legacyHeaderSize: Int = magic.count + 1 + reservedZeroes.count
+    public static let legacyNonceSize: Int = 12
 
     public static let s3MetadataKey = "bucketeer-enc"
     public static let azureMetadataKey = "bucketeerenc"
@@ -52,10 +51,14 @@ public enum BucketeerEnvelope {
     /// Nil means unchanged plaintext; a value is authenticated plaintext.
     /// Only structural legacy errors permit fallback. Authentication failures
     /// (including reserved-header tampering) always fail closed.
+    /// In-memory variant of `finalizeDownload` for small payloads.
     public static func decryptedPayload(_ data: Data, marked: Bool, key: SymmetricKey?) throws -> Data? {
         guard let key else {
-            let validHeader = data.count >= headerSize + nonceSize + 16 && data.starts(with: headerBytes())
-            if marked || validHeader { throw EncryptionError.noKeyForBucket }
+            let length = Int64(data.count)
+            if marked || isLegacyEnvelope(prefix: data, totalLength: length)
+                || isStreamingEnvelope(prefix: data.prefix(streamingHeaderSize), totalLength: length) {
+                throw EncryptionError.noKeyForBucket
+            }
             return nil
         }
         guard marked || data.starts(with: magic) else { return nil }
@@ -68,73 +71,102 @@ public enum BucketeerEnvelope {
         }
     }
 
+    /// Replaces an authenticated envelope at `url` with its plaintext and
+    /// leaves plain objects unchanged, with the rules of
+    /// `decryptedPayload`. Version 0x02 is decrypted segment by segment
+    /// into a sibling file that replaces `url` only after the last
+    /// segment authenticated, so memory stays bounded and a failure
+    /// leaves `url` untouched.
     public static func finalizeDownload(at url: URL, marked: Bool, key: SymmetricKey?) throws {
-        let data = try Data(contentsOf: url, options: .mappedIfSafe)
-        if let plaintext = try decryptedPayload(data, marked: marked, key: key) {
-            try plaintext.write(to: url, options: .atomic)
+        let output = url.deletingLastPathComponent()
+            .appendingPathComponent(".\(UUID().uuidString).decrypting", isDirectory: false)
+        do {
+            if try classify(fileAt: url, marked: marked, key: key, into: output) {
+                _ = try FileManager.default.replaceItemAt(url, withItemAt: output)
+            }
+        } catch {
+            try? FileManager.default.removeItem(at: output)
+            throw error
         }
+        try? FileManager.default.removeItem(at: output)
     }
 
-    /// Encrypt `plaintext` under `key` and wrap with the Bucketeer
-    /// envelope header.
-    ///
-    /// The envelope header (magic +
-    /// version + reserved) is passed to AES-GCM as *additional
-    /// authenticated data* so any tamper with the version byte or
-    /// the reserved bits flips the tag check on open. Without this,
-    /// an attacker could swap our version byte to a value that a
-    /// future relaxed parser accepts and downgrade the format.
+    /// Encrypt `plaintext` under `key` into a version 0x02 envelope held
+    /// in memory. Large payloads go through `sealFile` instead.
     public static func seal(plaintext: Data, key: SymmetricKey) throws -> Data {
-        let nonce = AES.GCM.Nonce()
-        let header = headerBytes()
-        let sealed = try AES.GCM.seal(
-            plaintext,
-            using: key,
-            nonce: nonce,
-            authenticating: header
-        )
+        var offset = plaintext.startIndex
         var output = Data()
-        output.reserveCapacity(header.count + nonceSize + sealed.ciphertext.count + sealed.tag.count)
-        output.append(header)
-        output.append(contentsOf: Array(nonce))
-        output.append(sealed.ciphertext)
-        output.append(sealed.tag)
+        output.reserveCapacity(Int(encryptedLength(plaintextLength: Int64(plaintext.count))))
+        try sealStream(key: key, read: { count in
+            let end = plaintext.index(offset, offsetBy: min(count, plaintext.endIndex - offset))
+            defer { offset = end }
+            return plaintext.subdata(in: offset..<end)
+        }, write: { output.append($0) })
         return output
     }
 
-    /// Validate the header, recover the nonce, and decrypt. Throws
-    /// `EncryptionError.badEnvelope` for any malformed input and
-    /// `EncryptionError.authenticationFailed` when the AES-GCM tag
-    /// check fails (wrong key, tampered ciphertext, or tampered
-    /// header).
+    /// Validate the header and decrypt a version 0x01 or 0x02 envelope
+    /// held in memory. Throws `EncryptionError.badEnvelope` for any
+    /// malformed input, `unsupportedVersion` for an unknown version byte
+    /// and `authenticationFailed` when a GCM tag check fails (wrong key,
+    /// tampered ciphertext, or tampered header).
     public static func open(envelope: Data, key: SymmetricKey) throws -> Data {
-        // Zero-byte plaintexts produce a
-        // valid envelope of exactly `headerSize + nonceSize + 16`.
-        // The previous strict `>` guard rejected that legitimate
-        // case as malformed.
-        guard envelope.count >= headerSize + nonceSize + 16 else {
+        guard try envelopeVersion(of: envelope) == streamingVersion else {
+            return try openLegacy(envelope: envelope, key: key)
+        }
+        var offset = envelope.startIndex
+        var output = Data()
+        try openStream(encryptedLength: Int64(envelope.count), key: key, read: { count in
+            let end = envelope.index(offset, offsetBy: min(count, envelope.endIndex - offset))
+            defer { offset = end }
+            return envelope.subdata(in: offset..<end)
+        }, write: { output.append($0) })
+        return output
+    }
+
+    /// The version byte of a known envelope.
+    internal static func envelopeVersion(of prefix: Data) throws -> UInt8 {
+        guard prefix.count > magic.count, prefix.starts(with: magic) else {
             throw EncryptionError.badEnvelope
         }
-        let magicSlice = envelope.prefix(magic.count)
-        guard Array(magicSlice) == magic else { throw EncryptionError.badEnvelope }
-        let versionByte = envelope[envelope.startIndex + magic.count]
-        guard versionByte == version else { throw EncryptionError.unsupportedVersion }
+        let version = prefix[prefix.startIndex + magic.count]
+        guard version == legacyVersion || version == streamingVersion else {
+            throw EncryptionError.unsupportedVersion
+        }
+        return version
+    }
+
+    /// Structural check without a key, unchanged since #40: a version
+    /// 0x01 header with zero reserved bytes and room for nonce and tag.
+    internal static func isLegacyEnvelope(prefix: Data, totalLength: Int64) -> Bool {
+        totalLength >= Int64(legacyHeaderSize + legacyNonceSize + tagSize) && prefix.starts(with: legacyHeaderBytes())
+    }
+
+    /// Version 0x01: one AES-GCM message over the whole payload, with
+    /// the 8-byte header as AAD so a tampered version or reserved byte
+    /// fails the tag check.
+    private static func openLegacy(envelope: Data, key: SymmetricKey) throws -> Data {
+        // Zero-byte plaintexts produce a
+        // valid envelope of exactly `headerSize + nonceSize + 16`.
+        guard envelope.count >= legacyHeaderSize + legacyNonceSize + tagSize else {
+            throw EncryptionError.badEnvelope
+        }
+        guard try envelopeVersion(of: envelope) == legacyVersion else { throw EncryptionError.unsupportedVersion }
 
         // Reconstruct the exact bytes we passed as AAD at seal time.
         // Any tamper with the reserved bytes flips the tag check
         // below.
-        let headerData = envelope.prefix(headerSize)
+        let headerData = envelope.prefix(legacyHeaderSize)
 
-        let nonceStart = envelope.startIndex + headerSize
-        let nonceEnd = nonceStart + nonceSize
+        let nonceStart = envelope.startIndex + legacyHeaderSize
+        let nonceEnd = nonceStart + legacyNonceSize
         let nonceBytes = envelope[nonceStart..<nonceEnd]
         let nonce = try AES.GCM.Nonce(data: nonceBytes)
 
         // The trailing 16 bytes of every GCM sealed-box are the tag.
         let bodyAndTag = envelope[nonceEnd...]
-        guard bodyAndTag.count >= 16 else { throw EncryptionError.badEnvelope }
-        let tag = bodyAndTag.suffix(16)
-        let ciphertext = bodyAndTag.dropLast(16)
+        let tag = bodyAndTag.suffix(tagSize)
+        let ciphertext = bodyAndTag.dropLast(tagSize)
 
         do {
             let box = try AES.GCM.SealedBox(nonce: nonce, ciphertext: ciphertext, tag: tag)
@@ -144,15 +176,8 @@ public enum BucketeerEnvelope {
         }
     }
 
-    /// Build the AAD blob. Kept separate so `seal` and `open` are
-    /// guaranteed to authenticate the exact same bytes.
-    private static func headerBytes() -> Data {
-        var header = Data()
-        header.reserveCapacity(headerSize)
-        header.append(contentsOf: magic)
-        header.append(version)
-        header.append(contentsOf: reservedZeroes)
-        return header
+    private static func legacyHeaderBytes() -> Data {
+        Data(magic + [legacyVersion] + reservedZeroes)
     }
 }
 

@@ -159,17 +159,17 @@ actor PreviewCache {
     /// Authenticate to distinguish legacy envelopes from plain BCKT prefixes,
     /// but preserve the preview policy: never persist decrypted plaintext.
     private static func rejectEncryptedPayload(at url: URL, marked: Bool, key: SymmetricKey?) throws {
-        let data = try Data(contentsOf: url, options: .mappedIfSafe)
-        let plaintext: Data?
+        let encrypted: Bool
         do {
-            plaintext = try BucketeerEnvelope.decryptedPayload(data, marked: marked, key: key)
+            // Authenticates segment by segment; nothing is written.
+            encrypted = try BucketeerEnvelope.payloadIsEncrypted(at: url, marked: marked, key: key)
         } catch EncryptionError.noKeyForBucket {
             throw BucketeerError.unknown(message: String(
                 localized: "error.encryptedNoKey",
                 defaultValue: "The object is encrypted, but no key is configured for this bucket."
             ))
         }
-        guard plaintext != nil else { return }
+        guard encrypted else { return }
         throw BucketeerError.unknown(message: String(
             localized: "preview.error.encrypted",
             defaultValue: "Previews aren't available for encrypted objects. Download the object to open it."

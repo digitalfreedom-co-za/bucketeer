@@ -22,12 +22,13 @@ struct BucketeerEnvelopeTests {
         #expect(recovered == plaintext)
     }
 
-    @Test("Envelope header carries the BCKT magic + version byte")
+    @Test("Envelope header carries the BCKT magic, version 0x02 and the segment size")
     func headerLayout() throws {
         let key = SymmetricKey(size: .bits256)
         let envelope = try BucketeerEnvelope.seal(plaintext: Data([0x01, 0x02]), key: key)
         #expect(Array(envelope.prefix(4)) == BucketeerEnvelope.magic)
-        #expect(envelope[envelope.startIndex + 4] == BucketeerEnvelope.version)
+        #expect(envelope[envelope.startIndex + 4] == BucketeerEnvelope.streamingVersion)
+        #expect(Array(envelope[8..<12]) == [0x00, 0x10, 0x00, 0x00]) // 1 MiB, big-endian
     }
 
     @Test("Opening with a different key fails authentication")
@@ -63,18 +64,17 @@ struct BucketeerEnvelopeTests {
         let envelope = try BucketeerEnvelope.seal(plaintext: Data(), key: key)
         let recovered = try BucketeerEnvelope.open(envelope: envelope, key: key)
         #expect(recovered.isEmpty)
-        // The minimum envelope size is exactly header + nonce + tag.
-        #expect(envelope.count == BucketeerEnvelope.headerSize + BucketeerEnvelope.nonceSize + 16)
+        // The minimum envelope size is exactly header + one empty segment's tag.
+        #expect(envelope.count == BucketeerEnvelope.streamingHeaderSize + BucketeerEnvelope.tagSize)
     }
 
     @Test("Tampering with the version byte fails authentication (AAD)")
     func versionTamperingDetected() throws {
         let key = SymmetricKey(size: .bits256)
         var envelope = try BucketeerEnvelope.seal(plaintext: Data("payload".utf8), key: key)
-        // Flip the version byte. Pre-AAD this passed silently; after
-        // the AAD change the header is authenticated and the
-        // tag check fails.
-        envelope[envelope.startIndex + 4] = 0x02
+        // Downgrade to the legacy version byte: the header is
+        // authenticated, so the tag check fails.
+        envelope[envelope.startIndex + 4] = BucketeerEnvelope.legacyVersion
         do {
             _ = try BucketeerEnvelope.open(envelope: envelope, key: key)
             #expect(Bool(false), "Expected unsupportedVersion or auth failure")
@@ -105,7 +105,7 @@ struct BucketeerEnvelopeTests {
             key: key
         )
         // Flip a single ciphertext byte well past the header.
-        let flipIndex = envelope.startIndex + BucketeerEnvelope.headerSize + BucketeerEnvelope.nonceSize + 2
+        let flipIndex = envelope.startIndex + BucketeerEnvelope.streamingHeaderSize + 2
         envelope[flipIndex] ^= 0xFF
         do {
             _ = try BucketeerEnvelope.open(envelope: envelope, key: key)
