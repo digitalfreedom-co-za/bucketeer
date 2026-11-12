@@ -27,8 +27,8 @@ Everything on `development` at the v1.0 cut. That's:
   finding addressed.
 - Azure parity for object versions (snapshots), metadata + tags.
 
-**Build state**: 156 BucketeerCore tests passing, host app builds
-clean against macOS 14 deployment target on Xcode 16.
+**Build state**: 275 BucketeerCore tests passing, host app builds
+clean against macOS 15.8 deployment target on Xcode 16.
 
 ---
 
@@ -99,6 +99,9 @@ credentials.
       DEU), available in all 175 territories + future ones. State
       `MISSING_METADATA` until the review screenshot is uploaded
       (needs a paywall screenshot from a real build).
+- [ ] Register IAP `za.co.digitalfreedom.bucketeer.pro.trial` —
+      non-consumable, free, Family Sharing off, en-US + de-DE
+      localizations (verify in App Store Connect)
 - [ ] IAP review screenshot (after first TestFlight build)
 - [ ] Upload App Store description, keywords, support / marketing /
       privacy URLs (drafts in the same doc)
@@ -159,10 +162,11 @@ Each workflow uses the `ci_scripts/` directory we ship in the repo
   Apple's standard EULA unless a custom EULA is uploaded.
 - **Tracking**: `NSPrivacyTracking = false` — no ATT prompt,
   no IDFA usage, no cross-app/site tracking domains.
-- **In-app purchase**: Single non-consumable IAP
-  `za.co.digitalfreedom.bucketeer.pro.lifetime` (€14.99). Free
-  + 14-day trial gates; Restore Purchases wired in Paywall sheet
-  *and* Help menu.
+- **In-app purchase**: Two non-consumable IAPs:
+  `za.co.digitalfreedom.bucketeer.pro.lifetime` (€14.99) and
+  `za.co.digitalfreedom.bucketeer.pro.trial` (free 14-day trial).
+  Free + 14-day trial gates; Restore Purchases wired in Paywall sheet
+  *and* Settings → Pro.
 
 ---
 
@@ -175,21 +179,26 @@ The big chunks each tester should exercise on a fresh `beta` build:
    credentials for (AWS + Cloudflare R2 + Azure recommended).
 2. Navigate into a bucket, drill 2-3 folders deep, drag a 1 MB and
    a 100 MB file in. Check Quick Look preview works for one of them.
-3. Drag a 1 GB file in. The Resumable Multipart path kicks in
-   (Phase 13.10) — pull the network cable mid-upload, plug back in,
-   verify the upload resumes from the last completed part.
+3. Drag a 1 GB file in on an S3-compatible account, in a bucket
+   without client-side encryption. The Resumable Multipart path kicks in
+   (Phase 13.10) — pull the network cable mid-upload, wait for the
+   transfer to fail, then plug back in. Add the same file to the same
+   folder again; verify it resumes from the last completed part,
+   with no automatic restart.
 4. Bandwidth limit: in Settings → Transfers, set 1 MB/s and verify
    the next big upload throttles visibly.
 
 ### 13.x feature surface
 5. Activity Log (⌘⌥0) — every prior step shows up; filter by kind
    and account; CSV export opens cleanly in Numbers.
-6. Trash (⌘⇧⌫) — delete a small object, verify the local cache
-   filled and the **Restore** button re-uploads it. Then delete a
-   ≥ 100 MB object and verify the cache shows "Too large" — the
-   row is metadata-only.
+6. Trash (⌘⇧⌫) — with caching enabled, files up to the cache cap
+   (default 100 MiB) are cached. Delete a small object, verify the
+   local cache filled and the **Restore** button re-uploads it. Then
+   delete an object larger than 100 MiB with the default cap and
+   verify the cache shows "Too large" — the row is metadata-only.
 7. Bucket Dashboard (browser toolbar) — stats grid populates;
-   monthly-cost estimate appears for non-MinIO providers; top-10
+   monthly-cost estimate appears for known providers and is absent
+   for every custom (unknown) provider, including MinIO; top-10
    largest list is correct.
 8. Versions browser (right-click → Show Versions): on a versioning-
    enabled S3 bucket, upload 3 revisions of the same key, restore
@@ -228,11 +237,15 @@ The big chunks each tester should exercise on a fresh `beta` build:
     works without re-charging.
 
 ### Crash-recovery
-21. Force-quit the App during a 500 MB upload. Re-launch. Verify
-    the resumable path picks up from the last completed part.
-22. Force-quit during a cross-account move. Re-launch. Verify the
-    `CrossAccountStaging/` scavenger removed any orphan plaintext
-    temp file.
+21. Force-quit the App during a 500 MB upload on an S3-compatible
+    account, in a bucket without client-side encryption. Re-launch, then add
+    the same file to the same folder again. Verify the resumable
+    path picks up from the last completed part, with no automatic
+    restart.
+22. Force-quit during a cross-account move, wait more than 1 hour,
+    re-launch. Verify the `CrossAccountStaging/` scavenger removed
+    orphan plaintext temp files whose last modification was more
+    than 1 hour ago.
 
 If any of those 22 steps fails, **don't promote to `main`** —
 report through the support URL and fix on `development` first.
