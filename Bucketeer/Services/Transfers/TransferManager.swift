@@ -79,7 +79,8 @@ actor TransferManager: Transferring {
                     key: task.key,
                     localURL: localURL,
                     state: task.state,
-                    startedAt: task.startedAt
+                    startedAt: task.startedAt,
+                    isEncrypted: task.isEncrypted
                 ),
                 contentType: contentType,
                 fileSize: fileSize ?? self.fileSize,
@@ -471,6 +472,8 @@ actor TransferManager: Transferring {
             setState(id: id, state: .failed(message: message))
             return
         }
+        let encrypted = encryptionKey != nil || item.bypassEncryption
+        markEncrypted(id: id, encrypted)
         if let key = encryptionKey {
             do {
                 let plaintext = try Data(contentsOf: url, options: .mappedIfSafe)
@@ -491,7 +494,6 @@ actor TransferManager: Transferring {
             }
         }
 
-        let encrypted = encryptionKey != nil || item.bypassEncryption
         let metadata = encrypted ? [BucketeerEnvelope.s3MetadataKey: "1"] : nil
 
         if item.account.provider.family == .azureBlob {
@@ -878,6 +880,15 @@ actor TransferManager: Transferring {
         Task { [activityLog, entry] in
             await activityLog.record(entry)
         }
+    }
+
+    /// Marks the upload as sealed once it has resolved the bucket's key
+    /// (or carries already-encrypted bytes). Queued tasks stay unmarked:
+    /// the key may change before a worker picks them up.
+    private func markEncrypted(id: UUID, _ isEncrypted: Bool) {
+        guard !terminated.contains(id), items[id]?.task.isEncrypted != isEncrypted else { return }
+        items[id]?.task.isEncrypted = isEncrypted
+        publish()
     }
 
     private func publish() {

@@ -162,6 +162,58 @@ final class TransferManagerLifecycleTests: XCTestCase {
         XCTAssertFalse(RefusingAzureStub.requested(blob: "no-key.txt"))
     }
 
+    func testEncryptedMarkerFollowsTheKeyTheWorkerResolved() async throws {
+        let keys = InMemoryEncryptionKeyStore(encryptedBuckets: [(account.id, "archive")])
+        let keyStore = BlockingKeyStore(keys: keys)
+        let gate = BucketEncryptionGate(keyStore: keyStore)
+        let manager = try await makeManager(encryptionGate: gate)
+        let file = folder.appendingPathComponent("marker.txt")
+        try Data("payload".utf8).write(to: file)
+        let updates = manager.taskUpdates()
+
+        // Four workers park on the key lookup; the last two stay queued.
+        var buckets: [UUID: String] = [:]
+        for (index, bucket) in ["vault", "archive", "vault", "archive", "vault", "archive"].enumerated() {
+            let id = await manager.enqueueUpload(account: account, bucket: bucket, key: "\(index).txt",
+                                                 localURL: file, contentType: nil)
+            buckets[id] = bucket
+        }
+        await keyStore.waitUntilHolding(4)
+
+        var pending: [TransferTask] = []
+        for await snapshot in updates {
+            pending = snapshot.filter { buckets[$0.id] != nil }
+            if pending.filter({ if case .running = $0.state { true } else { false } }).count == 4,
+               pending.filter({ $0.state == .queued }).count == 2 { break }
+        }
+        for task in pending {
+            XCTAssertFalse(task.isEncrypted, "\(task.key) has not resolved a key yet")
+            let marker = task.encryptionMarker(bucketHasKey: true)
+            XCTAssertEqual(marker, task.state == .queued ? UploadEncryptionMarker.expected : nil,
+                           "\(task.key) shows no confirmed marker before its key is resolved")
+        }
+
+        // The keys change while every upload waits for its key.
+        let archiveKey = try await keys.key(accountID: account.id, bucket: "archive")
+        let removed = try XCTUnwrap(archiveKey)
+        try await keys.delete(id: removed.id)
+        _ = await keys.create(label: "Key", accountID: account.id, bucket: "vault")
+        await gate.invalidate(accountID: account.id, bucket: "archive")
+        await gate.invalidate(accountID: account.id, bucket: "vault")
+        await keyStore.release()
+
+        var marked: [UUID: Bool] = [:]
+        for await snapshot in updates {
+            for task in snapshot where buckets[task.id] != nil && task.state.isTerminal {
+                marked[task.id] = task.isEncrypted
+            }
+            if marked.count == buckets.count { break }
+        }
+        for (id, bucket) in buckets {
+            XCTAssertEqual(marked[id], bucket == "vault", "the key present when the worker resolved it decides")
+        }
+    }
+
     // MARK: - Helpers
 
     private func makeManager(encryptionGate: BucketEncryptionGate? = nil) async throws -> TransferManager {
@@ -224,35 +276,42 @@ private final class RefusingAzureStub: URLProtocol {
     }
 }
 
-/// Key store whose lookup ignores cancellation and parks until
-/// `release()` — a worker still busy after its task was cancelled.
+/// Key store whose lookups ignore cancellation and park until
+/// `release()` — a worker still busy after its task was cancelled, or
+/// uploads waiting for their key while the test changes `keys`.
 private actor BlockingKeyStore: EncryptionKeyStoring {
-    private var gate: CheckedContinuation<Void, Never>?
+    let keys: InMemoryEncryptionKeyStore
+    private var held: [CheckedContinuation<Void, Never>] = []
     private var released = false
 
-    func waitUntilHolding() async {
-        while gate == nil { await Task.yield() }
+    init(keys: InMemoryEncryptionKeyStore = InMemoryEncryptionKeyStore()) {
+        self.keys = keys
+    }
+
+    func waitUntilHolding(_ count: Int = 1) async {
+        while held.count < count { await Task.yield() }
     }
 
     func release() {
         released = true
-        gate?.resume()
-        gate = nil
+        held.forEach { $0.resume() }
+        held = []
     }
 
-    func key(accountID: UUID, bucket: String) async -> BucketEncryptionKey? {
-        if !released { await withCheckedContinuation { gate = $0 } }
-        return nil
+    func key(accountID: UUID, bucket: String) async throws -> BucketEncryptionKey? {
+        if !released { await withCheckedContinuation { held.append($0) } }
+        return try await keys.key(accountID: accountID, bucket: bucket)
     }
 
-    func all() -> [BucketEncryptionKey] { [] }
-    func create(label: String, accountID: UUID, bucket: String) -> BucketEncryptionKey {
-        BucketEncryptionKey(label: label, accountID: accountID, bucket: bucket)
-    }
-    func copyForReassignment(_ key: BucketEncryptionKey, to accountID: UUID) throws -> BucketEncryptionKey {
-        throw CocoaError(.featureUnsupported)
+    func all() async -> [BucketEncryptionKey] { await keys.all() }
+    func create(label: String, accountID: UUID, bucket: String) async -> BucketEncryptionKey {
+        await keys.create(label: label, accountID: accountID, bucket: bucket)
     }
 
-    func keyMaterial(id: UUID) -> Data { Data(count: 32) }
-    func delete(id: UUID) {}
+    func copyForReassignment(_ key: BucketEncryptionKey, to accountID: UUID) async throws -> BucketEncryptionKey {
+        try await keys.copyForReassignment(key, to: accountID)
+    }
+
+    func keyMaterial(id: UUID) async throws -> Data { try await keys.keyMaterial(id: id) }
+    func delete(id: UUID) async throws { try await keys.delete(id: id) }
 }

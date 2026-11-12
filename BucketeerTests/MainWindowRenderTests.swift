@@ -99,7 +99,8 @@ final class MainWindowRenderTests: XCTestCase {
     func testTransferListError() async throws {
         let demo = try await DemoEnvironment.make()
         demo.container.transferQueueViewModel.tasks = demoTransfers(demo)
-        try await renderAndAssert(TransferListView(viewModel: demo.container.transferQueueViewModel),
+        try await renderAndAssert(TransferListView(viewModel: demo.container.transferQueueViewModel,
+                                                   encryptionKeys: demo.container.encryptionKeysViewModel),
                                   name: "TransferListView_error", shows: ["sunset.jpg", "Network unavailable"])
     }
 

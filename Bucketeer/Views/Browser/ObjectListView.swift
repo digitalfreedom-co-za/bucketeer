@@ -79,6 +79,11 @@ struct ObjectListView: View {
                 }
                 .disabled(!viewModel.canGoUp)
             }
+            if isBucketEncrypted {
+                ToolbarItem(placement: .navigation) {
+                    EncryptedBadge(help: "encryption.badge.bucket.help")
+                }
+            }
             ToolbarItem(placement: .principal) {
                 BreadcrumbBar(viewModel: viewModel)
             }
@@ -556,6 +561,11 @@ struct ObjectListView: View {
             prefix: viewModel.prefix,
             fileURLs: urls
         )
+    }
+
+    private var isBucketEncrypted: Bool {
+        guard let account = viewModel.account, let bucket = viewModel.bucket else { return false }
+        return container.encryptionKeysViewModel.isEncrypted(accountID: account.id, bucket: bucket)
     }
 
     private func downloadObject(_ object: S3Object) async {

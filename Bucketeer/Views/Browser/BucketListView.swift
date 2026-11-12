@@ -77,11 +77,15 @@ struct BucketListView: View {
     @ViewBuilder
     private func bucketCard(_ bucket: S3Bucket) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
+            HStack(alignment: .top) {
                 Image(systemName: "tray.full.fill")
                     .font(.system(size: 32))
                     .foregroundStyle(.accentInk)
+                    .accessibilityHidden(true)
                 Spacer()
+                if isEncrypted(bucket) {
+                    EncryptedBadge(help: "encryption.badge.bucket.help")
+                }
             }
             Text(bucket.name)
                 .font(.headline)
@@ -108,6 +112,11 @@ struct BucketListView: View {
         }
     }
 
+    private func isEncrypted(_ bucket: S3Bucket) -> Bool {
+        guard let account = viewModel.account else { return false }
+        return container.encryptionKeysViewModel.isEncrypted(accountID: account.id, bucket: bucket.name)
+    }
+
     @ViewBuilder
     private func mountMenu(for bucket: S3Bucket) -> some View {
         if let account = viewModel.account {
@@ -115,7 +124,7 @@ struct BucketListView: View {
                 Button("mount.action.unmount", systemImage: "eject") {
                     Task { await container.mountController.unmount(account: account, bucket: bucket.name) }
                 }
-            } else if container.encryptionKeysViewModel.isEncrypted(accountID: account.id, bucket: bucket.name) {
+            } else if isEncrypted(bucket) {
                 Button("mount.action.mount.encrypted", systemImage: "lock.shield") {}
                     .disabled(true)
             } else if container.entitlementManager.isUnlocked(.mountDrive) {
