@@ -202,6 +202,10 @@ private actor BlockingKeyStore: EncryptionKeyStoring {
     func create(label: String, accountID: UUID, bucket: String) -> BucketEncryptionKey {
         BucketEncryptionKey(label: label, accountID: accountID, bucket: bucket)
     }
+    func copyForReassignment(_ key: BucketEncryptionKey, to accountID: UUID) throws -> BucketEncryptionKey {
+        throw CocoaError(.featureUnsupported)
+    }
+
     func keyMaterial(id: UUID) -> Data { Data(count: 32) }
     func delete(id: UUID) {}
 }

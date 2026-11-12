@@ -21,6 +21,8 @@ struct SidebarView: View {
     @State private var showingAddSheet: Bool = false
     @State private var editingAccount: S3Account?
     @State private var pendingDeletion: S3Account?
+    @State private var deletionKeyCount = 0
+    @State private var deletionError: String?
     @State private var showingPaywall: Bool = false
 
     private var transferActiveCount: Int {
@@ -49,7 +51,14 @@ struct SidebarView: View {
                         }
                         Divider()
                         Button("action.delete", systemImage: "trash", role: .destructive) {
-                            pendingDeletion = account
+                            Task {
+                                do {
+                                    deletionKeyCount = try await container.encryptionKeysViewModel.keyCount(accountID: account.id)
+                                    pendingDeletion = account
+                                } catch {
+                                    deletionError = error.localizedDescription
+                                }
+                            }
                         }
                     }
                 }
@@ -172,14 +181,33 @@ struct SidebarView: View {
             presenting: pendingDeletion
         ) { account in
             Button("action.delete", role: .destructive) {
-                Task { await viewModel.delete(account: account) }
+                Task {
+                    if let error = await viewModel.delete(account: account) {
+                        deletionError = error.localizedDescription
+                    }
+                    await container.encryptionKeysViewModel.reload()
+                }
                 pendingDeletion = nil
             }
             Button("action.cancel", role: .cancel) {
                 pendingDeletion = nil
             }
         } message: { account in
-            Text("account.delete.confirm.message \(account.name)")
+            if deletionKeyCount > 0 {
+                Text("account.delete.confirm.message \(account.name)")
+                    + Text("\n\n")
+                    + Text("account.delete.encryptionWarning \(deletionKeyCount)")
+            } else {
+                Text("account.delete.confirm.message \(account.name)")
+            }
+        }
+        .alert("browser.error.title", isPresented: Binding(
+            get: { deletionError != nil },
+            set: { if !$0 { deletionError = nil } }
+        )) {
+            Button("action.cancel", role: .cancel) { deletionError = nil }
+        } message: {
+            Text(deletionError ?? "")
         }
         .task { await viewModel.refresh() }
         #if DEBUG

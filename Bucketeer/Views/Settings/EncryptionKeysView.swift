@@ -14,6 +14,7 @@ import BucketeerCore
 /// is registered.
 struct EncryptionKeysView: View {
     @Environment(AppContainer.self) private var container
+    @State private var reassigning: BucketEncryptionKey?
     @State private var creating: Bool = false
     @State private var pendingDeletion: BucketEncryptionKey?
 
@@ -27,6 +28,9 @@ struct EncryptionKeysView: View {
                     ForEach(viewModel.keys) { key in
                         keyRow(key, viewModel: viewModel)
                             .contextMenu {
+                                if viewModel.isOrphaned(key) {
+                                    Button("encryption.reassign.action") { reassigning = key }
+                                }
                                 Button("action.delete", systemImage: "trash", role: .destructive) {
                                     pendingDeletion = key
                                 }
@@ -64,6 +68,9 @@ struct EncryptionKeysView: View {
                     await viewModel.create(label: label, account: account, bucket: bucket)
                 }
             )
+        }
+        .sheet(item: $reassigning) { key in
+            EncryptionKeyReassignmentSheet(key: key, viewModel: viewModel)
         }
         .confirmationDialog(
             "encryption.delete.confirm.title",
@@ -107,6 +114,9 @@ struct EncryptionKeysView: View {
                     .foregroundStyle(.tertiary)
             }
             Spacer()
+            if viewModel.isOrphaned(key) {
+                Button("encryption.reassign.action") { reassigning = key }
+            }
         }
         .padding(.vertical, 4)
     }
@@ -169,5 +179,54 @@ private struct EncryptionKeyEditor: View {
             }
         }
         .frame(minWidth: 480, minHeight: 420)
+    }
+}
+
+private struct EncryptionKeyReassignmentSheet: View {
+    let key: BucketEncryptionKey
+    let viewModel: EncryptionKeysViewModel
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var selectedAccount: S3Account?
+    @State private var saving = false
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                LabeledContent("encryption.field.bucket", value: key.bucket)
+                Picker("encryption.field.account", selection: $selectedAccount) {
+                    Text("encryption.account.none").tag(S3Account?.none)
+                    ForEach(viewModel.accounts) { account in
+                        Text(account.name).tag(S3Account?.some(account))
+                    }
+                }
+                if let error = viewModel.error {
+                    Text(error.errorDescription ?? "\(error)")
+                        .foregroundStyle(.red)
+                }
+            }
+            .formStyle(.grouped)
+            .navigationTitle("encryption.reassign.action")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("action.cancel", role: .cancel) { dismiss() }
+                        .disabled(saving)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("encryption.reassign.action") {
+                        guard let account = selectedAccount else { return }
+                        saving = true
+                        Task {
+                            if await viewModel.reassign(key, to: account) { dismiss() }
+                            saving = false
+                        }
+                    }
+                    .disabled(saving || selectedAccount == nil)
+                }
+            }
+        }
+        .interactiveDismissDisabled(saving)
+        .frame(minWidth: 480, minHeight: 260)
+        .task { await viewModel.reload() }
     }
 }

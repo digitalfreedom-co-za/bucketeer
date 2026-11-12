@@ -174,6 +174,10 @@ public protocol EncryptionKeyStoring: Sendable {
         bucket: String
     ) async throws -> BucketEncryptionKey
 
+    /// Copy an existing key to a new account, refusing an occupied bucket.
+    /// Persist the new bytes and metadata without changing the source.
+    func copyForReassignment(_ key: BucketEncryptionKey, to accountID: UUID) async throws -> BucketEncryptionKey
+
     /// Retrieve the raw 256-bit key material for cryptographic use.
     /// Implementations MUST treat this as security-sensitive (e.g.
     /// not log it) — the return value is `Data` so callers can wrap
@@ -184,6 +188,26 @@ public protocol EncryptionKeyStoring: Sendable {
     /// the user that data already encrypted under the key becomes
     /// unrecoverable.
     func delete(id: UUID) async throws
+}
+
+public enum EncryptionKeyReassignmentError: Error, Sendable {
+    case conflict
+    case verificationFailed
+}
+
+public extension EncryptionKeyStoring {
+    /// Keep the source recoverable until the destination is persisted and verified.
+    func reassign(_ key: BucketEncryptionKey, to accountID: UUID) async throws -> BucketEncryptionKey {
+        let originalBytes = try await keyMaterial(id: key.id)
+        let replacement = try await copyForReassignment(key, to: accountID)
+        let stored = try await self.key(accountID: accountID, bucket: key.bucket)
+        let copiedBytes = try await keyMaterial(id: replacement.id)
+        guard stored == replacement, copiedBytes == originalBytes else {
+            throw EncryptionKeyReassignmentError.verificationFailed
+        }
+        try await delete(id: key.id)
+        return replacement
+    }
 }
 
 // MARK: - CheckpointStoring

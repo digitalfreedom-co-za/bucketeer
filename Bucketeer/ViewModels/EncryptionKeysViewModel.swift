@@ -73,6 +73,41 @@ final class EncryptionKeysViewModel {
         }
     }
 
+    func reassign(_ key: BucketEncryptionKey, to account: S3Account) async -> Bool {
+        do {
+            try await mountController.whileUnmounted(account: account, bucket: key.bucket) {
+                _ = try await keyStore.reassign(key, to: account.id)
+            }
+            await gate.invalidate(accountID: key.accountID, bucket: key.bucket)
+            await gate.invalidate(accountID: account.id, bucket: key.bucket)
+            await reload()
+            return error == nil
+        } catch {
+            // A failed source cleanup can leave both entries. Refresh the
+            // mirror and caches even when the move reports an error.
+            await gate.invalidate(accountID: key.accountID, bucket: key.bucket)
+            await gate.invalidate(accountID: account.id, bucket: key.bucket)
+            await reload()
+            switch error {
+            case EncryptionKeyReassignmentError.conflict:
+                self.error = .unknown(message: String(localized: "encryption.reassign.conflict"))
+            case EncryptionKeyReassignmentError.verificationFailed:
+                self.error = .unknown(message: String(localized: "encryption.reassign.verificationFailed"))
+            default:
+                self.error = error as? BucketeerError ?? .unknown(message: error.localizedDescription)
+            }
+            return false
+        }
+    }
+
+    func keyCount(accountID: UUID) async throws -> Int {
+        try await keyStore.all().filter { $0.accountID == accountID }.count
+    }
+
+    func isOrphaned(_ key: BucketEncryptionKey) -> Bool {
+        !accounts.contains { $0.id == key.accountID }
+    }
+
     func delete(_ key: BucketEncryptionKey) async {
         do {
             try await keyStore.delete(id: key.id)
@@ -93,6 +128,6 @@ final class EncryptionKeysViewModel {
 
     /// Resolve an account UUID back to a display name for the list.
     func accountName(for id: UUID) -> String {
-        accounts.first(where: { $0.id == id })?.name ?? "(unknown)"
+        accounts.first(where: { $0.id == id })?.name ?? String(localized: "encryption.account.deleted")
     }
 }

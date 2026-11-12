@@ -11,6 +11,7 @@ import BucketeerCore
 /// Encryption key store that never touches SwiftData or the Keychain.
 actor InMemoryEncryptionKeyStore: EncryptionKeyStoring {
     private var keys: [BucketEncryptionKey] = []
+    private var material: [UUID: Data] = [:]
     private var failingLookups = 0
 
     init(encryptedBuckets: [(accountID: UUID, bucket: String)] = []) {
@@ -38,9 +39,25 @@ actor InMemoryEncryptionKeyStore: EncryptionKeyStoring {
         return key
     }
 
-    func keyMaterial(id: UUID) -> Data { Data(count: 32) }
+    func copyForReassignment(_ key: BucketEncryptionKey, to accountID: UUID) throws -> BucketEncryptionKey {
+        guard !keys.contains(where: { $0.accountID == accountID && $0.bucket == key.bucket }) else {
+            throw EncryptionKeyReassignmentError.conflict
+        }
+        let replacement = BucketEncryptionKey(
+            label: key.label, accountID: accountID, bucket: key.bucket, createdAt: key.createdAt
+        )
+        material[replacement.id] = try keyMaterial(id: key.id)
+        keys.append(replacement)
+        return replacement
+    }
+
+    func keyMaterial(id: UUID) throws -> Data {
+        guard keys.contains(where: { $0.id == id }) else { throw EncryptionError.noKeyForBucket }
+        return material[id] ?? Data(id.uuidString.utf8.prefix(32))
+    }
 
     func delete(id: UUID) {
         keys.removeAll { $0.id == id }
+        material.removeValue(forKey: id)
     }
 }

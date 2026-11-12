@@ -86,6 +86,32 @@ public actor EncryptionKeyStore: EncryptionKeyStoring {
         return metadata
     }
 
+    public func copyForReassignment(_ key: BucketEncryptionKey, to accountID: UUID) throws -> BucketEncryptionKey {
+        // No suspension between the conflict check and save: competing writes
+        // on this store cannot claim the same destination bucket.
+        let bucket = key.bucket
+        let descriptor = FetchDescriptor<BucketEncryptionKeyRecord>(
+            predicate: #Predicate { $0.accountID == accountID && $0.bucket == bucket }
+        )
+        guard try modelContext.fetch(descriptor).isEmpty else {
+            throw EncryptionKeyReassignmentError.conflict
+        }
+        let bytes = try readKeychain(id: key.id)
+        let replacement = BucketEncryptionKey(
+            label: key.label, accountID: accountID, bucket: bucket, createdAt: key.createdAt
+        )
+        try writeKeychain(id: replacement.id, bytes: bytes)
+        do {
+            modelContext.insert(BucketEncryptionKeyRecord(key: replacement))
+            try modelContext.save()
+        } catch {
+            modelContext.rollback()
+            try? deleteKeychain(id: replacement.id)
+            throw BucketeerError.persistenceFailure(message: error.localizedDescription)
+        }
+        return replacement
+    }
+
     public func keyMaterial(id: UUID) async throws -> Data {
         let bytes = try readKeychain(id: id)
         // Every key in this store is an
@@ -125,7 +151,7 @@ public actor EncryptionKeyStore: EncryptionKeyStoring {
     // MARK: - Keychain helpers
 
     private func writeKeychain(id: UUID, bytes: Data) throws {
-        var query: [String: Any] = [
+        let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: AppEnvironment.keychainServiceEncryption,
             kSecAttrAccount as String: keychainAccount(for: id),
@@ -133,12 +159,10 @@ public actor EncryptionKeyStore: EncryptionKeyStoring {
             kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked,
             kSecAttrSynchronizable as String: false
         ]
-        SecItemDelete(query as CFDictionary)
         let status = SecItemAdd(query as CFDictionary, nil)
         if status != errSecSuccess {
             throw BucketeerError.keychainFailure(status: status)
         }
-        _ = query.removeValue(forKey: kSecValueData as String)
     }
 
     private func readKeychain(id: UUID) throws -> Data {
