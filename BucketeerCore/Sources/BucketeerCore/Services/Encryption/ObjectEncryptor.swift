@@ -54,7 +54,8 @@ public enum BucketeerEnvelope {
     /// (including reserved-header tampering) always fail closed.
     public static func decryptedPayload(_ data: Data, marked: Bool, key: SymmetricKey?) throws -> Data? {
         guard let key else {
-            if marked { throw EncryptionError.noKeyForBucket }
+            let validHeader = data.count >= headerSize + nonceSize + 16 && data.starts(with: headerBytes())
+            if marked || validHeader { throw EncryptionError.noKeyForBucket }
             return nil
         }
         guard marked || data.starts(with: magic) else { return nil }
@@ -152,22 +153,6 @@ public enum BucketeerEnvelope {
         header.append(version)
         header.append(contentsOf: reservedZeroes)
         return header
-    }
-
-    /// Quick "does this blob look like a Bucketeer-encrypted
-    /// object?" check — used by the download path so unprotected
-    /// objects pass through untouched.
-    public static func looksEncrypted(_ data: Data) -> Bool {
-        guard data.count >= headerSize else { return false }
-        return Array(data.prefix(magic.count)) == magic
-    }
-
-    /// `looksEncrypted` for a file on disk; reads only the header.
-    public static func fileLooksEncrypted(at url: URL) -> Bool {
-        guard let handle = try? FileHandle(forReadingFrom: url) else { return false }
-        defer { try? handle.close() }
-        let header = (try? handle.read(upToCount: headerSize)) ?? Data()
-        return looksEncrypted(header)
     }
 }
 

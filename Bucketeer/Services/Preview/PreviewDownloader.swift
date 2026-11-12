@@ -86,7 +86,7 @@ struct PreviewDownloader: Sendable {
                 return BucketeerEnvelope.isMarked(response.metadata)
             }
             _ = try await s3.multipartDownload(
-                .init(bucket: bucket, ifMatch: head.eTag, key: key),
+                .init(bucket: bucket, ifMatch: account.provider.conditionalRequests.contains(.readIfMatch) ? head.eTag : nil, key: key),
                 partSize: partSize,
                 filename: localURL.path,
                 progress: { @Sendable _ in }

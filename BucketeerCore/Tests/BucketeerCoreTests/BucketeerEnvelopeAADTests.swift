@@ -41,10 +41,4 @@ struct BucketeerEnvelopeAADTests {
         }
     }
 
-    @Test("looksEncrypted on partial header returns false")
-    func looksEncryptedShortHeader() {
-        // 3 bytes of the magic — not enough.
-        let partial = Data([0x42, 0x43, 0x4B])
-        #expect(!BucketeerEnvelope.looksEncrypted(partial))
-    }
 }

@@ -643,7 +643,7 @@ actor TransferManager: Transferring {
         }
 
         _ = try await s3.multipartDownload(
-            .init(bucket: item.task.bucket, ifMatch: head.eTag, key: item.task.key),
+            .init(bucket: item.task.bucket, ifMatch: item.account.provider.conditionalRequests.contains(.readIfMatch) ? head.eTag : nil, key: item.task.key),
             partSize: Self.multipartPartSize,
             filename: item.task.localURL.path,
             progress: { @Sendable [weak self] fraction in
@@ -745,9 +745,10 @@ actor TransferManager: Transferring {
         }
     }
 
-    /// Validate cached ciphertext before bypassing upload encryption. Plain
-    /// files still use the normal upload gate, including BCKT-prefixed files.
+    /// Marked bytes can be restored unchanged without a key. Unmarked legacy
+    /// envelopes must authenticate before bypassing upload encryption.
     func cachedPayloadIsEncrypted(at url: URL, marked: Bool, accountID: UUID, bucket: String) async throws -> Bool {
+        if marked { return true }
         let key = try await encryptionGate?.sendableKey(accountID: accountID, bucket: bucket)?.key
         let data = try Data(contentsOf: url, options: .mappedIfSafe)
         return try BucketeerEnvelope.decryptedPayload(data, marked: marked, key: key) != nil

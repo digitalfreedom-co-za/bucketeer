@@ -282,7 +282,8 @@ public struct AzureBlobObjectStore: S3Browsing {
             let markerName = BucketeerEnvelope.azureMetadataKey
             let original = [markerName: http.value(forHTTPHeaderField: "x-ms-meta-" + markerName) ?? ""]
             let metadata = BucketeerEnvelope.preservingMarker(in: metadata, from: original, name: markerName)
-            if conditions["x-ms-source-if-match"] == nil, let etag = http.value(forHTTPHeaderField: "ETag") {
+            if account.provider.conditionalRequests.contains(.copySourceIfMatch),
+               conditions["x-ms-source-if-match"] == nil, let etag = http.value(forHTTPHeaderField: "ETag") {
                 request.setValue(etag, forHTTPHeaderField: "x-ms-source-if-match")
             }
             for (key, value) in metadata {

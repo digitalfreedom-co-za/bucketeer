@@ -205,7 +205,7 @@ public struct S3Service: S3Browsing {
             _ = try await s3.copyObject(.init(
                 bucket: toBucket,
                 copySource: S3MultipartCopy.copySourceHeader(bucket: fromBucket, key: fromKey, versionId: nil),
-                copySourceIfMatch: ETag.quoted(source.etag),
+                copySourceIfMatch: account.provider.conditionalRequests.contains(.copySourceIfMatch) ? ETag.quoted(source.etag) : nil,
                 key: toKey,
                 metadata: metadata,
                 metadataDirective: metadata != nil ? .replace : nil
@@ -511,7 +511,8 @@ public struct S3Service: S3Browsing {
                                                    provider: account.provider, copier: SotoObjectWriter(s3: s3))
             } else {
                 try await Self.replaceMetadata(s3: s3, bucket: bucket, key: key, encodedSource: encodedSource,
-                                               metadata: metadata, userMetadata: userMetadata, sourceETag: source.etag)
+                                               metadata: metadata, userMetadata: userMetadata, sourceETag: source.etag,
+                                               enforced: account.provider.conditionalRequests)
             }
         } catch {
             throw Self.map(error, bucket: bucket, key: key)
@@ -534,7 +535,8 @@ public struct S3Service: S3Browsing {
     }
 
     private static func replaceMetadata(s3: S3, bucket: String, key: String, encodedSource: String,
-                                        metadata: ObjectMetadata, userMetadata: [String: String]?, sourceETag: String) async throws {
+                                        metadata: ObjectMetadata, userMetadata: [String: String]?, sourceETag: String,
+                                        enforced: S3Provider.ConditionalRequests) async throws {
         _ = try await s3.copyObject(.init(
             bucket: bucket,
             cacheControl: metadata.cacheControl.isEmpty ? nil : metadata.cacheControl,
@@ -542,7 +544,7 @@ public struct S3Service: S3Browsing {
             contentEncoding: metadata.contentEncoding.isEmpty ? nil : metadata.contentEncoding,
             contentType: metadata.contentType.isEmpty ? nil : metadata.contentType,
             copySource: encodedSource,
-            copySourceIfMatch: ETag.quoted(sourceETag),
+            copySourceIfMatch: enforced.contains(.copySourceIfMatch) ? ETag.quoted(sourceETag) : nil,
             key: key,
             metadata: userMetadata,
             metadataDirective: .replace,

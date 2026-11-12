@@ -1,3 +1,10 @@
+//
+//  EnvelopeDetectionTests.swift
+//  BucketeerCoreTests
+//
+//  Created by Marcel R. G. Berger on 12.11.26.
+//
+
 import CryptoKit
 import Foundation
 import Testing
@@ -56,13 +63,36 @@ struct EnvelopeDetectionTests {
         }
     }
 
-    @Test("Without a key all unmarked bytes pass through")
+    @Test("Without a key valid legacy headers fail closed; plain bytes pass through")
     func unkeyed() throws {
         let sealed = try BucketeerEnvelope.seal(plaintext: Data(), key: SymmetricKey(size: .bits256))
-        for data in [Data(), Data("plain".utf8), Data("BCKT plain".utf8), sealed] {
+        #expect(throws: EncryptionError.noKeyForBucket) {
+            try BucketeerEnvelope.decryptedPayload(sealed, marked: false, key: nil)
+        }
+        var wrongMagic = sealed
+        wrongMagic[0] = 0
+        var unsupported = sealed
+        unsupported[4] = 2
+        var reserved = sealed
+        reserved[6] = 1
+        for data in [Data(), Data("plain".utf8), Data("BCKT plain".utf8),
+                     Data(sealed.dropLast()), wrongMagic, unsupported, reserved] {
             #expect(try BucketeerEnvelope.decryptedPayload(data, marked: false, key: nil) == nil)
         }
     }
+
+    @Test("Metadata replacement preserves exactly one marker and leaves unmarked metadata unchanged")
+    func markerPreservation() {
+        let original = ["BUCKETEER-ENC": "1"]
+        #expect(BucketeerEnvelope.isMarked(original))
+        #expect(!BucketeerEnvelope.isMarked(["bucketeer-enc": "0"]))
+        for metadata in [["user": "value"], ["user": "value", "bucketeer-enc": "0", "BUCKETEER-ENC": "0"]] {
+            #expect(BucketeerEnvelope.preservingMarker(in: metadata, from: original)
+                == ["user": "value", "bucketeer-enc": "1"])
+            #expect(BucketeerEnvelope.preservingMarker(in: metadata, from: nil) == metadata)
+        }
+    }
+
     @Test("An unreadable staging file throws even without a bucket key")
     func unreadableStaging() {
         let missing = FileManager.default.temporaryDirectory
@@ -71,5 +101,4 @@ struct EnvelopeDetectionTests {
             try BucketeerEnvelope.finalizeDownload(at: missing, marked: false, key: nil)
         }
     }
-
 }
