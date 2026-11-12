@@ -1,11 +1,11 @@
-<!-- doc-id: BUCKETEER_PRIVACY_POLICY | lang: de | area: app | version: 1.0.0 | valid-from: 2026-11-02 | translation-of: BUCKETEER_PRIVACY_POLICY en 1.0.0 (PRIVACY_POLICY.md) | review: not counsel-reviewed; AI legal review (Anwalt role) completed 2026-11-09, not a licensed counsel review | owner: Marcel R. G. Berger -->
+<!-- doc-id: BUCKETEER_PRIVACY_POLICY | lang: de | area: app | version: 1.0.1 | valid-from: 2026-11-12 | translation-of: BUCKETEER_PRIVACY_POLICY en 1.0.1 (PRIVACY_POLICY.md) | review: not counsel-reviewed; AI legal review (Anwalt role) completed 2026-11-09, not a licensed counsel review | owner: Marcel R. G. Berger -->
 # Datenschutzerklärung
 
 *Wie Bucketeer für macOS mit deinen Daten umgeht.*
 
 **Anwendung**: Bucketeer für macOS, einschließlich seiner Finder-Erweiterung
 ("Bucketeer File Provider")
-**Gültig ab**: 2. November 2026
+**Gültig ab**: 12. November 2026
 
 **Verantwortlicher**: DigitalFreedom Global LLC (handelnd als DigitalFreedom),
 30 N Gould St, Ste N, Sheridan, WY 82801, United States
@@ -57,7 +57,7 @@ Nichts davon wird an den Anbieter gesendet.
 | Papierkorb (Metadaten von Objekten, die du in Bucketeer gelöscht hast, und bis zu einer von dir festgelegten Größe eine lokale Kopie ihres Inhalts) | Lokale Datenbank und Cache-Ordner im eigenen Container der App | Dir ermöglichen, gelöschte Objekte wiederherzustellen. Einträge werden nach der von dir festgelegten Aufbewahrungsdauer entfernt (Standard 30 Tage) |
 | Regeln für automatisches Tagging, Prüfpunkte für fortsetzbare Uploads | Lokale Datenbanken im eigenen Container der App | Deine Tagging-Regeln anwenden; unterbrochene Uploads fortsetzen |
 | Verschlüsselungsschlüssel (nur wenn du für einen Bucket die clientseitige Verschlüsselung aktivierst) | Schlüsselmaterial im macOS-Schlüsselbund, Schlüsselbezeichnungen in einer lokalen Datenbank | Objekte auf deinem Mac ver- und entschlüsseln (siehe Abschnitt 6) |
-| Einstellungen (Bandbreitenbegrenzung, Papierkorb- und Spotlight-Einstellungen, Menüleistenmodus, Vorschau für Hardware-Schlüssel) | Lokale Einstellungen der App | Deine Auswahl speichern |
+| Einstellungen (Bandbreitenbegrenzung, Papierkorb- und Spotlight-Einstellungen, Menüleistenmodus) | Lokale Einstellungen der App | Deine Auswahl speichern |
 | Vorschau-Cache | Temporärer Ordner der App, begrenzt auf 2 GiB | Vorschauen anzeigen, ohne erneut herunterzuladen |
 | Dateien, die du mit einer anderen App öffnest (Öffnen / Öffnen mit) | Temporärer Ordner der App | Der anderen App die Bearbeitung ermöglichen und deine Speicherungen hochladen; gelöscht, sobald der Speicheranbieter deine letzte Speicherung erhalten hat |
 | Änderungen, die nicht hochgeladen werden konnten (Öffnen / Öffnen mit) | Application-Support-Ordner der App | Deine nicht gesicherte Arbeit nach einem fehlgeschlagenen Upload oder einem Absturz erhalten; aufbewahrt, bis du sie in der App hochlädst, exportierst oder verwirfst |
@@ -120,13 +120,10 @@ lokal auf deinem Mac und wirken nur auf Konten, die du eingerichtet hast.
 lokale Ordner zu, die du selbst ausgewählt hast; der Zugriff wird als
 Security-Scoped Bookmark in der lokalen Datenbank gespeichert.
 
-**Touch ID und Hardware-Schlüssel.** Das Anzeigen eines gespeicherten
+**Touch ID.** Das Anzeigen eines gespeicherten
 Geheimnisses erfordert die Authentifizierung als Gerätebesitzer (Touch ID
 oder dein Mac-Passwort). Die App erhält von macOS nur ein Ja/Nein-Ergebnis,
-niemals biometrische Daten. Die optionale Vorschau für Hardware-Schlüssel
-in den Einstellungen listet nur die an deinen Mac angeschlossenen
-Smartcard-Lesegeräte auf und ob eine Karte oder ein Token eingesteckt ist;
-sie liest keine auf der Karte gespeicherten Daten.
+niemals biometrische Daten.
 
 ---
 
