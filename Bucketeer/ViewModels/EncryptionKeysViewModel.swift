@@ -46,8 +46,16 @@ final class EncryptionKeysViewModel {
     }
 
     /// Also mirrors the key list for the File Provider extension, so
-    /// every create, delete and launch refreshes it.
+    /// every create, delete and launch refreshes it. Failures show
+    /// through `error`.
     func reload() async {
+        // `refresh` has already published its failure through `error`.
+        try? await refresh()
+    }
+
+    /// Throwing variant of `reload` for callers that must not report
+    /// success when the list or the mirror is stale.
+    private func refresh() async throws {
         do {
             keys = try await keyStore.all()
             if let encryptedBucketListURL {
@@ -56,12 +64,11 @@ final class EncryptionKeysViewModel {
             accounts = try await accountStore.all()
             accountsLoaded = true
             error = nil
-        } catch let bucketeerError as BucketeerError {
-            accountsLoaded = false
-            error = bucketeerError
         } catch {
             accountsLoaded = false
-            self.error = .unknown(message: error.localizedDescription)
+            let failure = Self.bucketeerError(error)
+            self.error = failure
+            throw failure
         }
     }
 
@@ -69,6 +76,20 @@ final class EncryptionKeysViewModel {
     /// for a bucket the account can actually see.
     func bucketNames(for account: S3Account) async throws -> [String] {
         try await s3Browser.listBuckets(account: account).map(\.name)
+    }
+
+    /// Confirms that a manually entered bucket exists and the account
+    /// can read it, so a typo cannot get a key while the real bucket
+    /// stays in plaintext. One listing page serves as the probe.
+    func verifyBucket(_ bucket: String, account: S3Account) async throws {
+        do {
+            _ = try await s3Browser.listObjects(account: account, bucket: bucket, prefix: "", continuationToken: nil)
+        } catch BucketeerError.bucketNotFound {
+            throw BucketVerificationError.notFound
+        } catch {
+            let reason = Self.bucketeerError(error).errorDescription ?? error.localizedDescription
+            throw BucketVerificationError.unverifiable(reason: reason)
+        }
     }
 
     /// Refuses buckets mounted in Finder: the File Provider extension
@@ -83,13 +104,23 @@ final class EncryptionKeysViewModel {
             try await mountController.whileUnmounted(account: account, bucket: bucket) {
                 _ = try await keyStore.create(label: label, accountID: account.id, bucket: bucket)
             }
-        } catch let bucketeerError as BucketeerError {
-            throw bucketeerError
         } catch {
-            throw BucketeerError.unknown(message: error.localizedDescription)
+            throw Self.bucketeerError(error)
         }
+        try await finishCreation(account: account, bucket: bucket)
+    }
+
+    /// Second half of `create`, once the key is stored. Throws
+    /// `EncryptionKeyRefreshError` when the list or the File Provider
+    /// mirror cannot be refreshed, so the editor retries this step
+    /// instead of creating the key again.
+    func finishCreation(account: S3Account, bucket: String) async throws {
         await gate.invalidate(accountID: account.id, bucket: bucket)
-        await reload()
+        do {
+            try await refresh()
+        } catch {
+            throw EncryptionKeyRefreshError(reason: Self.bucketeerError(error).errorDescription ?? "\(error)")
+        }
     }
 
     func reassign(_ key: BucketEncryptionKey, to account: S3Account) async -> Bool {
@@ -119,7 +150,7 @@ final class EncryptionKeysViewModel {
                 self.error = .unknown(message: String(localized: "encryption.reassign.sourceCleanupFailed"))
                 return true
             default:
-                self.error = error as? BucketeerError ?? .unknown(message: error.localizedDescription)
+                self.error = Self.bucketeerError(error)
             }
             return false
         }
@@ -155,6 +186,36 @@ final class EncryptionKeysViewModel {
     func accountName(for id: UUID) -> String {
         guard accountsLoaded else { return id.uuidString }
         return accounts.first(where: { $0.id == id })?.name ?? String(localized: "encryption.account.deleted")
+    }
+
+    private static func bucketeerError(_ error: any Error) -> BucketeerError {
+        error as? BucketeerError ?? .unknown(message: error.localizedDescription)
+    }
+}
+
+/// Why a manually entered bucket was refused before creating a key.
+enum BucketVerificationError: LocalizedError, Equatable {
+    case notFound
+    /// Access, credential or network failure: existence is unknown.
+    case unverifiable(reason: String)
+
+    var errorDescription: String? {
+        switch self {
+        case .notFound:
+            String(localized: "encryption.editor.bucketNotFound")
+        case .unverifiable(let reason):
+            String(localized: "encryption.editor.bucketUnverifiable \(reason)")
+        }
+    }
+}
+
+/// The key is stored, but the key list or the File Provider mirror
+/// could not be refreshed.
+struct EncryptionKeyRefreshError: LocalizedError {
+    let reason: String
+
+    var errorDescription: String? {
+        String(localized: "encryption.editor.keyCreatedRefreshFailed \(reason)")
     }
 }
 

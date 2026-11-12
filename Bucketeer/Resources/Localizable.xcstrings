@@ -87785,6 +87785,631 @@
           }
         }
       }
+    },
+    "encryption.editor.verifyingBucket" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontrola bucketu…"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontrollerer bucket…"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucket wird geprüft…"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Έλεγχος κάδου…"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking the bucket…"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking the bucket…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprobando el bucket…"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarkistetaan säiliötä…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vérification du bucket…"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tároló ellenőrzése…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifica del bucket…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バケットを確認中…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "버킷 확인 중…"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontrollerer bucket…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucket controleren…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprawdzanie zasobnika…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verificando o bucket…"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A verificar o bucket…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверка бакета…"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontrollerar bucket…"
+          }
+        }
+      }
+    },
+    "encryption.editor.bucketNotFound" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tento bucket pro tento účet neexistuje. Zkontrolujte název; žádný klíč nebyl vytvořen."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne bucket findes ikke for denne konto. Kontrollér navnet; der blev ikke oprettet en nøgle."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Bucket existiert für dieses Konto nicht. Prüfe den Namen; es wurde kein Schlüssel erstellt."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αυτός ο κάδος δεν υπάρχει για αυτόν τον λογαριασμό. Ελέγξτε το όνομα· δεν δημιουργήθηκε κλειδί."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This bucket does not exist for this account. Check the name; no key was created."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This bucket does not exist for this account. Check the name; no key was created."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este bucket no existe para esta cuenta. Comprueba el nombre; no se ha creado ninguna clave."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tätä säiliötä ei ole tällä tilillä. Tarkista nimi; avainta ei luotu."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce bucket n’existe pas pour ce compte. Vérifiez le nom ; aucune clé n’a été créée."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ez a tároló nem létezik ennél a fióknál. Ellenőrizze a nevet; kulcs nem jött létre."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo bucket non esiste per questo account. Controlla il nome; non è stata creata alcuna chiave."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このアカウントにはこのバケットが存在しません。名前を確認してください。鍵は作成されていません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 계정에 해당 버킷이 없습니다. 이름을 확인하세요. 키가 생성되지 않았습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne bucketen finnes ikke for denne kontoen. Kontroller navnet; ingen nøkkel ble opprettet."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze bucket bestaat niet voor dit account. Controleer de naam; er is geen sleutel aangemaakt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ten zasobnik nie istnieje dla tego konta. Sprawdź nazwę; nie utworzono klucza."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este bucket não existe para esta conta. Verifique o nome; nenhuma chave foi criada."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este bucket não existe para esta conta. Verifique o nome; não foi criada nenhuma chave."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Этот бакет не существует для этой учётной записи. Проверьте имя; ключ не создан."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denna bucket finns inte för det här kontot. Kontrollera namnet; ingen nyckel skapades."
+          }
+        }
+      }
+    },
+    "encryption.editor.bucketUnverifiable %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucket nebylo možné zkontrolovat, proto nebyl vytvořen žádný klíč: %@"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketen kunne ikke kontrolleres, så der blev ikke oprettet en nøgle: %@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Bucket konnte nicht geprüft werden, daher wurde kein Schlüssel erstellt: %@"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Δεν ήταν δυνατός ο έλεγχος του κάδου, επομένως δεν δημιουργήθηκε κλειδί: %@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The bucket could not be checked, so no key was created: %@"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The bucket could not be checked, so no key was created: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido comprobar el bucket, así que no se ha creado ninguna clave: %@"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Säiliötä ei voitu tarkistaa, joten avainta ei luotu: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le bucket n’a pas pu être vérifié, aucune clé n’a donc été créée : %@"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A tárolót nem sikerült ellenőrizni, ezért kulcs nem jött létre: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non è stato possibile verificare il bucket, quindi non è stata creata alcuna chiave: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バケットを確認できなかったため、鍵は作成されていません: %@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "버킷을 확인할 수 없어 키가 생성되지 않았습니다: %@"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketen kunne ikke kontrolleres, så ingen nøkkel ble opprettet: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De bucket kon niet worden gecontroleerd, dus er is geen sleutel aangemaakt: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie udało się sprawdzić zasobnika, więc nie utworzono klucza: %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível verificar o bucket, então nenhuma chave foi criada: %@"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível verificar o bucket, por isso não foi criada nenhuma chave: %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось проверить бакет, поэтому ключ не создан: %@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketen kunde inte kontrolleras, så ingen nyckel skapades: %@"
+          }
+        }
+      }
+    },
+    "encryption.editor.keyCreatedRefreshFailed %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klíč byl vytvořen, ale seznam klíčů se nepodařilo obnovit: %@ Než bucket použijete, zkuste to znovu."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nøglen blev oprettet, men nøglelisten kunne ikke opdateres: %@ Prøv igen, før du bruger bucketen."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Schlüssel wurde erstellt, aber die Schlüsselliste konnte nicht aktualisiert werden: %@ Versuche es erneut, bevor du den Bucket verwendest."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το κλειδί δημιουργήθηκε, αλλά η λίστα κλειδιών δεν ανανεώθηκε: %@ Δοκιμάστε ξανά πριν χρησιμοποιήσετε τον κάδο."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The key was created, but the key list could not be refreshed: %@ Retry before using the bucket."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The key was created, but the key list could not be refreshed: %@ Retry before using the bucket."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se ha creado la clave, pero no se ha podido actualizar la lista de claves: %@ Vuelve a intentarlo antes de usar el bucket."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avain luotiin, mutta avainluetteloa ei voitu päivittää: %@ Yritä uudelleen ennen säiliön käyttöä."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La clé a été créée, mais la liste des clés n’a pas pu être actualisée : %@ Réessayez avant d’utiliser le bucket."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A kulcs létrejött, de a kulcslistát nem sikerült frissíteni: %@ Próbálja újra, mielőtt használja a tárolót."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La chiave è stata creata, ma non è stato possibile aggiornare l’elenco delle chiavi: %@ Riprova prima di usare il bucket."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "鍵は作成されましたが、鍵リストを更新できませんでした: %@ バケットを使用する前に再試行してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "키가 생성되었지만 키 목록을 새로 고칠 수 없습니다: %@ 버킷을 사용하기 전에 다시 시도하세요."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nøkkelen ble opprettet, men nøkkellisten kunne ikke oppdateres: %@ Prøv igjen før du bruker bucketen."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De sleutel is aangemaakt, maar de sleutellijst kon niet worden vernieuwd: %@ Probeer het opnieuw voordat je de bucket gebruikt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klucz został utworzony, ale nie udało się odświeżyć listy kluczy: %@ Spróbuj ponownie, zanim użyjesz zasobnika."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A chave foi criada, mas não foi possível atualizar a lista de chaves: %@ Tente novamente antes de usar o bucket."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A chave foi criada, mas não foi possível atualizar a lista de chaves: %@ Tente novamente antes de utilizar o bucket."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ключ создан, но список ключей не удалось обновить: %@ Повторите попытку, прежде чем использовать бакет."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nyckeln skapades, men nyckellistan kunde inte uppdateras: %@ Försök igen innan du använder bucketen."
+          }
+        }
+      }
+    },
+    "encryption.editor.retryRefresh" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zkusit znovu"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prøv igen"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erneut versuchen"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Επανάληψη"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retry"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retry"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reintentar"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yritä uudelleen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réessayer"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Újra"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riprova"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再試行"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다시 시도"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prøv igjen"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opnieuw"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ponów"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tentar novamente"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tentar novamente"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повторить"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Försök igen"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

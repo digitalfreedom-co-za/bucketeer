@@ -68,8 +68,14 @@ struct EncryptionKeysView: View {
                 listBuckets: { account in
                     try await viewModel.bucketNames(for: account)
                 },
+                verifyBucket: { bucket, account in
+                    try await viewModel.verifyBucket(bucket, account: account)
+                },
                 onSave: { label, account, bucket in
                     try await viewModel.create(label: label, account: account, bucket: bucket)
+                },
+                finishCreation: { account, bucket in
+                    try await viewModel.finishCreation(account: account, bucket: bucket)
                 }
             )
         }
@@ -130,7 +136,11 @@ private struct EncryptionKeyEditor: View {
     let accounts: [S3Account]
     let existingKeys: [BucketEncryptionKey]
     let listBuckets: @Sendable (S3Account) async throws -> [String]
+    let verifyBucket: @Sendable (String, S3Account) async throws -> Void
     let onSave: @Sendable (String, S3Account, String) async throws -> Void
+    /// Retries only the refresh after `onSave` stored the key but
+    /// failed to refresh the list or the File Provider mirror.
+    let finishCreation: @Sendable (S3Account, String) async throws -> Void
 
     /// Where the bucket choice comes from. Manual entry is only offered
     /// when the account's buckets cannot be listed.
@@ -148,6 +158,8 @@ private struct EncryptionKeyEditor: View {
     @State private var selectedBucket: String?
     @State private var manualBucket: String = ""
     @State private var saving = false
+    @State private var verifying = false
+    @State private var keyCreated = false
     @State private var saveError: String?
 
     private var trimmedLabel: String {
@@ -177,8 +189,13 @@ private struct EncryptionKeyEditor: View {
     }
 
     private var canSave: Bool {
-        !saving && !trimmedLabel.isEmpty && selectedAccount != nil
+        if keyCreated { return !saving }
+        return !saving && !trimmedLabel.isEmpty && selectedAccount != nil
             && chosenBucket != nil && !chosenBucketHasKey
+    }
+
+    private var isManualEntry: Bool {
+        if case .manual = bucketSource { true } else { false }
     }
 
     var body: some View {
@@ -187,6 +204,7 @@ private struct EncryptionKeyEditor: View {
                 Section("encryption.section.identity") {
                     TextField("encryption.field.label", text: $label)
                 }
+                .disabled(keyCreated || saving)
                 Section("encryption.section.target") {
                     Picker("encryption.field.account", selection: $selectedAccount) {
                         Text("encryption.account.none").tag(S3Account?.none)
@@ -195,12 +213,21 @@ private struct EncryptionKeyEditor: View {
                         }
                     }
                     bucketField
-                    if chosenBucketHasKey {
+                    if verifying {
+                        HStack(spacing: 6) {
+                            ProgressView()
+                                .controlSize(.small)
+                            Text("encryption.editor.verifyingBucket")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    if chosenBucketHasKey, !keyCreated {
                         Text("encryption.editor.bucketHasKey")
                             .foregroundStyle(.red)
                             .font(.footnote)
                     }
                 }
+                .disabled(keyCreated || saving)
                 Section {
                     Label("encryption.editor.warning", systemImage: "exclamationmark.triangle.fill")
                         .foregroundStyle(.orange)
@@ -221,7 +248,7 @@ private struct EncryptionKeyEditor: View {
                         .disabled(saving)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("action.create") { save() }
+                    Button(keyCreated ? LocalizedStringKey("encryption.editor.retryRefresh") : LocalizedStringKey("action.create")) { save() }
                         .disabled(!canSave)
                 }
             }
@@ -297,14 +324,30 @@ private struct EncryptionKeyEditor: View {
         }
     }
 
+    /// A manually entered bucket is verified before the key is created.
+    /// Once the key is stored, a retry only refreshes the list and the
+    /// mirror, so it never creates a second key.
     private func save() {
         guard let account = selectedAccount, let bucket = chosenBucket else { return }
+        let validatedLabel = trimmedLabel
         saving = true
         saveError = nil
         Task {
             do {
-                try await onSave(trimmedLabel, account, bucket)
+                if keyCreated {
+                    try await finishCreation(account, bucket)
+                } else {
+                    if isManualEntry {
+                        verifying = true
+                        defer { verifying = false }
+                        try await verifyBucket(bucket, account)
+                    }
+                    try await onSave(validatedLabel, account, bucket)
+                }
                 dismiss()
+            } catch let error as EncryptionKeyRefreshError {
+                keyCreated = true
+                saveError = error.localizedDescription
             } catch {
                 saveError = error.localizedDescription
             }
