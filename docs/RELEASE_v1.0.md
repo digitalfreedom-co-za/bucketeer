@@ -21,8 +21,7 @@ Everything on `development` at the v1.0 cut. That's:
 - Phase 13.1 – 13.16 (activity log, bandwidth limit, watch folders,
   trash, dashboard, versions, metadata editor, auto-tagging,
   lifecycle viewer, resumable uploads, deep links, App Intents,
-  Spotlight, cross-account copy, client-side encryption, hardware
-  key preview).
+  Spotlight, cross-account copy, client-side encryption).
 - Two external audit rounds — every blocker / high / medium / low
   finding addressed.
 - Azure parity for object versions (snapshots), metadata + tags.
@@ -241,6 +240,7 @@ report through the support URL and fix on `development` first.
 
 ## Post-launch follow-ups (v1.1 candidates)
 
+- Hardware-key technical preview deferred to v1.1 (#26); Debug-only until then.
 - Resumable parallel parts (current resumable path is sequential
   for correctness; throughput hit is acceptable for v1).
 - Azure ARM management-plane integration for lifecycle / CORS /
