@@ -15,6 +15,8 @@ import BucketeerCore
 struct EncryptionKeysView: View {
     @Environment(AppContainer.self) private var container
     @State private var reassigning: BucketEncryptionKey?
+    @State private var backupSheet = false
+    @State private var exportIDs: Set<UUID>?
     @State private var creating: Bool = false
     @State private var pendingDeletion: BucketEncryptionKey?
 
@@ -28,6 +30,10 @@ struct EncryptionKeysView: View {
                     ForEach(viewModel.keys) { key in
                         keyRow(key, viewModel: viewModel)
                             .contextMenu {
+                                Button("encryption.backup.export") {
+                                    exportIDs = [key.id]
+                                    backupSheet = true
+                                }
                                 if viewModel.isOrphaned(key) {
                                     Button("encryption.reassign.action") { reassigning = key }
                                 }
@@ -45,6 +51,15 @@ struct EncryptionKeysView: View {
                 } label: {
                     Label("encryption.action.new", systemImage: "plus")
                 }
+                Button("encryption.backup.export") {
+                    exportIDs = Set(viewModel.keys.map(\.id))
+                    backupSheet = true
+                }
+                .disabled(viewModel.keys.isEmpty)
+                Button("encryption.backup.import") {
+                    exportIDs = nil
+                    backupSheet = true
+                }
                 Spacer()
                 if let error = viewModel.error {
                     Label(error.errorDescription ?? "\(error)", systemImage: "exclamationmark.triangle.fill")
@@ -61,6 +76,9 @@ struct EncryptionKeysView: View {
         }
         .frame(minWidth: 420, minHeight: 360)
         .task { await viewModel.reload() }
+        .sheet(isPresented: $backupSheet) {
+            KeyBackupSheet(viewModel: viewModel, exportIDs: exportIDs)
+        }
         .sheet(isPresented: $creating) {
             EncryptionKeyEditor(
                 accounts: viewModel.accounts,

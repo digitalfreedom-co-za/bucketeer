@@ -1,6 +1,1756 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "encryption.backup.authenticate" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Authenticate to export encryption keys."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Authenticate to export encryption keys."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ověřte svou totožnost pro export šifrovacích klíčů."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Godkend for at eksportere krypteringsnøgler."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Authentifiziere dich, um Verschlüsselungsschlüssel zu exportieren."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Επαληθεύστε την ταυτότητά σας για εξαγωγή κλειδιών κρυπτογράφησης."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autentícate para exportar las claves de cifrado."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tunnistaudu viedäksesi salausavaimet."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Authentifiez-vous pour exporter les clés de chiffrement."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hitelesítse magát a titkosítási kulcsok exportálásához."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autenticati per esportare le chiavi di crittografia."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暗号鍵を書き出すには認証してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "암호화 키를 내보내려면 인증하세요."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autentiser deg for å eksportere krypteringsnøkler."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifieer je identiteit om versleutelingssleutels te exporteren."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uwierzytelnij się, aby wyeksportować klucze szyfrowania."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autentique-se para exportar as chaves de criptografia."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autentique-se para exportar as chaves de encriptação."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пройдите аутентификацию для экспорта ключей шифрования."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autentisera dig för att exportera krypteringsnycklar."
+          }
+        }
+      }
+    },
+    "encryption.backup.acknowledge" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue without backup"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue without backup"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokračovat bez zálohy"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fortsæt uden sikkerhedskopi"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ohne Sicherung fortfahren"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Συνέχεια χωρίς αντίγραφο"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar sin copia"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jatka ilman varmuuskopiota"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuer sans sauvegarde"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Folytatás mentés nélkül"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continua senza backup"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バックアップせずに続ける"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "백업 없이 계속"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fortsett uten sikkerhetskopi"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doorgaan zonder reservekopie"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontynuuj bez kopii"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar sem backup"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar sem cópia"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Продолжить без копии"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fortsätt utan säkerhetskopia"
+          }
+        }
+      }
+    },
+    "encryption.backup.conflict" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Different key exists"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Different key exists"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Existuje jiný klíč"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En anden nøgle findes"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anderer Schlüssel vorhanden"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Υπάρχει διαφορετικό κλειδί"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Existe una clave diferente"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eri avain on olemassa"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une autre clé existe"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Másik kulcs létezik"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esiste una chiave diversa"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "異なる鍵が存在"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다른 키가 있음"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En annen nøkkel finnes"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Andere sleutel aanwezig"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Istnieje inny klucz"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Existe uma chave diferente"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Existe uma chave diferente"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Существует другой ключ"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En annan nyckel finns"
+          }
+        }
+      }
+    },
+    "encryption.backup.identical" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Already present — skip"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Already present — skip"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Již existuje — přeskočit"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Findes allerede — spring over"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bereits vorhanden — überspringen"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Υπάρχει ήδη — παράλειψη"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ya existe — omitir"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On jo olemassa — ohita"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déjà présente — ignorer"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Már létezik — kihagyás"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Già presente — ignora"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "既に存在 — スキップ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이미 있음 — 건너뛰기"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finnes allerede — hopp over"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bestaat al — overslaan"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Już istnieje — pomiń"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Já existe — ignorar"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Já existe — ignorar"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Уже существует — пропустить"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finns redan — hoppa över"
+          }
+        }
+      }
+    },
+    "encryption.backup.new" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New key"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New key"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nový klíč"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ny nøgle"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neuer Schlüssel"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Νέο κλειδί"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clave nueva"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uusi avain"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouvelle clé"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Új kulcs"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuova chiave"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新しい鍵"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "새 키"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ny nøkkel"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nieuwe sleutel"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nowy klucz"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nova chave"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nova chave"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Новый ключ"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ny nyckel"
+          }
+        }
+      }
+    },
+    "encryption.backup.replaceWarning" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Replacing this key can make existing encrypted objects unreadable. Replace the selected key?"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Replacing this key can make existing encrypted objects unreadable. Replace the selected key?"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nahrazení tohoto klíče může znemožnit čtení stávajících zašifrovaných objektů. Nahradit vybraný klíč?"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hvis du erstatter denne nøgle, kan eksisterende krypterede objekter blive ulæselige. Erstat den valgte nøgle?"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Ersetzen dieses Schlüssels kann vorhandene verschlüsselte Objekte unlesbar machen. Ausgewählten Schlüssel ersetzen?"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Η αντικατάσταση αυτού του κλειδιού μπορεί να κάνει τα υπάρχοντα κρυπτογραφημένα αντικείμενα μη αναγνώσιμα. Να αντικατασταθεί το επιλεγμένο κλειδί;"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reemplazar esta clave puede impedir la lectura de los objetos cifrados existentes. ¿Reemplazar la clave seleccionada?"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tämän avaimen korvaaminen voi estää nykyisten salattujen objektien lukemisen. Korvataanko valittu avain?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remplacer cette clé peut rendre les objets chiffrés existants illisibles. Remplacer la clé sélectionnée ?"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A kulcs cseréje olvashatatlanná teheti a meglévő titkosított objektumokat. Lecseréli a kiválasztott kulcsot?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sostituire questa chiave può rendere illeggibili gli oggetti crittografati esistenti. Sostituire la chiave selezionata?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この鍵を置き換えると、既存の暗号化されたオブジェクトを読み取れなくなる場合があります。選択した鍵を置き換えますか？"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 키를 교체하면 기존 암호화된 객체를 읽지 못할 수 있습니다. 선택한 키를 교체하시겠습니까?"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hvis du erstatter denne nøkkelen, kan eksisterende krypterte objekter bli uleselige. Erstatt den valgte nøkkelen?"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het vervangen van deze sleutel kan bestaande versleutelde objecten onleesbaar maken. Geselecteerde sleutel vervangen?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zastąpienie tego klucza może uniemożliwić odczyt istniejących zaszyfrowanych obiektów. Zastąpić wybrany klucz?"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Substituir esta chave pode tornar ilegíveis os objetos criptografados existentes. Substituir a chave selecionada?"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Substituir esta chave pode tornar ilegíveis os objetos encriptados existentes. Substituir a chave selecionada?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Замена этого ключа может сделать существующие зашифрованные объекты нечитаемыми. Заменить выбранный ключ?"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Om du ersätter den här nyckeln kan befintliga krypterade objekt bli oläsbara. Ersätt den valda nyckeln?"
+          }
+        }
+      }
+    },
+    "encryption.backup.replace" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Replace key"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Replace key"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nahradit klíč"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erstat nøgle"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schlüssel ersetzen"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αντικατάσταση κλειδιού"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reemplazar clave"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Korvaa avain"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remplacer la clé"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kulcs cseréje"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sostituisci chiave"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "鍵を置き換える"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "키 교체"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erstatt nøkkel"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sleutel vervangen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zastąp klucz"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Substituir chave"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Substituir chave"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Заменить ключ"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ersätt nyckel"
+          }
+        }
+      }
+    },
+    "encryption.backup.keep" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep existing"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep existing"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ponechat stávající"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Behold eksisterende"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorhandenen behalten"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Διατήρηση υπάρχοντος"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conservar existente"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Säilytä nykyinen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conserver la clé existante"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meglévő megtartása"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantieni esistente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "既存の鍵を保持"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기존 키 유지"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Behold eksisterende"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bestaande behouden"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zachowaj istniejący"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manter existente"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manter existente"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохранить существующий"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Behåll befintlig"
+          }
+        }
+      }
+    },
+    "encryption.backup.warning" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export a backup in Settings → Encryption before uploading. If your local keys are lost, losing the backup file or its passphrase means your encrypted data cannot be recovered."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export a backup in Settings → Encryption before uploading. If your local keys are lost, losing the backup file or its passphrase means your encrypted data cannot be recovered."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Před nahráváním exportujte zálohu v Nastavení → Šifrování. Pokud ztratíte místní klíče i soubor zálohy nebo jeho heslovou frázi, zašifrovaná data nebude možné obnovit."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksportér en sikkerhedskopi i Indstillinger → Kryptering før upload. Hvis dine lokale nøgler går tabt, kan dine krypterede data ikke gendannes, hvis du også mister sikkerhedskopien eller dens adgangssætning."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportiere vor dem Hochladen eine Sicherung unter Einstellungen → Verschlüsselung. Gehen deine lokalen Schlüssel verloren, können deine verschlüsselten Daten ohne die Sicherungsdatei oder deren Passphrase nicht wiederhergestellt werden."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Πριν από τη μεταφόρτωση, εξαγάγετε αντίγραφο ασφαλείας στις Ρυθμίσεις → Κρυπτογράφηση. Αν χαθούν τα τοπικά κλειδιά σας, η απώλεια του αντιγράφου ή της συνθηματικής φράσης του καθιστά αδύνατη την ανάκτηση των κρυπτογραφημένων δεδομένων."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antes de subir archivos, exporta una copia en Ajustes → Cifrado. Si pierdes las claves locales, perder el archivo de copia o su frase de contraseña impedirá recuperar los datos cifrados."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vie varmuuskopio kohdassa Asetukset → Salaus ennen lähettämistä. Jos paikalliset avaimet katoavat, varmuuskopiotiedoston tai sen salalauseen menettäminen estää salattujen tietojen palauttamisen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avant tout envoi, exportez une sauvegarde dans Réglages → Chiffrement. Si vos clés locales sont perdues, la perte du fichier de sauvegarde ou de sa phrase secrète rend vos données chiffrées irrécupérables."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feltöltés előtt exportáljon biztonsági másolatot a Beállítások → Titkosítás alatt. Ha elvesznek a helyi kulcsok, a biztonsági másolat vagy a jelmondata elvesztése esetén a titkosított adatok nem állíthatók helyre."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prima di caricare, esporta un backup in Impostazioni → Crittografia. Se perdi le chiavi locali, la perdita del file di backup o della sua frase segreta rende impossibile recuperare i dati crittografati."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップロード前に「設定 → 暗号化」でバックアップを書き出してください。ローカルの鍵を紛失した場合、バックアップファイルまたはパスフレーズも失うと、暗号化されたデータを復元できません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업로드 전에 설정 → 암호화에서 백업을 내보내세요. 로컬 키를 잃어버린 경우 백업 파일이나 암호 구문까지 잃으면 암호화된 데이터를 복구할 수 없습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksporter en sikkerhetskopi i Innstillinger → Kryptering før opplasting. Hvis de lokale nøklene går tapt, kan krypterte data ikke gjenopprettes hvis du også mister sikkerhetskopien eller passfrasen."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exporteer vóór het uploaden een reservekopie via Instellingen → Versleuteling. Als je lokale sleutels verloren gaan, kunnen je versleutelde gegevens niet worden hersteld zonder het reservekopiebestand of de wachtzin."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przed przesyłaniem wyeksportuj kopię w Ustawienia → Szyfrowanie. Jeśli utracisz lokalne klucze, utrata pliku kopii lub jego frazy hasła uniemożliwi odzyskanie zaszyfrowanych danych."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antes de enviar, exporte um backup em Ajustes → Criptografia. Se suas chaves locais forem perdidas, perder o arquivo de backup ou sua frase secreta impedirá a recuperação dos dados criptografados."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antes de carregar, exporte uma cópia de segurança em Definições → Encriptação. Se perder as chaves locais, a perda do ficheiro de cópia ou da sua frase secreta impossibilita a recuperação dos dados encriptados."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перед загрузкой экспортируйте резервную копию в Настройки → Шифрование. Если локальные ключи будут потеряны, потеря файла копии или его парольной фразы сделает восстановление зашифрованных данных невозможным."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportera en säkerhetskopia i Inställningar → Kryptering före uppladdning. Om dina lokala nycklar går förlorade kan krypterade data inte återställas om du också förlorar säkerhetskopian eller dess lösenfras."
+          }
+        }
+      }
+    },
+    "encryption.backup.hint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use at least 12 characters. Several unrelated words make a stronger passphrase. Both fields must match."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use at least 12 characters. Several unrelated words make a stronger passphrase. Both fields must match."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Použijte alespoň 12 znaků. Několik nesouvisejících slov vytvoří silnější heslovou frázi. Obě pole se musí shodovat."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brug mindst 12 tegn. Flere ord uden indbyrdes sammenhæng giver en stærkere adgangssætning. Begge felter skal være ens."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwende mindestens 12 Zeichen. Mehrere zusammenhanglose Wörter ergeben eine stärkere Passphrase. Beide Felder müssen übereinstimmen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Χρησιμοποιήστε τουλάχιστον 12 χαρακτήρες. Πολλές άσχετες λέξεις δημιουργούν ισχυρότερη φράση. Τα δύο πεδία πρέπει να ταιριάζουν."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa al menos 12 caracteres. Varias palabras sin relación crean una frase más segura. Ambos campos deben coincidir."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Käytä vähintään 12 merkkiä. Useat toisiinsa liittymättömät sanat muodostavat vahvemman salalauseen. Kenttien on vastattava toisiaan."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilisez au moins 12 caractères. Plusieurs mots sans rapport forment une phrase plus robuste. Les deux champs doivent correspondre."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Használjon legalább 12 karaktert. Több, egymáshoz nem kapcsolódó szó erősebb jelmondatot alkot. A két mezőnek egyeznie kell."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa almeno 12 caratteri. Più parole non correlate rendono la frase più sicura. I due campi devono coincidere."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "12文字以上を使用してください。関連のない複数の単語を使うと、より強力になります。両方の入力欄が一致する必要があります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "12자 이상을 사용하세요. 서로 관련 없는 여러 단어를 사용하면 더 강력한 암호 구문이 됩니다. 두 입력란이 일치해야 합니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bruk minst 12 tegn. Flere ord uten sammenheng gir en sterkere passfrase. Begge feltene må være like."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebruik minimaal 12 tekens. Meerdere niet-verwante woorden maken een sterkere wachtzin. Beide velden moeten overeenkomen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Użyj co najmniej 12 znaków. Kilka niepowiązanych słów tworzy silniejszą frazę. Oba pola muszą być zgodne."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use pelo menos 12 caracteres. Várias palavras sem relação formam uma frase mais forte. Os dois campos devem coincidir."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilize pelo menos 12 caracteres. Várias palavras sem relação formam uma frase mais forte. Os dois campos têm de coincidir."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Используйте не менее 12 символов. Несколько несвязанных слов делают фразу надёжнее. Оба поля должны совпадать."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Använd minst 12 tecken. Flera orelaterade ord ger en starkare lösenfras. Båda fälten måste stämma överens."
+          }
+        }
+      }
+    },
+    "encryption.backup.confirmation" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm passphrase"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm passphrase"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Potvrdit heslovou frázi"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bekræft adgangssætning"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passphrase bestätigen"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Επιβεβαίωση συνθηματικής φράσης"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmar frase de contraseña"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vahvista salalause"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmer la phrase secrète"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jelmondat megerősítése"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conferma frase segreta"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パスフレーズの確認"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "암호 구문 확인"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bekreft passfrase"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wachtzin bevestigen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Potwierdź frazę hasła"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmar frase secreta"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmar frase secreta"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подтвердите парольную фразу"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bekräfta lösenfras"
+          }
+        }
+      }
+    },
+    "encryption.backup.passphrase" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passphrase"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passphrase"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Heslová fráze"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adgangssætning"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passphrase"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Συνθηματική φράση"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frase de contraseña"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salalause"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phrase secrète"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jelmondat"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frase segreta"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パスフレーズ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "암호 구문"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passfrase"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wachtzin"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fraza hasła"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frase secreta"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frase secreta"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Парольная фраза"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lösenfras"
+          }
+        }
+      }
+    },
+    "encryption.backup.import" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import keys…"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import keys…"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importovat klíče…"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importér nøgler…"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schlüssel importieren…"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Εισαγωγή κλειδιών…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importar claves…"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tuo avaimet…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importer les clés…"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kulcsok importálása…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importa chiavi…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "鍵を読み込む…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "키 가져오기…"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importer nøkler…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sleutels importeren…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importuj klucze…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importar chaves…"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importar chaves…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Импортировать ключи…"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importera nycklar…"
+          }
+        }
+      }
+    },
+    "encryption.backup.export" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export keys…"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export keys…"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportovat klíče…"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksportér nøgler…"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schlüssel exportieren…"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Εξαγωγή κλειδιών…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportar claves…"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vie avaimet…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exporter les clés…"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kulcsok exportálása…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esporta chiavi…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "鍵を書き出す…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "키 내보내기…"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksporter nøkler…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sleutels exporteren…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksportuj klucze…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportar chaves…"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportar chaves…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Экспортировать ключи…"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportera nycklar…"
+          }
+        }
+      }
+    },
     "encryption.reassign.sourceCleanupFailed" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -33665,121 +35415,121 @@
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Klíč bezpečně uložte — jeho ztráta trvale uzamkne všechny objekty, které jím byly zašifrovány. Bucketeer ztracené klíče obnovit nedokáže. Přidání klíče nemění objekty, které už v bucketu jsou, takže nešifrované objekty se dodatečně nezašifrují. Odebrání klíče nedešifruje objekty jím zašifrované."
+            "value" : "Před nahráváním exportujte zálohu v Nastavení → Šifrování. Pokud ztratíte místní klíče i soubor zálohy nebo jeho heslovou frázi, zašifrovaná data nebude možné obnovit. Přidání klíče nemění objekty, které už v bucketu jsou, takže nešifrované objekty se dodatečně nezašifrují. Odebrání klíče nedešifruje objekty jím zašifrované."
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gem nøglen et sikkert sted — mistes den, låses alle objekter krypteret med den permanent. Bucketeer kan ikke gendanne mistede nøgler. Tilføjer du en nøgle, ændres objekter, der allerede ligger i bucketen, ikke, så ukrypterede objekter krypteres ikke efterfølgende. Fjerner du en nøgle, dekrypteres objekter krypteret med den ikke."
+            "value" : "Eksportér en sikkerhedskopi i Indstillinger → Kryptering før upload. Hvis dine lokale nøgler går tabt, kan dine krypterede data ikke gendannes, hvis du også mister sikkerhedskopien eller dens adgangssætning. Tilføjer du en nøgle, ændres objekter, der allerede ligger i bucketen, ikke, så ukrypterede objekter krypteres ikke efterfølgende. Fjerner du en nøgle, dekrypteres objekter krypteret med den ikke."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bewahre den Schlüssel sicher auf — geht er verloren, bleiben alle damit verschlüsselten Objekte dauerhaft gesperrt. Bucketeer kann verlorene Schlüssel nicht wiederherstellen. Das Anlegen eines Schlüssels ändert bereits vorhandene Objekte im Bucket nicht, unverschlüsselte Objekte werden also nicht nachträglich verschlüsselt. Das Entfernen eines Schlüssels entschlüsselt die damit verschlüsselten Objekte nicht."
+            "value" : "Exportiere vor dem Hochladen eine Sicherung unter Einstellungen → Verschlüsselung. Gehen deine lokalen Schlüssel verloren, können deine verschlüsselten Daten ohne die Sicherungsdatei oder deren Passphrase nicht wiederhergestellt werden. Das Anlegen eines Schlüssels ändert bereits vorhandene Objekte im Bucket nicht, unverschlüsselte Objekte werden also nicht nachträglich verschlüsselt. Das Entfernen eines Schlüssels entschlüsselt die damit verschlüsselten Objekte nicht."
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Φυλάξτε το κλειδί με ασφάλεια — η απώλειά του κλειδώνει οριστικά κάθε αντικείμενο που κρυπτογραφήθηκε με αυτό. Το Bucketeer δεν μπορεί να ανακτήσει χαμένα κλειδιά. Η προσθήκη ενός κλειδιού δεν αλλάζει τα αντικείμενα που υπάρχουν ήδη στο bucket, επομένως τα μη κρυπτογραφημένα αντικείμενα δεν κρυπτογραφούνται αναδρομικά. Η αφαίρεση ενός κλειδιού δεν αποκρυπτογραφεί τα αντικείμενα που κρυπτογραφήθηκαν με αυτό."
+            "value" : "Πριν από τη μεταφόρτωση, εξαγάγετε αντίγραφο ασφαλείας στις Ρυθμίσεις → Κρυπτογράφηση. Αν χαθούν τα τοπικά κλειδιά σας, η απώλεια του αντιγράφου ή της συνθηματικής φράσης του καθιστά αδύνατη την ανάκτηση των κρυπτογραφημένων δεδομένων. Η προσθήκη ενός κλειδιού δεν αλλάζει τα αντικείμενα που υπάρχουν ήδη στο bucket, επομένως τα μη κρυπτογραφημένα αντικείμενα δεν κρυπτογραφούνται αναδρομικά. Η αφαίρεση ενός κλειδιού δεν αποκρυπτογραφεί τα αντικείμενα που κρυπτογραφήθηκαν με αυτό."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Save the key safely — losing it permanently locks any object encrypted with it. Bucketeer cannot recover lost keys. Adding a key does not change objects already in the bucket, so unencrypted objects are not encrypted retroactively. Removing a key does not decrypt objects encrypted with it."
+            "value" : "Export a backup in Settings → Encryption before uploading. If your local keys are lost, losing the backup file or its passphrase means your encrypted data cannot be recovered. Adding a key does not change objects already in the bucket, so unencrypted objects are not encrypted retroactively. Removing a key does not decrypt objects encrypted with it."
           }
         },
         "en-GB" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Save the key safely — losing it permanently locks any object encrypted with it. Bucketeer cannot recover lost keys. Adding a key does not change objects already in the bucket, so unencrypted objects are not encrypted retroactively. Removing a key does not decrypt objects encrypted with it."
+            "value" : "Export a backup in Settings → Encryption before uploading. If your local keys are lost, losing the backup file or its passphrase means your encrypted data cannot be recovered. Adding a key does not change objects already in the bucket, so unencrypted objects are not encrypted retroactively. Removing a key does not decrypt objects encrypted with it."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guarda la clave en un lugar seguro: si la pierdes, los objetos cifrados con ella quedan bloqueados para siempre. Bucketeer no puede recuperar claves perdidas. Añadir una clave no modifica los objetos que ya están en el bucket, así que los objetos sin cifrar no se cifran de forma retroactiva. Eliminar una clave no descifra los objetos cifrados con ella."
+            "value" : "Antes de subir archivos, exporta una copia en Ajustes → Cifrado. Si pierdes las claves locales, perder el archivo de copia o su frase de contraseña impedirá recuperar los datos cifrados. Añadir una clave no modifica los objetos que ya están en el bucket, así que los objetos sin cifrar no se cifran de forma retroactiva. Eliminar una clave no descifra los objetos cifrados con ella."
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tallenna avain turvallisesti — sen kadottaminen lukitsee pysyvästi kaikki sillä salatut objektit. Bucketeer ei voi palauttaa kadonneita avaimia. Avaimen lisääminen ei muuta bucketissa jo olevia objekteja, joten salaamattomia objekteja ei salata jälkikäteen. Avaimen poistaminen ei pura sillä salattuja objekteja."
+            "value" : "Vie varmuuskopio kohdassa Asetukset → Salaus ennen lähettämistä. Jos paikalliset avaimet katoavat, varmuuskopiotiedoston tai sen salalauseen menettäminen estää salattujen tietojen palauttamisen. Avaimen lisääminen ei muuta bucketissa jo olevia objekteja, joten salaamattomia objekteja ei salata jälkikäteen. Avaimen poistaminen ei pura sillä salattuja objekteja."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Conservez la clé en sécurité — la perdre verrouille définitivement les objets chiffrés avec elle. Bucketeer ne peut pas la récupérer. Ajouter une clé ne modifie pas les objets déjà présents dans le bucket : les objets non chiffrés ne sont pas chiffrés rétroactivement. Supprimer une clé ne déchiffre pas les objets chiffrés avec elle."
+            "value" : "Avant tout envoi, exportez une sauvegarde dans Réglages → Chiffrement. Si vos clés locales sont perdues, la perte du fichier de sauvegarde ou de sa phrase secrète rend vos données chiffrées irrécupérables. Ajouter une clé ne modifie pas les objets déjà présents dans le bucket : les objets non chiffrés ne sont pas chiffrés rétroactivement. Supprimer une clé ne déchiffre pas les objets chiffrés avec elle."
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mentse el a kulcsot biztonságos helyre — elvesztése véglegesen zárolja az összes vele titkosított objektumot. A Bucketeer nem tudja helyreállítani az elveszett kulcsokat. Egy kulcs hozzáadása nem módosítja a bucketben már meglévő objektumokat, így a titkosítatlan objektumok utólag sem lesznek titkosítva. Egy kulcs eltávolítása nem fejti vissza a vele titkosított objektumokat."
+            "value" : "Feltöltés előtt exportáljon biztonsági másolatot a Beállítások → Titkosítás alatt. Ha elvesznek a helyi kulcsok, a biztonsági másolat vagy a jelmondata elvesztése esetén a titkosított adatok nem állíthatók helyre. Egy kulcs hozzáadása nem módosítja a bucketben már meglévő objektumokat, így a titkosítatlan objektumok utólag sem lesznek titkosítva. Egy kulcs eltávolítása nem fejti vissza a vele titkosított objektumokat."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Conserva la chiave in un luogo sicuro — se la perdi, gli oggetti crittografati con essa restano bloccati per sempre. Bucketeer non può recuperare le chiavi perse. Aggiungere una chiave non modifica gli oggetti già presenti nel bucket, quindi gli oggetti non crittografati non vengono crittografati retroattivamente. Rimuovere una chiave non decrittografa gli oggetti crittografati con essa."
+            "value" : "Prima di caricare, esporta un backup in Impostazioni → Crittografia. Se perdi le chiavi locali, la perdita del file di backup o della sua frase segreta rende impossibile recuperare i dati crittografati. Aggiungere una chiave non modifica gli oggetti già presenti nel bucket, quindi gli oggetti non crittografati non vengono crittografati retroattivamente. Rimuovere una chiave non decrittografa gli oggetti crittografati con essa."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "鍵は安全な場所に保管してください — 紛失すると、その鍵で暗号化されたオブジェクトには永久にアクセスできなくなります。Bucketeer は紛失した鍵を復元できません。鍵を追加しても、バケット内の既存のオブジェクトは変更されないため、暗号化されていないオブジェクトがさかのぼって暗号化されることはありません。鍵を削除しても、その鍵で暗号化されたオブジェクトは復号されません。"
+            "value" : "アップロード前に「設定 → 暗号化」でバックアップを書き出してください。ローカルの鍵を紛失した場合、バックアップファイルまたはパスフレーズも失うと、暗号化されたデータを復元できません。 鍵を追加しても、バケット内の既存のオブジェクトは変更されないため、暗号化されていないオブジェクトがさかのぼって暗号化されることはありません。鍵を削除しても、その鍵で暗号化されたオブジェクトは復号されません。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "키를 안전하게 보관하십시오 — 키를 분실하면 해당 키로 암호화된 모든 객체에 영구적으로 접근할 수 없습니다. Bucketeer는 분실된 키를 복구할 수 없습니다. 키를 추가해도 버킷에 이미 있는 객체는 변경되지 않으므로, 암호화되지 않은 객체가 소급하여 암호화되지는 않습니다. 키를 제거해도 해당 키로 암호화된 객체는 복호화되지 않습니다."
+            "value" : "업로드 전에 설정 → 암호화에서 백업을 내보내세요. 로컬 키를 잃어버린 경우 백업 파일이나 암호 구문까지 잃으면 암호화된 데이터를 복구할 수 없습니다. 키를 추가해도 버킷에 이미 있는 객체는 변경되지 않으므로, 암호화되지 않은 객체가 소급하여 암호화되지는 않습니다. 키를 제거해도 해당 키로 암호화된 객체는 복호화되지 않습니다."
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ta godt vare på nøkkelen — mister du den, låses alle objekter som er kryptert med den, permanent. Bucketeer kan ikke gjenopprette tapte nøkler. Å legge til en nøkkel endrer ikke objekter som allerede ligger i bucketen, så ukrypterte objekter blir ikke kryptert i etterkant. Fjerner du en nøkkel, dekrypteres ikke objekter som er kryptert med den."
+            "value" : "Eksporter en sikkerhetskopi i Innstillinger → Kryptering før opplasting. Hvis de lokale nøklene går tapt, kan krypterte data ikke gjenopprettes hvis du også mister sikkerhetskopien eller passfrasen. Å legge til en nøkkel endrer ikke objekter som allerede ligger i bucketen, så ukrypterte objekter blir ikke kryptert i etterkant. Fjerner du en nøkkel, dekrypteres ikke objekter som er kryptert med den."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bewaar de sleutel veilig — als je hem kwijtraakt, blijven alle hiermee versleutelde objecten permanent ontoegankelijk. Bucketeer kan verloren sleutels niet herstellen. Een sleutel toevoegen wijzigt geen objecten die al in de bucket staan, dus onversleutelde objecten worden niet achteraf versleuteld. Een sleutel verwijderen ontsleutelt de hiermee versleutelde objecten niet."
+            "value" : "Exporteer vóór het uploaden een reservekopie via Instellingen → Versleuteling. Als je lokale sleutels verloren gaan, kunnen je versleutelde gegevens niet worden hersteld zonder het reservekopiebestand of de wachtzin. Een sleutel toevoegen wijzigt geen objecten die al in de bucket staan, dus onversleutelde objecten worden niet achteraf versleuteld. Een sleutel verwijderen ontsleutelt de hiermee versleutelde objecten niet."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zachowaj klucz bezpiecznie — utrata trwale blokuje wszystkie obiekty zaszyfrowane tym kluczem. Bucketeer nie może go odzyskać. Dodanie klucza nie zmienia obiektów, które już są w buckecie, więc niezaszyfrowane obiekty nie zostają zaszyfrowane wstecz. Usunięcie klucza nie odszyfrowuje obiektów zaszyfrowanych tym kluczem."
+            "value" : "Przed przesyłaniem wyeksportuj kopię w Ustawienia → Szyfrowanie. Jeśli utracisz lokalne klucze, utrata pliku kopii lub jego frazy hasła uniemożliwi odzyskanie zaszyfrowanych danych. Dodanie klucza nie zmienia obiektów, które już są w buckecie, więc niezaszyfrowane obiekty nie zostają zaszyfrowane wstecz. Usunięcie klucza nie odszyfrowuje obiektów zaszyfrowanych tym kluczem."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guarde a chave em segurança — perdê-la bloqueia permanentemente os objetos criptografados com ela. O Bucketeer não pode recuperar chaves perdidas. Adicionar uma chave não altera os objetos que já estão no bucket, então objetos sem criptografia não são criptografados retroativamente. Remover uma chave não descriptografa os objetos criptografados com ela."
+            "value" : "Antes de enviar, exporte um backup em Ajustes → Criptografia. Se suas chaves locais forem perdidas, perder o arquivo de backup ou sua frase secreta impedirá a recuperação dos dados criptografados. Adicionar uma chave não altera os objetos que já estão no bucket, então objetos sem criptografia não são criptografados retroativamente. Remover uma chave não descriptografa os objetos criptografados com ela."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guarde a chave em segurança — perdê-la bloqueia permanentemente qualquer objeto encriptado com ela. O Bucketeer não consegue recuperar chaves perdidas. Adicionar uma chave não altera os objetos que já estão no bucket, pelo que os objetos sem encriptação não são encriptados retroativamente. Remover uma chave não desencripta os objetos encriptados com ela."
+            "value" : "Antes de carregar, exporte uma cópia de segurança em Definições → Encriptação. Se perder as chaves locais, a perda do ficheiro de cópia ou da sua frase secreta impossibilita a recuperação dos dados encriptados. Adicionar uma chave não altera os objetos que já estão no bucket, pelo que os objetos sem encriptação não são encriptados retroativamente. Remover uma chave não desencripta os objetos encriptados com ela."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Сохраните ключ в надёжном месте — его утрата навсегда заблокирует все зашифрованные им объекты. Bucketeer не может восстановить утерянные ключи. Добавление ключа не изменяет объекты, уже находящиеся в бакете, поэтому незашифрованные объекты не шифруются задним числом. Удаление ключа не расшифровывает зашифрованные им объекты."
+            "value" : "Перед загрузкой экспортируйте резервную копию в Настройки → Шифрование. Если локальные ключи будут потеряны, потеря файла копии или его парольной фразы сделает восстановление зашифрованных данных невозможным. Добавление ключа не изменяет объекты, уже находящиеся в бакете, поэтому незашифрованные объекты не шифруются задним числом. Удаление ключа не расшифровывает зашифрованные им объекты."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Spara nyckeln på ett säkert ställe — om du förlorar den låses alla objekt som krypterats med den permanent. Bucketeer kan inte återskapa förlorade nycklar. Att lägga till en nyckel ändrar inte objekt som redan finns i bucketen, så okrypterade objekt krypteras inte i efterhand. Om du tar bort en nyckel dekrypteras inte objekt som krypterats med den."
+            "value" : "Exportera en säkerhetskopia i Inställningar → Kryptering före uppladdning. Om dina lokala nycklar går förlorade kan krypterade data inte återställas om du också förlorar säkerhetskopian eller dess lösenfras. Att lägga till en nyckel ändrar inte objekt som redan finns i bucketen, så okrypterade objekt krypteras inte i efterhand. Om du tar bort en nyckel dekrypteras inte objekt som krypterats med den."
           }
         }
       }

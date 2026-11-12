@@ -134,6 +134,47 @@ final class EncryptionKeysViewModel {
         }
     }
 
+    func exportKeys(ids: Set<UUID>, passphrase: String, confirmation: String, to url: URL) async throws {
+        let names = Dictionary(uniqueKeysWithValues: accounts.map { ($0.id, $0.name) })
+        let ciphertext = try await keyStore.exportKeys(ids: ids, accountNames: names,
+                                                       passphrase: passphrase, confirmation: confirmation)
+        try KeyBackupService.write(ciphertext, to: url)
+        // Never mark a cancelled or failed save as a backup.
+        for id in ids { try await keyStore.markBackupReady(id: id) }
+        try await refresh()
+    }
+
+    func planImport(from url: URL, passphrase: String) async throws -> [KeyImportPlan] {
+        let entries = try await Task.detached {
+            try KeyBackupService.read(from: url, passphrase: passphrase)
+        }.value
+        return try await keyStore.importPlan(entries, knownAccountIDs: Set(accounts.map(\.id)))
+    }
+
+    func importKeys(_ plan: [KeyImportPlan], replacements: Set<UUID>) async throws {
+        do {
+            for item in plan where item.state != .identical {
+                if item.state == .conflict && !replacements.contains(item.id) { continue }
+                let expectedID = item.state == .conflict ? item.existingID : nil
+                if let account = accounts.first(where: { $0.id == item.entry.accountID }) {
+                    try await mountController.whileUnmounted(account: account, bucket: item.entry.bucket) {
+                        try await keyStore.importKey(item.entry, replacing: expectedID)
+                    }
+                } else {
+                    try await keyStore.importKey(item.entry, replacing: expectedID)
+                }
+                await gate.invalidate(accountID: item.entry.accountID, bucket: item.entry.bucket)
+            }
+            try await refresh()
+        } catch {
+            // A storage failure may follow a successful metadata save. Refresh
+            // every affected gate and the Finder mirror even on partial success.
+            for item in plan { await gate.invalidate(accountID: item.entry.accountID, bucket: item.entry.bucket) }
+            await reload()
+            throw error
+        }
+    }
+
     func reassign(_ key: BucketEncryptionKey, to account: S3Account) async -> Bool {
         guard isOrphaned(key) else { return false }
         do {

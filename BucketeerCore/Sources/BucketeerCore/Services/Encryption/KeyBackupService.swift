@@ -156,8 +156,8 @@ public enum KeyBackupService {
         password.append(0)
         var derived = [UInt8](repeating: 0, count: 32)
         defer {
-            password.withUnsafeMutableBytes { $0.initializeMemory(as: UInt8.self, repeating: 0) }
-            derived.withUnsafeMutableBytes { $0.initializeMemory(as: UInt8.self, repeating: 0) }
+            _ = password.withUnsafeMutableBytes { $0.initializeMemory(as: UInt8.self, repeating: 0) }
+            _ = derived.withUnsafeMutableBytes { $0.initializeMemory(as: UInt8.self, repeating: 0) }
         }
         let status = password.withUnsafeBytes { passwordBytes in
             salt.withUnsafeBytes { saltBytes in

@@ -453,7 +453,7 @@ actor TransferManager: Transferring {
         var encryptionCleanup: URL? = nil
         let encryptionKey: SymmetricKey?
         do {
-            encryptionKey = item.bypassEncryption ? nil : try await encryptionGate?.sendableKey(
+            encryptionKey = item.bypassEncryption ? nil : try await encryptionGate?.uploadKey(
                 accountID: item.account.id,
                 bucket: item.task.bucket
             )?.key

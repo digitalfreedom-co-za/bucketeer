@@ -160,7 +160,7 @@ final class AppContainer {
         let encryptionKeyStore: any EncryptionKeyStoring = EncryptionKeyStore(
             modelContainer: encryptionContainer
         )
-        let bucketEncryptionGate = BucketEncryptionGate(keyStore: encryptionKeyStore)
+        let bucketEncryptionGate = BucketEncryptionGate(keyStore: encryptionKeyStore, confirmBackup: EncryptionKeysViewModel.confirmBackupRisk)
         // Write to the shared keychain access group of the
         // data-protection keychain so the File Provider extension
         // (which reads from the same group) can load credentials.
