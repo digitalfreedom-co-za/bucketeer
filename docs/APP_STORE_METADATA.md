@@ -5,7 +5,7 @@ first TestFlight cycle. The v1.0 marketing surface includes the 13.x
 feature block (activity log, soft-delete trash, dashboard, versions
 browser, metadata editor, auto-tagging, resumable uploads, deep
 links + Shortcuts, Spotlight indexing, cross-account copy, client-
-side encryption, hardware-key preview).
+side encryption). Hardware-key unlock is deferred to v1.1.
 
 ---
 
@@ -72,8 +72,7 @@ side encryption, hardware-key preview).
 > - **Cross-account copy / move** between any two configured
 >   accounts, server-side when endpoints match, local round-trip
 >   otherwise — automatically picks the right path
-> - **Touch ID / password gate** for revealing stored secrets;
->   YubiKey / smartcard support shipped as technical preview
+> - **Touch ID / password gate** for revealing stored secrets
 > - **Localised in 20 locales** — English (US and UK), Czech, Danish,
 >   Dutch, Finnish, French, German, Greek, Hungarian, Italian, Japanese,
 >   Korean, Norwegian, Polish, Portuguese (Brazil and Portugal), Russian,

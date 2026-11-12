@@ -28,9 +28,8 @@ for the development history.
   addressing where the provider needs it
 - **Credentials in the macOS Keychain**, never in the app's database
 - **Touch ID or Mac password** before stored secrets are shown again
-- **Hardware key (technical preview)**: Settings → Security lists
-  connected smart-card readers; unlocking still uses Touch ID or the
-  Mac password in 1.0
+- **Hardware-key unlock (CryptoTokenKit)**: in development for v1.1;
+  the technical preview only appears in Debug builds
 - **Client-side encryption per bucket**: AES-256-GCM on the Mac before
   upload, decryption on download, key kept in the Keychain and not
   exportable

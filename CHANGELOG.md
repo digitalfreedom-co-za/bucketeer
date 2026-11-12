@@ -13,6 +13,10 @@ before that is internal phase work on the `development` branch.
 
 ## [Unreleased] — `development` branch
 
+### Release review (2026-11-12)
+- Settings → Security (hardware-key technical preview) is hidden in
+  Release builds until v1.1 (#26).
+
 ### Release review (2026-11-05)
 - A sync into a local folder no longer replaces a folder with a file of
   the same name. The folder walk skips hidden files, so a folder holding

@@ -30,7 +30,7 @@ flowchart LR
         Insight["Bucket dashboard<br/>stats, cost estimate,<br/>lifecycle, CORS, policy viewer"]
         Safety["Trash cache, activity log,<br/>auto-tag rules"]
         CSE["Client-side encryption<br/>AES-256-GCM per bucket"]
-        System["Deep links, Shortcuts and Siri,<br/>Spotlight, hardware key preview"]
+        System["Deep links, Shortcuts and Siri,<br/>Spotlight, hardware key preview (Debug-only until v1.1)"]
     end
 
     subgraph Pro["Bucketeer Pro"]
@@ -1177,4 +1177,4 @@ end-to-end; no Xcode test target is required.
 | `bucketeer://` deep links | `BucketeerCore/.../Services/DeepLink/BucketeerDeepLink.swift` + `Bucketeer/Services/DeepLink/DeepLinkRouter.swift` |
 | App Intents (Shortcuts / Siri) | `Bucketeer/Services/AppIntents/*.swift` |
 | Spotlight indexing | `Bucketeer/Services/Spotlight/SpotlightIndexer.swift` + `SpotlightSettings.swift` |
-| Hardware-key detection (preview) | `Bucketeer/Services/HardwareKey/HardwareKeyAvailability.swift` + `HardwareKeySettings.swift` |
+| Hardware-key detection (preview, Debug-only until v1.1) | `Bucketeer/Services/HardwareKey/HardwareKeyAvailability.swift` + `HardwareKeySettings.swift` |
