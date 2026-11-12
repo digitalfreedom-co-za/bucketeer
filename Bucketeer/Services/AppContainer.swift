@@ -432,6 +432,7 @@ final class AppContainer {
         self.encryptionKeysViewModel = EncryptionKeysViewModel(
             keyStore: encryptionKeyStore,
             accountStore: accountStore,
+            s3Browser: router,
             gate: bucketEncryptionGate,
             mountController: mountController,
             encryptedBucketListURL: stores == .onDisk ? Self.groupContainerURL().map(EncryptedBucketList.url(inGroupContainer:)) : nil

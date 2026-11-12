@@ -64,8 +64,12 @@ struct EncryptionKeysView: View {
         .sheet(isPresented: $creating) {
             EncryptionKeyEditor(
                 accounts: viewModel.accounts,
+                existingKeys: viewModel.keys,
+                listBuckets: { account in
+                    try await viewModel.bucketNames(for: account)
+                },
                 onSave: { label, account, bucket in
-                    await viewModel.create(label: label, account: account, bucket: bucket)
+                    try await viewModel.create(label: label, account: account, bucket: bucket)
                 }
             )
         }
@@ -124,12 +128,58 @@ struct EncryptionKeysView: View {
 
 private struct EncryptionKeyEditor: View {
     let accounts: [S3Account]
-    let onSave: @Sendable (String, S3Account, String) async -> Void
+    let existingKeys: [BucketEncryptionKey]
+    let listBuckets: @Sendable (S3Account) async throws -> [String]
+    let onSave: @Sendable (String, S3Account, String) async throws -> Void
+
+    /// Where the bucket choice comes from. Manual entry is only offered
+    /// when the account's buckets cannot be listed.
+    private enum BucketSource {
+        case noAccount
+        case loading
+        case listed([String])
+        case manual(reason: String?)
+    }
 
     @Environment(\.dismiss) private var dismiss
     @State private var label: String = ""
     @State private var selectedAccount: S3Account?
-    @State private var bucket: String = ""
+    @State private var bucketSource: BucketSource = .noAccount
+    @State private var selectedBucket: String?
+    @State private var manualBucket: String = ""
+    @State private var saving = false
+    @State private var saveError: String?
+
+    private var trimmedLabel: String {
+        label.trimmingCharacters(in: .whitespaces)
+    }
+
+    private var trimmedManualBucket: String {
+        manualBucket.trimmingCharacters(in: .whitespaces)
+    }
+
+    /// Nil until a valid bucket is chosen: a listed one, or a manual
+    /// name that passes the S3 naming rules.
+    private var chosenBucket: String? {
+        switch bucketSource {
+        case .listed(let names):
+            selectedBucket.flatMap { names.contains($0) ? $0 : nil }
+        case .manual:
+            S3BucketName.isValid(trimmedManualBucket) ? trimmedManualBucket : nil
+        case .noAccount, .loading:
+            nil
+        }
+    }
+
+    private var chosenBucketHasKey: Bool {
+        guard let account = selectedAccount, let bucket = chosenBucket else { return false }
+        return existingKeys.contains { $0.accountID == account.id && $0.bucket == bucket }
+    }
+
+    private var canSave: Bool {
+        !saving && !trimmedLabel.isEmpty && selectedAccount != nil
+            && chosenBucket != nil && !chosenBucketHasKey
+    }
 
     var body: some View {
         NavigationStack {
@@ -144,12 +194,23 @@ private struct EncryptionKeyEditor: View {
                             Text(account.name).tag(S3Account?.some(account))
                         }
                     }
-                    TextField("encryption.field.bucket", text: $bucket)
+                    bucketField
+                    if chosenBucketHasKey {
+                        Text("encryption.editor.bucketHasKey")
+                            .foregroundStyle(.red)
+                            .font(.footnote)
+                    }
                 }
                 Section {
                     Label("encryption.editor.warning", systemImage: "exclamationmark.triangle.fill")
                         .foregroundStyle(.orange)
                         .font(.footnote)
+                }
+                if let saveError {
+                    Section {
+                        Text(saveError)
+                            .foregroundStyle(.red)
+                    }
                 }
             }
             .formStyle(.grouped)
@@ -157,28 +218,98 @@ private struct EncryptionKeyEditor: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("action.cancel") { dismiss() }
+                        .disabled(saving)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("action.create") {
-                        guard let account = selectedAccount else { return }
-                        Task {
-                            await onSave(
-                                label.trimmingCharacters(in: .whitespaces),
-                                account,
-                                bucket.trimmingCharacters(in: .whitespaces)
-                            )
-                            dismiss()
-                        }
-                    }
-                    .disabled(
-                        label.trimmingCharacters(in: .whitespaces).isEmpty
-                        || bucket.trimmingCharacters(in: .whitespaces).isEmpty
-                        || selectedAccount == nil
-                    )
+                    Button("action.create") { save() }
+                        .disabled(!canSave)
                 }
             }
         }
+        .interactiveDismissDisabled(saving)
         .frame(minWidth: 480, minHeight: 420)
+        .task(id: selectedAccount?.id) { await loadBuckets() }
+    }
+
+    @ViewBuilder
+    private var bucketField: some View {
+        switch bucketSource {
+        case .noAccount:
+            bucketPicker(names: [])
+                .disabled(true)
+        case .loading:
+            LabeledContent("encryption.field.bucket") {
+                HStack(spacing: 6) {
+                    ProgressView()
+                        .controlSize(.small)
+                    Text("encryption.editor.loadingBuckets")
+                        .foregroundStyle(.secondary)
+                }
+            }
+        case .listed(let names):
+            bucketPicker(names: names)
+        case .manual(let reason):
+            TextField("encryption.field.bucket", text: $manualBucket)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("encryption.editor.bucketListUnavailable")
+                if let reason {
+                    Text(reason)
+                }
+            }
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+            if !trimmedManualBucket.isEmpty, !S3BucketName.isValid(trimmedManualBucket) {
+                Text("encryption.editor.bucketInvalid")
+                    .foregroundStyle(.red)
+                    .font(.footnote)
+            }
+        }
+    }
+
+    private func bucketPicker(names: [String]) -> some View {
+        Picker("encryption.field.bucket", selection: $selectedBucket) {
+            Text("encryption.bucket.none").tag(String?.none)
+            ForEach(names, id: \.self) { name in
+                Text(name).tag(String?.some(name))
+            }
+        }
+    }
+
+    /// Runs again whenever the account changes; `task(id:)` cancels
+    /// the previous listing, so a slow reply cannot fill the picker
+    /// with another account's buckets.
+    private func loadBuckets() async {
+        selectedBucket = nil
+        saveError = nil
+        guard let account = selectedAccount else {
+            bucketSource = .noAccount
+            return
+        }
+        bucketSource = .loading
+        manualBucket = account.defaultBucket ?? ""
+        do {
+            let names = try await listBuckets(account)
+            guard !Task.isCancelled else { return }
+            bucketSource = names.isEmpty ? .manual(reason: nil) : .listed(names)
+        } catch {
+            guard !Task.isCancelled else { return }
+            bucketSource = .manual(reason: error.localizedDescription)
+        }
+    }
+
+    private func save() {
+        guard let account = selectedAccount, let bucket = chosenBucket else { return }
+        saving = true
+        saveError = nil
+        Task {
+            do {
+                try await onSave(trimmedLabel, account, bucket)
+                dismiss()
+            } catch {
+                saveError = error.localizedDescription
+            }
+            saving = false
+        }
     }
 }
 

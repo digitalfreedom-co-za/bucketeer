@@ -21,6 +21,7 @@ final class EncryptionKeysViewModel {
 
     private let keyStore: any EncryptionKeyStoring
     private let accountStore: any AccountStoring
+    private let s3Browser: any S3Browsing
     private let gate: BucketEncryptionGate
     private let mountController: MountController
     /// Where the File Provider extension looks up encrypted buckets.
@@ -31,12 +32,14 @@ final class EncryptionKeysViewModel {
     init(
         keyStore: any EncryptionKeyStoring,
         accountStore: any AccountStoring,
+        s3Browser: any S3Browsing,
         gate: BucketEncryptionGate,
         mountController: MountController,
         encryptedBucketListURL: URL?
     ) {
         self.keyStore = keyStore
         self.accountStore = accountStore
+        self.s3Browser = s3Browser
         self.gate = gate
         self.mountController = mountController
         self.encryptedBucketListURL = encryptedBucketListURL
@@ -62,20 +65,31 @@ final class EncryptionKeysViewModel {
         }
     }
 
+    /// Feeds the key editor's bucket picker, so a key is only created
+    /// for a bucket the account can actually see.
+    func bucketNames(for account: S3Account) async throws -> [String] {
+        try await s3Browser.listBuckets(account: account).map(\.name)
+    }
+
     /// Refuses buckets mounted in Finder: the File Provider extension
     /// writes raw bytes, so Finder copies would stay unencrypted.
-    func create(label: String, account: S3Account, bucket: String) async {
+    /// Throws instead of setting `error`, so the editor stays open and
+    /// shows the failure itself.
+    func create(label: String, account: S3Account, bucket: String) async throws {
+        guard !isEncrypted(accountID: account.id, bucket: bucket) else {
+            throw BucketeerError.unknown(message: String(localized: "encryption.editor.bucketHasKey"))
+        }
         do {
             try await mountController.whileUnmounted(account: account, bucket: bucket) {
                 _ = try await keyStore.create(label: label, accountID: account.id, bucket: bucket)
             }
-            await gate.invalidate(accountID: account.id, bucket: bucket)
-            await reload()
         } catch let bucketeerError as BucketeerError {
-            error = bucketeerError
+            throw bucketeerError
         } catch {
-            self.error = .unknown(message: error.localizedDescription)
+            throw BucketeerError.unknown(message: error.localizedDescription)
         }
+        await gate.invalidate(accountID: account.id, bucket: bucket)
+        await reload()
     }
 
     func reassign(_ key: BucketEncryptionKey, to account: S3Account) async -> Bool {
@@ -141,5 +155,23 @@ final class EncryptionKeysViewModel {
     func accountName(for id: UUID) -> String {
         guard accountsLoaded else { return id.uuidString }
         return accounts.first(where: { $0.id == id })?.name ?? String(localized: "encryption.account.deleted")
+    }
+}
+
+/// S3 bucket naming rules for a manually entered bucket: 3–63
+/// characters of lowercase letters, digits, dots and hyphens, starting
+/// and ending with a letter or digit.
+enum S3BucketName {
+    private static let allowedCharacters = Set("abcdefghijklmnopqrstuvwxyz0123456789.-")
+    private static let edgeCharacters = Set("abcdefghijklmnopqrstuvwxyz0123456789")
+    private static let lengthRange = 3...63
+
+    static func isValid(_ name: String) -> Bool {
+        guard lengthRange.contains(name.count),
+              let first = name.first, let last = name.last
+        else { return false }
+        return name.allSatisfy(allowedCharacters.contains)
+            && edgeCharacters.contains(first)
+            && edgeCharacters.contains(last)
     }
 }
