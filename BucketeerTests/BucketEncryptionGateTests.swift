@@ -48,6 +48,47 @@ final class BucketEncryptionGateTests: XCTestCase {
         XCTAssertEqual(prompts, 1)
     }
 
+    func testServerSideCopyMatrix() async {
+        let otherAccountID = UUID()
+        let store = InMemoryEncryptionKeyStore(encryptedBuckets: [(accountID, "vault"), (accountID, "archive")])
+        let gate = BucketEncryptionGate(keyStore: store)
+        let cases: [(String, UUID, String, Bool)] = [
+            ("vault", accountID, "vault", true),
+            ("public", accountID, "public", true),
+            ("public", accountID, "other", true),
+            ("vault", accountID, "public", false),
+            ("public", accountID, "vault", false),
+            ("vault", accountID, "archive", false),
+            ("vault", otherAccountID, "vault", false),
+            ("public", otherAccountID, "public", true)
+        ]
+        for (source, destinationAccount, destination, expected) in cases {
+            let allowed = await gate.allowsServerSideCopy(
+                sourceAccountID: accountID, sourceBucket: source,
+                destinationAccountID: destinationAccount, destinationBucket: destination
+            )
+            XCTAssertEqual(allowed, expected, "\(source) → \(destinationAccount)/\(destination)")
+        }
+    }
+
+    func testServerSideCopyFailsClosedWhenEitherKeyLookupFails() async throws {
+        for failingBucket in ["source", "destination"] {
+            let store = InMemoryEncryptionKeyStore()
+            let gate = BucketEncryptionGate(keyStore: store)
+            if failingBucket == "destination" {
+                // Cache the source so the injected failure reaches the destination lookup.
+                _ = try await gate.key(accountID: accountID, bucket: "source")
+            }
+            await store.failNextLookups(1)
+
+            let allowed = await gate.allowsServerSideCopy(
+                sourceAccountID: accountID, sourceBucket: "source",
+                destinationAccountID: accountID, destinationBucket: "destination"
+            )
+            XCTAssertFalse(allowed, "A failed \(failingBucket) lookup must prevent server-side copy")
+        }
+    }
+
     // MARK: - Encrypted to plain
 
     func testEncryptedSourceIntoBucketWithoutKeyIsEncryptedToPlain() {
