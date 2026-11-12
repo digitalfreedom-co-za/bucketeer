@@ -1,11 +1,11 @@
-<!-- doc-id: BUCKETEER_PRIVACY_POLICY | lang: de | area: app | version: 1.0.0 | valid-from: 2026-11-02 | translation-of: BUCKETEER_PRIVACY_POLICY en 1.0.0 (PRIVACY_POLICY.md) | review: not counsel-reviewed; AI legal review (Anwalt role) completed 2026-11-09, not a licensed counsel review | owner: Marcel R. G. Berger -->
+<!-- doc-id: BUCKETEER_PRIVACY_POLICY | lang: de | area: app | version: 1.0.1 | valid-from: 2026-11-12 | translation-of: BUCKETEER_PRIVACY_POLICY en 1.0.1 (PRIVACY_POLICY.md) | review: not counsel-reviewed; AI legal review (Anwalt role) completed 2026-11-09, not a licensed counsel review | owner: Marcel R. G. Berger -->
 # Datenschutzerklärung
 
 *Wie Bucketeer für macOS mit deinen Daten umgeht.*
 
 **Anwendung**: Bucketeer für macOS, einschließlich seiner Finder-Erweiterung
 ("Bucketeer File Provider")
-**Gültig ab**: 2. November 2026
+**Gültig ab**: 12. November 2026
 
 **Verantwortlicher**: DigitalFreedom Global LLC (handelnd als DigitalFreedom),
 30 N Gould St, Ste N, Sheridan, WY 82801, United States
