@@ -12,7 +12,8 @@ import Testing
 
 @Suite("Streaming envelope (v0x02)")
 struct StreamingEnvelopeTests {
-    private static let fixtureKey = SymmetricKey(data: Data(0..<32))
+    /// Computed so no non-Sendable key is stored in shared static state.
+    private static var fixtureKey: SymmetricKey { SymmetricKey(data: Data(0..<32)) }
     private static let smallSegment = 64
 
     @Test("A 64 MiB file round-trips while the codec never handles more than one segment per call")
