@@ -162,6 +162,27 @@ final class TransferManagerLifecycleTests: XCTestCase {
         XCTAssertFalse(RefusingAzureStub.requested(blob: "no-key.txt"))
     }
 
+    func testEncryptedMarkerFollowsTheKeyTheUploadResolved() async throws {
+        let keyStore = InMemoryEncryptionKeyStore(encryptedBuckets: [(account.id, "vault")])
+        let manager = try await makeManager(encryptionGate: BucketEncryptionGate(keyStore: keyStore))
+        let file = folder.appendingPathComponent("marker.txt")
+        try Data("payload".utf8).write(to: file)
+        let completions = manager.completions()
+
+        let unhinted = await manager.enqueueUpload(account: account, bucket: "vault", key: "unhinted.txt",
+                                                   localURL: file, contentType: nil)
+        let staleHint = await manager.enqueueUpload(account: account, bucket: "public", key: "stale-hint.txt",
+                                                    localURL: file, contentType: nil, expectsEncryption: true)
+        var marked: [UUID: Bool] = [:]
+        for await task in completions where [unhinted, staleHint].contains(task.id) {
+            marked[task.id] = task.isEncrypted
+            if marked.count == 2 { break }
+        }
+
+        XCTAssertEqual(marked[unhinted], true, "a keyed bucket marks the upload without a preflight hint")
+        XCTAssertEqual(marked[staleHint], false, "a stale hint is cleared once the upload finds no key")
+    }
+
     // MARK: - Helpers
 
     private func makeManager(encryptionGate: BucketEncryptionGate? = nil) async throws -> TransferManager {

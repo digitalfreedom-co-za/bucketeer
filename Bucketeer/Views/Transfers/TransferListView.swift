@@ -60,10 +60,16 @@ private struct TransferRow: View {
                       : "arrow.down.circle.fill")
                     .foregroundStyle(task.direction == .upload ? Color.accentInk : Color.green)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(task.localURL.lastPathComponent)
-                        .font(.callout)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
+                    HStack(spacing: 4) {
+                        Text(task.localURL.lastPathComponent)
+                            .font(.callout)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                        if task.showsEncryptedMarker {
+                            EncryptedBadge(help: "encryption.badge.upload.help")
+                                .font(.caption)
+                        }
+                    }
                     Text("\(task.bucket)/\(task.key)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -135,5 +141,18 @@ private struct TransferRow: View {
 
     private func format(_ bytes: Int64) -> String {
         ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
+    }
+}
+
+extension TransferTask {
+    /// Uploads that are being or were sealed. A failed or cancelled
+    /// upload may never have reached the key check, so its preflight
+    /// marker proves nothing.
+    var showsEncryptedMarker: Bool {
+        guard direction == .upload, isEncrypted else { return false }
+        switch state {
+        case .queued, .running, .completed: return true
+        case .failed, .cancelled: return false
+        }
     }
 }

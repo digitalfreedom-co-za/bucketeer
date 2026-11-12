@@ -13,11 +13,22 @@ import BucketeerCore
 @MainActor
 @Observable
 final class EncryptionKeysViewModel {
-    var keys: [BucketEncryptionKey] = []
+    var keys: [BucketEncryptionKey] = [] {
+        didSet { encryptedBuckets = Set(keys.map { EncryptedBucket(accountID: $0.accountID, bucket: $0.bucket) }) }
+    }
     var accounts: [S3Account] = []
     var error: BucketeerError?
 
     private var accountsLoaded = false
+
+    private struct EncryptedBucket: Hashable {
+        let accountID: UUID
+        let bucket: String
+    }
+
+    /// Rebuilt whenever `keys` changes, so badges in the bucket grid,
+    /// the browser toolbar and the upload flow cost one hash lookup.
+    private var encryptedBuckets: Set<EncryptedBucket> = []
 
     private let keyStore: any EncryptionKeyStoring
     private let accountStore: any AccountStoring
@@ -176,10 +187,12 @@ final class EncryptionKeysViewModel {
         }
     }
 
-    /// Drives UI hints only; `MountController.mount` re-checks the key
-    /// store itself, so a stale list cannot let a mount through.
+    /// Drives UI hints only; `MountController.mount` and uploads
+    /// re-check the key store themselves, so a stale list cannot let a
+    /// mount or a plaintext upload through. Reads the in-memory list
+    /// loaded by `reload`, never the Keychain.
     func isEncrypted(accountID: UUID, bucket: String) -> Bool {
-        keys.contains { $0.accountID == accountID && $0.bucket == bucket }
+        encryptedBuckets.contains(EncryptedBucket(accountID: accountID, bucket: bucket))
     }
 
     /// Resolve an account UUID back to a display name for the list.

@@ -35,7 +35,8 @@ final class TransferQueueViewModel {
         account: S3Account,
         bucket: String,
         prefix: String,
-        fileURLs: [URL]
+        fileURLs: [URL],
+        expectsEncryption: Bool
     ) async {
         for url in fileURLs {
             let key = prefix + url.lastPathComponent
@@ -45,7 +46,8 @@ final class TransferQueueViewModel {
                 bucket: bucket,
                 key: key,
                 localURL: url,
-                contentType: contentType
+                contentType: contentType,
+                expectsEncryption: expectsEncryption
             )
         }
     }

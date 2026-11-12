@@ -79,6 +79,11 @@ struct ObjectListView: View {
                 }
                 .disabled(!viewModel.canGoUp)
             }
+            if isBucketEncrypted {
+                ToolbarItem(placement: .navigation) {
+                    EncryptedBadge(help: "encryption.badge.bucket.help")
+                }
+            }
             ToolbarItem(placement: .principal) {
                 BreadcrumbBar(viewModel: viewModel)
             }
@@ -364,12 +369,14 @@ struct ObjectListView: View {
               let bucket = viewModel.bucket
         else { return false }
         let prefix = viewModel.prefix
+        let encrypted = isBucketEncrypted
         Task {
             await container.dragDropCoordinator.uploadDroppedURLs(
                 urls,
                 account: account,
                 bucket: bucket,
-                prefix: prefix
+                prefix: prefix,
+                expectsEncryption: encrypted
             )
         }
         return true
@@ -554,8 +561,14 @@ struct ObjectListView: View {
             account: account,
             bucket: bucket,
             prefix: viewModel.prefix,
-            fileURLs: urls
+            fileURLs: urls,
+            expectsEncryption: container.encryptionKeysViewModel.isEncrypted(accountID: account.id, bucket: bucket)
         )
+    }
+
+    private var isBucketEncrypted: Bool {
+        guard let account = viewModel.account, let bucket = viewModel.bucket else { return false }
+        return container.encryptionKeysViewModel.isEncrypted(accountID: account.id, bucket: bucket)
     }
 
     private func downloadObject(_ object: S3Object) async {

@@ -33665,121 +33665,121 @@
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Klíč bezpečně uložte — jeho ztráta trvale uzamkne všechny objekty, které jím byly zašifrovány. Bucketeer ztracené klíče obnovit nedokáže."
+            "value" : "Klíč bezpečně uložte — jeho ztráta trvale uzamkne všechny objekty, které jím byly zašifrovány. Bucketeer ztracené klíče obnovit nedokáže. Objekty, které už v bucketu jsou, zůstanou nešifrované, a pozdější odebrání klíče objekty jím zašifrované nedešifruje."
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gem nøglen et sikkert sted — mistes den, låses alle objekter krypteret med den permanent. Bucketeer kan ikke gendanne mistede nøgler."
+            "value" : "Gem nøglen et sikkert sted — mistes den, låses alle objekter krypteret med den permanent. Bucketeer kan ikke gendanne mistede nøgler. Objekter, der allerede ligger i bucketen, forbliver ukrypterede, og fjerner du senere en nøgle, dekrypteres objekter krypteret med den ikke."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bewahre den Schlüssel sicher auf — geht er verloren, bleiben alle damit verschlüsselten Objekte dauerhaft gesperrt. Bucketeer kann verlorene Schlüssel nicht wiederherstellen."
+            "value" : "Bewahre den Schlüssel sicher auf — geht er verloren, bleiben alle damit verschlüsselten Objekte dauerhaft gesperrt. Bucketeer kann verlorene Schlüssel nicht wiederherstellen. Bereits vorhandene Objekte im Bucket bleiben unverschlüsselt, und das spätere Entfernen eines Schlüssels entschlüsselt die damit verschlüsselten Objekte nicht."
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Φυλάξτε το κλειδί με ασφάλεια — η απώλειά του κλειδώνει οριστικά κάθε αντικείμενο που κρυπτογραφήθηκε με αυτό. Το Bucketeer δεν μπορεί να ανακτήσει χαμένα κλειδιά."
+            "value" : "Φυλάξτε το κλειδί με ασφάλεια — η απώλειά του κλειδώνει οριστικά κάθε αντικείμενο που κρυπτογραφήθηκε με αυτό. Το Bucketeer δεν μπορεί να ανακτήσει χαμένα κλειδιά. Τα αντικείμενα που υπάρχουν ήδη στο bucket παραμένουν μη κρυπτογραφημένα, και η μεταγενέστερη αφαίρεση ενός κλειδιού δεν αποκρυπτογραφεί τα αντικείμενα που κρυπτογραφήθηκαν με αυτό."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Save the key safely — losing it permanently locks any object encrypted with it. Bucketeer cannot recover lost keys."
+            "value" : "Save the key safely — losing it permanently locks any object encrypted with it. Bucketeer cannot recover lost keys. Existing objects in the bucket stay unencrypted, and removing a key later does not decrypt objects encrypted with it."
           }
         },
         "en-GB" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Save the key safely — losing it permanently locks any object encrypted with it. Bucketeer cannot recover lost keys."
+            "value" : "Save the key safely — losing it permanently locks any object encrypted with it. Bucketeer cannot recover lost keys. Existing objects in the bucket stay unencrypted, and removing a key later does not decrypt objects encrypted with it."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guarda la clave en un lugar seguro: si la pierdes, los objetos cifrados con ella quedan bloqueados para siempre. Bucketeer no puede recuperar claves perdidas."
+            "value" : "Guarda la clave en un lugar seguro: si la pierdes, los objetos cifrados con ella quedan bloqueados para siempre. Bucketeer no puede recuperar claves perdidas. Los objetos que ya están en el bucket siguen sin cifrar, y eliminar una clave más adelante no descifra los objetos cifrados con ella."
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tallenna avain turvallisesti — sen kadottaminen lukitsee pysyvästi kaikki sillä salatut objektit. Bucketeer ei voi palauttaa kadonneita avaimia."
+            "value" : "Tallenna avain turvallisesti — sen kadottaminen lukitsee pysyvästi kaikki sillä salatut objektit. Bucketeer ei voi palauttaa kadonneita avaimia. Bucketissa jo olevat objektit jäävät salaamattomiksi, eikä avaimen poistaminen myöhemmin pura sillä salattuja objekteja."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Conservez la clé en sécurité — la perdre verrouille définitivement les objets chiffrés avec elle. Bucketeer ne peut pas la récupérer."
+            "value" : "Conservez la clé en sécurité — la perdre verrouille définitivement les objets chiffrés avec elle. Bucketeer ne peut pas la récupérer. Les objets déjà présents dans le bucket restent non chiffrés, et supprimer une clé par la suite ne déchiffre pas les objets chiffrés avec elle."
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mentse el a kulcsot biztonságos helyre — elvesztése véglegesen zárolja az összes vele titkosított objektumot. A Bucketeer nem tudja helyreállítani az elveszett kulcsokat."
+            "value" : "Mentse el a kulcsot biztonságos helyre — elvesztése véglegesen zárolja az összes vele titkosított objektumot. A Bucketeer nem tudja helyreállítani az elveszett kulcsokat. A bucketben már meglévő objektumok titkosítatlanok maradnak, és egy kulcs későbbi eltávolítása nem fejti vissza a vele titkosított objektumokat."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Conserva la chiave in un luogo sicuro — se la perdi, gli oggetti crittografati con essa restano bloccati per sempre. Bucketeer non può recuperare le chiavi perse."
+            "value" : "Conserva la chiave in un luogo sicuro — se la perdi, gli oggetti crittografati con essa restano bloccati per sempre. Bucketeer non può recuperare le chiavi perse. Gli oggetti già presenti nel bucket restano non crittografati e rimuovere una chiave in seguito non decrittografa gli oggetti crittografati con essa."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "鍵は安全な場所に保管してください — 紛失すると、その鍵で暗号化されたオブジェクトには永久にアクセスできなくなります。Bucketeer は紛失した鍵を復元できません。"
+            "value" : "鍵は安全な場所に保管してください — 紛失すると、その鍵で暗号化されたオブジェクトには永久にアクセスできなくなります。Bucketeer は紛失した鍵を復元できません。バケット内の既存のオブジェクトは暗号化されないままです。また、後で鍵を削除しても、その鍵で暗号化されたオブジェクトは復号されません。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "키를 안전하게 보관하십시오 — 키를 분실하면 해당 키로 암호화된 모든 객체에 영구적으로 접근할 수 없습니다. Bucketeer는 분실된 키를 복구할 수 없습니다."
+            "value" : "키를 안전하게 보관하십시오 — 키를 분실하면 해당 키로 암호화된 모든 객체에 영구적으로 접근할 수 없습니다. Bucketeer는 분실된 키를 복구할 수 없습니다. 버킷에 이미 있는 객체는 암호화되지 않은 상태로 남으며, 나중에 키를 제거해도 해당 키로 암호화된 객체는 복호화되지 않습니다."
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ta godt vare på nøkkelen — mister du den, låses alle objekter som er kryptert med den, permanent. Bucketeer kan ikke gjenopprette tapte nøkler."
+            "value" : "Ta godt vare på nøkkelen — mister du den, låses alle objekter som er kryptert med den, permanent. Bucketeer kan ikke gjenopprette tapte nøkler. Objekter som allerede ligger i bucketen, forblir ukrypterte, og fjerner du en nøkkel senere, dekrypteres ikke objekter som er kryptert med den."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bewaar de sleutel veilig — als je hem kwijtraakt, blijven alle hiermee versleutelde objecten permanent ontoegankelijk. Bucketeer kan verloren sleutels niet herstellen."
+            "value" : "Bewaar de sleutel veilig — als je hem kwijtraakt, blijven alle hiermee versleutelde objecten permanent ontoegankelijk. Bucketeer kan verloren sleutels niet herstellen. Objecten die al in de bucket staan, blijven onversleuteld, en een sleutel later verwijderen ontsleutelt de hiermee versleutelde objecten niet."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zachowaj klucz bezpiecznie — utrata trwale blokuje wszystkie obiekty zaszyfrowane tym kluczem. Bucketeer nie może go odzyskać."
+            "value" : "Zachowaj klucz bezpiecznie — utrata trwale blokuje wszystkie obiekty zaszyfrowane tym kluczem. Bucketeer nie może go odzyskać. Obiekty, które już są w buckecie, pozostają niezaszyfrowane, a późniejsze usunięcie klucza nie odszyfrowuje obiektów zaszyfrowanych tym kluczem."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guarde a chave em segurança — perdê-la bloqueia permanentemente os objetos criptografados com ela. O Bucketeer não pode recuperar chaves perdidas."
+            "value" : "Guarde a chave em segurança — perdê-la bloqueia permanentemente os objetos criptografados com ela. O Bucketeer não pode recuperar chaves perdidas. Os objetos que já estão no bucket continuam sem criptografia, e remover uma chave depois não descriptografa os objetos criptografados com ela."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guarde a chave em segurança — perdê-la bloqueia permanentemente qualquer objeto encriptado com ela. O Bucketeer não consegue recuperar chaves perdidas."
+            "value" : "Guarde a chave em segurança — perdê-la bloqueia permanentemente qualquer objeto encriptado com ela. O Bucketeer não consegue recuperar chaves perdidas. Os objetos que já estão no bucket continuam sem encriptação, e remover uma chave mais tarde não desencripta os objetos encriptados com ela."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Сохраните ключ в надёжном месте — его утрата навсегда заблокирует все зашифрованные им объекты. Bucketeer не может восстановить утерянные ключи."
+            "value" : "Сохраните ключ в надёжном месте — его утрата навсегда заблокирует все зашифрованные им объекты. Bucketeer не может восстановить утерянные ключи. Объекты, уже находящиеся в бакете, остаются незашифрованными, а последующее удаление ключа не расшифровывает зашифрованные им объекты."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Spara nyckeln på ett säkert ställe — om du förlorar den låses alla objekt som krypterats med den permanent. Bucketeer kan inte återskapa förlorade nycklar."
+            "value" : "Spara nyckeln på ett säkert ställe — om du förlorar den låses alla objekt som krypterats med den permanent. Bucketeer kan inte återskapa förlorade nycklar. Objekt som redan finns i bucketen förblir okrypterade, och om du senare tar bort en nyckel dekrypteras inte objekt som krypterats med den."
           }
         }
       }
@@ -33790,121 +33790,121 @@
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Přidejte klíč pro transparentní šifrování každého nahrání do jednoho z vašich bucketů. Stahování ze stejného bucketu se dešifruje za běhu."
+            "value" : "Přidejte klíč pro transparentní šifrování každého nahrání do jednoho z vašich bucketů. Stahování ze stejného bucketu se dešifruje za běhu. Objekty, které už v bucketu jsou, zůstanou nešifrované, a pozdější odebrání klíče objekty jím zašifrované nedešifruje."
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tilføj en nøgle for transparent at kryptere alle uploads til en af dine buckets. Downloads fra samme bucket dekrypteres løbende."
+            "value" : "Tilføj en nøgle for transparent at kryptere alle uploads til en af dine buckets. Downloads fra samme bucket dekrypteres løbende. Objekter, der allerede ligger i bucketen, forbliver ukrypterede, og fjerner du senere en nøgle, dekrypteres objekter krypteret med den ikke."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lege einen Schlüssel an, um jeden Upload in einen deiner Buckets transparent zu verschlüsseln. Downloads aus demselben Bucket werden automatisch entschlüsselt."
+            "value" : "Lege einen Schlüssel an, um jeden Upload in einen deiner Buckets transparent zu verschlüsseln. Downloads aus demselben Bucket werden automatisch entschlüsselt. Bereits vorhandene Objekte im Bucket bleiben unverschlüsselt, und das spätere Entfernen eines Schlüssels entschlüsselt die damit verschlüsselten Objekte nicht."
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Προσθέστε ένα κλειδί για διαφανή κρυπτογράφηση κάθε μεταφόρτωσης σε ένα από τα buckets σας. Οι λήψεις από το ίδιο bucket αποκρυπτογραφούνται αυτόματα."
+            "value" : "Προσθέστε ένα κλειδί για διαφανή κρυπτογράφηση κάθε μεταφόρτωσης σε ένα από τα buckets σας. Οι λήψεις από το ίδιο bucket αποκρυπτογραφούνται αυτόματα. Τα αντικείμενα που υπάρχουν ήδη στο bucket παραμένουν μη κρυπτογραφημένα, και η μεταγενέστερη αφαίρεση ενός κλειδιού δεν αποκρυπτογραφεί τα αντικείμενα που κρυπτογραφήθηκαν με αυτό."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add a key to encrypt every upload to one of your buckets transparently. Downloads from the same bucket are decrypted on the fly."
+            "value" : "Add a key to encrypt every upload to one of your buckets transparently. Downloads from the same bucket are decrypted on the fly. Existing objects in the bucket stay unencrypted, and removing a key later does not decrypt objects encrypted with it."
           }
         },
         "en-GB" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add a key to encrypt every upload to one of your buckets transparently. Downloads from the same bucket are decrypted on the fly."
+            "value" : "Add a key to encrypt every upload to one of your buckets transparently. Downloads from the same bucket are decrypted on the fly. Existing objects in the bucket stay unencrypted, and removing a key later does not decrypt objects encrypted with it."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añade una clave para cifrar de forma transparente cada subida a uno de tus buckets. Las descargas se descifran sobre la marcha."
+            "value" : "Añade una clave para cifrar de forma transparente cada subida a uno de tus buckets. Las descargas se descifran sobre la marcha. Los objetos que ya están en el bucket siguen sin cifrar, y eliminar una clave más adelante no descifra los objetos cifrados con ella."
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lisää avain, niin kaikki lähetykset johonkin bucketeistasi salataan automaattisesti. Lataukset samasta bucketista puretaan lennossa."
+            "value" : "Lisää avain, niin kaikki lähetykset johonkin bucketeistasi salataan automaattisesti. Lataukset samasta bucketista puretaan lennossa. Bucketissa jo olevat objektit jäävät salaamattomiksi, eikä avaimen poistaminen myöhemmin pura sillä salattuja objekteja."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajoutez une clé pour chiffrer chaque téléversement vers un de vos buckets de manière transparente. Les téléchargements sont déchiffrés à la volée."
+            "value" : "Ajoutez une clé pour chiffrer chaque téléversement vers un de vos buckets de manière transparente. Les téléchargements sont déchiffrés à la volée. Les objets déjà présents dans le bucket restent non chiffrés, et supprimer une clé par la suite ne déchiffre pas les objets chiffrés avec elle."
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Adjon hozzá egy kulcsot, és a Bucketeer automatikusan titkosít minden feltöltést az adott bucketbe. Az ugyanabból a bucketből letöltött fájlokat menet közben visszafejti."
+            "value" : "Adjon hozzá egy kulcsot, és a Bucketeer automatikusan titkosít minden feltöltést az adott bucketbe. Az ugyanabból a bucketből letöltött fájlokat menet közben visszafejti. A bucketben már meglévő objektumok titkosítatlanok maradnak, és egy kulcs későbbi eltávolítása nem fejti vissza a vele titkosított objektumokat."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aggiungi una chiave per crittografare in modo trasparente ogni caricamento verso uno dei tuoi bucket. I download dallo stesso bucket vengono decrittografati al volo."
+            "value" : "Aggiungi una chiave per crittografare in modo trasparente ogni caricamento verso uno dei tuoi bucket. I download dallo stesso bucket vengono decrittografati al volo. Gli oggetti già presenti nel bucket restano non crittografati e rimuovere una chiave in seguito non decrittografa gli oggetti crittografati con essa."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "鍵を追加すると、対象のバケットへのアップロードがすべて自動的に暗号化されます。同じバケットからのダウンロードはその場で復号されます。"
+            "value" : "鍵を追加すると、対象のバケットへのアップロードがすべて自動的に暗号化されます。同じバケットからのダウンロードはその場で復号されます。バケット内の既存のオブジェクトは暗号化されないままです。また、後で鍵を削除しても、その鍵で暗号化されたオブジェクトは復号されません。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "키를 추가하면 해당 버킷으로의 모든 업로드가 자동으로 암호화됩니다. 같은 버킷에서 다운로드할 때는 즉시 복호화됩니다."
+            "value" : "키를 추가하면 해당 버킷으로의 모든 업로드가 자동으로 암호화됩니다. 같은 버킷에서 다운로드할 때는 즉시 복호화됩니다. 버킷에 이미 있는 객체는 암호화되지 않은 상태로 남으며, 나중에 키를 제거해도 해당 키로 암호화된 객체는 복호화되지 않습니다."
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Legg til en nøkkel for å kryptere alle opplastinger til en av bucketene dine transparent. Nedlastinger fra samme bucket dekrypteres fortløpende."
+            "value" : "Legg til en nøkkel for å kryptere alle opplastinger til en av bucketene dine transparent. Nedlastinger fra samme bucket dekrypteres fortløpende. Objekter som allerede ligger i bucketen, forblir ukrypterte, og fjerner du en nøkkel senere, dekrypteres ikke objekter som er kryptert med den."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Voeg een sleutel toe om elke upload naar een van je buckets transparant te versleutelen. Downloads uit dezelfde bucket worden direct ontsleuteld."
+            "value" : "Voeg een sleutel toe om elke upload naar een van je buckets transparant te versleutelen. Downloads uit dezelfde bucket worden direct ontsleuteld. Objecten die al in de bucket staan, blijven onversleuteld, en een sleutel later verwijderen ontsleutelt de hiermee versleutelde objecten niet."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dodaj klucz, aby automatycznie szyfrować wszystko, co wysyłasz do wybranego bucketu. Pobrania z tego bucketu są odszyfrowywane na bieżąco."
+            "value" : "Dodaj klucz, aby automatycznie szyfrować wszystko, co wysyłasz do wybranego bucketu. Pobrania z tego bucketu są odszyfrowywane na bieżąco. Obiekty, które już są w buckecie, pozostają niezaszyfrowane, a późniejsze usunięcie klucza nie odszyfrowuje obiektów zaszyfrowanych tym kluczem."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Adicione uma chave para criptografar de forma transparente cada upload em um dos seus buckets. Downloads do mesmo bucket são descriptografados na hora."
+            "value" : "Adicione uma chave para criptografar de forma transparente cada upload em um dos seus buckets. Downloads do mesmo bucket são descriptografados na hora. Os objetos que já estão no bucket continuam sem criptografia, e remover uma chave depois não descriptografa os objetos criptografados com ela."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Adicione uma chave para encriptar de forma transparente todos os carregamentos para um dos seus buckets. Os descarregamentos do mesmo bucket são desencriptados na hora."
+            "value" : "Adicione uma chave para encriptar de forma transparente todos os carregamentos para um dos seus buckets. Os descarregamentos do mesmo bucket são desencriptados na hora. Os objetos que já estão no bucket continuam sem encriptação, e remover uma chave mais tarde não desencripta os objetos encriptados com ela."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Добавьте ключ, чтобы прозрачно шифровать каждую загрузку в один из ваших бакетов. Скачивания из того же бакета расшифровываются на лету."
+            "value" : "Добавьте ключ, чтобы прозрачно шифровать каждую загрузку в один из ваших бакетов. Скачивания из того же бакета расшифровываются на лету. Объекты, уже находящиеся в бакете, остаются незашифрованными, а последующее удаление ключа не расшифровывает зашифрованные им объекты."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lägg till en nyckel för att transparent kryptera varje uppladdning till en av dina buckets. Hämtningar från samma bucket dekrypteras direkt."
+            "value" : "Lägg till en nyckel för att transparent kryptera varje uppladdning till en av dina buckets. Hämtningar från samma bucket dekrypteras direkt. Objekt som redan finns i bucketen förblir okrypterade, och om du senare tar bort en nyckel dekrypteras inte objekt som krypterats med den."
           }
         }
       }
@@ -90405,6 +90405,381 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Den lokala mappen är inte längre tillgänglig. De återstående filerna raderades inte."
+          }
+        }
+      }
+    },
+    "encryption.badge.label" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encrypted"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Šifrováno"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Krypteret"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verschlüsselt"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Κρυπτογραφημένο"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encrypted"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cifrado"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salattu"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chiffré"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Titkosított"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crittografato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暗号化済み"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "암호화됨"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kryptert"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versleuteld"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zaszyfrowane"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Criptografado"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encriptado"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Зашифровано"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Krypterad"
+          }
+        }
+      }
+    },
+    "encryption.badge.bucket.help" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This bucket has an encryption key on this Mac. New uploads are encrypted; objects uploaded before the key was added stay unencrypted."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tento bucket má na tomto Macu šifrovací klíč. Nová nahrání se šifrují; objekty nahrané před přidáním klíče zůstávají nešifrované."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne bucket har en krypteringsnøgle på denne Mac. Nye uploads krypteres; objekter, der blev uploadet, før nøglen blev tilføjet, forbliver ukrypterede."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für diesen Bucket gibt es auf diesem Mac einen Verschlüsselungsschlüssel. Neue Uploads werden verschlüsselt; Objekte, die vor dem Anlegen des Schlüssels hochgeladen wurden, bleiben unverschlüsselt."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αυτό το bucket έχει κλειδί κρυπτογράφησης σε αυτό το Mac. Οι νέες μεταφορτώσεις κρυπτογραφούνται· τα αντικείμενα που μεταφορτώθηκαν πριν από την προσθήκη του κλειδιού παραμένουν μη κρυπτογραφημένα."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This bucket has an encryption key on this Mac. New uploads are encrypted; objects uploaded before the key was added stay unencrypted."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este bucket tiene una clave de cifrado en este Mac. Las nuevas subidas se cifran; los objetos subidos antes de añadir la clave siguen sin cifrar."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tällä bucketilla on salausavain tällä Macilla. Uudet lähetykset salataan; ennen avaimen lisäämistä lähetetyt objektit jäävät salaamattomiksi."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce bucket possède une clé de chiffrement sur ce Mac. Les nouveaux téléversements sont chiffrés ; les objets téléversés avant l’ajout de la clé restent non chiffrés."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ehhez a buckethez titkosítási kulcs tartozik ezen a Macen. Az új feltöltések titkosítva kerülnek fel; a kulcs hozzáadása előtt feltöltött objektumok titkosítatlanok maradnak."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo bucket ha una chiave di crittografia su questo Mac. I nuovi caricamenti vengono crittografati; gli oggetti caricati prima dell’aggiunta della chiave restano non crittografati."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このバケットにはこの Mac 上に暗号化鍵があります。新しいアップロードは暗号化されますが、鍵を追加する前にアップロードされたオブジェクトは暗号化されないままです。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 버킷에는 이 Mac에 암호화 키가 있습니다. 새 업로드는 암호화되지만, 키를 추가하기 전에 업로드된 객체는 암호화되지 않은 상태로 남습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne bucketen har en krypteringsnøkkel på denne Macen. Nye opplastinger krypteres; objekter som ble lastet opp før nøkkelen ble lagt til, forblir ukrypterte."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze bucket heeft een versleutelingssleutel op deze Mac. Nieuwe uploads worden versleuteld; objecten die vóór het toevoegen van de sleutel zijn geüpload, blijven onversleuteld."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ten bucket ma klucz szyfrowania na tym Macu. Nowe przesyłane pliki są szyfrowane; obiekty przesłane przed dodaniem klucza pozostają niezaszyfrowane."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este bucket tem uma chave de criptografia neste Mac. Novos uploads são criptografados; objetos enviados antes de a chave ser adicionada continuam sem criptografia."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este bucket tem uma chave de encriptação neste Mac. Os novos carregamentos são encriptados; os objetos carregados antes de a chave ser adicionada continuam sem encriptação."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "У этого бакета есть ключ шифрования на этом Mac. Новые загрузки шифруются; объекты, загруженные до добавления ключа, остаются незашифрованными."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den här bucketen har en krypteringsnyckel på denna Mac. Nya uppladdningar krypteras; objekt som laddades upp innan nyckeln lades till förblir okrypterade."
+          }
+        }
+      }
+    },
+    "encryption.badge.upload.help" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This upload is encrypted on this Mac before it is sent."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toto nahrání se před odesláním šifruje na tomto Macu."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne upload krypteres på denne Mac, før den sendes."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Upload wird auf diesem Mac verschlüsselt, bevor er gesendet wird."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αυτή η μεταφόρτωση κρυπτογραφείται σε αυτό το Mac πριν σταλεί."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This upload is encrypted on this Mac before it is sent."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta subida se cifra en este Mac antes de enviarse."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tämä lähetys salataan tällä Macilla ennen lähettämistä."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce téléversement est chiffré sur ce Mac avant son envoi."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ezt a feltöltést a Bucketeer elküldés előtt ezen a Macen titkosítja."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo caricamento viene crittografato su questo Mac prima dell’invio."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このアップロードは送信前にこの Mac 上で暗号化されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 업로드는 전송되기 전에 이 Mac에서 암호화됩니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denne opplastingen krypteres på denne Macen før den sendes."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze upload wordt op deze Mac versleuteld voordat hij wordt verzonden."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ten plik jest szyfrowany na tym Macu przed wysłaniem."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este upload é criptografado neste Mac antes de ser enviado."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este carregamento é encriptado neste Mac antes de ser enviado."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Эта загрузка шифруется на этом Mac перед отправкой."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den här uppladdningen krypteras på denna Mac innan den skickas."
           }
         }
       }

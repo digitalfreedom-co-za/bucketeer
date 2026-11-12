@@ -82,10 +82,16 @@ struct MenuBarContent: View {
                   : "arrow.down.circle")
                 .foregroundStyle(.secondary)
             VStack(alignment: .leading, spacing: 2) {
-                Text(task.key)
-                    .font(.caption)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
+                HStack(spacing: 4) {
+                    Text(task.key)
+                        .font(.caption)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                    if task.showsEncryptedMarker {
+                        EncryptedBadge(help: "encryption.badge.upload.help")
+                            .font(.caption2)
+                    }
+                }
                 if let fraction = task.state.progressFraction {
                     ProgressView(value: fraction)
                         .controlSize(.small)
