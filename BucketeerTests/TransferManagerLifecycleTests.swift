@@ -110,10 +110,10 @@ final class TransferManagerLifecycleTests: XCTestCase {
         } catch let error as CocoaError where error.code == .fileWriteNoPermission {}
         let missingMaterial = await manager.enqueueUpload(
             account: account, bucket: "stale", key: "missing-material.txt",
-            localURL: file, contentType: nil, destinationHadKey: false
+            localURL: file, contentType: nil, bypassEncryption: false, destinationHadKey: false
         )
         let missingMaterialState = await manager.awaitCompletion(id: missingMaterial)
-        XCTAssertEqual(missingMaterialState, .failed(message: EncryptionError.keyRemoved.localizedDescription))
+        XCTAssertEqual(missingMaterialState, TransferState.failed(message: EncryptionError.keyRemoved.localizedDescription))
     }
 
     func testUploadDistinguishesLookupFailureFromUnknownPreflightWithoutAKey() async throws {
