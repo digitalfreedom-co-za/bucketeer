@@ -75,6 +75,8 @@ Wenn du Objekte löschst, kann Bucketeer eine lokale Kopie auf diesem Mac behalt
 
 Unter **Einstellungen → Verschlüsselung** kannst du einen Schlüssel für einen Bucket erstellen. Ab dann wird jeder Upload in diesen Bucket auf deinem Mac verschlüsselt (AES-256-GCM), bevor er ihn verlässt, und Downloads werden beim Laden entschlüsselt. Der Schlüssel wird nur im macOS-Schlüsselbund auf diesem Mac gespeichert.
 
+Verschlüsselt wird nur der Dateiinhalt. Objektnamen, Pfade und Größen bleiben für deinen Speicheranbieter lesbar. Verschlüsselte Objekte werden als `application/octet-stream` gespeichert, damit der gespeicherte Inhaltstyp den ursprünglichen Dateityp nicht verrät.
+
 Wichtig: Wenn du den Schlüssel verlierst, kann niemand diese Objekte entschlüsseln, auch wir nicht. Verschlüsselte Buckets können in dieser Version von Bucketeer nicht im Finder eingebunden werden.
 
 ## Spotlight
