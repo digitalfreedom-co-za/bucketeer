@@ -499,9 +499,12 @@ actor TransferManager: Transferring {
         }
 
         let metadata = encrypted ? [BucketeerEnvelope.s3MetadataKey: "1"] : nil
+        // Ciphertext, freshly sealed or restored from the trash, must not
+        // carry the plaintext's MIME type.
+        let contentType = encrypted ? BucketeerEnvelope.contentType : item.contentType
 
         if item.account.provider.family == .azureBlob {
-            await performAzureUpload(item: item, encrypted: encrypted)
+            await performAzureUpload(item: item, contentType: contentType, encrypted: encrypted)
             return
         }
 
@@ -534,7 +537,7 @@ actor TransferManager: Transferring {
                     bucket: item.task.bucket,
                     key: item.task.key,
                     localURL: item.task.localURL,
-                    contentType: item.contentType,
+                    contentType: contentType,
                     metadata: metadata,
                     fileSize: total,
                     progress: { @Sendable [weak self] bytes in
@@ -553,7 +556,7 @@ actor TransferManager: Transferring {
                     fileAt: item.task.localURL,
                     bucket: item.task.bucket,
                     key: item.task.key,
-                    contentType: item.contentType,
+                    contentType: contentType,
                     precondition: item.precondition,
                     enforced: item.account.provider.conditionalRequests,
                     writer: SotoObjectWriter(s3: s3, metadata: metadata),
@@ -697,7 +700,7 @@ actor TransferManager: Transferring {
 
     // MARK: - Azure transports
 
-    private func performAzureUpload(item: QueuedItem, encrypted: Bool) async {
+    private func performAzureUpload(item: QueuedItem, contentType: String?, encrypted: Bool) async {
         let id = item.task.id
         guard let azure else {
             setState(
@@ -713,7 +716,7 @@ actor TransferManager: Transferring {
                 container: item.task.bucket,
                 blob: item.task.key,
                 localURL: item.task.localURL,
-                contentType: item.contentType,
+                contentType: contentType,
                 encrypted: encrypted,
                 precondition: item.precondition,
                 progress: { @Sendable [weak self] bytes, totalBytes in

@@ -25,11 +25,12 @@ final class EncryptionRoutingTests: XCTestCase {
         let file = folder.appendingPathComponent("source")
         try plaintext.write(to: file)
         let id = await fixture.manager.enqueueUpload(account: account, bucket: fixture.bucket, key: "object",
-                                                      localURL: file, contentType: nil)
+                                                      localURL: file, contentType: "image/png")
         let state = await fixture.manager.awaitCompletion(id: id)
         XCTAssertEqual(state, .completed)
         XCTAssertEqual(RoutingAzureStub.uploaded(bucket: fixture.bucket), plaintext)
         XCTAssertEqual(RoutingAzureStub.uploadedMarker(bucket: fixture.bucket), false)
+        XCTAssertEqual(RoutingAzureStub.uploadedContentType(bucket: fixture.bucket), "image/png")
     }
 
     func testUploadWithKeySendsAnAuthenticatedEnvelope() async throws {
@@ -38,9 +39,11 @@ final class EncryptionRoutingTests: XCTestCase {
         let file = folder.appendingPathComponent("source")
         try plaintext.write(to: file)
         let id = await fixture.manager.enqueueUpload(account: account, bucket: fixture.bucket, key: "object",
-                                                      localURL: file, contentType: nil)
+                                                      localURL: file, contentType: "image/png")
         let state = await fixture.manager.awaitCompletion(id: id)
         XCTAssertEqual(state, .completed)
+        XCTAssertEqual(RoutingAzureStub.uploadedContentType(bucket: fixture.bucket), "application/octet-stream",
+                       "Ciphertext must not carry the plaintext's MIME type")
         let bytes = try XCTUnwrap(RoutingAzureStub.uploaded(bucket: fixture.bucket))
         XCTAssertEqual(try XCTUnwrap(bytes.dropFirst(4).first), 0x02)
         XCTAssertEqual(try BucketeerEnvelope.open(envelope: bytes, key: fixture.key), plaintext)
@@ -138,6 +141,7 @@ final class EncryptionRoutingTests: XCTestCase {
         XCTAssertEqual(RoutingAzureStub.uploaded(bucket: fixture.bucket), envelope,
                        "Restore must bypass encryption, preserving the original envelope byte for byte")
         XCTAssertEqual(RoutingAzureStub.uploadedMarker(bucket: fixture.bucket), true)
+        XCTAssertEqual(RoutingAzureStub.uploadedContentType(bucket: fixture.bucket), "application/octet-stream")
     }
 
     private var noKeyMessage: String {
@@ -185,6 +189,7 @@ private final class RoutingAzureStub: URLProtocol {
         var bytes: Data
         var marked: Bool
         var uploaded: Data?
+        var uploadedContentType: String?
     }
 
     private static let lock = NSLock()
@@ -201,6 +206,9 @@ private final class RoutingAzureStub: URLProtocol {
             return object.marked
         }
     }
+    static func uploadedContentType(bucket: String) -> String? {
+        lock.withLock { objects[bucket]?.uploadedContentType }
+    }
     static func remove(bucket: String) { _ = lock.withLock { objects.removeValue(forKey: bucket) } }
 
     override class func canInit(with request: URLRequest) -> Bool { true }
@@ -214,7 +222,8 @@ private final class RoutingAzureStub: URLProtocol {
             if request.httpMethod == "PUT" {
                 guard request.url?.query == nil else { return (400, [:], Data()) }
                 let marked = request.value(forHTTPHeaderField: "x-ms-meta-" + BucketeerEnvelope.azureMetadataKey) == "1"
-                Self.objects[bucket] = Object(bytes: body, marked: marked, uploaded: body)
+                Self.objects[bucket] = Object(bytes: body, marked: marked, uploaded: body,
+                                              uploadedContentType: request.value(forHTTPHeaderField: "Content-Type"))
                 return (201, [:], Data())
             }
             guard let object = Self.objects[bucket], ["HEAD", "GET"].contains(request.httpMethod) else {
