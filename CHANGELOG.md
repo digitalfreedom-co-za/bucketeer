@@ -13,6 +13,15 @@ before that is internal phase work on the `development` branch.
 
 ## [Unreleased] — `development` branch
 
+### Encryption content type (#45)
+- Encrypted uploads, including trash restores of encrypted objects,
+  are stored as `application/octet-stream` instead of the plaintext's
+  MIME type, on S3 and Azure. Unencrypted uploads keep their type.
+- An interrupted encrypted restore that was started with the old
+  type is not resumed: its multipart upload is aborted and restarted.
+- README, in-app help and App Store copy state that object names,
+  keys (paths) and sizes are not encrypted.
+
 ### Encryption (#39)
 - Encrypted uploads and downloads of large files no longer load the
   whole file into memory. New objects use envelope version 0x02:

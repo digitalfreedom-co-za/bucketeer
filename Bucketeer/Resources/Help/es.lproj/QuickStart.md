@@ -75,6 +75,8 @@ Cuando eliminas objetos, Bucketeer puede conservar una copia local en este Mac (
 
 En **Ajustes → Cifrado** puedes crear una clave para un bucket. A partir de entonces, cada subida a ese bucket se cifra en tu Mac (AES-256-GCM) antes de salir, y las descargas se descifran sobre la marcha. La clave se guarda en el llavero de macOS solo en este Mac.
 
+Solo se cifra el contenido de los archivos. Los nombres, las rutas y los tamaños de los objetos siguen siendo legibles para tu proveedor de almacenamiento. Los objetos cifrados se guardan como `application/octet-stream`, de modo que el tipo de contenido guardado no revela el tipo de archivo original.
+
 Importante: si pierdes la clave, nadie puede descifrar esos objetos, ni siquiera nosotros. En esta versión de Bucketeer, los buckets cifrados no se pueden montar en el Finder.
 
 ## Spotlight

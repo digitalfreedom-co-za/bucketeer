@@ -32,7 +32,11 @@ for the development history.
   the technical preview only appears in Debug builds
 - **Client-side encryption per bucket**: AES-256-GCM on the Mac before
   upload, decryption on download, key kept in the Keychain and
-  optionally exportable as a passphrase-protected `.bktkeys` backup
+  optionally exportable as a passphrase-protected `.bktkeys` backup.
+  Only file contents are encrypted: object names, keys (paths) and
+  sizes stay readable to the provider. Encrypted objects are stored as
+  `application/octet-stream`, so their Content-Type does not reveal the
+  original file type
 
 ### Browsing and transfers
 

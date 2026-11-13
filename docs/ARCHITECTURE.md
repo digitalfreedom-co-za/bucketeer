@@ -1126,6 +1126,14 @@ which reads part by part and aborts the upload on failure. Previews
 and the trash restore check authenticate segment by segment without
 writing plaintext.
 
+Every envelope upload, a fresh seal or a trash restore of a cached
+envelope, is stored with `Content-Type: application/octet-stream`
+(`x-ms-blob-content-type` on Azure block-list commits), so the stored
+type does not reveal the plaintext's file type (#45). Only the object
+body is encrypted: object names, keys (paths) and sizes stay plaintext,
+and an envelope is `51 + P + 16·n` bytes long (`36 + P` for 0x01), so
+the plaintext size can be derived from it.
+
 ---
 
 ## 7. Provisioning and signing topology

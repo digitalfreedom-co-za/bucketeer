@@ -75,6 +75,8 @@ Když mažete objekty, Bucketeer může ponechat místní kopii na tomto Macu (*
 
 V **Nastavení → Šifrování** můžete pro bucket vytvořit klíč. Od té chvíle se každý soubor nahrávaný do tohoto bucketu zašifruje na vašem Macu (AES-256-GCM) dříve, než ho opustí, a stahované soubory se průběžně dešifrují. Klíč se ukládá do klíčenky macOS pouze na tomto Macu.
 
+Šifruje se pouze obsah souborů. Názvy objektů, cesty a velikosti zůstávají pro vašeho poskytovatele úložiště čitelné. Zašifrované objekty se ukládají jako `application/octet-stream`, takže uložený typ obsahu neprozrazuje původní typ souboru.
+
 Důležité: pokud klíč ztratíte, nikdo tyto objekty nedešifruje, ani my. Zašifrované buckety nelze v této verzi aplikace Bucketeer připojit ve Finderu.
 
 ## Spotlight

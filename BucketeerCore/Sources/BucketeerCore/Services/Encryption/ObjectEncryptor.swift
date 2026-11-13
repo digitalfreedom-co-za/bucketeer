@@ -34,6 +34,9 @@ public enum BucketeerEnvelope {
 
     public static let s3MetadataKey = "bucketeer-enc"
     public static let azureMetadataKey = "bucketeerenc"
+    /// Stored Content-Type of every envelope, so the object does not
+    /// reveal the plaintext's file type.
+    public static let contentType = "application/octet-stream"
 
     public static func isMarked(_ metadata: [String: String]?, name: String = s3MetadataKey) -> Bool {
         metadata?.contains { $0.key.lowercased() == name && $0.value == "1" } == true

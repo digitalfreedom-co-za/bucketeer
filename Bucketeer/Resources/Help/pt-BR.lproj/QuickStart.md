@@ -75,6 +75,8 @@ Quando você exclui objetos, o Bucketeer pode manter uma cópia local neste Mac 
 
 Em **Ajustes → Criptografia** você pode criar uma chave para um bucket. A partir daí, cada upload para esse bucket é criptografado no seu Mac (AES-256-GCM) antes de sair, e os downloads são descriptografados durante a transferência. A chave fica armazenada nas Chaves do macOS somente neste Mac.
 
+Somente o conteúdo dos arquivos é criptografado. Nomes, caminhos e tamanhos dos objetos continuam legíveis para o seu provedor de armazenamento. Objetos criptografados são armazenados como `application/octet-stream`, para que o tipo de conteúdo armazenado não revele o tipo de arquivo original.
+
 Importante: se você perder a chave, ninguém consegue descriptografar esses objetos, nem nós. Nesta versão do Bucketeer, buckets criptografados não podem ser montados no Finder.
 
 ## Spotlight

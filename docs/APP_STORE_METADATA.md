@@ -55,7 +55,8 @@ side encryption). Hardware-key unlock is deferred to v1.1.
 > - **Client-side AES-256-GCM encryption per bucket** with keys in
 >   your local Keychain, optionally exportable as a passphrase-protected
 >   backup. Encrypted uploads are transparently sealed
->   on the way out and unsealed on the way back in
+>   on the way out and unsealed on the way back in. File contents are
+>   encrypted; object names, paths and sizes are not
 > - **Soft-delete trash** with one-click restore from a local cache
 >   you control (default cap 100 MiB per object, 30-day retention)
 > - **Bucket dashboard** with object count, total size, top-10
@@ -145,7 +146,8 @@ and the month has been verified against the App Store release date.
 >   plus watch folders that auto-upload on every change
 > - Client-side AES-256-GCM encryption per bucket — keys live in
 >   your Keychain and can optionally be exported as a
->   passphrase-protected backup
+>   passphrase-protected backup. File contents are encrypted; object
+>   names, paths and sizes are not
 > - Soft-delete trash with one-click restore from a local cache
 > - Bucket dashboard, version browser, metadata + tags editor,
 >   lifecycle / CORS / policy viewer

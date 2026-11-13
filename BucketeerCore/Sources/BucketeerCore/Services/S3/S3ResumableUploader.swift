@@ -31,6 +31,10 @@ public struct S3ResumableUploader: Sendable {
     public static let resumableThreshold: Int64 = 50 * 1024 * 1024
     /// Preferred part size; larger files get larger parts.
     public static let partSize: Int = S3FileUpload.defaultPartSize
+    /// Marks checkpoints of envelope uploads, which are initiated as
+    /// `application/octet-stream`. Version 1 (`:bucketeer-enc=1`) uploads
+    /// carry the plaintext's MIME type and must restart, not resume.
+    static let envelopeFingerprintSuffix = ":bucketeer-enc=2"
 
     public let factory: S3ClientFactory
     public let checkpointStore: any CheckpointStoring
@@ -231,10 +235,11 @@ public struct S3ResumableUploader: Sendable {
         metadata: [String: String]? = nil,
         s3: S3
     ) async throws -> MultipartUploadCheckpoint {
-        // Initiation fixes metadata for the upload's lifetime. Do not resume
-        // an older unmarked upload when restoring a marked cached envelope.
+        // Initiation fixes metadata and Content-Type for the upload's
+        // lifetime. Do not resume an older unmarked upload when restoring
+        // a marked cached envelope.
         let fingerprint = MultipartUploadCheckpoint.fingerprint(for: localURL)
-            + (BucketeerEnvelope.isMarked(metadata) ? ":bucketeer-enc=1" : "")
+            + (BucketeerEnvelope.isMarked(metadata) ? Self.envelopeFingerprintSuffix : "")
         if let existing = try await checkpointStore.find(
             accountID: account.id,
             bucket: bucket,
