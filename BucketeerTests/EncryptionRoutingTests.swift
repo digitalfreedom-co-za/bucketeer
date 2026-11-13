@@ -177,6 +177,28 @@ final class EncryptionRoutingTests: XCTestCase {
         }
     }
 
+    /// Fresh seals skip the resumable uploader, so `S3FileUpload` initiates
+    /// the multipart upload itself.
+    func testS3MultipartInitiationStoresFreshEnvelopesAsOctetStream() async throws {
+        let fixture = try await makeFixture(hasKey: true, account: s3Account)
+        defer { fixture.session.invalidateAndCancel() }
+        let file = folder.appendingPathComponent("source")
+        XCTAssertTrue(FileManager.default.createFile(atPath: file.path, contents: nil))
+        let handle = try FileHandle(forWritingTo: file)
+        try handle.truncate(atOffset: UInt64(S3FileUpload.defaultPartSize) + 1)
+        try handle.close()
+
+        let id = await fixture.manager.enqueueUpload(account: s3Account, bucket: fixture.bucket, key: "object",
+                                                      localURL: file, contentType: "image/png", bypassEncryption: false)
+        let state = await fixture.manager.awaitCompletion(id: id)
+        XCTAssertEqual(state, .completed)
+        let requests = fixture.s3.requests
+        let initiation = try XCTUnwrap(requests.first { $0.method == .POST && $0.query.keys.contains("uploads") })
+        XCTAssertEqual(initiation.contentType, "application/octet-stream")
+        XCTAssertTrue(initiation.marked)
+        XCTAssertTrue(requests.contains { $0.method == .POST && $0.uploadID == RecordingS3HTTPClient.uploadID })
+    }
+
     /// A restore resumed from a checkpoint initiated before envelopes were
     /// stored as octet-stream would keep the plaintext's MIME type.
     func testResumableRestoreRestartsAPreOctetStreamCheckpoint() async throws {
