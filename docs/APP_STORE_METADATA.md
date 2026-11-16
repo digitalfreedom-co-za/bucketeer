@@ -160,6 +160,7 @@ and the month has been verified against the App Store release date.
 > - 14-day Pro trial, then €14.99 one-time purchase for lifetime Pro
 >   — Family Sharing included
 > - Privacy Policy updated to version 1.0.3
+> - End User License Agreement updated to version 1.0.1
 
 ## Support URL
 

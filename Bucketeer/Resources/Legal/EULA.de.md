@@ -1,4 +1,4 @@
-<!-- doc-id: BUCKETEER_EULA | lang: de | area: app | version: 1.0.0 | valid-from: 2026-11-02 | translation-of: BUCKETEER_EULA en 1.0.0 (EULA.md) | review: not counsel-reviewed; AI legal review (Anwalt role) completed 2026-11-09, not a licensed counsel review | owner: Marcel R. G. Berger -->
+<!-- doc-id: BUCKETEER_EULA | lang: de | area: app | version: 1.0.1 | valid-from: 2026-11-16 | translation-of: BUCKETEER_EULA en 1.0.1 (EULA.md) | review: not counsel-reviewed; AI legal review (Anwalt role) completed 2026-11-09, not a licensed counsel review | owner: Marcel R. G. Berger -->
 # Endbenutzer-Lizenzvertrag
 
 *Die Bedingungen, zu denen du Bucketeer für macOS installieren und nutzen darfst.*
@@ -8,7 +8,7 @@
 **Herausgeber**: DigitalFreedom, eine Marke der DigitalFreedom Global LLC,
 30 N Gould St, Ste N, Sheridan, WY 82801, United States
 **Kontakt**: hello@digitalfreedom.co.za · https://digitalfreedom.co.za
-**Gültig ab**: 2. November 2026
+**Gültig ab**: 16. November 2026
 
 ---
 
@@ -34,11 +34,13 @@ Wenn du nicht zustimmst, installiere und nutze die App nicht.
 
 ### 1.1 Weltweiter Geltungsbereich
 
-Die App ist in jedem Storefront des Mac App Store erhältlich. Dieser
-Vertrag gilt für alle Nutzer, unabhängig davon, wo sie die App
-herunterladen oder nutzen. Zwingende Verbraucherschutzrechte und andere
-gesetzliche Rechte deines Wohnsitzlandes bleiben unberührt und gehen vor,
-soweit sie einen weitergehenden Schutz bieten.
+Die App wird über den Mac App Store vertrieben. Die App wird nicht in
+den Storefronts für Festlandchina, Ägypten, Saudi-Arabien, Russland und
+Frankreich angeboten. Dieser Vertrag gilt für alle Nutzer, unabhängig
+davon, wo sie die App herunterladen oder nutzen. Zwingende
+Verbraucherschutzrechte und andere gesetzliche Rechte deines
+Wohnsitzlandes bleiben unberührt und gehen vor, soweit sie einen
+weitergehenden Schutz bieten.
 
 ---
 
