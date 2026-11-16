@@ -159,7 +159,7 @@ and the month has been verified against the App Store release date.
 > - Bandwidth throttle, menubar background mode (Pro)
 > - 14-day Pro trial, then €14.99 one-time purchase for lifetime Pro
 >   — Family Sharing included
-> - Privacy Policy updated to version 1.0.2
+> - Privacy Policy updated to version 1.0.3
 
 ## Support URL
 
