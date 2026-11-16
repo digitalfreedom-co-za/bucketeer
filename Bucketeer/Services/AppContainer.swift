@@ -42,8 +42,10 @@ final class AppContainer {
         var s3Browser: (any S3Browsing)?
         /// `nil` derives the entitlement from the trial and StoreKit.
         var entitlementState: EntitlementManager.State?
+        #if DEBUG
         /// `nil` probes the real smart-card readers via CryptoTokenKit.
         var hardwareKeyDiscovery: HardwareKeyAvailability.Discovery?
+        #endif
         /// Launch work: StoreKit, Keychain migration, mount refresh,
         /// sync/auto-tag start, purges and scavengers.
         var startsBackgroundWork = true
@@ -105,9 +107,12 @@ final class AppContainer {
     let encryptionKeyStore: any EncryptionKeyStoring
     let encryptionKeysViewModel: EncryptionKeysViewModel
     let bucketEncryptionGate: BucketEncryptionGate
+    #if DEBUG
     /// Phase 13.16 — hardware-key (CryptoTokenKit) unlock toggle.
+    /// Debug-only until v1.1 (#33).
     let hardwareKeySettings: HardwareKeySettings
     let hardwareKeyAvailability: HardwareKeyAvailability
+    #endif
     /// Multicast broker around the
     /// single `SyncEngine.statuses` AsyncStream so the sync list
     /// view model and the new sync-job detail window can both
@@ -445,10 +450,12 @@ final class AppContainer {
             }
         }
 
-        // Phase 13.16 — hardware-key unlock.
+        #if DEBUG
+        // Phase 13.16 — hardware-key unlock. Debug-only until v1.1 (#33).
         self.hardwareKeySettings = HardwareKeySettings()
         self.hardwareKeyAvailability = configuration.hardwareKeyDiscovery.map(HardwareKeyAvailability.init(discover:))
             ?? HardwareKeyAvailability()
+        #endif
 
         // Phase 14 — multicast broker for SyncEngine.statuses.
         // Constructed above so the sync list view model can take

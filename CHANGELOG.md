@@ -39,6 +39,15 @@ before that is internal phase work on the `development` branch.
   never match a freshly sealed file and stranded parts on the server.
 - Byte-level format of both versions: `docs/ARCHITECTURE.md` § 6.4.
 
+### Hardware-key preview out of Release (#33)
+- `HardwareKeyAvailability`, `HardwareKeySettings`, `HardwareKeyView`
+  and the matching `AppContainer` properties compile only in Debug, so
+  Release builds neither link CryptoTokenKit nor create the preview.
+- The preview's strings moved to `HardwareKey.xcstrings`, which the
+  Release configuration excludes from the app bundle.
+- The privacy manifest and the open-source notices no longer list the
+  hardware-key preference or CryptoTokenKit.
+
 ### Release review (2026-11-12)
 - Settings → Security (hardware-key technical preview) is hidden in
   Release builds until v1.1 (#26).

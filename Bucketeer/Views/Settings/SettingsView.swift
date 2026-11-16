@@ -9,7 +9,11 @@ import SwiftUI
 import AppKit
 
 enum SettingsTab: Hashable {
-    case general, transfers, rules, encryption, security, pro
+    case general, transfers, rules, encryption, pro
+    #if DEBUG
+    /// Hardware-key preview, Debug-only until v1.1 (#33).
+    case security
+    #endif
 }
 
 /// Settings shell — General (incl. menubar toggle, gated by Pro) plus

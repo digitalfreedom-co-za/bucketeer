@@ -641,6 +641,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readwrite;
+				EXCLUDED_SOURCE_FILE_NAMES = HardwareKey.xcstrings;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Bucketeer/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Bucketeer;
