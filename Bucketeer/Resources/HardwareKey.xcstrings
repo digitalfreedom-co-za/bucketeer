@@ -123,6 +123,12 @@
             "state" : "translated",
             "value" : "Aktivera upplåsning med maskinvarunyckel"
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Donanım anahtarıyla kilit açmayı etkinleştir"
+          }
         }
       }
     },
@@ -247,6 +253,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Föredragen token"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tercih edilen belirteç"
           }
         }
       }
@@ -373,6 +385,12 @@
             "state" : "translated",
             "value" : "Teknisk förhandsversion — spärren för att visa hemligheter använder fortfarande Touch ID. Autentisering med maskinvarunyckel kommer i v1.1 efter en bredare enhetsvalidering."
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teknik önizleme: gizli bilgiyi gösterme adımı hâlâ Touch ID kullanıyor. Donanım anahtarıyla kimlik doğrulama, daha geniş bir cihaz doğrulama sürecinden sonra v1.1'de gelecek."
+          }
         }
       }
     },
@@ -497,6 +515,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Inställningar"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tercihler"
           }
         }
       }
@@ -623,6 +647,12 @@
             "state" : "translated",
             "value" : "Identifierad maskinvara"
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Algılanan donanım"
+          }
         }
       }
     },
@@ -747,6 +777,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Valfri token"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Herhangi bir belirteç"
           }
         }
       }
@@ -873,6 +909,12 @@
             "state" : "translated",
             "value" : "Kort isatt"
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kart takılı"
+          }
         }
       }
     },
@@ -997,6 +1039,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tom plats"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Boş yuva"
           }
         }
       }
@@ -1123,6 +1171,12 @@
             "state" : "translated",
             "value" : "CryptoTokenKit rapporterar inga platser. macOS kanske inte har läst in en drivrutin — prova att koppla ur läsaren och sätta i den igen."
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CryptoTokenKit hiç yuva bildirmiyor. macOS bir aygıt sürücüsü yüklememiş olabilir; okuyucuyu çıkarıp yeniden takmayı dene."
+          }
         }
       }
     },
@@ -1247,6 +1301,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Läsare ansluten — sätt i din YubiKey eller ditt kort."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Okuyucu takılı: YubiKey'ini ya da kartını tak."
           }
         }
       }
@@ -1373,6 +1433,12 @@
             "state" : "translated",
             "value" : "Maskinvarunyckeln är redo."
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Donanım anahtarı hazır."
+          }
         }
       }
     },
@@ -1497,6 +1563,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ingen läsare hittades. Anslut en YubiKey eller en smartkortsläsare."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Okuyucu algılanmadı. Bir YubiKey ya da akıllı kart okuyucu tak."
           }
         }
       }
