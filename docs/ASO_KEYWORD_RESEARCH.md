@@ -10,6 +10,15 @@ Where data could not be obtained it is marked UNAVAILABLE with the
 reason. Priorities that are not backed by a measurement are labelled
 expert judgment.
 
+Update 2026-11-22: Marcello adopted the name, subtitle and keywords
+proposal of section 7 for en-US, en-GB and de-DE on 2026-11-22 11:04
+Europe/Rome (decision log #14) and added Turkish (tr) as a 21st store
+locale. The adopted texts and the Turkish drafts now live in
+[`APP_STORE_METADATA.md`](APP_STORE_METADATA.md), the single source
+for all store texts. No Astro measurement exists for the Turkish
+storefront. Still nothing written to App Store Connect; the write is
+ticket #22.
+
 ---
 
 ## 1. Platform
@@ -54,6 +63,11 @@ promotional text, description) for exactly these 20 store locales:
 cs, da, de-DE, el, en-GB, en-US, es-ES, fi, fr-FR, hu, it, ja, ko,
 nl-NL, no, pl, pt-BR, pt-PT, ru, sv.
 
+Update 2026-11-22: the store locale list is now 21, the 20 above plus
+tr (Turkish), decision log #14. Turkish is a store metadata locale
+only; the app UI stays at the 20 locales above. ASC held no tr
+localization on 2026-11-09; it is added during the #22 write.
+
 The launch checklist in [`APP_STORE_METADATA.md`](APP_STORE_METADATA.md)
 still lists "Add localised App Store descriptions" as open. The ASC
 drafts show this work was done in ASC directly, so the repo document
@@ -92,9 +106,11 @@ security (Keychain, client-side encryption, Touch ID, no analytics),
 automation (deep links, Spotlight, Shortcuts), Bucketeer Pro (mount,
 sync, cross-account copy, menu bar), pricing, source availability.
 
-### 4.2 All 20 ASC locales
+### 4.2 All 20 ASC locales (snapshot 2026-11-09)
 
-Name length is 26 in every locale (the name is not localized).
+Name length is 26 in every locale (the name is not localized). tr is
+not in ASC and therefore not in this table; its drafts are in
+`APP_STORE_METADATA.md`.
 
 | Locale | Subtitle | Subtitle chars | Keyword chars | Keyword bytes | Keyword terms also in name or subtitle |
 |---|---|---|---|---|---|
@@ -206,8 +222,9 @@ What is UNAVAILABLE:
   verified for this ticket).
 - Rankings for Bucketeer (no public listing).
 - Conversion figures (no public listing, no ASC analytics).
-- Measurements for the 18 storefronts other than US and DE. Only
-  these two were measured in this run.
+- Measurements for the 19 storefronts other than US and DE (18 at
+  capture time, plus Turkey since 2026-11-22). Only US and DE were
+  measured in this run.
 
 ### 6.2 Measured values
 
@@ -269,7 +286,8 @@ promotional text for users.
 
 ## 7. Recommended drafts
 
-Not live. Field lengths were checked with a script on 2026-11-09:
+Adopted for en-US, en-GB and de-DE on 2026-11-22 (decision log #14),
+see the update note at the top. Not live. Field lengths were checked with a script on 2026-11-09:
 characters for name and subtitle, UTF-8 bytes for keywords, and a
 check that no keyword repeats a word from the name, subtitle or the
 category names.
@@ -283,12 +301,12 @@ assumption.
 
 ### 7.1 en-US (and en-GB unchanged copy)
 
-| Field | Current ASC draft | Recommended draft | Length |
+| Field | Current ASC draft | Adopted 2026-11-22 | Length |
 |---|---|---|---|
 | Name | `Bucketeer – Object Storage` | `Bucketeer: S3 & Azure Storage` | 29 of 30 |
 | Subtitle | `S3 and Azure Blob file browser` | `Browse, sync & mount buckets` | 28 of 30 |
 | Keywords (approved: providers + generics + backup) | see 4.1 | `aws,cloud,object,blob,r2,b2,backblaze,wasabi,minio,upload,transfer,client,drive,encryption,backup` | 97 of 100 bytes |
-| Promotional text | 157 characters | keep the current ASC text | 157 of 170 |
+| Promotional text | 157 characters | keep the current ASC text (superseded 2026-11-22: the repo promotional text in `APP_STORE_METADATA.md` is the source) | 157 of 170 |
 
 Reasoning (expert judgment applied to the measured values):
 
@@ -317,7 +335,7 @@ Reasoning (expert judgment applied to the measured values):
 
 ### 7.2 de-DE
 
-| Field | Current ASC draft | Recommended draft | Length |
+| Field | Current ASC draft | Adopted 2026-11-22 | Length |
 |---|---|---|---|
 | Name | `Bucketeer – Object Storage` | `Bucketeer: S3 & Azure Speicher` | 30 of 30 |
 | Subtitle | `Dateibrowser für S3 und Azure` | `Sync & Mount für Buckets` | 24 of 30 |
@@ -329,15 +347,18 @@ while `sync` (39), `azure` (37), `speicher` (37) and
 "cloud speicher" (30). English terms such as `sync`, `mount`,
 `bucket` and `storage` are kept because the existing German ASC
 copy already uses them and they are common in German developer
-language (expert judgment). The name and subtitle need a review by a
-native German speaker before use.
+language (expert judgment). Adopted 2026-11-22; a proofread by a
+native German speaker before the #22 write is still recommended.
 
 ### 7.3 Other locales
 
-No storefront measurements exist for the other 18 locales, so no
-localized name, subtitle or keyword field is proposed for them. Do not
-translate the en-US drafts word by word into all 20 locales without
-review. Recommended approach:
+No storefront measurements exist for the other 19 store locales (21
+minus en-US and de-DE), so no localized name, subtitle or keyword
+field is proposed for them here. en-GB reuses en-US and tr is covered
+in 7.4, which leaves 17 locales. Do not translate the en-US drafts
+word by word into all 21 locales without review. Recommended approach
+(adopted 2026-11-22 as the method for the 17 locales; status per
+locale in `APP_STORE_METADATA.md`, "Store locales (21)"):
 
 1. Zero risk fix for every locale: remove `s3`, `azure` and, where
    the subtitle contains it, `blob` from the keyword field (section
@@ -350,6 +371,18 @@ review. Recommended approach:
    subtitle and keywords, then have a native speaker write the copy.
 4. Order of the work: open question for Marcello (section 9). en-GB
    can reuse en-US as it does today.
+
+### 7.4 Turkish (tr)
+
+Added 2026-11-22 as the 21st store locale (decision log #14). No Astro
+measurement exists for the Turkish storefront and none is invented
+here; the drafts follow the adopted en-US direction (`S3 & Azure` in
+the name, the three actions in the subtitle, provider names plus
+local generic terms in the keyword field) as expert judgment. Name,
+subtitle, keywords, promotional text and description are in
+[`APP_STORE_METADATA.md`](APP_STORE_METADATA.md), "Turkish (tr)
+source texts". They need a native Turkish proofread, and ideally an
+Astro TR measurement, before the #22 write.
 
 ## 8. Measurement plan
 
@@ -386,19 +419,25 @@ Attribution limits:
 Resolved 2026-11-09 Europe/Rome (Marcello):
 
 1. Keywords: include everything. Use provider names and generic terms,
-   including `backup`. Chosen en-US keyword draft (100 of 100 bytes):
+   including `backup`. Chosen en-US keyword draft (97 of 100 bytes):
    `aws,cloud,object,blob,r2,b2,backblaze,wasabi,minio,upload,transfer,client,drive,encryption,backup`.
    Still research/draft only. No App Store Connect write.
 
+Resolved 2026-11-22 11:04 Europe/Rome (Marcello, decision log #14):
+
+1. Source of truth: the repo texts in `APP_STORE_METADATA.md` are the
+   single source for all store descriptions; ASC is written from them
+   on ticket #22.
+2. Name, subtitle and keywords: the section 7 proposal is adopted for
+   en-US, en-GB and de-DE, including the name change from
+   `Bucketeer – Object Storage` to `Bucketeer: S3 & Azure Storage`
+   (de-DE `Bucketeer: S3 & Azure Speicher`).
+3. Turkish (tr) is added as a store locale, 21 locales in total.
+
 Still open:
 
-1. ASC listing verification: the ASC drafts (20 locales) are ahead of
-   `APP_STORE_METADATA.md`. Should ASC become the source of truth, or
-   should the repo document be synced from ASC?
-2. Name change from `Bucketeer – Object Storage` to
-   `Bucketeer: S3 & Azure Storage` before the first submission?
-3. Paid ASO tool access: Astro provides relative popularity and
+1. Paid ASO tool access: Astro provides relative popularity and
    difficulty scores only. Is access to Apple Search Ads popularity or
    another ASO tool with search volume estimates available?
-4. Locale priority after en-US and de-DE: which storefronts matter
+2. Locale priority after en-US and de-DE: which storefronts matter
    most? Each needs an Astro measurement and a native speaker review.
