@@ -92,29 +92,27 @@ public actor KeychainStore: KeychainStoring {
     /// attribute — lives in the file-based keychain, where macOS
     /// ignores access groups (SecItem.h).
     ///
-    /// Queries without `kSecUseDataProtectionKeychain` (and without
-    /// `kSecAttrSynchronizable`) only reach the file-based keychain, so
-    /// the listing and the delete below never touch the shared items.
-    /// A legacy item is deleted only after its shared copy reads back;
-    /// on any failure it stays in place and the next launch retries.
+    /// Every legacy query sets `kSecUseDataProtectionKeychain = false`
+    /// explicitly: a query that merely omits the key is also matched
+    /// against the data-protection keychain for an app with a
+    /// keychain-access-groups entitlement, so the listing found the
+    /// shared item itself and the account-wide delete then removed it
+    /// on every launch (#66). The delete targets the listed item by
+    /// persistent reference only, and runs only after the shared copy
+    /// reads back as a different item; on any failure the legacy item
+    /// stays in place and the next launch retries.
     public func migrateFromLegacyFileKeychain() async {
         guard accessGroup != nil else { return }
 
-        let listQuery: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecMatchLimit as String: kSecMatchLimitAll,
-            kSecReturnAttributes as String: true,
-            kSecReturnData as String: true
-        ]
         var result: AnyObject?
-        let status = SecItemCopyMatching(listQuery as CFDictionary, &result)
+        let status = SecItemCopyMatching(Self.legacyListQuery(service: service) as CFDictionary, &result)
         guard status == errSecSuccess, let items = result as? [[String: Any]] else { return }
 
         for item in items {
             guard let accountString = item[kSecAttrAccount as String] as? String,
                   let accountID = UUID(uuidString: accountString),
-                  let data = item[kSecValueData as String] as? Data
+                  let legacyRef = item[kSecValuePersistentRef as String] as? Data,
+                  let data = Self.legacyData(persistentRef: legacyRef)
             else { continue }
             // SecItemAdd (not update) so an existing shared entry, which
             // may be newer, is never overwritten.
@@ -127,15 +125,57 @@ public actor KeychainStore: KeychainStoring {
             }
             let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
             guard addStatus == errSecSuccess || addStatus == errSecDuplicateItem,
-                  (try? await load(for: accountID)) != nil
+                  (try? await load(for: accountID)) != nil,
+                  let sharedRef = sharedPersistentRef(for: accountID),
+                  sharedRef != legacyRef
             else { continue }
-            let legacyDeleteQuery: [String: Any] = [
-                kSecClass as String: kSecClassGenericPassword,
-                kSecAttrService as String: service,
-                kSecAttrAccount as String: accountString
-            ]
-            _ = SecItemDelete(legacyDeleteQuery as CFDictionary)
+            _ = SecItemDelete(Self.legacyDeleteQuery(persistentRef: legacyRef) as CFDictionary)
         }
+    }
+
+    /// Lists the file-based keychain only. Attributes and persistent
+    /// references, no data: the file-based keychain rejects
+    /// `kSecReturnData` together with `kSecMatchLimitAll`.
+    static func legacyListQuery(service: String) -> [String: Any] {
+        [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecUseDataProtectionKeychain as String: false,
+            kSecMatchLimit as String: kSecMatchLimitAll,
+            kSecReturnAttributes as String: true,
+            kSecReturnPersistentRef as String: true
+        ]
+    }
+
+    /// Deletes exactly the one file-based item the listing returned —
+    /// never by account name, which would also match the shared item.
+    static func legacyDeleteQuery(persistentRef: Data) -> [String: Any] {
+        [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecUseDataProtectionKeychain as String: false,
+            kSecValuePersistentRef as String: persistentRef
+        ]
+    }
+
+    private static func legacyData(persistentRef: Data) -> Data? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecUseDataProtectionKeychain as String: false,
+            kSecValuePersistentRef as String: persistentRef,
+            kSecReturnData as String: true
+        ]
+        var result: AnyObject?
+        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess else { return nil }
+        return result as? Data
+    }
+
+    private func sharedPersistentRef(for accountID: UUID) -> Data? {
+        var query = baseQuery(for: accountID)
+        query[kSecReturnPersistentRef as String] = true
+        query[kSecMatchLimit as String] = kSecMatchLimitOne
+        var result: AnyObject?
+        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess else { return nil }
+        return result as? Data
     }
 
     // MARK: - Internals
