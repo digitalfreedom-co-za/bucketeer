@@ -103,19 +103,30 @@ struct AzureSharedKeySignerTests {
         #expect(lines.last == "restype:container")
     }
 
-    @Test("StringToSign uses Content-Length value for non-empty body")
-    func stringToSignForPutBlock() {
+    @Test("StringToSign places every standard header in its fixed slot")
+    func stringToSignFieldOrder() {
         var request = URLRequest(
             url: URL(string: "https://myaccount.blob.core.windows.net/cont/blob?comp=block&blockid=YWJj")!
         )
         request.httpMethod = "PUT"
         request.setValue("Sun, 24 May 2026 12:34:56 GMT", forHTTPHeaderField: "x-ms-date")
         request.setValue("2021-12-02", forHTTPHeaderField: "x-ms-version")
+        request.setValue("gzip", forHTTPHeaderField: "Content-Encoding")
+        request.setValue("en-US", forHTTPHeaderField: "Content-Language")
         request.setValue("8388608", forHTTPHeaderField: "Content-Length")
+        request.setValue("md5", forHTTPHeaderField: "Content-MD5")
+        request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
+        request.setValue("ims", forHTTPHeaderField: "If-Modified-Since")
+        request.setValue("\"etag\"", forHTTPHeaderField: "If-Match")
+        request.setValue("*", forHTTPHeaderField: "If-None-Match")
+        request.setValue("ius", forHTTPHeaderField: "If-Unmodified-Since")
+        request.setValue("bytes=0-1", forHTTPHeaderField: "Range")
         let stringToSign = signer.buildStringToSign(for: request)
         let lines = stringToSign.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
-        #expect(lines[0] == "PUT")
-        #expect(lines[3] == "8388608")
+        #expect(Array(lines.prefix(12)) == [
+            "PUT", "gzip", "en-US", "8388608", "md5", "text/plain",
+            "", "ims", "\"etag\"", "*", "ius", "bytes=0-1"
+        ])
     }
 
     @Test("sign(_:) sets Authorization, x-ms-date and x-ms-version headers")

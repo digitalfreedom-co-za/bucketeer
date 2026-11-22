@@ -34,6 +34,9 @@ public final class SyncJobRecord {
     var includeGlobs: [String]
     var excludeGlobs: [String]
     var deletePropagation: Bool
+    /// Added after the first release; the default lets stores written
+    /// before it migrate with the option off.
+    var allowsDecryptedCopies: Bool = false
     var scheduleRaw: String
     var concurrency: Int
     public var lastRunAt: Date?
@@ -50,6 +53,7 @@ public final class SyncJobRecord {
         includeGlobs: [String],
         excludeGlobs: [String],
         deletePropagation: Bool,
+        allowsDecryptedCopies: Bool,
         scheduleRaw: String,
         concurrency: Int,
         lastRunAt: Date?,
@@ -65,6 +69,7 @@ public final class SyncJobRecord {
         self.includeGlobs = includeGlobs
         self.excludeGlobs = excludeGlobs
         self.deletePropagation = deletePropagation
+        self.allowsDecryptedCopies = allowsDecryptedCopies
         self.scheduleRaw = scheduleRaw
         self.concurrency = concurrency
         self.lastRunAt = lastRunAt
@@ -91,6 +96,7 @@ public final class SyncJobRecord {
             includeGlobs: job.includeGlobs,
             excludeGlobs: job.excludeGlobs,
             deletePropagation: job.deletePropagation,
+            allowsDecryptedCopies: job.allowsDecryptedCopies,
             scheduleRaw: job.schedule.rawValue,
             concurrency: job.concurrency,
             lastRunAt: job.lastRunAt,
@@ -113,6 +119,7 @@ public final class SyncJobRecord {
         includeGlobs = job.includeGlobs
         excludeGlobs = job.excludeGlobs
         deletePropagation = job.deletePropagation
+        allowsDecryptedCopies = job.allowsDecryptedCopies
         scheduleRaw = job.schedule.rawValue
         concurrency = job.concurrency
         lastRunAt = job.lastRunAt
@@ -139,6 +146,7 @@ public final class SyncJobRecord {
             includeGlobs: includeGlobs,
             excludeGlobs: excludeGlobs,
             deletePropagation: deletePropagation,
+            allowsDecryptedCopies: allowsDecryptedCopies,
             schedule: SyncSchedule(rawValue: scheduleRaw) ?? .manual,
             concurrency: concurrency,
             lastRunAt: lastRunAt,

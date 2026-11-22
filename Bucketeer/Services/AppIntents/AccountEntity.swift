@@ -33,7 +33,7 @@ struct AccountEntity: AppEntity, Identifiable, Sendable {
     init(account: S3Account) {
         self.id = account.id
         self.name = account.name
-        self.providerName = account.provider.displayName
+        self.providerName = account.provider.localizedDisplayName
     }
 }
 

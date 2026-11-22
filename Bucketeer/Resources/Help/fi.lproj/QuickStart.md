@@ -75,6 +75,8 @@ Kun poistat objekteja, Bucketeer voi säilyttää paikallisen kopion tällä Mac
 
 Kohdassa **Asetukset → Salaus** voit luoda avaimen bucketille. Siitä lähtien jokainen kyseiseen bucketiin lähetettävä tiedosto salataan Macillasi (AES-256-GCM) ennen lähettämistä, ja lataukset puretaan lennossa. Avain tallennetaan vain tämän Macin macOS-avainnippuun.
 
+Vain tiedostojen sisältö salataan. Objektien nimet, polut ja koot jäävät tallennuspalvelun tarjoajan luettaviksi. Salatut objektit tallennetaan tyypillä `application/octet-stream`, joten tallennettu sisältötyyppi ei paljasta alkuperäistä tiedostotyyppiä.
+
 Tärkeää: jos kadotat avaimen, kukaan ei voi purkaa näiden objektien salausta, emme mekään. Salattuja bucketeja ei voi liittää Finderiin tässä Bucketeerin versiossa.
 
 ## Spotlight

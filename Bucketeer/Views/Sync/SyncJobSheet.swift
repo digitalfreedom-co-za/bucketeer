@@ -49,6 +49,7 @@ struct SyncJobSheet: View {
     @State private var includeGlobs: String = ""
     @State private var excludeGlobs: String = ""
     @State private var deletePropagation: Bool = false
+    @State private var allowsDecryptedCopies: Bool = false
     @State private var scheduleKind: ScheduleKind = .manual
     @State private var intervalMinutes: Int = 60
     @State private var concurrency: Int = 4
@@ -233,6 +234,12 @@ struct SyncJobSheet: View {
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
+            if sourceKind == .s3, destKind == .s3 {
+                Toggle("sync.field.allowsDecryptedCopies", isOn: $allowsDecryptedCopies)
+                Text("sync.allowsDecryptedCopies.hint")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
             Stepper(value: $concurrency, in: 1...8) {
                 Text("sync.field.concurrency \(concurrency)")
             }
@@ -281,7 +288,7 @@ struct SyncJobSheet: View {
             Text("sync.account.placeholder").tag(UUID?.none)
             ForEach(accounts) { account in
                 Label {
-                    Text("\(account.name) (\(account.provider.displayName))")
+                    Text("\(account.name) (\(account.provider.localizedDisplayName))")
                 } icon: {
                     Image(systemName: account.provider.iconSystemName)
                 }
@@ -355,6 +362,7 @@ struct SyncJobSheet: View {
             includeGlobs = job.includeGlobs.joined(separator: ", ")
             excludeGlobs = job.excludeGlobs.joined(separator: ", ")
             deletePropagation = job.deletePropagation
+            allowsDecryptedCopies = job.allowsDecryptedCopies
             switch job.schedule {
             case .manual:                scheduleKind = .manual
             case .onLaunch:              scheduleKind = .onLaunch
@@ -421,6 +429,7 @@ struct SyncJobSheet: View {
             includeGlobs: splitGlobs(includeGlobs),
             excludeGlobs: splitGlobs(excludeGlobs),
             deletePropagation: deletePropagation,
+            allowsDecryptedCopies: allowsDecryptedCopies,
             schedule: {
                 switch scheduleKind {
                 case .manual:        return .manual

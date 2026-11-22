@@ -30,12 +30,13 @@ struct DemoEnvironment {
     /// in for the smart-card readers, so no real hardware is queried.
     static func make(
         entitlement: EntitlementManager.State? = .pro,
+        keychainStore: any KeychainStoring = InMemoryKeychain(),
         hardwareKeySlots: [HardwareKeySlot] = []
     ) async throws -> DemoEnvironment {
         let browser = InMemoryS3Browser()
         let container = try AppContainer(configuration: .init(
             stores: .inMemory,
-            keychainStore: InMemoryKeychain(),
+            keychainStore: keychainStore,
             s3Browser: browser,
             entitlementState: entitlement,
             hardwareKeyDiscovery: { hardwareKeySlots },

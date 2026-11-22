@@ -25,6 +25,7 @@ public final class TrashRecord {
     public var deletedAt: Date
     public var expiresAt: Date
     public var cacheStatusRaw: String
+    public var encryptionMarked: Bool = false
     public var cachedFileName: String?
 
     public init(item: TrashedItem) {
@@ -40,6 +41,7 @@ public final class TrashRecord {
         self.expiresAt = item.expiresAt
         self.cacheStatusRaw = item.cacheStatus.rawValue
         self.cachedFileName = item.cachedFileName
+        self.encryptionMarked = item.encryptionMarked
     }
 
     public var snapshot: TrashedItem? {
@@ -56,7 +58,8 @@ public final class TrashRecord {
             deletedAt: deletedAt,
             expiresAt: expiresAt,
             cacheStatus: status,
-            cachedFileName: cachedFileName
+            cachedFileName: cachedFileName,
+            encryptionMarked: encryptionMarked
         )
     }
 }

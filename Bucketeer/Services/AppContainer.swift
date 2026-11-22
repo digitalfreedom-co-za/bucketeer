@@ -42,8 +42,10 @@ final class AppContainer {
         var s3Browser: (any S3Browsing)?
         /// `nil` derives the entitlement from the trial and StoreKit.
         var entitlementState: EntitlementManager.State?
+        #if DEBUG
         /// `nil` probes the real smart-card readers via CryptoTokenKit.
         var hardwareKeyDiscovery: HardwareKeyAvailability.Discovery?
+        #endif
         /// Launch work: StoreKit, Keychain migration, mount refresh,
         /// sync/auto-tag start, purges and scavengers.
         var startsBackgroundWork = true
@@ -105,9 +107,12 @@ final class AppContainer {
     let encryptionKeyStore: any EncryptionKeyStoring
     let encryptionKeysViewModel: EncryptionKeysViewModel
     let bucketEncryptionGate: BucketEncryptionGate
+    #if DEBUG
     /// Phase 13.16 — hardware-key (CryptoTokenKit) unlock toggle.
+    /// Debug-only until v1.1 (#33).
     let hardwareKeySettings: HardwareKeySettings
     let hardwareKeyAvailability: HardwareKeyAvailability
+    #endif
     /// Multicast broker around the
     /// single `SyncEngine.statuses` AsyncStream so the sync list
     /// view model and the new sync-job detail window can both
@@ -160,7 +165,8 @@ final class AppContainer {
         let encryptionKeyStore: any EncryptionKeyStoring = EncryptionKeyStore(
             modelContainer: encryptionContainer
         )
-        let bucketEncryptionGate = BucketEncryptionGate(keyStore: encryptionKeyStore)
+        let backupPresenter = KeyBackupPresenter()
+        let bucketEncryptionGate = BucketEncryptionGate(keyStore: encryptionKeyStore, confirmBackup: backupPresenter.confirmBackupRisk)
         // Write to the shared keychain access group of the
         // data-protection keychain so the File Provider extension
         // (which reads from the same group) can load credentials.
@@ -223,7 +229,8 @@ final class AppContainer {
             downloader: PreviewDownloader(
                 s3Factory: clientFactory,
                 azureTransporter: azureTransporter
-            )
+            ),
+            encryptionGate: bucketEncryptionGate
         )
 
         self.modelContainer = modelContainer
@@ -431,20 +438,24 @@ final class AppContainer {
         self.encryptionKeysViewModel = EncryptionKeysViewModel(
             keyStore: encryptionKeyStore,
             accountStore: accountStore,
+            s3Browser: router,
             gate: bucketEncryptionGate,
             mountController: mountController,
             encryptedBucketListURL: stores == .onDisk ? Self.groupContainerURL().map(EncryptedBucketList.url(inGroupContainer:)) : nil
         )
+        backupPresenter.viewModel = self.encryptionKeysViewModel
         if startsBackgroundWork {
             Task { @MainActor [encryptionKeysViewModel = self.encryptionKeysViewModel] in
                 await encryptionKeysViewModel.reload()
             }
         }
 
-        // Phase 13.16 — hardware-key unlock.
+        #if DEBUG
+        // Phase 13.16 — hardware-key unlock. Debug-only until v1.1 (#33).
         self.hardwareKeySettings = HardwareKeySettings()
         self.hardwareKeyAvailability = configuration.hardwareKeyDiscovery.map(HardwareKeyAvailability.init(discover:))
             ?? HardwareKeyAvailability()
+        #endif
 
         // Phase 14 — multicast broker for SyncEngine.statuses.
         // Constructed above so the sync list view model can take

@@ -67,6 +67,7 @@ public struct AzureBlobTransporter: Sendable {
         blob: String,
         localURL: URL,
         contentType: String?,
+        encrypted: Bool = false,
         precondition: WritePrecondition? = nil,
         progress: @Sendable @escaping (Int64, Int64) async -> Void
     ) async throws -> String? {
@@ -89,6 +90,7 @@ public struct AzureBlobTransporter: Sendable {
                 localURL: localURL,
                 fileSize: fileSize,
                 contentType: contentType,
+                encrypted: encrypted,
                 precondition: precondition
             )
             await progress(fileSize, fileSize)
@@ -102,6 +104,7 @@ public struct AzureBlobTransporter: Sendable {
                 localURL: localURL,
                 fileSize: fileSize,
                 contentType: contentType,
+                encrypted: encrypted,
                 precondition: precondition,
                 progress: progress
             )
@@ -116,6 +119,7 @@ public struct AzureBlobTransporter: Sendable {
         localURL: URL,
         fileSize: Int64,
         contentType: String?,
+        encrypted: Bool = false,
         precondition: WritePrecondition?
     ) async throws -> String? {
         let data: Data
@@ -132,6 +136,9 @@ public struct AzureBlobTransporter: Sendable {
         if let contentType {
             request.setValue(contentType, forHTTPHeaderField: "Content-Type")
         }
+        if encrypted {
+            request.setValue("1", forHTTPHeaderField: "x-ms-meta-" + BucketeerEnvelope.azureMetadataKey)
+        }
         Self.apply(precondition, to: &request)
         request.httpBody = data
         signer.sign(&request)
@@ -141,7 +148,7 @@ public struct AzureBlobTransporter: Sendable {
         // the wire so the next call back-pressures correctly.
         await limiter?.consume(bytes: data.count)
         guard let http = response as? HTTPURLResponse else {
-            throw BucketeerError.unknown(message: "Azure PUT returned a non-HTTP response.")
+            throw BucketeerError.unknown(message: String(localized: "transfer.error.nonHTTP \("Azure PUT")", bundle: .module))
         }
         try Self.check(http, body: responseData, container: container, blob: blob, precondition: precondition)
         return Self.etag(of: http)
@@ -155,6 +162,7 @@ public struct AzureBlobTransporter: Sendable {
         localURL: URL,
         fileSize: Int64,
         contentType: String?,
+        encrypted: Bool = false,
         precondition: WritePrecondition?,
         progress: @Sendable @escaping (Int64, Int64) async -> Void
     ) async throws -> String? {
@@ -234,6 +242,7 @@ public struct AzureBlobTransporter: Sendable {
             blob: blob,
             blockIDs: blockIDs,
             contentType: contentType,
+            encrypted: encrypted,
             precondition: precondition
         )
         await progress(fileSize, fileSize)
@@ -259,7 +268,7 @@ public struct AzureBlobTransporter: Sendable {
 
         let (responseData, response) = try await session.azureData(for: request)
         guard let http = response as? HTTPURLResponse else {
-            throw BucketeerError.unknown(message: "Azure Put Block returned a non-HTTP response.")
+            throw BucketeerError.unknown(message: String(localized: "transfer.error.nonHTTP \("Azure Put Block")", bundle: .module))
         }
         if let mapped = AzureBlobObjectStore.mapHTTP(
             http, body: responseData, bucket: container, key: blob
@@ -275,6 +284,7 @@ public struct AzureBlobTransporter: Sendable {
         blob: String,
         blockIDs: [String],
         contentType: String?,
+        encrypted: Bool = false,
         precondition: WritePrecondition?
     ) async throws -> String? {
         let body = AzureRequestBuilder.blockListXML(blockIDs: blockIDs)
@@ -289,13 +299,16 @@ public struct AzureBlobTransporter: Sendable {
         }
         // Staged blocks are invisible until this commit, so the
         // precondition belongs here.
+        if encrypted {
+            request.setValue("1", forHTTPHeaderField: "x-ms-meta-" + BucketeerEnvelope.azureMetadataKey)
+        }
         Self.apply(precondition, to: &request)
         request.httpBody = body
         signer.sign(&request)
 
         let (responseData, response) = try await session.azureData(for: request)
         guard let http = response as? HTTPURLResponse else {
-            throw BucketeerError.unknown(message: "Azure Put Block List returned a non-HTTP response.")
+            throw BucketeerError.unknown(message: String(localized: "transfer.error.nonHTTP \("Azure Put Block List")", bundle: .module))
         }
         try Self.check(http, body: responseData, container: container, blob: blob, precondition: precondition)
         return Self.etag(of: http)
@@ -343,6 +356,7 @@ public struct AzureBlobTransporter: Sendable {
     /// blobs short-circuit to an empty local file. Every GET is pinned
     /// to the version the HEAD reported; with `ifMatch` that version
     /// must be `ifMatch`, otherwise `.preconditionFailed` is thrown.
+    @discardableResult
     public func download(
         account: S3Account,
         container: String,
@@ -350,7 +364,7 @@ public struct AzureBlobTransporter: Sendable {
         localURL: URL,
         ifMatch expectedVersion: String? = nil,
         progress: @Sendable @escaping (Int64, Int64) async -> Void
-    ) async throws {
+    ) async throws -> Bool {
         let signer = try await credentialsCache.signer(for: account)
         let builder = AzureRequestBuilder(account: account)
 
@@ -362,7 +376,7 @@ public struct AzureBlobTransporter: Sendable {
         signer.sign(&headRequest)
         let (_, headResponse) = try await session.azureData(for: headRequest)
         guard let headHTTP = headResponse as? HTTPURLResponse else {
-            throw BucketeerError.unknown(message: "Azure HEAD returned a non-HTTP response.")
+            throw BucketeerError.unknown(message: String(localized: "transfer.error.nonHTTP \("Azure HEAD")", bundle: .module))
         }
         if let mapped = AzureBlobObjectStore.mapHTTP(
             headHTTP, body: nil, bucket: container, key: blob
@@ -377,17 +391,17 @@ public struct AzureBlobTransporter: Sendable {
         }
 
         // The existing file is replaced only by a complete download.
-        try await StagedDownload.write(to: localURL) { staging in
+        return try await StagedDownload.write(to: localURL) { staging in
             if total == 0 {
                 try Data().write(to: staging)
                 await progress(0, 0)
-                return
+                return headHTTP.value(forHTTPHeaderField: "x-ms-meta-" + BucketeerEnvelope.azureMetadataKey) == "1"
             }
 
             await progress(0, total)
 
             if total < Self.multipartThreshold {
-                try await singleShotDownload(
+                return try await singleShotDownload(
                     builder: builder,
                     signer: signer,
                     container: container,
@@ -408,6 +422,7 @@ public struct AzureBlobTransporter: Sendable {
                     total: total,
                     progress: progress
                 )
+                return headHTTP.value(forHTTPHeaderField: "x-ms-meta-" + BucketeerEnvelope.azureMetadataKey) == "1"
             }
         }
     }
@@ -421,7 +436,7 @@ public struct AzureBlobTransporter: Sendable {
         localURL: URL,
         total: Int64,
         progress: @Sendable @escaping (Int64, Int64) async -> Void
-    ) async throws {
+    ) async throws -> Bool {
         var request = URLRequest(url: builder.blobDownloadURL(container: container, blob: blob))
         request.httpMethod = "GET"
         if let version {
@@ -431,7 +446,7 @@ public struct AzureBlobTransporter: Sendable {
 
         let (data, response) = try await session.azureData(for: request)
         guard let http = response as? HTTPURLResponse else {
-            throw BucketeerError.unknown(message: "Azure GET returned a non-HTTP response.")
+            throw BucketeerError.unknown(message: String(localized: "transfer.error.nonHTTP \("Azure GET")", bundle: .module))
         }
         if let mapped = AzureBlobObjectStore.mapHTTP(
             http, body: data, bucket: container, key: blob
@@ -442,6 +457,7 @@ public struct AzureBlobTransporter: Sendable {
         await limiter?.consume(bytes: data.count)
         try data.write(to: localURL)
         await progress(total, total)
+        return http.value(forHTTPHeaderField: "x-ms-meta-" + BucketeerEnvelope.azureMetadataKey) == "1"
     }
 
     /// `version` is the ETag the HEAD reported. Every range is
@@ -536,7 +552,7 @@ public struct AzureBlobTransporter: Sendable {
 
         let (data, response) = try await session.azureData(for: request)
         guard let http = response as? HTTPURLResponse else {
-            throw BucketeerError.unknown(message: "Azure ranged GET returned a non-HTTP response.")
+            throw BucketeerError.unknown(message: String(localized: "transfer.error.nonHTTP \("Azure GET (Range)")", bundle: .module))
         }
         if let mapped = AzureBlobObjectStore.mapHTTP(
             http, body: data, bucket: container, key: blob
@@ -552,13 +568,13 @@ public struct AzureBlobTransporter: Sendable {
         guard http.statusCode == 206 else {
             throw BucketeerError.providerError(
                 statusCode: http.statusCode,
-                message: "Azure ignored the Range header and returned the full blob; ranged download aborted."
+                message: String(localized: "transfer.error.rangeIgnored", bundle: .module)
             )
         }
         guard Int64(data.count) == length else {
             throw BucketeerError.providerError(
                 statusCode: http.statusCode,
-                message: "Azure ranged GET returned \(data.count) bytes; expected \(length)."
+                message: String(localized: "transfer.error.rangeSize \(data.count) \(length)", bundle: .module)
             )
         }
         // Write failures now propagate so a disk-full
@@ -609,14 +625,10 @@ private actor DownloadWriter {
     /// partial file marked complete.
     public func write(_ data: Data, at offset: Int64) async throws {
         guard let handle else {
-            throw BucketeerError.unknown(message: "Download writer was closed before all chunks landed.")
+            throw BucketeerError.unknown(message: String(localized: "transfer.error.downloadIncomplete", bundle: .module))
         }
-        do {
-            try handle.seek(toOffset: UInt64(offset))
-            try handle.write(contentsOf: data)
-        } catch {
-            throw BucketeerError.sandboxAccessDenied(URL(fileURLWithPath: "(download writer)"))
-        }
+        try handle.seek(toOffset: UInt64(offset))
+        try handle.write(contentsOf: data)
         bytesSoFar += Int64(data.count)
         await callback(bytesSoFar, total)
     }

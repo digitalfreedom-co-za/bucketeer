@@ -79,6 +79,11 @@ struct ObjectListView: View {
                 }
                 .disabled(!viewModel.canGoUp)
             }
+            if isBucketEncrypted {
+                ToolbarItem(placement: .navigation) {
+                    EncryptedBadge(help: "encryption.badge.bucket.help")
+                }
+            }
             ToolbarItem(placement: .principal) {
                 BreadcrumbBar(viewModel: viewModel)
             }
@@ -185,7 +190,15 @@ struct ObjectListView: View {
                 sourceBucket: target.bucket,
                 keys: target.keys,
                 accounts: container.accountListViewModel.accounts,
-                onSubmit: { destAcc, destBucket, destPrefix, keepSource in
+                isEncryptedToPlain: { destAcc, destBucket in
+                    await container.crossAccountCopyCoordinator.isEncryptedToPlain(
+                        sourceAccount: target.account,
+                        sourceBucket: target.bucket,
+                        destinationAccount: destAcc,
+                        destinationBucket: destBucket
+                    )
+                },
+                onSubmit: { destAcc, destBucket, destPrefix, keepSource, allowsDecryptedCopies in
                     await container.crossAccountCopyCoordinator.copy(
                         sourceAccount: target.account,
                         sourceBucket: target.bucket,
@@ -193,7 +206,8 @@ struct ObjectListView: View {
                         destinationAccount: destAcc,
                         destinationBucket: destBucket,
                         destinationPrefix: destPrefix,
-                        keepSource: keepSource
+                        keepSource: keepSource,
+                        allowsDecryptedCopies: allowsDecryptedCopies
                     )
                 }
             )
@@ -375,14 +389,12 @@ struct ObjectListView: View {
         else { return false }
         let prefix = viewModel.prefix
         Task {
-            for ref in refs {
-                await container.dragDropCoordinator.dropObjectRef(
-                    ref,
-                    destinationAccount: account,
-                    destinationBucket: bucket,
-                    destinationPrefix: prefix
-                )
-            }
+            await container.dragDropCoordinator.dropObjectRefs(
+                refs,
+                destinationAccount: account,
+                destinationBucket: bucket,
+                destinationPrefix: prefix
+            )
         }
         return true
     }
@@ -549,6 +561,11 @@ struct ObjectListView: View {
             prefix: viewModel.prefix,
             fileURLs: urls
         )
+    }
+
+    private var isBucketEncrypted: Bool {
+        guard let account = viewModel.account, let bucket = viewModel.bucket else { return false }
+        return container.encryptionKeysViewModel.isEncrypted(accountID: account.id, bucket: bucket)
     }
 
     private func downloadObject(_ object: S3Object) async {

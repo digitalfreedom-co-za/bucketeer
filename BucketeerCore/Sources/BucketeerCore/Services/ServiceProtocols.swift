@@ -157,9 +157,12 @@ extension S3Browsing {
 
 /// Persistence boundary for per-bucket BYOK encryption keys. Phase
 /// 13.15. The metadata lives in SwiftData, the actual key bytes in
-/// the Keychain — implementations write to both atomically so a key
-/// can never end up with metadata-but-no-bytes (or vice versa).
+/// the Keychain. Deletion failures can leave stale metadata; callers
+/// must handle missing bytes without falling back to plaintext.
 public protocol EncryptionKeyStoring: Sendable {
+    func importKey(_ entry: KeyBackupEntry, replacing expectedID: UUID?) async throws
+    func markBackupReady(id: UUID) async throws
+
     /// Every registered key's metadata.
     func all() async throws -> [BucketEncryptionKey]
 
@@ -174,6 +177,10 @@ public protocol EncryptionKeyStoring: Sendable {
         bucket: String
     ) async throws -> BucketEncryptionKey
 
+    /// Copy an existing key to a new account, refusing an occupied bucket.
+    /// Persist the new bytes and metadata without changing the source.
+    func copyForReassignment(_ key: BucketEncryptionKey, to accountID: UUID) async throws -> BucketEncryptionKey
+
     /// Retrieve the raw 256-bit key material for cryptographic use.
     /// Implementations MUST treat this as security-sensitive (e.g.
     /// not log it) — the return value is `Data` so callers can wrap
@@ -184,6 +191,48 @@ public protocol EncryptionKeyStoring: Sendable {
     /// the user that data already encrypted under the key becomes
     /// unrecoverable.
     func delete(id: UUID) async throws
+}
+
+public enum EncryptionKeyReassignmentError: Error, Sendable {
+    case conflict
+    case verificationFailed
+    case rollbackFailed
+    case sourceCleanupFailed
+}
+
+public extension EncryptionKeyStoring {
+    /// Keep the source recoverable until the destination is persisted and verified.
+    func reassign(_ key: BucketEncryptionKey, to accountID: UUID) async throws -> BucketEncryptionKey {
+        let originalBytes = try await keyMaterial(id: key.id)
+        var copiedKey: BucketEncryptionKey?
+        let replacement: BucketEncryptionKey
+        do {
+            replacement = try await copyForReassignment(key, to: accountID)
+            copiedKey = replacement
+            let stored = try await self.key(accountID: accountID, bucket: key.bucket)
+            let copiedBytes = try await keyMaterial(id: replacement.id)
+            guard stored == replacement, copiedBytes == originalBytes else {
+                throw EncryptionKeyReassignmentError.verificationFailed
+            }
+        } catch {
+            if let copiedKey {
+                do {
+                    try await delete(id: copiedKey.id)
+                } catch {
+                    throw EncryptionKeyReassignmentError.rollbackFailed
+                }
+            }
+            throw error
+        }
+        // Never roll back a verified copy: source cleanup can fail after
+        // deleting its bytes, making the destination the only recoverable key.
+        do {
+            try await delete(id: key.id)
+        } catch {
+            throw EncryptionKeyReassignmentError.sourceCleanupFailed
+        }
+        return replacement
+    }
 }
 
 // MARK: - CheckpointStoring
@@ -276,12 +325,12 @@ public protocol ActivityLogging: Sendable {
 public protocol TrashStoring: Sendable {
     /// Persist a fresh trash entry. Returns the assigned record id
     /// so the caller can later attach a cached payload via
-    /// `markCached(id:fileName:)`.
+    /// `markCached(id:fileName:encryptionMarked:)`.
     func record(_ item: TrashedItem) async
 
     /// Mark an existing record as having a cached payload on disk.
     /// Idempotent; no-op if the record was forgotten in the meantime.
-    func markCached(id: UUID, fileName: String) async
+    func markCached(id: UUID, fileName: String, encryptionMarked: Bool) async
 
     /// Update the cache status of an existing record without writing
     /// a fileName (e.g. flip to `.skippedTooLarge` or `.failed`).

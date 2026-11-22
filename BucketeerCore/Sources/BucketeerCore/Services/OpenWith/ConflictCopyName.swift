@@ -36,7 +36,9 @@ public enum ConflictCopyName {
         if let dot = name.lastIndex(of: "."),
            dot != name.startIndex,
            name.index(after: dot) != name.endIndex {
-            return folder + name[..<dot] + marker + name[dot...]
+            let stem = String(name[..<dot])
+            let ext = String(name[dot...])
+            return folder + stem + marker + ext
         }
         return folder + name + marker
     }

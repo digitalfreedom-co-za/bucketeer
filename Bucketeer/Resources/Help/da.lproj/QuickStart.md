@@ -75,6 +75,8 @@ Når du sletter objekter, kan Bucketeer beholde en lokal kopi på denne Mac (**I
 
 Under **Indstillinger → Kryptering** kan du oprette en nøgle til en bucket. Fra da af krypteres hver upload til den bucket på din Mac (AES-256-GCM), før den sendes, og downloads dekrypteres undervejs. Nøglen gemmes kun i macOS-nøgleringen på denne Mac.
 
+Kun filernes indhold krypteres. Objektnavne, stier og størrelser forbliver læsbare for din lagerudbyder. Krypterede objekter gemmes som `application/octet-stream`, så den gemte indholdstype ikke afslører den oprindelige filtype.
+
 Vigtigt: Mister du nøglen, kan ingen dekryptere disse objekter, heller ikke vi. Krypterede buckets kan ikke monteres i Finder i denne version af Bucketeer.
 
 ## Spotlight

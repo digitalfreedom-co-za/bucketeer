@@ -5,6 +5,9 @@
 //  Created by Marcel R. G. Berger on 25.05.26.
 //
 
+// Debug-only until v1.1 (#33): the hardware-key preview must not be
+// compiled into Release builds.
+#if DEBUG
 import Foundation
 import CryptoTokenKit
 import Observation
@@ -146,3 +149,4 @@ final class HardwareKeyAvailability {
         pollTask = nil
     }
 }
+#endif

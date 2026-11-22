@@ -75,6 +75,8 @@ Als je objecten verwijdert, kan Bucketeer een lokale kopie op deze Mac bewaren (
 
 In **Instellingen → Versleuteling** kun je een sleutel voor een bucket aanmaken. Vanaf dat moment wordt elke upload naar die bucket op je Mac versleuteld (AES-256-GCM) voordat hij vertrekt, en downloads worden direct ontsleuteld. De sleutel wordt alleen op deze Mac in de sleutelhanger van macOS bewaard.
 
+Alleen de inhoud van bestanden wordt versleuteld. Objectnamen, paden en groottes blijven leesbaar voor je opslagaanbieder. Versleutelde objecten worden opgeslagen als `application/octet-stream`, zodat het opgeslagen inhoudstype het oorspronkelijke bestandstype niet prijsgeeft.
+
 Belangrijk: als je de sleutel kwijtraakt, kan niemand die objecten ontsleutelen, ook wij niet. In deze versie van Bucketeer kunnen versleutelde buckets niet in de Finder worden gekoppeld.
 
 ## Spotlight

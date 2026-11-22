@@ -69,14 +69,17 @@ final class MainWindowRenderTests: XCTestCase {
 
     // MARK: Object detail + breadcrumbs
 
-    /// The preview downloader signs real requests; with no credentials
-    /// in the in-memory Keychain it fails before any network access.
+    /// Missing credentials fail before an AWS client is constructed.
+    /// Rendering that failure must not restart the automatic preview load.
     func testObjectDetailError() async throws {
-        let demo = try await DemoEnvironment.make()
+        let keychain = PreviewKeychain()
+        let demo = try await DemoEnvironment.make(keychainStore: keychain)
         await demo.openPhotosBucket()
         demo.container.browserViewModel.selection = ["report.pdf"]
         try await renderAndAssert(objectDetail(demo), name: "ObjectDetailView_error", size: detailSize,
                                   shows: ["Preview failed", "credentials", "840 KB"])
+        let credentialLoads = await keychain.loadCount
+        XCTAssertEqual(credentialLoads, 1, "Preview state changes must not restart the download")
     }
 
     private let detailSize = CGSize(width: 360, height: 640)
@@ -99,7 +102,8 @@ final class MainWindowRenderTests: XCTestCase {
     func testTransferListError() async throws {
         let demo = try await DemoEnvironment.make()
         demo.container.transferQueueViewModel.tasks = demoTransfers(demo)
-        try await renderAndAssert(TransferListView(viewModel: demo.container.transferQueueViewModel),
+        try await renderAndAssert(TransferListView(viewModel: demo.container.transferQueueViewModel,
+                                                   encryptionKeys: demo.container.encryptionKeysViewModel),
                                   name: "TransferListView_error", shows: ["sunset.jpg", "Network unavailable"])
     }
 
@@ -127,5 +131,24 @@ final class MainWindowRenderTests: XCTestCase {
                          state: .failed(message: "Network unavailable."),
                          startedAt: DemoEnvironment.referenceDate)
         ]
+    }
+}
+
+/// Counts real in-memory credential lookups along the preview downloader path.
+private actor PreviewKeychain: KeychainStoring {
+    private let store = InMemoryKeychain()
+    private(set) var loadCount = 0
+
+    func load(for accountID: UUID) async throws -> AccountCredentials {
+        loadCount += 1
+        return try await store.load(for: accountID)
+    }
+
+    func save(_ credentials: AccountCredentials, for accountID: UUID) async throws {
+        try await store.save(credentials, for: accountID)
+    }
+
+    func delete(for accountID: UUID) async throws {
+        try await store.delete(for: accountID)
     }
 }

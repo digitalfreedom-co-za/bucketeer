@@ -57,6 +57,21 @@ struct ContentView: View {
             Text(error.errorDescription ?? "")
         }
         .alert(
+            "encryption.plainCopy.title",
+            isPresented: unencryptedDropAlertPresented,
+            presenting: container.dragDropCoordinator.pendingUnencryptedDrops.first
+        ) { drop in
+            Button("action.cancel", role: .cancel) {
+                container.dragDropCoordinator.discardUnencryptedDrop(drop)
+            }
+            .keyboardShortcut(.defaultAction)
+            Button("encryption.plainCopy.confirm", role: .destructive) {
+                Task { await container.dragDropCoordinator.confirmUnencryptedDrop(drop) }
+            }
+        } message: { drop in
+            Text("encryption.plainCopy.message \(drop.sourceBucket) \(drop.destinationBucket)")
+        }
+        .alert(
             "browser.action.errorTitle",
             isPresented: Binding(
                 get: { container.mountController.lastError != nil },
@@ -110,10 +125,23 @@ struct ContentView: View {
         }
     }
 
+    /// Dismissing discards only the drop the alert was built for: the
+    /// confirm task may already have removed it, and the next pending
+    /// drop must stay for its own alert.
+    private var unencryptedDropAlertPresented: Binding<Bool> {
+        let coordinator = container.dragDropCoordinator
+        let shown = coordinator.pendingUnencryptedDrops.first
+        return Binding(
+            get: { !coordinator.pendingUnencryptedDrops.isEmpty },
+            set: { if !$0, let shown { coordinator.discardUnencryptedDrop(shown) } }
+        )
+    }
+
     @ViewBuilder
     private var contentPane: some View {
         if case .transfersRoot = sidebarSelection {
-            TransferListView(viewModel: container.transferQueueViewModel)
+            TransferListView(viewModel: container.transferQueueViewModel,
+                             encryptionKeys: container.encryptionKeysViewModel)
         } else if case .syncRoot = sidebarSelection {
             SyncJobListView(viewModel: container.syncJobListViewModel)
         } else {
