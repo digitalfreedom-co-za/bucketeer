@@ -45256,6 +45256,131 @@
         }
       }
     },
+    "mount.error.refreshFailed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer nemohl ověřit, které buckety jsou připojeny ve Finderu. Ukončete Bucketeer a znovu ho otevřete."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer kunne ikke kontrollere, hvilke buckets der er monteret i Finder. Afslut Bucketeer, og åbn appen igen for at prøve igen."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer konnte nicht prüfen, welche Buckets im Finder eingebunden sind. Beende Bucketeer und öffne es erneut, um es noch einmal zu versuchen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το Bucketeer δεν μπόρεσε να ελέγξει ποια buckets είναι προσαρτημένα στο Finder. Κλείστε το Bucketeer και ανοίξτε το ξανά για να δοκιμάσετε πάλι."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer couldn't check which buckets are mounted in Finder. Quit and reopen Bucketeer to try again."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer couldn't check which buckets are mounted in Finder. Quit and reopen Bucketeer to try again."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer no pudo comprobar qué buckets están montados en el Finder. Cierra Bucketeer y vuelve a abrirlo para intentarlo de nuevo."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer ei voinut tarkistaa, mitkä bucketit on liitetty Finderiin. Lopeta Bucketeer ja avaa se uudelleen yrittääksesi uudelleen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer n'a pas pu vérifier quels buckets sont montés dans le Finder. Quittez Bucketeer puis rouvrez-le pour réessayer."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A Bucketeer nem tudta ellenőrizni, mely bucketek vannak csatolva a Finderben. Lépjen ki a Bucketeerből, majd nyissa meg újra a próbálkozáshoz."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer non è riuscito a verificare quali bucket sono montati nel Finder. Esci da Bucketeer e riaprilo per riprovare."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finder にマウントされているバケットを確認できませんでした。Bucketeer を終了してから、もう一度開いてお試しください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer가 Finder에 마운트된 버킷을 확인할 수 없습니다. Bucketeer를 종료한 후 다시 열어 다시 시도하십시오."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer kunne ikke sjekke hvilke buckets som er montert i Finder. Avslutt Bucketeer og åpne appen igjen for å prøve på nytt."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer kon niet controleren welke buckets in de Finder zijn gekoppeld. Stop Bucketeer en open het opnieuw om het nog eens te proberen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer nie mógł sprawdzić, które buckety są zamontowane w Finderze. Zamknij Bucketeer i otwórz go ponownie, aby spróbować jeszcze raz."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Bucketeer não conseguiu verificar quais buckets estão montados no Finder. Encerre o Bucketeer e abra-o novamente para tentar outra vez."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Bucketeer não conseguiu verificar que buckets estão montados no Finder. Encerre o Bucketeer e abra-o novamente para tentar outra vez."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer не удалось проверить, какие бакеты смонтированы в Finder. Закройте Bucketeer и откройте его снова, чтобы повторить попытку."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bucketeer kunde inte kontrollera vilka buckets som är monterade i Finder. Avsluta Bucketeer och öppna appen igen för att försöka på nytt."
+          }
+        }
+      }
+    },
     "paywall.badge.pro" : {
       "extractionState" : "manual",
       "localizations" : {
