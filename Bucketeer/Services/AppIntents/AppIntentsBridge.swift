@@ -38,7 +38,7 @@ struct AppIntentsBridge: Sendable {
             try await Task.sleep(for: .milliseconds(100), clock: clock)
         }
         throw BucketeerError.unknown(
-            message: "Bucketeer is not running — open the App and try again."
+            message: String(localized: "transfer.error.appNotRunning")
         )
     }
 
@@ -58,7 +58,7 @@ struct AppIntentsBridge: Sendable {
         let container = try await container()
         let all = try await container.accountStore.all()
         guard let match = all.first(where: { $0.id == entity.id }) else {
-            throw BucketeerError.unknown(message: "Account is no longer configured.")
+            throw BucketeerError.unknown(message: String(localized: "transfer.error.accountMissing"))
         }
         return match
     }

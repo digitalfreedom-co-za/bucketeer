@@ -19,6 +19,9 @@ import Foundation
 public actor S3ClientFactory {
     private let keychainStore: any KeychainStoring
     private let revision: CredentialsRevision?
+    /// Transport for every client this factory builds; `nil` keeps
+    /// Soto's shared HTTP client. Tests inject a local fake.
+    private let httpClient: (any AWSHTTPClient)?
 
     private struct Cached {
         let awsClient: AWSClient
@@ -29,9 +32,14 @@ public actor S3ClientFactory {
     private var cache: [UUID: Cached] = [:]
     private var generations: [UUID: Int] = [:]
 
-    public init(keychainStore: any KeychainStoring, revision: CredentialsRevision? = nil) {
+    public init(
+        keychainStore: any KeychainStoring,
+        revision: CredentialsRevision? = nil,
+        httpClient: (any AWSHTTPClient)? = nil
+    ) {
         self.keychainStore = keychainStore
         self.revision = revision
+        self.httpClient = httpClient
     }
 
     // MARK: - Public
@@ -64,13 +72,13 @@ public actor S3ClientFactory {
     }
 
     private func makeClient(for account: S3Account, credentials: AccountCredentials, revision: Int) -> S3 {
-        let awsClient = AWSClient(
-            credentialProvider: .static(
-                accessKeyId: credentials.accessKey,
-                secretAccessKey: credentials.secretKey,
-                sessionToken: credentials.sessionToken
-            )
+        let credentialProvider: CredentialProviderFactory = .static(
+            accessKeyId: credentials.accessKey,
+            secretAccessKey: credentials.secretKey,
+            sessionToken: credentials.sessionToken
         )
+        let awsClient = httpClient.map { AWSClient(credentialProvider: credentialProvider, httpClient: $0) }
+            ?? AWSClient(credentialProvider: credentialProvider)
         let endpoint = Self.endpoint(for: account)
         let region = Region(rawValue: account.provider.signingRegion(for: account.region))
         // Soto 7 defaults to path-style for non-AWS endpoints and

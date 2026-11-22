@@ -75,6 +75,8 @@ Lorsque vous supprimez des objets, Bucketeer peut conserver une copie locale sur
 
 Dans **Réglages → Chiffrement**, vous pouvez créer une clé pour un bucket. Dès lors, chaque téléversement vers ce bucket est chiffré sur votre Mac (AES-256-GCM) avant de le quitter, et les téléchargements sont déchiffrés à la volée. La clé est stockée uniquement dans le trousseau macOS sur ce Mac.
 
+Seul le contenu des fichiers est chiffré. Les noms, chemins et tailles des objets restent lisibles par votre fournisseur de stockage. Les objets chiffrés sont stockés en tant que `application/octet-stream`, si bien que le type de contenu enregistré ne révèle pas le type de fichier d'origine.
+
 Important : si vous perdez la clé, personne ne peut déchiffrer ces objets, pas même nous. Les buckets chiffrés ne peuvent pas être montés dans le Finder dans cette version de Bucketeer.
 
 ## Spotlight

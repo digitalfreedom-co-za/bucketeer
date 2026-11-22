@@ -10,7 +10,9 @@ import BucketeerCore
 
 /// Rule: once encryption is turned on for a bucket, no transfer may
 /// still see the bucket as unencrypted — not even one whose lookup was
-/// already running. In-memory key store only.
+/// already running. A copy that would decrypt an encrypted bucket into a
+/// bucket without a key is recognised before it starts. In-memory key
+/// store only.
 final class BucketEncryptionGateTests: XCTestCase {
     private let accountID = UUID()
 
@@ -28,6 +30,105 @@ final class BucketEncryptionGateTests: XCTestCase {
         let laterAnswer = try await gate.key(accountID: accountID, bucket: "photos")
         XCTAssertNotNil(pendingAnswer)
         XCTAssertNotNil(laterAnswer)
+    }
+
+    @MainActor
+    func testDeclineDoesNotPromptForEveryQueuedUpload() async throws {
+        let store = InMemoryEncryptionKeyStore(encryptedBuckets: [(accountID, "vault")], backupReady: false)
+        var prompts = 0
+        let gate = BucketEncryptionGate(keyStore: store, confirmBackup: { _ in prompts += 1; return false })
+        for _ in 0..<8 {
+            do {
+                _ = try await gate.uploadKey(accountID: accountID, bucket: "vault")
+                XCTFail("Declined upload must fail")
+            } catch {
+                XCTAssertTrue(error is EncryptionError)
+            }
+        }
+        XCTAssertEqual(prompts, 1)
+    }
+
+    func testServerSideCopyMatrix() async {
+        let otherAccountID = UUID()
+        let store = InMemoryEncryptionKeyStore(encryptedBuckets: [(accountID, "vault"), (accountID, "archive")])
+        let gate = BucketEncryptionGate(keyStore: store)
+        let cases: [(String, UUID, String, Bool)] = [
+            ("vault", accountID, "vault", true),
+            ("public", accountID, "public", true),
+            ("public", accountID, "other", true),
+            ("vault", accountID, "public", false),
+            ("public", accountID, "vault", false),
+            ("vault", accountID, "archive", false),
+            ("vault", otherAccountID, "vault", false),
+            ("public", otherAccountID, "public", true)
+        ]
+        for (source, destinationAccount, destination, expected) in cases {
+            let allowed = await gate.allowsServerSideCopy(
+                sourceAccountID: accountID, sourceBucket: source,
+                destinationAccountID: destinationAccount, destinationBucket: destination
+            )
+            XCTAssertEqual(allowed, expected, "\(source) → \(destinationAccount)/\(destination)")
+        }
+    }
+
+    func testServerSideCopyFailsClosedWhenEitherKeyLookupFails() async throws {
+        for failingBucket in ["source", "destination"] {
+            let store = InMemoryEncryptionKeyStore()
+            let gate = BucketEncryptionGate(keyStore: store)
+            if failingBucket == "destination" {
+                // Cache the source so the injected failure reaches the destination lookup.
+                _ = try await gate.key(accountID: accountID, bucket: "source")
+            }
+            await store.failNextLookups(1)
+
+            let allowed = await gate.allowsServerSideCopy(
+                sourceAccountID: accountID, sourceBucket: "source",
+                destinationAccountID: accountID, destinationBucket: "destination"
+            )
+            XCTAssertFalse(allowed, "A failed \(failingBucket) lookup must prevent server-side copy")
+        }
+    }
+
+    // MARK: - Encrypted to plain
+
+    func testEncryptedSourceIntoBucketWithoutKeyIsEncryptedToPlain() {
+        XCTAssertTrue(isEncryptedToPlain(.encrypted, .plain))
+        XCTAssertTrue(isEncryptedToPlain(.encrypted, .unknown), "an unreadable destination may have no key")
+        XCTAssertTrue(isEncryptedToPlain(.unknown, .plain), "an unreadable source may be encrypted")
+    }
+
+    func testEncryptedDestinationKeepsDataEncrypted() {
+        XCTAssertFalse(isEncryptedToPlain(.encrypted, .encrypted))
+        XCTAssertFalse(isEncryptedToPlain(.unknown, .encrypted))
+    }
+
+    func testPlainSourceNeverCounts() {
+        XCTAssertFalse(isEncryptedToPlain(.plain, .plain))
+        XCTAssertFalse(isEncryptedToPlain(.plain, .encrypted))
+        XCTAssertFalse(isEncryptedToPlain(.plain, .unknown))
+    }
+
+    func testCopyInsideOneEncryptedBucketKeepsTheEnvelope() async {
+        let store = InMemoryEncryptionKeyStore(encryptedBuckets: [(accountID, "vault")])
+        let gate = BucketEncryptionGate(keyStore: store)
+
+        let sameBucket = await gate.isEncryptedToPlain(
+            sourceAccountID: accountID, sourceBucket: "vault",
+            destinationAccountID: accountID, destinationBucket: "vault"
+        )
+        let otherBucket = await gate.isEncryptedToPlain(
+            sourceAccountID: accountID, sourceBucket: "vault",
+            destinationAccountID: accountID, destinationBucket: "public"
+        )
+        XCTAssertFalse(sameBucket)
+        XCTAssertTrue(otherBucket)
+    }
+
+    private func isEncryptedToPlain(
+        _ source: BucketEncryptionGate.KeyState,
+        _ destination: BucketEncryptionGate.KeyState
+    ) -> Bool {
+        BucketEncryptionGate.isEncryptedToPlain(source: source, destination: destination, sameBucket: false)
     }
 }
 
@@ -66,6 +167,18 @@ private actor GatedKeyStore: EncryptionKeyStoring {
         let key = BucketEncryptionKey(label: label, accountID: accountID, bucket: bucket)
         keys.append(key)
         return key
+    }
+
+    func copyForReassignment(_ key: BucketEncryptionKey, to accountID: UUID) throws -> BucketEncryptionKey {
+        throw CocoaError(.featureUnsupported)
+    }
+
+    func importKey(_ entry: KeyBackupEntry, replacing expectedID: UUID?) throws {
+        throw CocoaError(.featureUnsupported)
+    }
+
+    func markBackupReady(id: UUID) throws {
+        throw CocoaError(.featureUnsupported)
     }
 
     func keyMaterial(id: UUID) -> Data { Data(count: 32) }

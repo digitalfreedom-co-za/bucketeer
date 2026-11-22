@@ -31,6 +31,10 @@ public struct S3ResumableUploader: Sendable {
     public static let resumableThreshold: Int64 = 50 * 1024 * 1024
     /// Preferred part size; larger files get larger parts.
     public static let partSize: Int = S3FileUpload.defaultPartSize
+    /// Marks checkpoints of envelope uploads, which are initiated as
+    /// `application/octet-stream`. Version 1 (`:bucketeer-enc=1`) uploads
+    /// carry the plaintext's MIME type and must restart, not resume.
+    static let envelopeFingerprintSuffix = ":bucketeer-enc=2"
 
     public let factory: S3ClientFactory
     public let checkpointStore: any CheckpointStoring
@@ -51,6 +55,7 @@ public struct S3ResumableUploader: Sendable {
         key: String,
         localURL: URL,
         contentType: String?,
+        metadata: [String: String]? = nil,
         fileSize: Int64,
         progress: @Sendable @escaping (Int64) async -> Void
     ) async throws {
@@ -66,6 +71,7 @@ public struct S3ResumableUploader: Sendable {
                 key: key,
                 localURL: localURL,
                 contentType: contentType,
+                metadata: metadata,
                 fileSize: fileSize,
                 progress: progress
             )
@@ -84,6 +90,7 @@ public struct S3ResumableUploader: Sendable {
         key: String,
         localURL: URL,
         contentType: String?,
+        metadata: [String: String]? = nil,
         fileSize: Int64,
         progress: @Sendable @escaping (Int64) async -> Void
     ) async throws {
@@ -96,6 +103,7 @@ public struct S3ResumableUploader: Sendable {
             localURL: localURL,
             fileSize: fileSize,
             contentType: contentType,
+            metadata: metadata,
             s3: s3
         )
 
@@ -122,6 +130,7 @@ public struct S3ResumableUploader: Sendable {
                 localURL: localURL,
                 fileSize: fileSize,
                 contentType: contentType,
+                metadata: metadata,
                 s3: s3
             )
             serverParts = []
@@ -150,7 +159,7 @@ public struct S3ResumableUploader: Sendable {
             ))
             try? await checkpointStore.delete(id: checkpoint.id)
             throw BucketeerError.unknown(
-                message: "Multipart upload requires a non-empty file."
+                message: String(localized: "transfer.error.emptyMultipart", bundle: .module)
             )
         }
         let handle: FileHandle
@@ -182,7 +191,7 @@ public struct S3ResumableUploader: Sendable {
             let chunkSize = Int(min(Int64(checkpoint.partSize), remaining))
             guard let chunk = try handle.read(upToCount: chunkSize) else {
                 throw BucketeerError.unknown(
-                    message: "Read returned no data at offset \(offset)."
+                    message: String(localized: "transfer.error.emptyRead \(offset)", bundle: .module)
                 )
             }
             let etag = try await uploadPart(
@@ -223,9 +232,14 @@ public struct S3ResumableUploader: Sendable {
         localURL: URL,
         fileSize: Int64,
         contentType: String?,
+        metadata: [String: String]? = nil,
         s3: S3
     ) async throws -> MultipartUploadCheckpoint {
+        // Initiation fixes metadata and Content-Type for the upload's
+        // lifetime. Do not resume an older unmarked upload when restoring
+        // a marked cached envelope.
         let fingerprint = MultipartUploadCheckpoint.fingerprint(for: localURL)
+            + (BucketeerEnvelope.isMarked(metadata) ? Self.envelopeFingerprintSuffix : "")
         if let existing = try await checkpointStore.find(
             accountID: account.id,
             bucket: bucket,
@@ -256,12 +270,13 @@ public struct S3ResumableUploader: Sendable {
         let response = try await s3.createMultipartUpload(.init(
             bucket: bucket,
             contentType: contentType,
-            key: key
+            key: key,
+            metadata: metadata
         ))
         guard let uploadId = response.uploadId else {
             throw BucketeerError.providerError(
                 statusCode: 0,
-                message: "createMultipartUpload returned no uploadId."
+                message: String(localized: "transfer.error.missingUploadID", bundle: .module)
             )
         }
         let checkpoint = MultipartUploadCheckpoint(
@@ -330,7 +345,7 @@ public struct S3ResumableUploader: Sendable {
         guard let etag = response.eTag else {
             throw BucketeerError.providerError(
                 statusCode: 0,
-                message: "uploadPart \(partNumber) returned no ETag."
+                message: String(localized: "transfer.error.missingETag \(partNumber)", bundle: .module)
             )
         }
         return etag

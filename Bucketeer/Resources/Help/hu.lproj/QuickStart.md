@@ -75,6 +75,8 @@ Az **Ablak → Tevékenységnapló** (**⌥⌘0**) felsorolja a feltöltéseket,
 
 A **Beállítások → Titkosítás** alatt kulcsot hozhat létre egy buckethez. Ettől kezdve minden, abba a bucketbe történő feltöltés az Ön Macén titkosítódik (AES-256-GCM), mielőtt elhagyná azt, a letöltések pedig menet közben visszafejtődnek. A kulcs kizárólag ezen a Macen, a macOS-kulcskarikában tárolódik.
 
+Csak a fájlok tartalma titkosítódik. Az objektumok nevei, elérési útjai és méretei a tárhelyszolgáltató számára olvashatók maradnak. A titkosított objektumok `application/octet-stream` típussal tárolódnak, így a tárolt tartalomtípus nem árulja el az eredeti fájltípust.
+
 Fontos: ha elveszíti a kulcsot, senki sem tudja visszafejteni ezeket az objektumokat, mi sem. A titkosított bucketek a Bucketeer ezen verziójában nem csatolhatók a Finderbe.
 
 ## Spotlight

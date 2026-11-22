@@ -243,7 +243,7 @@ public enum S3MultipartCopy {
                 bucket: toBucket, cacheControl: kept.cacheControl, contentDisposition: kept.contentDisposition,
                 contentEncoding: kept.contentEncoding, contentLanguage: kept.contentLanguage,
                 contentType: kept.contentType, expires: kept.expires, key: toKey,
-                metadata: source.metadata ?? kept.metadata, storageClass: kept.storageClass, tagging: tagging,
+                metadata: source.metadata.map { BucketeerEnvelope.preservingMarker(in: $0, from: kept.metadata) } ?? kept.metadata, storageClass: kept.storageClass, tagging: tagging,
                 websiteRedirectLocation: kept.websiteRedirectLocation
             )
         }
@@ -251,7 +251,7 @@ public enum S3MultipartCopy {
             bucket: toBucket, cacheControl: replacement.cacheControl.nonEmpty,
             contentDisposition: replacement.contentDisposition.nonEmpty,
             contentEncoding: replacement.contentEncoding.nonEmpty, contentType: replacement.contentType.nonEmpty,
-            key: toKey, metadata: replacement.userMetadata.isEmpty ? nil : replacement.userMetadata,
+            key: toKey, metadata: BucketeerEnvelope.preservingMarker(in: replacement.userMetadata, from: source.properties.metadata),
             storageClass: replacement.storageClass.flatMap(S3.StorageClass.init(rawValue:)), tagging: tagging
         )
     }
@@ -278,7 +278,7 @@ extension SotoObjectWriter: S3ObjectCopying {
 
     public func createMultipartCopy(_ request: S3.CreateMultipartUploadRequest) async throws -> String {
         guard let uploadID = try await s3.createMultipartUpload(request).uploadId else {
-            throw BucketeerError.providerError(statusCode: 0, message: "The provider returned no multipart upload ID.")
+            throw BucketeerError.providerError(statusCode: 0, message: String(localized: "transfer.error.missingUploadID", bundle: .module))
         }
         return uploadID
     }
@@ -303,7 +303,7 @@ extension SotoObjectWriter: S3ObjectCopying {
             uploadId: uploadID
         ))
         guard let etag = output.copyPartResult.eTag else {
-            throw BucketeerError.providerError(statusCode: 0, message: "The provider returned no ETag for part \(partNumber).")
+            throw BucketeerError.providerError(statusCode: 0, message: String(localized: "transfer.error.missingETag \(partNumber)", bundle: .module))
         }
         return etag
     }

@@ -75,6 +75,8 @@ When you delete objects, Bucketeer can keep a local copy on this Mac (**Settings
 
 In **Settings → Encryption** you can create a key for a bucket. From then on, every upload to that bucket is encrypted on your Mac (AES-256-GCM) before it leaves, and downloads are decrypted on the fly. The key is stored in the macOS Keychain on this Mac only.
 
+Only the file contents are encrypted. Object names, paths and sizes stay readable for your storage provider. Encrypted objects are stored as `application/octet-stream`, so their stored content type does not reveal the original file type.
+
 Important: if you lose the key, nobody can decrypt those objects, including us. Encrypted buckets cannot be mounted in Finder in this version of Bucketeer.
 
 ## Spotlight

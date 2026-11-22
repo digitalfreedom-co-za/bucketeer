@@ -103,8 +103,8 @@ both license texts in full.
 
 Bucketeer also uses frameworks that are part of macOS (among them
 Foundation, SwiftUI, SwiftData, AppKit, FileProvider, StoreKit,
-LocalAuthentication, CryptoKit, CryptoTokenKit, CoreSpotlight,
-AppIntents, UniformTypeIdentifiers and Quick Look). They are governed by
+LocalAuthentication, CryptoKit, CoreSpotlight, AppIntents,
+UniformTypeIdentifiers and Quick Look). They are governed by
 the macOS software license agreement; no separate open-source notice
 applies.
 

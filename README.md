@@ -28,12 +28,15 @@ for the development history.
   addressing where the provider needs it
 - **Credentials in the macOS Keychain**, never in the app's database
 - **Touch ID or Mac password** before stored secrets are shown again
-- **Hardware key (technical preview)**: Settings → Security lists
-  connected smart-card readers; unlocking still uses Touch ID or the
-  Mac password in 1.0
+- **Hardware-key unlock (CryptoTokenKit)**: in development for v1.1;
+  the technical preview only appears in Debug builds
 - **Client-side encryption per bucket**: AES-256-GCM on the Mac before
-  upload, decryption on download, key kept in the Keychain and not
-  exportable
+  upload, decryption on download, key kept in the Keychain and
+  optionally exportable as a passphrase-protected `.bktkeys` backup.
+  Only file contents are encrypted: object names, keys (paths) and
+  sizes stay readable to the provider. Encrypted objects are stored as
+  `application/octet-stream`, so their Content-Type does not reveal the
+  original file type
 
 ### Browsing and transfers
 
@@ -214,6 +217,7 @@ BucketeerTests/                     host test target
 | [`Bucketeer/Resources/Legal/PRIVACY_POLICY.md`](Bucketeer/Resources/Legal/PRIVACY_POLICY.md) | Privacy Policy |
 | [`Bucketeer/Resources/Legal/IMPRESSUM.md`](Bucketeer/Resources/Legal/IMPRESSUM.md) | Legal notice (Impressum) |
 | [`Bucketeer/Resources/Legal/OPEN_SOURCE_NOTICES.md`](Bucketeer/Resources/Legal/OPEN_SOURCE_NOTICES.md) | Third-party open-source attributions |
+| [`docs/LEGAL_LANGUAGES.md`](docs/LEGAL_LANGUAGES.md) | Legal languages: EULA, Privacy Policy and Impressum in English and German (`*.de.md`), governing-language rule, open questions |
 
 **Source-available, not OSI open source.** You may read the code, fork
 it for study and contribute back. You may not redistribute it, ship

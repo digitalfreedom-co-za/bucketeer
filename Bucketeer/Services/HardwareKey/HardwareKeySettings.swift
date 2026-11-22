@@ -5,6 +5,9 @@
 //  Created by Marcel R. G. Berger on 25.05.26.
 //
 
+// Debug-only until v1.1 (#33): the hardware-key preview must not be
+// compiled into Release builds.
+#if DEBUG
 import Foundation
 import Observation
 
@@ -42,3 +45,4 @@ final class HardwareKeySettings {
         self.preferredSlot = defaults.string(forKey: Self.preferredSlotKey)
     }
 }
+#endif

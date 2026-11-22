@@ -48,7 +48,7 @@ struct UploadFileIntent: AppIntent {
         let trimmedKey = key.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedBucket.isEmpty, !trimmedKey.isEmpty else {
             throw BucketeerError.unknown(
-                message: "Bucket and key must both be non-empty."
+                message: String(localized: "transfer.error.emptyDestination")
             )
         }
         let container = try await AppIntentsBridge.shared.container()

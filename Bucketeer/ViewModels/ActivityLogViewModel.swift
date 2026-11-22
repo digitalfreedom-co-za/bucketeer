@@ -140,7 +140,7 @@ final class ActivityLogViewModel {
 
     /// RFC 4180 quoting: wrap in double quotes and double-up embedded
     /// quotes whenever the cell contains a comma, quote, CR, or LF.
-    private static func escapeCSV(_ value: String) -> String {
+    nonisolated private static func escapeCSV(_ value: String) -> String {
         let needsQuoting = value.contains(",") || value.contains("\"") ||
             value.contains("\n") || value.contains("\r")
         guard needsQuoting else { return value }

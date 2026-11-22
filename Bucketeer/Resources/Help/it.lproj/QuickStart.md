@@ -75,6 +75,8 @@ Quando elimini degli oggetti, Bucketeer può conservarne una copia locale su que
 
 In **Impostazioni → Crittografia** puoi creare una chiave per un bucket. Da quel momento ogni caricamento in quel bucket viene crittografato sul tuo Mac (AES-256-GCM) prima di uscire, e i download vengono decrittografati al volo. La chiave è salvata nel portachiavi di macOS solo su questo Mac.
 
+Viene crittografato solo il contenuto dei file. Nomi, percorsi e dimensioni degli oggetti restano leggibili per il tuo provider di storage. Gli oggetti crittografati vengono salvati come `application/octet-stream`, così il tipo di contenuto salvato non rivela il tipo di file originale.
+
 Importante: se perdi la chiave, nessuno può decrittografare quegli oggetti, nemmeno noi. In questa versione di Bucketeer i bucket crittografati non possono essere montati nel Finder.
 
 ## Spotlight

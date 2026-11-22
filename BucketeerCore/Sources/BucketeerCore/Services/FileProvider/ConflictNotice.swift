@@ -50,9 +50,8 @@ public enum ConflictNotice {
 }
 
 extension Bundle {
-    /// The app bundle, also from inside the File Provider extension
-    /// (`Bucketeer.app/Contents/PlugIns/<extension>.appex`), whose
-    /// string catalog the extension does not carry itself.
+    /// Prefer the containing app's catalog inside the File Provider
+    /// extension; the extension also embeds the catalog as a fallback.
     static var bucketeerApp: Bundle {
         let url = Bundle.main.bundleURL
         guard url.pathExtension == "appex" else { return .main }

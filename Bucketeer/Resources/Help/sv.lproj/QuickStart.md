@@ -75,6 +75,8 @@ När du raderar objekt kan Bucketeer spara en lokal kopia på den här datorn (*
 
 Under **Inställningar → Kryptering** kan du skapa en nyckel för en bucket. Från och med då krypteras varje uppladdning till den bucketen på din Mac (AES-256-GCM) innan den skickas, och hämtningar dekrypteras direkt. Nyckeln sparas endast i macOS-nyckelringen på den här datorn.
 
+Bara filernas innehåll krypteras. Objektnamn, sökvägar och storlekar förblir läsbara för din lagringsleverantör. Krypterade objekt lagras som `application/octet-stream`, så att den lagrade innehållstypen inte avslöjar den ursprungliga filtypen.
+
 Viktigt: om du förlorar nyckeln kan ingen dekryptera objekten, inte heller vi. Krypterade buckets kan inte monteras i Finder i den här versionen av Bucketeer.
 
 ## Spotlight

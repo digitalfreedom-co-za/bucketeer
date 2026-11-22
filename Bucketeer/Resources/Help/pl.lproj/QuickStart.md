@@ -75,6 +75,8 @@ Gdy usuwasz obiekty, Bucketeer może zachować lokalną kopię na tym Macu (**Us
 
 W **Ustawienia → Szyfrowanie** możesz utworzyć klucz dla bucketu. Od tej chwili każdy plik wysyłany do tego bucketu jest szyfrowany na Twoim Macu (AES-256-GCM), zanim go opuści, a pobierane pliki są odszyfrowywane na bieżąco. Klucz jest przechowywany w pęku kluczy macOS wyłącznie na tym Macu.
 
+Szyfrowana jest tylko zawartość plików. Nazwy obiektów, ścieżki i rozmiary pozostają czytelne dla Twojego dostawcy pamięci. Zaszyfrowane obiekty są zapisywane jako `application/octet-stream`, więc zapisany typ zawartości nie zdradza oryginalnego typu pliku.
+
 Ważne: jeśli zgubisz klucz, nikt nie odszyfruje tych obiektów, także my. Zaszyfrowanych bucketów nie można zamontować w Finderze w tej wersji Bucketeer.
 
 ## Spotlight
