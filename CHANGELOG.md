@@ -13,6 +13,12 @@ before that is internal phase work on the `development` branch.
 
 ## [Unreleased] — `development` branch
 
+### Turkish UI (#72)
+- The app UI is localised in Turkish (tr): every string catalog (app,
+  BucketeerCore, App Shortcuts, hardware key), `tr.lproj`
+  InfoPlist strings and the in-app help. Terms follow the Turkish
+  store texts in `docs/APP_STORE_METADATA.md`. 21 UI locales in total.
+
 ### Encryption content type (#45)
 - Encrypted uploads, including trash restores of encrypted objects,
   are stored as `application/octet-stream` instead of the plaintext's
