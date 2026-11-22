@@ -69,9 +69,11 @@ only; the app UI stays at the 20 locales above. ASC held no tr
 localization on 2026-11-09; it is added during the #22 write.
 
 The launch checklist in [`APP_STORE_METADATA.md`](APP_STORE_METADATA.md)
-still lists "Add localised App Store descriptions" as open. The ASC
-drafts show this work was done in ASC directly, so the repo document
-is behind ASC. The ASC texts have not been reviewed by native speakers
+listed "Add localised App Store descriptions" as open when this
+research ran. The ASC drafts show this work was done in ASC directly,
+so the repo document was behind ASC. The checklist item now reads
+"Add localised App Store metadata for all 21 store locales" and says
+which locales still need their descriptions brought into the file. The ASC texts have not been reviewed by native speakers
 as far as this research can tell; no review record was found.
 
 ## 4. Current draft baseline
@@ -287,8 +289,9 @@ promotional text for users.
 ## 7. Recommended drafts
 
 Adopted for en-US, en-GB and de-DE on 2026-11-22 (decision log #14),
-see the update note at the top. Not live. Field lengths were checked with a script on 2026-11-09:
-characters for name and subtitle, UTF-8 bytes for keywords, and a
+see the update note at the top. Not live. Field lengths were
+checked with a script on 2026-11-09: characters for name and
+subtitle, UTF-8 bytes for keywords, and a
 check that no keyword repeats a word from the name, subtitle or the
 category names.
 

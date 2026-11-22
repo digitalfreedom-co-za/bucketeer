@@ -87,10 +87,10 @@ locales: "Store locales (21)" below.
 >   accounts, server-side when endpoints match, local round-trip
 >   otherwise — automatically picks the right path
 > - **Touch ID / password gate** for revealing stored secrets
-> - **Localised in 21 locales** — English (US and UK), Czech, Danish,
+> - **Localised in 20 locales** — English (US and UK), Czech, Danish,
 >   Dutch, Finnish, French, German, Greek, Hungarian, Italian, Japanese,
 >   Korean, Norwegian, Polish, Portuguese (Brazil and Portugal), Russian,
->   Spanish, Swedish, Turkish
+>   Spanish, Swedish
 >
 > ### How pricing works
 >
@@ -299,8 +299,10 @@ Promotional text, 151 of 170 characters:
 > dosya aktar, bucket'ları bağla ve eşitle. Hepsi tek bir yerel macOS
 > uygulamasında.
 
-Description, 3875 of 4000 characters as plain text (3999 with the
-markdown emphasis kept):
+Description, 3904 of 4000 characters as plain text, counted with
+the line wraps and indentation as written. With the markdown emphasis
+kept, the same count is 4028 and over the limit, so paste the plain
+text:
 
 > Bucketeer, nesne depolamayla çalışan herkes için bir macOS
 > uygulamasıdır. **AWS S3, Azure Blob Storage, Civo, Cloudflare
@@ -311,7 +313,7 @@ markdown emphasis kept):
 > **Yerel, hızlı, gizliliğe saygılı.** Tamamen Swift 6 ve SwiftUI ile
 > geliştirildi. Kimlik bilgilerin macOS Anahtar Zinciri'nde saklanır.
 > Telemetri yok, analiz veya izleme SDK'sı yok, Bucketeer sunucusu yok.
-> Bucketeer yalnızca yapılandırdığın nesne depolamaya ve Pro denemesi,
+> Bucketeer doğrudan yapılandırdığın nesne depolamaya ve Pro denemesi,
 > satın alma ve geri yükleme için App Store'a (StoreKit) bağlanır.
 >
 > ### Neler yapabilirsin
@@ -361,10 +363,11 @@ markdown emphasis kept):
 >   gidiş-dönüşle; doğru yol otomatik seçilir
 > - **Touch ID / parola koruması**: kayıtlı gizli bilgileri göstermek
 >   için
-> - **21 dilde yerelleştirildi**: İngilizce (ABD ve İngiltere),
->   Çekçe, Danca, Felemenkçe, Fince, Fransızca, Almanca, Yunanca,
->   Macarca, İtalyanca, Japonca, Korece, Norveççe, Lehçe, Portekizce
->   (Brezilya ve Portekiz), Rusça, İspanyolca, İsveççe, Türkçe
+> - **Uygulama 20 dilde yerelleştirildi**: İngilizce (ABD ve
+>   İngiltere), Çekçe, Danca, Felemenkçe, Fince, Fransızca, Almanca,
+>   Yunanca, Macarca, İtalyanca, Japonca, Korece, Norveççe, Lehçe,
+>   Portekizce (Brezilya ve Portekiz), Rusça, İspanyolca, İsveççe.
+>   Türkçe arayüz henüz yok.
 >
 > ### Fiyatlandırma
 >
@@ -384,11 +387,10 @@ markdown emphasis kept):
 
 Notes for review:
 
-- The "21 dilde yerelleştirildi" bullet mirrors the English "Localised
-  in 21 locales" bullet. Only the store listing is Turkish; the app UI
-  has 20 locales and no Turkish. Before #22, decide whether both
-  bullets should say "store listing in 21 locales, app in 20" instead,
-  so Turkish users are not promised a Turkish UI.
+- The UI-language bullet ("Uygulama 20 dilde yerelleştirildi") lists
+  the 20 app UI locales, matching the English "Localised in 20
+  locales" bullet, and says that there is no Turkish UI yet. Only the
+  store listing is Turkish.
 - The price mirrors the English `€14.99`. The Turkish storefront shows
   the local price of the Tier 15 IAP.
 - What's New and the "Support period" block are not drafted in
