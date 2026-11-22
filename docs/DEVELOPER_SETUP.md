@@ -216,6 +216,15 @@ in-memory Keychain, runs no launch work, seeds the JSON file given by
 `-BucketeerDemoScreen` (`01_browser` … `09_pro`, `paywall`) in a
 1440 × 900 pt window on a Retina display, in light appearance.
 
+Each `syncJobs` entry should supply integer `completed`, `failed` and
+`planned` counts, plus optional `moveDeleteFailures`, for example
+`"completed": 12, "failed": 3, "planned": 14, "moveDeleteFailures": 2`.
+The `failed` total already includes source deletion failures. These
+counts use the same localized summary formats as real sync runs.
+Legacy `lastRunSummary` strings still decode and display verbatim when
+the three counts are absent; replace them with counts before localized
+screenshot recaptures. Counts take precedence if both forms are present.
+
 ---
 
 ## 9. Adding a new language

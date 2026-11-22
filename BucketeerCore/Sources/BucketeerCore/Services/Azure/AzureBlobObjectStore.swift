@@ -97,7 +97,7 @@ public struct AzureBlobObjectStore: S3Browsing {
 
         let (_, response) = try await session.azureData(for: request)
         guard let http = response as? HTTPURLResponse else {
-            throw BucketeerError.unknown(message: "Azure HEAD returned a non-HTTP response.")
+            throw BucketeerError.unknown(message: String(localized: "transfer.error.nonHTTP \("Azure HEAD")", bundle: .module))
         }
         if let mapped = AzureBlobObjectStore.mapHTTP(
             http, body: nil, bucket: bucket, key: key
@@ -270,6 +270,22 @@ public struct AzureBlobObjectStore: S3Browsing {
         // metadata-name rule, and reject non-ASCII values which
         // Azure rejects with HTTP 400 anyway.
         if let metadata, !metadata.isEmpty {
+            // Copy Blob replaces metadata when any metadata header is supplied.
+            var head = URLRequest(url: builder.blobPropertiesURL(container: fromBucket, blob: fromKey))
+            head.httpMethod = "HEAD"
+            signer.sign(&head)
+            let (_, response) = try await session.azureData(for: head)
+            guard let http = response as? HTTPURLResponse else {
+                throw URLError(.badServerResponse)
+            }
+            if let mapped = Self.mapHTTP(http, body: nil, bucket: fromBucket, key: fromKey) { throw mapped }
+            let markerName = BucketeerEnvelope.azureMetadataKey
+            let original = [markerName: http.value(forHTTPHeaderField: "x-ms-meta-" + markerName) ?? ""]
+            let metadata = BucketeerEnvelope.preservingMarker(in: metadata, from: original, name: markerName)
+            if account.provider.conditionalRequests.contains(.copySourceIfMatch),
+               conditions["x-ms-source-if-match"] == nil, let etag = http.value(forHTTPHeaderField: "ETag") {
+                request.setValue(etag, forHTTPHeaderField: "x-ms-source-if-match")
+            }
             for (key, value) in metadata {
                 let lowerKey = key.lowercased()
                 guard AzureRequestBuilder.isValidAzureMetadataName(lowerKey),
@@ -292,7 +308,7 @@ public struct AzureBlobObjectStore: S3Browsing {
         // source while the copy was still pending, losing data.
         let (_, response) = try await session.azureData(for: request)
         guard let http = response as? HTTPURLResponse else {
-            throw BucketeerError.unknown(message: "Azure Copy Blob returned a non-HTTP response.")
+            throw BucketeerError.unknown(message: String(localized: "transfer.error.nonHTTP \("Azure Copy Blob")", bundle: .module))
         }
         if let mapped = AzureBlobObjectStore.mapHTTP(http, body: nil, bucket: toBucket, key: toKey) {
             throw mapped
@@ -311,7 +327,7 @@ public struct AzureBlobObjectStore: S3Browsing {
         case let other:
             throw BucketeerError.providerError(
                 statusCode: http.statusCode,
-                message: "Azure copy returned status \(other)."
+                message: String(localized: "transfer.error.copyStatus \(other)", bundle: .module)
             )
         }
     }
@@ -337,7 +353,7 @@ public struct AzureBlobObjectStore: S3Browsing {
             signer.sign(&head)
             let (_, response) = try await session.azureData(for: head)
             guard let http = response as? HTTPURLResponse else {
-                throw BucketeerError.unknown(message: "Azure copy poll returned a non-HTTP response.")
+                throw BucketeerError.unknown(message: String(localized: "transfer.error.nonHTTP \("Azure Get Blob Properties")", bundle: .module))
             }
             if let mapped = AzureBlobObjectStore.mapHTTP(http, body: nil, bucket: container, key: key) {
                 throw mapped
@@ -353,18 +369,18 @@ public struct AzureBlobObjectStore: S3Browsing {
                 let description = http.value(forHTTPHeaderField: "x-ms-copy-status-description") ?? status
                 throw BucketeerError.providerError(
                     statusCode: http.statusCode,
-                    message: "Azure copy \(status): \(description)"
+                    message: String(localized: "transfer.error.copyFailed \(status) \(description)", bundle: .module)
                 )
             default:
                 throw BucketeerError.providerError(
                     statusCode: http.statusCode,
-                    message: "Azure copy reported unexpected status \(status)."
+                    message: String(localized: "transfer.error.copyStatus \(status)", bundle: .module)
                 )
             }
         }
         throw BucketeerError.providerError(
             statusCode: 504,
-            message: "Azure copy did not finish within \(Int(Self.copyPollTimeoutSeconds))s."
+            message: String(localized: "transfer.error.copyTimeout \(Int(Self.copyPollTimeoutSeconds))", bundle: .module)
         )
     }
 
@@ -410,7 +426,7 @@ public struct AzureBlobObjectStore: S3Browsing {
             blob: key,
             ttl: max(60, min(ttl, 7 * 24 * 60 * 60))
         ) else {
-            throw BucketeerError.unknown(message: "Failed to construct Azure SAS URL.")
+            throw BucketeerError.unknown(message: String(localized: "transfer.error.sasURL", bundle: .module))
         }
         return url
     }
@@ -477,7 +493,7 @@ public struct AzureBlobObjectStore: S3Browsing {
         signer.sign(&request)
         let (_, response) = try await session.azureData(for: request)
         guard let http = response as? HTTPURLResponse else {
-            throw BucketeerError.unknown(message: "Azure snapshot restore returned a non-HTTP response.")
+            throw BucketeerError.unknown(message: String(localized: "transfer.error.nonHTTP \("Azure Copy Blob")", bundle: .module))
         }
         if let mapped = AzureBlobObjectStore.mapHTTP(http, body: nil, bucket: bucket, key: key) {
             throw mapped
@@ -498,12 +514,12 @@ public struct AzureBlobObjectStore: S3Browsing {
             let description = http.value(forHTTPHeaderField: "x-ms-copy-status-description") ?? status
             throw BucketeerError.providerError(
                 statusCode: http.statusCode,
-                message: "Azure snapshot restore \(status): \(description)"
+                message: String(localized: "transfer.error.copyFailed \(status) \(description)", bundle: .module)
             )
         default:
             throw BucketeerError.providerError(
                 statusCode: http.statusCode,
-                message: "Azure snapshot restore returned unknown status \(status)."
+                message: String(localized: "transfer.error.copyStatus \(status)", bundle: .module)
             )
         }
     }
@@ -519,7 +535,7 @@ public struct AzureBlobObjectStore: S3Browsing {
         // `delete(account:bucket:keys:)`.
         guard !versionId.isEmpty else {
             throw BucketeerError.unknown(
-                message: "Cannot delete the live blob through deleteVersion — use delete(keys:) instead."
+                message: String(localized: "transfer.error.liveBlob", bundle: .module)
             )
         }
         let signer = try await credentialsCache.signer(for: account)
@@ -531,7 +547,7 @@ public struct AzureBlobObjectStore: S3Browsing {
         signer.sign(&request)
         let (data, response) = try await session.azureData(for: request)
         guard let http = response as? HTTPURLResponse else {
-            throw BucketeerError.unknown(message: "Azure snapshot delete returned a non-HTTP response.")
+            throw BucketeerError.unknown(message: String(localized: "transfer.error.nonHTTP \("Azure Delete Blob")", bundle: .module))
         }
         if let mapped = AzureBlobObjectStore.mapHTTP(http, body: data, bucket: bucket, key: key) {
             throw mapped
@@ -563,7 +579,7 @@ public struct AzureBlobObjectStore: S3Browsing {
         signer.sign(&head)
         let (_, headResponse) = try await session.azureData(for: head)
         guard let http = headResponse as? HTTPURLResponse else {
-            throw BucketeerError.unknown(message: "Azure HEAD for metadata returned a non-HTTP response.")
+            throw BucketeerError.unknown(message: String(localized: "transfer.error.nonHTTP \("Azure Get Blob Properties")", bundle: .module))
         }
         if let mapped = AzureBlobObjectStore.mapHTTP(http, body: nil, bucket: bucket, key: key) {
             throw mapped
@@ -650,7 +666,7 @@ public struct AzureBlobObjectStore: S3Browsing {
         let (_, headResponse) = try await session.azureData(for: head)
         guard let headHTTP = headResponse as? HTTPURLResponse else {
             throw BucketeerError.unknown(
-                message: "Azure HEAD before saveMetadata returned a non-HTTP response."
+                message: String(localized: "transfer.error.nonHTTP \("Azure Get Blob Properties")", bundle: .module)
             )
         }
         if let mapped = AzureBlobObjectStore.mapHTTP(headHTTP, body: nil, bucket: bucket, key: key) {
@@ -703,6 +719,9 @@ public struct AzureBlobObjectStore: S3Browsing {
                 forHTTPHeaderField: "x-ms-meta-" + lowerKey
             )
         }
+        if headHTTP.value(forHTTPHeaderField: "x-ms-meta-" + BucketeerEnvelope.azureMetadataKey) == "1" {
+            metaRequest.setValue("1", forHTTPHeaderField: "x-ms-meta-" + BucketeerEnvelope.azureMetadataKey)
+        }
         signer.sign(&metaRequest)
         try await fireAndCheck(request: metaRequest, bucket: bucket, key: key)
 
@@ -725,7 +744,7 @@ public struct AzureBlobObjectStore: S3Browsing {
         let (data, response) = try await session.azureData(for: request)
         guard let http = response as? HTTPURLResponse else {
             throw BucketeerError.unknown(
-                message: "Azure metadata update returned a non-HTTP response."
+                message: String(localized: "transfer.error.nonHTTP \("Azure Set Blob Metadata")", bundle: .module)
             )
         }
         if let mapped = AzureBlobObjectStore.mapHTTP(http, body: data, bucket: bucket, key: key) {
@@ -770,7 +789,7 @@ public struct AzureBlobObjectStore: S3Browsing {
             throw Self.mapTransport(error)
         }
         guard let http = response as? HTTPURLResponse else {
-            throw BucketeerError.unknown(message: "Azure response was not HTTP.")
+            throw BucketeerError.unknown(message: String(localized: "transfer.error.nonHTTP \("Azure")", bundle: .module))
         }
         if let mapped = AzureBlobObjectStore.mapHTTP(
             http, body: data, bucket: bucket, key: key
@@ -798,7 +817,7 @@ public struct AzureBlobObjectStore: S3Browsing {
 
         let (_, response) = try await session.azureData(for: request)
         guard let http = response as? HTTPURLResponse else {
-            throw BucketeerError.unknown(message: "Azure DELETE returned a non-HTTP response.")
+            throw BucketeerError.unknown(message: String(localized: "transfer.error.nonHTTP \("Azure DELETE")", bundle: .module))
         }
         if let mapped = AzureBlobObjectStore.mapHTTP(
             http, body: nil, bucket: bucket, key: key
@@ -916,7 +935,7 @@ public struct AzureBlobObjectStore: S3Browsing {
             throw Self.mapTransport(error)
         }
         guard let http = response as? HTTPURLResponse else {
-            throw BucketeerError.unknown(message: "Azure response was not HTTP.")
+            throw BucketeerError.unknown(message: String(localized: "transfer.error.nonHTTP \("Azure")", bundle: .module))
         }
         if let mapped = Self.mapHTTP(http, body: data, bucket: nil, key: nil) {
             throw mapped

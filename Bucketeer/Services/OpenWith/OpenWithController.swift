@@ -166,12 +166,24 @@ final class OpenWithController {
             return
         }
         do {
-            let app = try await NSWorkspace.shared.open(
-                [localURL],
-                withApplicationAt: appURL,
-                configuration: NSWorkspace.OpenConfiguration()
-            )
-            startWatching(localURL, applicationPID: app.processIdentifier)
+            // Take only the process id across the await. NSRunningApplication
+            // is not Sendable on the Xcode 16.0 SDK.
+            let pid: pid_t = try await withCheckedThrowingContinuation { continuation in
+                NSWorkspace.shared.open(
+                    [localURL],
+                    withApplicationAt: appURL,
+                    configuration: NSWorkspace.OpenConfiguration()
+                ) { app, error in
+                    if let error {
+                        continuation.resume(throwing: error)
+                    } else if let app {
+                        continuation.resume(returning: app.processIdentifier)
+                    } else {
+                        continuation.resume(throwing: CocoaError(.fileNoSuchFile))
+                    }
+                }
+            }
+            startWatching(localURL, applicationPID: pid)
         } catch {
             await discard(localURL)
             report(error, for: object.displayName)

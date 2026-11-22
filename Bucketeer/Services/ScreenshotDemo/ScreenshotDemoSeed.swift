@@ -30,7 +30,27 @@ struct ScreenshotDemoSeed: Decodable {
         let destinationBucket: String
         let schedule: String
         let lastRunHoursAgo: Double
-        let lastRunSummary: String
+        let completed: Int?
+        /// Includes source deletion failures, just like the sync engine's total.
+        let failed: Int?
+        let planned: Int?
+        let moveDeleteFailures: Int?
+        private let legacyLastRunSummary: String?
+
+        private enum CodingKeys: String, CodingKey {
+            case name, mode, account, sourceBucket, destinationBucket, schedule, lastRunHoursAgo
+            case completed, failed, planned, moveDeleteFailures
+            case legacyLastRunSummary = "lastRunSummary"
+        }
+
+        var lastRunSummary: String? {
+            // Old seeds remain readable; recaptures should supply all three counts.
+            guard let completed, let failed, let planned else { return legacyLastRunSummary }
+            if let moveDeleteFailures, moveDeleteFailures > 0 {
+                return String(localized: "sync.summary.run \(completed) \(failed) \(planned) \(moveDeleteFailures)")
+            }
+            return String(localized: "sync.summary.run \(completed) \(failed) \(planned)")
+        }
     }
 
     struct WatchFolder: Decodable {

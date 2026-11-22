@@ -75,6 +75,8 @@ Quando elimina objetos, o Bucketeer pode guardar uma cópia local neste Mac (**D
 
 Em **Definições → Encriptação** pode criar uma chave para um bucket. A partir daí, cada carregamento para esse bucket é encriptado no seu Mac (AES-256-GCM) antes de sair, e os descarregamentos são desencriptados durante a transferência. A chave é guardada no porta-chaves do macOS apenas neste Mac.
 
+Apenas o conteúdo dos ficheiros é encriptado. Os nomes, caminhos e tamanhos dos objetos continuam legíveis para o seu fornecedor de armazenamento. Os objetos encriptados são guardados como `application/octet-stream`, para que o tipo de conteúdo guardado não revele o tipo de ficheiro original.
+
 Importante: se perder a chave, ninguém consegue desencriptar esses objetos, nem nós. Nesta versão do Bucketeer, os buckets encriptados não podem ser montados no Finder.
 
 ## Spotlight

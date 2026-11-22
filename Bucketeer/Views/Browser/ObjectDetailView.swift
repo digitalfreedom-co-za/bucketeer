@@ -167,7 +167,9 @@ private struct PreviewArea: View {
     @SwiftUI.State private var state: State = .idle
 
     var body: some View {
-        Group {
+        // Keep the task on a stable container: Group applies it to the
+        // changing state branches and restarts the load on each transition.
+        ZStack {
             switch state {
             case .ready(let url):
                 QuickLookPreviewView(url: url)

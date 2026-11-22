@@ -155,10 +155,13 @@ struct FinderChangeTrackerTests {
         let results = [await one.result, await two.result]
         let committed = results.compactMap { try? $0.get() }
         #expect(committed.count == 1)
-        #expect(results.contains { result in
+        // Pattern-match outside #expect: Xcode 16.0 / Swift 6.0 crashes in
+        // expandMacroExpr while type-checking a case pattern inside the macro.
+        let expired = results.contains { result in
             if case .failure(FinderChangeTracker.TrackerError.anchorExpired) = result { return true }
             return false
-        })
+        }
+        #expect(expired)
     }
 
     @Test("A cancelled change request does not commit")

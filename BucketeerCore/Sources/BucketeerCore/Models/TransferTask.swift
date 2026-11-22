@@ -43,6 +43,11 @@ public struct TransferTask: Identifiable, Hashable, Sendable {
     public let localURL: URL
     public var state: TransferState
     public let startedAt: Date
+    /// Whether the upload is sealed with the bucket's key or carries
+    /// already-encrypted bytes. Set only once the transfer has resolved
+    /// the key, never from queue-time state; a queued row can only say
+    /// that encryption is expected.
+    public var isEncrypted: Bool
 
     public init(
         id: UUID = UUID(),
@@ -52,7 +57,8 @@ public struct TransferTask: Identifiable, Hashable, Sendable {
         key: String,
         localURL: URL,
         state: TransferState = .queued,
-        startedAt: Date = Date()
+        startedAt: Date = Date(),
+        isEncrypted: Bool = false
     ) {
         self.id = id
         self.direction = direction
@@ -62,5 +68,6 @@ public struct TransferTask: Identifiable, Hashable, Sendable {
         self.localURL = localURL
         self.state = state
         self.startedAt = startedAt
+        self.isEncrypted = isEncrypted
     }
 }

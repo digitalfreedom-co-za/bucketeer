@@ -98,6 +98,10 @@ public struct SyncJob: Identifiable, Hashable, Sendable {
     public var includeGlobs: [String]
     public var excludeGlobs: [String]
     public var deletePropagation: Bool
+    /// Lets a job decrypt objects from an encrypted bucket and store
+    /// them unencrypted in a destination bucket without a key. Off by
+    /// default: such a job refuses to run.
+    public var allowsDecryptedCopies: Bool
     public var schedule: SyncSchedule
     public var concurrency: Int
     public var lastRunAt: Date?
@@ -114,6 +118,7 @@ public struct SyncJob: Identifiable, Hashable, Sendable {
         includeGlobs: [String] = [],
         excludeGlobs: [String] = [],
         deletePropagation: Bool = false,
+        allowsDecryptedCopies: Bool = false,
         schedule: SyncSchedule = .manual,
         concurrency: Int = 4,
         lastRunAt: Date? = nil,
@@ -129,6 +134,7 @@ public struct SyncJob: Identifiable, Hashable, Sendable {
         self.includeGlobs = includeGlobs
         self.excludeGlobs = excludeGlobs
         self.deletePropagation = deletePropagation
+        self.allowsDecryptedCopies = allowsDecryptedCopies
         self.schedule = schedule
         self.concurrency = concurrency
         self.lastRunAt = lastRunAt

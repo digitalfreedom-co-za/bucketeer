@@ -35,7 +35,8 @@ final class SheetRenderTests: XCTestCase {
         try await renderAndAssert(
             CrossAccountCopySheet(sourceAccount: demo.aws, sourceBucket: "photos-2026",
                                   keys: ["report.pdf", "readme.txt"], accounts: demo.accounts,
-                                  onSubmit: { _, _, _, _ in [] }),
+                                  isEncryptedToPlain: { _, _ in false },
+                                  onSubmit: { _, _, _, _, _ in [] }),
             name: "CrossAccountCopySheet_populated", size: sheetSize,
             shows: ["photos-2026", "Keep source objects"])
     }

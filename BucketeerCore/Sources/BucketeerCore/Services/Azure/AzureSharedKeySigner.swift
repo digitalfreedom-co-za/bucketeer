@@ -90,20 +90,24 @@ struct AzureSharedKeySigner: Sendable {
         // Date is empty when x-ms-date is present (it always is for us).
         let dateValue = lookup["x-ms-date"] != nil ? "" : (lookup["date"] ?? "")
 
-        let lines = [
-            method,
-            lookup["content-encoding"] ?? "",
-            lookup["content-language"] ?? "",
+        // Typed sub-arrays keep the type checker from timing out on one
+        // long literal of nil-coalescing lookups.
+        let contentHeaders: [String] = [
+            lookup.value("content-encoding"),
+            lookup.value("content-language"),
             contentLength,
-            lookup["content-md5"] ?? "",
-            lookup["content-type"] ?? "",
-            dateValue,
-            lookup["if-modified-since"] ?? "",
-            lookup["if-match"] ?? "",
-            lookup["if-none-match"] ?? "",
-            lookup["if-unmodified-since"] ?? "",
-            lookup["range"] ?? ""
-        ].joined(separator: "\n")
+            lookup.value("content-md5"),
+            lookup.value("content-type")
+        ]
+        let conditionalHeaders: [String] = [
+            lookup.value("if-modified-since"),
+            lookup.value("if-match"),
+            lookup.value("if-none-match"),
+            lookup.value("if-unmodified-since"),
+            lookup.value("range")
+        ]
+        let fields: [String] = [method] + contentHeaders + [dateValue] + conditionalHeaders
+        let lines: String = fields.joined(separator: "\n")
 
         let canonicalHeaders = Self.canonicalHeaders(headers)
         let canonicalResource = canonicalResource(for: request)
@@ -203,4 +207,7 @@ private struct HeaderLookup {
         self.storage = lowered
     }
     subscript(key: String) -> String? { storage[key.lowercased()] }
+
+    /// The header value, or an empty string when the header is absent.
+    func value(_ key: String) -> String { self[key] ?? "" }
 }

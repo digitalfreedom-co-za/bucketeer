@@ -377,9 +377,23 @@ actor SyncEngine {
             }
         }
 
+        // One lookup decides both the consent check and whether this
+        // run's uploads need a key, so a key removed afterwards makes
+        // them fail instead of store plaintext.
+        let destinationState = await destinationKeyState(job)
+        if !job.allowsDecryptedCopies, await storesDecryptedCopies(job, destination: destinationState) {
+            updateStatus(id: job.id, run: token, phase: .failed, message: String(
+                localized: "sync.error.encryptedToPlain",
+                defaultValue: """
+                The source bucket is encrypted, but the destination bucket has no encryption key. \
+                Turn on “Store unencrypted copies of encrypted files” in the job to allow this sync.
+                """
+            ))
+            return
+        }
         let context: SyncRunContext
         do {
-            context = try await resolveContext(for: job)
+            context = try await resolveContext(for: job, destinationState: destinationState)
         } catch {
             updateStatus(
                 id: job.id,
@@ -579,8 +593,8 @@ actor SyncEngine {
 
         failed += plan.collisions.count + keptSources.count
         var summary = moveDeleteFailures > 0
-            ? "\(completed) ok / \(failed) failed (\(moveDeleteFailures) move-delete) / \(planned) planned"
-            : "\(completed) ok / \(failed) failed / \(planned) planned"
+            ? String(localized: "sync.summary.run \(completed) \(failed) \(planned) \(moveDeleteFailures)")
+            : String(localized: "sync.summary.run \(completed) \(failed) \(planned)")
         if !plan.collisions.isEmpty {
             summary += " · " + String(localized: "sync.summary.collisions \(plan.collisions.count)")
         }
@@ -629,16 +643,19 @@ actor SyncEngine {
     struct SyncRunContext: Sendable {
         let source: EndpointContext
         let destination: EndpointContext
+        /// The destination key state observed at preflight.
+        let destinationState: BucketEncryptionGate.KeyState
     }
 
     /// Resolve both sides of the job into the runtime context the rest
     /// of the engine needs: S3 sides get an `S3Account`, local sides
     /// get a security-scoped URL with the scope already started.
-    private func resolveContext(for job: SyncJob) async throws -> SyncRunContext {
+    private func resolveContext(for job: SyncJob, destinationState: BucketEncryptionGate.KeyState) async throws -> SyncRunContext {
         let accounts = try await accountStore.all()
         return SyncRunContext(
             source: try resolveEndpointContext(for: job.source, accounts: accounts),
-            destination: try resolveEndpointContext(for: job.destination, accounts: accounts)
+            destination: try resolveEndpointContext(for: job.destination, accounts: accounts),
+            destinationState: destinationState
         )
     }
 
@@ -649,7 +666,7 @@ actor SyncEngine {
         switch endpoint {
         case .s3(let accountID, _, _):
             guard let account = accounts.first(where: { $0.id == accountID }) else {
-                throw BucketeerError.unknown(message: "Sync account no longer exists.")
+                throw BucketeerError.unknown(message: String(localized: "transfer.error.accountMissing"))
             }
             return EndpointContext(
                 account: account,
@@ -752,12 +769,12 @@ actor SyncEngine {
         switch endpoint {
         case .s3(_, let bucket, let prefix):
             guard let account = context.account else {
-                throw BucketeerError.unknown(message: "Missing S3 account for endpoint.")
+                throw BucketeerError.unknown(message: String(localized: "transfer.error.accountMissing"))
             }
             return try await listS3Recursively(account: account, bucket: bucket, prefix: prefix)
         case .localFolder:
             guard let root = context.localRoot else {
-                throw BucketeerError.unknown(message: "Local folder root could not be resolved.")
+                throw BucketeerError.unknown(message: String(localized: "sync.error.localFolderUnavailable"))
             }
             return try LocalFolderEnumerator.enumerate(at: root)
         }
@@ -814,13 +831,14 @@ actor SyncEngine {
                 sourceBucket: srcBucket,
                 destinationBucket: dstBucket,
                 sourceAccount: context.source.account,
-                destinationAccount: context.destination.account
+                destinationAccount: context.destination.account,
+                destinationState: context.destinationState
             )
 
         case (.s3(_, let srcBucket, _), .localFolder):
             guard let sourceAccount = context.source.account,
                   let destinationRoot = context.destination.localRoot
-            else { throw BucketeerError.unknown(message: "Sync context incomplete.") }
+            else { throw BucketeerError.unknown(message: String(localized: "sync.error.contextIncomplete")) }
             try await executeS3ToLocal(
                 entry: entry,
                 run: token,
@@ -832,19 +850,20 @@ actor SyncEngine {
         case (.localFolder, .s3(_, let dstBucket, _)):
             guard let sourceRoot = context.source.localRoot,
                   let destinationAccount = context.destination.account
-            else { throw BucketeerError.unknown(message: "Sync context incomplete.") }
+            else { throw BucketeerError.unknown(message: String(localized: "sync.error.contextIncomplete")) }
             try await executeLocalToS3(
                 entry: entry,
                 run: token,
                 sourceRoot: sourceRoot,
                 destinationAccount: destinationAccount,
-                destinationBucket: dstBucket
+                destinationBucket: dstBucket,
+                destinationState: context.destinationState
             )
 
         case (.localFolder, .localFolder):
             guard let sourceRoot = context.source.localRoot,
                   let destinationRoot = context.destination.localRoot
-            else { throw BucketeerError.unknown(message: "Sync context incomplete.") }
+            else { throw BucketeerError.unknown(message: String(localized: "sync.error.contextIncomplete")) }
             try await executeLocalToLocal(
                 entry: entry,
                 sourceRoot: sourceRoot,
@@ -853,16 +872,39 @@ actor SyncEngine {
         }
     }
 
+    /// Bucket-to-bucket job whose source is encrypted and whose
+    /// destination has no key: the round trip would store plaintext.
+    private func storesDecryptedCopies(_ job: SyncJob, destination: BucketEncryptionGate.KeyState) async -> Bool {
+        guard let encryptionGate,
+              case let .s3(sourceAccountID, sourceBucket, _) = job.source,
+              case let .s3(destinationAccountID, destinationBucket, _) = job.destination
+        else { return false }
+        return await encryptionGate.isEncryptedToPlain(
+            sourceAccountID: sourceAccountID,
+            sourceBucket: sourceBucket,
+            destinationAccountID: destinationAccountID,
+            destinationBucket: destinationBucket,
+            destination: destination
+        )
+    }
+
+    /// Key state of the job's destination bucket; a local folder is plain.
+    private func destinationKeyState(_ job: SyncJob) async -> BucketEncryptionGate.KeyState {
+        guard let encryptionGate, case let .s3(accountID, bucket, _) = job.destination else { return .plain }
+        return await encryptionGate.keyState(accountID: accountID, bucket: bucket)
+    }
+
     private func executeS3ToS3(
         entry: SyncPlanner.PlanEntry,
         run token: UUID,
         sourceBucket: String,
         destinationBucket: String,
         sourceAccount: S3Account?,
-        destinationAccount: S3Account?
+        destinationAccount: S3Account?,
+        destinationState: BucketEncryptionGate.KeyState
     ) async throws {
         guard let sourceAccount, let destinationAccount else {
-            throw BucketeerError.unknown(message: "Sync context incomplete.")
+            throw BucketeerError.unknown(message: String(localized: "sync.error.contextIncomplete"))
         }
         let encryptionAllowsServerCopy = await encryptionGate?.allowsServerSideCopy(
             sourceAccountID: sourceAccount.id,
@@ -901,7 +943,10 @@ actor SyncEngine {
             bucket: destinationBucket,
             key: entry.destinationKey,
             localURL: staging,
-            contentType: nil
+            contentType: nil,
+            bypassEncryption: false,
+            requiresEncryption: destinationState.requiresEncryption,
+            destinationHadKey: destinationState == .encrypted
         )
         registerActiveTransfer(run: token, transferID: uploadID)
         defer { unregisterActiveTransfer(run: token, transferID: uploadID) }
@@ -947,7 +992,8 @@ actor SyncEngine {
         run token: UUID,
         sourceRoot: URL,
         destinationAccount: S3Account,
-        destinationBucket: String
+        destinationBucket: String,
+        destinationState: BucketEncryptionGate.KeyState
     ) async throws {
         // Path-traversal guard: even on the local
         // *source* side, a malicious sync-job definition could carry
@@ -965,7 +1011,10 @@ actor SyncEngine {
             bucket: destinationBucket,
             key: entry.destinationKey,
             localURL: sourceFile,
-            contentType: nil
+            contentType: nil,
+            bypassEncryption: false,
+            requiresEncryption: destinationState.requiresEncryption,
+            destinationHadKey: destinationState == .encrypted
         )
         registerActiveTransfer(run: token, transferID: uploadID)
         defer { unregisterActiveTransfer(run: token, transferID: uploadID) }
@@ -1016,13 +1065,13 @@ actor SyncEngine {
         switch endpoint {
         case .s3(_, let bucket, _):
             guard let account = context.account else {
-                throw BucketeerError.unknown(message: "Sync context incomplete.")
+                throw BucketeerError.unknown(message: String(localized: "sync.error.contextIncomplete"))
             }
             try await browser.delete(account: account, bucket: bucket, keys: [orphan.key])
             return true
         case .localFolder:
             guard let root = context.localRoot else {
-                throw BucketeerError.unknown(message: "Local folder root unavailable.")
+                throw BucketeerError.unknown(message: String(localized: "sync.error.localFolderUnavailableDuringDelete"))
             }
             return try LocalFolderWriter.deleteIfUnchanged(
                 relativeKey: orphan.key, under: root, fingerprint: LocalFileFingerprint(orphan)
@@ -1041,14 +1090,14 @@ actor SyncEngine {
         switch endpoint {
         case .s3(_, let bucket, _):
             guard let account = context.account else {
-                throw BucketeerError.unknown(message: "Sync context incomplete.")
+                throw BucketeerError.unknown(message: String(localized: "sync.error.contextIncomplete"))
             }
             return try await browser.deleteIfUnchanged(
                 account: account, bucket: bucket, key: entry.sourceKey, etag: entry.source.etag
             )
         case .localFolder:
             guard let root = context.localRoot else {
-                throw BucketeerError.unknown(message: "Local folder root unavailable.")
+                throw BucketeerError.unknown(message: String(localized: "sync.error.localFolderUnavailableDuringDelete"))
             }
             return try LocalFolderWriter.deleteIfUnchanged(
                 relativeKey: entry.sourceKey, under: root, fingerprint: LocalFileFingerprint(entry.source)
@@ -1067,7 +1116,7 @@ actor SyncEngine {
         case .queued, .running:
             // awaitCompletion only returns terminal states by contract;
             // a non-terminal value here is a logic bug in TransferManager.
-            throw BucketeerError.unknown(message: "Transfer returned a non-terminal state from awaitCompletion.")
+            throw BucketeerError.unknown(message: String(localized: "transfer.error.incomplete"))
         }
     }
 
@@ -1143,7 +1192,7 @@ actor SyncEngine {
         }
         let message: String?
         if status.planned > 0 || status.completed > 0 || status.failed > 0 {
-            message = "planned: \(status.planned), completed: \(status.completed), failed: \(status.failed)"
+            message = String(localized: "sync.summary.run \(status.completed) \(status.failed) \(status.planned)")
         } else {
             message = status.message
         }

@@ -45,7 +45,7 @@ public actor TrashStore: TrashStoring, ModelActor {
         }
     }
 
-    public func markCached(id: UUID, fileName: String) async {
+    public func markCached(id: UUID, fileName: String, encryptionMarked: Bool) async {
         do {
             let descriptor = FetchDescriptor<TrashRecord>(
                 predicate: #Predicate { $0.id == id }
@@ -53,6 +53,7 @@ public actor TrashStore: TrashStoring, ModelActor {
             if let record = try modelContext.fetch(descriptor).first {
                 record.cacheStatusRaw = TrashCacheStatus.cached.rawValue
                 record.cachedFileName = fileName
+                record.encryptionMarked = encryptionMarked
                 try modelContext.save()
             }
         } catch {
