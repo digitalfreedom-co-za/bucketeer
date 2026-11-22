@@ -1,4 +1,4 @@
-<!-- doc-id: BUCKETEER_PRIVACY_POLICY | lang: en | area: app | version: 1.0.3 | valid-from: 2026-11-16 | baseline: legal shared/PRIVACY_POLICY.en.md, Bucketeer product adaptation; baseline version at derivation not recorded (legal b938e59 carries PRIVACY_POLICY 2.3.1) | owner: Marcel R. G. Berger -->
+<!-- doc-id: BUCKETEER_PRIVACY_POLICY | lang: en | area: app | version: 1.0.4 | valid-from: 2026-11-16 | baseline: legal shared/PRIVACY_POLICY.en.md, Bucketeer product adaptation; baseline version at derivation not recorded (legal b938e59 carries PRIVACY_POLICY 2.3.1) | owner: Marcel R. G. Berger -->
 # Privacy Policy
 
 *How Bucketeer for macOS handles your data.*
@@ -37,9 +37,9 @@ request form https://data-protection.digitalfreedom.co.za
 ## 2. Global scope and GDPR as the baseline
 
 Bucketeer is distributed through the Mac App Store. It is not offered
-in the storefronts for Mainland China, Egypt, Saudi Arabia, Russia and
-France. This Policy applies to every user of the App wherever they
-live, including anyone who uses it outside the storefront where it was
+in the storefronts for Mainland China, Egypt, Saudi Arabia and Russia.
+This Policy applies to every user of the App wherever they live,
+including anyone who uses it outside the storefront where it was
 obtained. The provider applies the EU General Data Protection Regulation (GDPR) as a
 **global floor**: every user gets at least the protection described
 here. Where the law of your country of residence is more protective,

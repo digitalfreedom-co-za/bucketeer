@@ -106,10 +106,13 @@ credentials.
       privacy URLs (drafts in the same doc)
 - [ ] Upload 9-shot screenshot set per locale
 - [ ] Before every submission, verify Pricing and Availability against
-      [`docs/AVAILABILITY.md`](AVAILABILITY.md) for the app and for the
-      IAP: Mainland China, Egypt, Saudi Arabia and Russia deselected
-      (legal baseline), and France deselected for v1.0
-      ([`docs/EXPORT_COMPLIANCE.md`](EXPORT_COMPLIANCE.md)). Record the
+      [`docs/AVAILABILITY.md`](AVAILABILITY.md) for the app and for
+      both IAPs: Mainland China, Egypt, Saudi Arabia and Russia
+      deselected for the app, `pro.lifetime` and `pro.trial` (legal
+      baseline); `pro.lifetime` not offered in France (decision
+      2026-11-22); the app offered in France only after the ANSSI path
+      in [`docs/EXPORT_COMPLIANCE.md`](EXPORT_COMPLIANCE.md) is
+      satisfied and recorded. Record the
       evidence in `docs/AVAILABILITY.md`. Live configuration is unknown
       until then.
 
@@ -146,9 +149,11 @@ Each workflow uses the `ci_scripts/` directory we ship in the repo
 - [ ] `git status` is clean on `development` before promoting
 
 ### 5. Compliance answers (App Store Connect questionnaire)
-- **Encryption**: `ITSAppUsesNonExemptEncryption = NO` — v1.0 ships
-  without France (deselect it under Pricing and Availability), so
-  no ANSSI declaration and no documentation are required. US
+- **Encryption**: `ITSAppUsesNonExemptEncryption = NO` — rests on
+  the app not being offered in France (deselected under Pricing and
+  Availability); while that holds, no documentation is required.
+  The 2026-11-22 decision (Lifetime not offered in France) does not
+  clear the app for France. US
   classification: ECCN 5D992.c mass market, self-classified per
   15 CFR §740.17(b)(1), no CCATS, no annual report for an end-user
   app (86 FR 16482). Adding France later needs the ANSSI

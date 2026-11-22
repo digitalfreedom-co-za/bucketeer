@@ -1,4 +1,4 @@
-<!-- doc-id: BUCKETEER_EULA | lang: en | area: app | version: 1.0.1 | valid-from: 2026-11-16 | baseline: legal apps/documents/EULA.en.md, Bucketeer product adaptation; baseline version at derivation not recorded (legal b938e59 carries EULA 1.2.0) | owner: Marcel R. G. Berger -->
+<!-- doc-id: BUCKETEER_EULA | lang: en | area: app | version: 1.0.2 | valid-from: 2026-11-16 | baseline: legal apps/documents/EULA.en.md, Bucketeer product adaptation; baseline version at derivation not recorded (legal b938e59 carries EULA 1.2.0) | owner: Marcel R. G. Berger -->
 # End User License Agreement
 
 *The terms under which you may install and use Bucketeer for macOS.*
@@ -35,8 +35,8 @@ not agree, do not install or use the App.
 ### 1.1 Global scope
 
 The App is distributed through the Mac App Store. It is not offered in
-the storefronts for Mainland China, Egypt, Saudi Arabia, Russia and
-France. This Agreement applies to all users regardless of where they download or
+the storefronts for Mainland China, Egypt, Saudi Arabia and Russia.
+This Agreement applies to all users regardless of where they download or
 use the App. Mandatory consumer-protection and other statutory rights
 of your country of residence remain unaffected and prevail where they
 are more protective.
@@ -86,6 +86,9 @@ no renewal
 **Price** — shown in the App and the App Store before purchase, in your
 local currency
 **Family Sharing** — enabled
+
+Bucketeer Pro (Lifetime) is not offered as an in-app purchase in the
+storefront for France.
 
 The purchase is processed by Apple. In the EU/EEA, the United Kingdom,
 Switzerland and Türkiye Apple sells in its own name; in all other

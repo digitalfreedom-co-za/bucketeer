@@ -1,4 +1,4 @@
-<!-- doc-id: BUCKETEER_PRIVACY_POLICY | lang: de | area: app | version: 1.0.3 | valid-from: 2026-11-16 | translation-of: BUCKETEER_PRIVACY_POLICY en 1.0.3 (PRIVACY_POLICY.md) | review: not counsel-reviewed; AI legal review (Anwalt role) completed 2026-11-09, not a licensed counsel review | owner: Marcel R. G. Berger -->
+<!-- doc-id: BUCKETEER_PRIVACY_POLICY | lang: de | area: app | version: 1.0.4 | valid-from: 2026-11-16 | translation-of: BUCKETEER_PRIVACY_POLICY en 1.0.4 (PRIVACY_POLICY.md) | review: not counsel-reviewed; AI legal review (Anwalt role) completed 2026-11-09, not a licensed counsel review | owner: Marcel R. G. Berger -->
 # Datenschutzerklärung
 
 *Wie Bucketeer für macOS mit deinen Daten umgeht.*
@@ -37,8 +37,8 @@ Anfrageformular https://data-protection.digitalfreedom.co.za
 ## 2. Weltweiter Geltungsbereich und DSGVO als Grundlage
 
 Bucketeer wird über den Mac App Store vertrieben. Die App wird nicht in
-den Storefronts für Festlandchina, Ägypten, Saudi-Arabien, Russland und
-Frankreich angeboten. Diese Erklärung gilt für alle Nutzer der App,
+den Storefronts für Festlandchina, Ägypten, Saudi-Arabien und Russland
+angeboten. Diese Erklärung gilt für alle Nutzer der App,
 unabhängig davon, wo sie leben, einschließlich aller, die sie außerhalb
 des Storefronts nutzen, in dem sie sie bezogen haben. Der Anbieter wendet
 die EU-Datenschutz-Grundverordnung (DSGVO) als **weltweiten Mindeststandard**

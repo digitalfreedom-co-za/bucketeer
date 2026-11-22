@@ -17,6 +17,10 @@ questionnaire, and any App Review or BIS follow-up.
 > **Status:** engineering self-assessment, decided by the owner for
 > v1.0. Have counsel confirm before first submission — the
 > declaration is the developer's legal responsibility, not Apple's.
+> After the 2026-11-22 availability decision (see "France after the
+> 2026-11-22 decision" below), Juristi (lawyer review) must review the
+> legal wording and the export path before any App Store Connect
+> availability write and before merge.
 
 ---
 
@@ -87,24 +91,54 @@ Coordinator, which has not been made.
 Apple's export-compliance questionnaire asks for documentation only
 where it is legally required. With the US position settled by the
 mass-market self-classification above, the remaining document Apple
-collects is the French import declaration (ANSSI). Bucketeer v1.0
-is **not offered in France**: the App Store availability in App Store
-Connect excludes France. Per Apple's documentation the app is then
-exempt from providing documentation, and the key is `NO`. App Store
-Connect stops asking the questionnaire for each build.
+collects is the French import declaration (ANSSI). The key is `NO`
+on the basis that the app is **not made available in France** in App
+Store Connect. Per Apple's documentation the app is then exempt from
+providing documentation. App Store Connect stops asking the
+questionnaire for each build.
+
+That basis holds only while the app is not offered in France. If the
+app were offered in France with the key still `NO` and no ANSSI
+documentation on file, this justification would no longer hold.
 
 The key is a statement about documentation duties for the chosen
 storefronts, not a claim that Bucketeer contains no encryption. The
 inventory above stays accurate and complete.
 
+## France after the 2026-11-22 decision
+
+On 2026-11-22 (11:04 Europe/Rome, decision log issue #14) Marcello
+decided: block Mainland China, Egypt, Saudi Arabia and Russia in App
+Store Connect availability, and do not offer the Lifetime purchase
+(`pro.lifetime`) in France. This narrows the 2026-11-09 decision that
+France stays fully deselected for v1.0. A full France storefront block
+is therefore no longer the product decision; see
+[`AVAILABILITY.md`](AVAILABILITY.md).
+
+This document does not change the export classification:
+
+- `ITSAppUsesNonExemptEncryption` stays `NO` and the US position
+  (5D992.c mass market) is unchanged.
+- Offering the **app** in France still depends on the ANSSI steps in
+  "If France is added later". No ANSSI declaration has been filed and
+  no ANSSI documentation is on file. ANSSI is not unnecessary for
+  France; it was only avoided by not offering the app there.
+- Until those steps are done and recorded here, the app is not added
+  to the France storefront, whatever the IAP configuration.
+- Juristi (lawyer review) must review the legal wording and this
+  export path before any App Store Connect availability write and
+  before merge.
+
 ## App Store Connect checklist (v1.0)
 
-- Pricing and Availability: **France deselected**. Keep it that way
-  for every version while the key is `NO`.
+- Pricing and Availability: the app stays **deselected in France**
+  while the key is `NO` and no ANSSI documentation is on file.
+  `pro.lifetime` is not offered in France in any case (2026-11-22
+  decision).
 - No `ITSEncryptionExportComplianceCode` in the plist.
 - If App Review asks: 5D992.c mass market, self-classified under
-  §740.17(b)(1), no CCATS, no annual report owed, not distributed in
-  France.
+  §740.17(b)(1), no CCATS, no annual report owed, the app not
+  distributed in France while the key is `NO`.
 
 ## If France is added later
 
@@ -115,7 +149,10 @@ inventory above stays accurate and complete.
 3. Set `INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = YES` and add
    `ITSEncryptionExportComplianceCode` with the key App Store Connect
    issues.
-4. Only then add France to the availability.
+4. Only then add France to the app's availability, and record the
+   ANSSI acknowledgement, the App Store Connect approval and the date
+   here and in `AVAILABILITY.md`. `pro.lifetime` stays not offered in
+   France (2026-11-22 decision).
 
 ## Operational reminders
 
@@ -126,8 +163,10 @@ inventory above stays accurate and complete.
   carries this assessment unchanged; v2.0 with enterprise
   provisioning / managed key roll-forward needs re-classification.
 - Before the first submission, have a lawyer confirm both the
-  5D992.c self-classification and the France exclusion as the basis
-  for `NO`.
+  5D992.c self-classification and the basis for `NO` (the app not
+  offered in France). Since the 2026-11-22 decision, Juristi must
+  also review the France path above before any App Store Connect
+  availability write and before merge.
 
 ## References
 

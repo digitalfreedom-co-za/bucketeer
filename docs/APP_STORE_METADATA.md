@@ -159,8 +159,8 @@ and the month has been verified against the App Store release date.
 > - Bandwidth throttle, menubar background mode (Pro)
 > - 14-day Pro trial, then €14.99 one-time purchase for lifetime Pro
 >   — Family Sharing included
-> - Privacy Policy updated to version 1.0.3
-> - End User License Agreement updated to version 1.0.1
+> - Privacy Policy updated to version 1.0.4
+> - End User License Agreement updated to version 1.0.2
 
 ## Support URL
 
@@ -198,11 +198,11 @@ the user's Mac and are never transmitted to the Publisher.
 
 ## Encryption
 
-`ITSAppUsesNonExemptEncryption = NO` in Info.plist. Bucketeer v1.0 is
-not offered in France (deselect France under Pricing and
-Availability), so no ANSSI declaration is needed and, per Apple's
-documentation, the app is exempt from providing documentation; App
-Store Connect does not ask the questionnaire per build. US
+`ITSAppUsesNonExemptEncryption = NO` in Info.plist. That key rests on
+the app not being made available in France in Pricing and
+Availability: per Apple's documentation the app is then exempt from
+providing documentation and App Store Connect does not ask the
+questionnaire per build. No ANSSI declaration has been filed. US
 classification of the client-side AES-256-GCM encryption (Phase
 13.15): ECCN 5D992.c mass market, self-classified under 15 CFR
 §740.17(b)(1), no CCATS, no annual report for an end-user app
@@ -210,10 +210,17 @@ classification of the client-side AES-256-GCM encryption (Phase
 Full reasoning and the steps for adding France later:
 `docs/EXPORT_COMPLIANCE.md`.
 
-France is one of five deselected markets. The full availability
-matrix, with Mainland China, Egypt, Saudi Arabia and Russia from the
-legal baseline, is in `docs/AVAILABILITY.md`; the pre-submission check
-is in `docs/RELEASE_v1.0.md` section 2.
+Marcello's decision of 2026-11-22 no longer requires a full France
+storefront block: Mainland China, Egypt, Saudi Arabia and Russia stay
+deselected for the app and both IAPs, and the Lifetime purchase
+(`pro.lifetime`) is not offered in France. Offering the app itself in
+France still depends on the ANSSI steps in "If France is added later"
+in `docs/EXPORT_COMPLIANCE.md`; until they are done and recorded, the
+app stays deselected in France and the key stays `NO`. Juristi
+(lawyer review) must review the legal wording and the export path
+before any App Store Connect availability write and before merge.
+The full availability matrix is in `docs/AVAILABILITY.md`; the
+pre-submission check is in `docs/RELEASE_v1.0.md` section 2.
 
 ## In-App Purchases
 

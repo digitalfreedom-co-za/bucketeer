@@ -31,7 +31,7 @@ Recorded exclusions, nothing beyond them:
 | Egypt | Not offered | same |
 | Saudi Arabia | Not offered | same |
 | Russia | Not offered | same |
-| France | Not offered in v1.0 | `docs/EXPORT_COMPLIANCE.md` |
+| France | Lifetime purchase not offered (decision 2026-11-22). The app is not offered until the ANSSI path is done; no longer a full storefront exclusion in the legal texts | `docs/AVAILABILITY.md`, `docs/EXPORT_COMPLIANCE.md` |
 | Every other storefront Apple serves | Offered according to the documents above | same |
 
 The live storefront list in App Store Connect has **not been verified**. The
@@ -85,5 +85,7 @@ sync.
 - Whether further languages are required once the list is known. The
   localization policy names `cs da de el es fi fr hu it ja ko nb nl pl pt sv tr`
   as the store tier. French in particular may be needed for consumers in
-  Belgium, Switzerland or Quebec even though France itself is excluded, if those
-  storefronts are offered.
+  Belgium, Switzerland or Quebec if those storefronts are offered, and for
+  France itself once the app is offered there after the ANSSI path in
+  `docs/EXPORT_COMPLIANCE.md`. Juristi review of the France wording is required
+  before merge.
