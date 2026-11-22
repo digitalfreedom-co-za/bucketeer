@@ -75,10 +75,10 @@ for the development history.
   create a presigned link, run a sync job
 - **Spotlight** (opt-in): object names you browse become searchable;
   contents are never indexed
-- **Localised in 20 locales**: English (US and UK), Czech, Danish, Dutch,
+- **Localised in 21 locales**: English (US and UK), Czech, Danish, Dutch,
   Finnish, French, German, Greek, Hungarian, Italian, Japanese, Korean,
   Norwegian, Polish, Portuguese (Brazil and Portugal), Russian, Spanish,
-  Swedish. The in-app help is translated into all of them.
+  Swedish, Turkish. The in-app help is translated into all of them.
 
 ### Bucketeer Pro
 
@@ -195,8 +195,8 @@ Bucketeer/                          host app target
   Resources/
     Legal/                          EULA, Privacy Policy, Impressum,
                                     License, open-source notices
-    Help/<lang>.lproj/QuickStart.md in-app help, 20 locales
-    Localizable.xcstrings           string catalog, 20 locales
+    Help/<lang>.lproj/QuickStart.md in-app help, 21 locales
+    Localizable.xcstrings           string catalog, 21 locales
     PrivacyInfo.xcprivacy
   <lang>.lproj/InfoPlist.strings    per-language CFBundleDisplayName
   Bucketeer.storekit                StoreKit configuration for local testing

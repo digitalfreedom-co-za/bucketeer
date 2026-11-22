@@ -110,6 +110,12 @@
             "state" : "translated",
             "value" : "Lista buckets i ${applicationName}"
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${applicationName} içindeki bucket'ları listele"
+          }
         }
       }
     },
@@ -221,6 +227,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Visa mina ${applicationName}-buckets"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${applicationName} bucket'larımı göster"
           }
         }
       }
@@ -334,6 +346,12 @@
             "state" : "translated",
             "value" : "Skapa en delningslänk med ${applicationName}"
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${applicationName} ile paylaşım bağlantısı oluştur"
+          }
         }
       }
     },
@@ -445,6 +463,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Signera en URL med ${applicationName}"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${applicationName} ile URL imzala"
           }
         }
       }
@@ -558,6 +582,12 @@
             "state" : "translated",
             "value" : "Ladda upp en fil med ${applicationName}"
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${applicationName} ile dosya yükle"
+          }
         }
       }
     },
@@ -669,6 +699,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Skicka till bucket med ${applicationName}"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${applicationName} ile bucket'a gönder"
           }
         }
       }
@@ -782,6 +818,12 @@
             "state" : "translated",
             "value" : "Kör en synkronisering med ${applicationName}"
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${applicationName} ile eşitleme çalıştır"
+          }
         }
       }
     },
@@ -893,6 +935,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Starta ${applicationName}-synk"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${applicationName} eşitlemesini başlat"
           }
         }
       }
