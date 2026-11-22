@@ -75,7 +75,7 @@ final class SpotlightIndexer {
             attributes.containerTitle = bucket
             attributes.containerDisplayName = account.name
             attributes.fileSize = NSNumber(value: object.size)
-            attributes.contentModificationDate = object.lastModified
+            attributes.contentModificationDate = object.knownLastModified
             return CSSearchableItem(
                 uniqueIdentifier: url.absoluteString,
                 domainIdentifier: accountDomain,

@@ -42,6 +42,13 @@ public struct S3Object: Identifiable, Hashable, Sendable {
         self.isFolder = isFolder
     }
 
+    /// `lastModified` when the store reported one, `nil` otherwise.
+    /// Folder prefixes and objects listed without a date carry the
+    /// `.distantPast` sentinel, which would render as year 1.
+    public var knownLastModified: Date? {
+        lastModified == .distantPast ? nil : lastModified
+    }
+
     private static func deriveDisplayName(from key: String) -> String {
         let trimmed = key.hasSuffix("/") ? String(key.dropLast()) : key
         return trimmed.split(separator: "/").last.map(String.init) ?? key
