@@ -7,11 +7,23 @@ browser, metadata editor, auto-tagging, resumable uploads, deep
 links + Shortcuts, Spotlight indexing, cross-account copy, client-
 side encryption). Hardware-key unlock is deferred to v1.1.
 
+This file is the single source for all store descriptions (Marcello,
+2026-11-22 11:04 Europe/Rome, decision log #14). The Name, Subtitle
+and Keywords below are the adopted v1.0 source texts for en-US (en-GB
+uses the same copy) as of 2026-11-22. They are not live: nothing has
+been written to App Store Connect, which still holds the older drafts
+until the write on ticket #22. Per-locale values for all 21 store
+locales: "Store locales (21)" below.
+
 ---
+
+## Name (30 chars max)
+
+`Bucketeer: S3 & Azure Storage` (29 of 30)
 
 ## Subtitle (30 chars max)
 
-`Object storage at hand`
+`Browse, sync & mount buckets` (28 of 30)
 
 ## Promotional text (170 chars max)
 
@@ -121,9 +133,14 @@ Proposed copy for the end of the Description:
 Do not upload this block until the November 2026 placement is live
 and the month has been verified against the App Store release date.
 
-## Keywords (100 chars max — comma-separated, no spaces around commas)
+## Keywords (100 bytes max — comma-separated, no spaces around commas)
 
-`s3,azure,blob,object,storage,aws,r2,backblaze,wasabi,minio,sync,mount,finder,encrypt,shortcuts`
+`aws,cloud,object,blob,r2,b2,backblaze,wasabi,minio,upload,transfer,client,drive,encryption,backup`
+(97 of 100 bytes)
+
+Adopted en-US (and en-GB) source text as of 2026-11-22, not live in
+App Store Connect. `s3`, `azure` and `storage` are left out because
+the name already carries them.
 
 ## What's New (4000 chars max)
 
@@ -173,6 +190,211 @@ and the month has been verified against the App Store release date.
 ## Privacy policy URL
 
 `https://github.com/digitalfreedom-co-za/bucketeer/blob/main/Bucketeer/Resources/Legal/PRIVACY_POLICY.md`
+
+---
+
+## Store locales (21)
+
+Source texts per App Store locale as of 2026-11-22. Twenty locales
+match the app UI; Turkish (tr) was added on 2026-11-22 as a store
+metadata locale only (decision log #14). The app itself has no
+Turkish UI (no `tr.lproj`, no Turkish strings in the catalogs).
+Nothing in this table has been written to App Store Connect; the
+write is ticket #22. App Store Connect holds no tr localization yet.
+
+Limits: name and subtitle 30 characters, keywords 100 bytes (UTF-8),
+promotional text 170 characters, description 4000 characters.
+Lengths below were checked with a script on 2026-11-22.
+
+### Adopted or drafted in this file
+
+| Locale | Name | Subtitle | Keywords | Promotional text and description | Status |
+|---|---|---|---|---|---|
+| en-US | `Bucketeer: S3 & Azure Storage` (29) | `Browse, sync & mount buckets` (28) | `aws,cloud,object,blob,r2,b2,backblaze,wasabi,minio,upload,transfer,client,drive,encryption,backup` (97 bytes) | English sections above | adopted 2026-11-22 |
+| en-GB | `Bucketeer: S3 & Azure Storage` (29) | `Browse, sync & mount buckets` (28) | `aws,cloud,object,blob,r2,b2,backblaze,wasabi,minio,upload,transfer,client,drive,encryption,backup` (97 bytes) | English sections above | adopted 2026-11-22, same copy as en-US |
+| de-DE | `Bucketeer: S3 & Azure Speicher` (30) | `Sync & Mount für Buckets` (24) | `aws,cloud,sync,blob,object,r2,b2,backblaze,wasabi,upload,laufwerk,datei,backup,verschlüsselung` (95 bytes) | not yet in this file; ASC draft only | name, subtitle, keywords adopted 2026-11-22; German promotional text and description still to be brought into this file |
+| tr | `Bucketeer: S3 & Azure Depolama` (30) | `Bucket'ları gez, eşitle, bağla` (30) | `aws,bulut,nesne,blob,r2,b2,backblaze,wasabi,yükleme,aktarım,dosya,sürücü,şifreleme,yedekleme` (98 bytes) | "Turkish (tr) source texts" below | new locale, draft 2026-11-22; native Turkish proofread before #22 |
+
+Open point for de-DE: the adopted keyword field contains `sync`,
+which the adopted subtitle `Sync & Mount für Buckets` already
+carries. Apple's search guidance advises against repeating subtitle
+words; dropping `sync` would free 5 bytes. Left as adopted pending a
+decision before #22.
+
+### Waiting on a native pass
+
+ASO research section 7.3 proposes no name, subtitle or keyword
+rewrite for these 17 locales: no storefront measurements exist and
+the en-US drafts must not be translated word by word. The adopted
+method:
+
+1. Zero-risk keyword fix: drop `s3`, `azure` and, where the subtitle
+   contains it, `blob` from the current ASC keyword field. Fill the
+   freed bytes with a locale-native generic term chosen by a native
+   speaker. The current per-locale keyword strings are recorded only
+   in App Store Connect, not in the repo (lengths in
+   `ASO_KEYWORD_RESEARCH.md` section 4.2); bring each string into this
+   file before the #22 write.
+2. Name: en-US changes from `Bucketeer – Object Storage` to
+   `Bucketeer: S3 & Azure Storage`. Each locale still needs a native
+   decision: keep English `Storage` or use the local word, as de-DE
+   uses `Speicher`. If the name carries `S3 & Azure`, the current
+   subtitles below repeat both words and should be rewritten in the
+   same pass.
+3. Measure the storefront in Astro before rewriting subtitle and
+   keywords, then have a native speaker write the copy.
+
+Promotional text and description for these locales exist only as ASC
+drafts. Under decision #14 this file is their source, so they must be
+copied here and reviewed before #22 writes them.
+
+| Locale | Name | Subtitle (current draft, not yet rewritten) | Keywords: zero-risk fix | Status |
+|---|---|---|---|---|
+| cs | native decision pending | `Prohlížeč souborů S3 a Azure` | current ASC string minus `s3`, `azure` | native pass required before #22 |
+| da | native decision pending | `Filbrowser til S3 og Azure` | current ASC string minus `s3`, `azure` | native pass required before #22 |
+| el | native decision pending | `Περιήγηση αρχείων S3 και Azure` | current ASC string minus `s3`, `azure` | native pass required before #22 |
+| es-ES | native decision pending | `Explorador de S3 y Azure Blob` | current ASC string minus `s3`, `azure`, `blob` | native pass required before #22 |
+| fi | native decision pending | `Tiedostoselain: S3 ja Azure` | current ASC string minus `s3`, `azure` | native pass required before #22 |
+| fr-FR | native decision pending | `Navigateur S3 et Azure Blob` | current ASC string minus `s3`, `azure`, `blob` | native pass required before #22 |
+| hu | native decision pending | `Fájlböngésző: S3 és Azure` | current ASC string minus `s3`, `azure` | native pass required before #22 |
+| it | native decision pending | `File browser per S3 e Azure` | current ASC string minus `s3`, `azure` | native pass required before #22 |
+| ja | native decision pending | `S3とAzure Blobのファイルブラウザ` | current ASC string minus `s3`, `azure`, `blob` | native pass required before #22 |
+| ko | native decision pending | `S3 및 Azure Blob 파일 브라우저` | current ASC string minus `s3`, `azure`, `blob` | native pass required before #22 |
+| nl-NL | native decision pending | `Bestandsbrowser: S3 en Azure` | current ASC string minus `s3`, `azure` | native pass required before #22 |
+| no | native decision pending | `Filleser for S3 og Azure Blob` | current ASC string minus `s3`, `azure`, `blob` | native pass required before #22 |
+| pl | native decision pending | `Przeglądarka plików S3 i Azure` | current ASC string minus `s3`, `azure` | native pass required before #22 |
+| pt-BR | native decision pending | `Navegador para S3 e Azure Blob` | current ASC string minus `s3`, `azure`, `blob` | native pass required before #22 |
+| pt-PT | native decision pending | `Navegador para S3 e Azure Blob` | current ASC string minus `s3`, `azure`, `blob` | native pass required before #22 |
+| ru | native decision pending | `Файловый браузер S3 и Azure` | current ASC string minus `s3`, `azure` | native pass required before #22 |
+| sv | native decision pending | `Filbläddrare för S3 och Azure` | current ASC string minus `s3`, `azure` | native pass required before #22 |
+
+Subtitles are the ASC drafts read on 2026-11-09
+(`ASO_KEYWORD_RESEARCH.md` section 4.2). The current ASC name in
+every locale is `Bucketeer – Object Storage`.
+
+## Turkish (tr) source texts
+
+Draft 2026-11-22, written in Turkish from the English texts above,
+same facts, informal "sen" address as in Apple's Turkish marketing.
+No Astro measurement exists for the Turkish storefront; keyword
+choice is expert judgment following the adopted en-US direction.
+Needs a native Turkish proofread before the #22 write.
+
+Name, 30 of 30 characters:
+
+`Bucketeer: S3 & Azure Depolama`
+
+Subtitle, 30 of 30 characters:
+
+`Bucket'ları gez, eşitle, bağla`
+
+Keywords, 98 of 100 bytes (no word from the name, subtitle or the
+category names):
+
+`aws,bulut,nesne,blob,r2,b2,backblaze,wasabi,yükleme,aktarım,dosya,sürücü,şifreleme,yedekleme`
+
+Promotional text, 151 of 170 characters:
+
+> AWS S3, Azure Blob ve yedi sağlayıcı daha için nesne depolamada gez,
+> dosya aktar, bucket'ları bağla ve eşitle. Hepsi tek bir yerel macOS
+> uygulamasında.
+
+Description, 3904 of 4000 characters as plain text, counted with
+the line wraps and indentation as written. With the markdown emphasis
+kept, the same count is 4028 and over the limit, so paste the plain
+text:
+
+> Bucketeer, nesne depolamayla çalışan herkes için bir macOS
+> uygulamasıdır. **AWS S3, Azure Blob Storage, Civo, Cloudflare
+> R2, Backblaze B2, Wasabi, DigitalOcean Spaces, Storj ve S3 uyumlu her
+> uç noktadaki** bucket ve container'larında tek Finder tarzı
+> pencereden gez.
+>
+> **Yerel, hızlı, gizliliğe saygılı.** Tamamen Swift 6 ve SwiftUI ile
+> geliştirildi. Kimlik bilgilerin macOS Anahtar Zinciri'nde saklanır.
+> Telemetri yok, analiz veya izleme SDK'sı yok, Bucketeer sunucusu yok.
+> Bucketeer doğrudan yapılandırdığın nesne depolamaya ve Pro denemesi,
+> satın alma ve geri yükleme için App Store'a (StoreKit) bağlanır.
+>
+> ### Neler yapabilirsin
+>
+> - **Üç bölmeli Finder düzeni**, satır içi meta veri ve Hızlı Bakış
+>   önizlemesi
+> - **Her yöne sürükle bırak**: Finder ile Bucketeer arasında, hesap ve
+>   sağlayıcılar arasında bile
+> - **Bucket'ları Finder'da sürücü olarak bağla**: File Provider
+>   uzantısıyla *(Bucketeer Pro)*. İstemci tarafında şifrelenen
+>   bucket'lar bu sürümde bağlanamaz
+> - **Arka planda eşitleme işleri**: S3 ile Azure dahil iki konum
+>   arasında kopyalama, taşıma ve aynalama; ayrıca her değişiklikte
+>   otomatik yükleme yapan **izlenen klasörler** *(Bucketeer Pro)*
+> - **Menü çubuğu modu**: ana pencere kapalıyken de bağlı sürücüler ve
+>   eşitleme sürer *(Bucketeer Pro)*
+> - **Kaldığı yerden devam eden çok parçalı yüklemeler** (S3 uyumlu
+>   sağlayıcılar, şifrelenmemiş bucket'lar): yarıda kalan 50 MB ve
+>   üzeri yüklemeler, aynı dosyayı aynı klasöre yeniden eklersen son
+>   tamamlanan parçadan sürer
+> - **Bant genişliği sınırı**: hazır ön ayarlarla aktarımlar görüşme
+>   sırasında hattını tıkamaz
+> - **Bucket başına istemci tarafı AES-256-GCM şifreleme**: anahtarlar
+>   yerel Anahtar Zinciri'nde durur, istersen parolalı bir yedek olarak
+>   dışa aktarılır. Şifreli yüklemeler giderken şeffafça mühürlenir,
+>   gelirken açılır. Dosya içerikleri şifrelenir; nesne
+>   adları, yollar ve boyutlar şifrelenmez
+> - **Geri alınabilir silme (çöp sepeti)**: kontrolü sende olan yerel
+>   önbellekten tek tıkla geri yükleme (varsayılan sınır nesne
+>   başına 100 MiB, 30 gün saklama)
+> - **Bucket panosu**: nesne sayısı, toplam boyut, en büyük 10 nesne ve
+>   bilinen sağlayıcılar için dürüst aylık maliyet tahmini (özel uç
+>   noktalar için yok)
+> - **Nesne sürümü tarayıcısı**, **meta veri ve etiket düzenleyicisi**
+>   ve destekleyen bucket'lar için salt okunur **yaşam döngüsü / CORS
+>   / politika görüntüleyicisi**
+> - **Otomatik etiketleme kuralları**: glob ve MIME eşleştiricileri her
+>   başarılı yüklemeden sonra etiket ve meta verileri otomatik uygular
+> - **Etkinlik günlüğü**: her işlem kayıtlı, aranabilir, CSV olarak
+>   dışa aktarılabilir
+> - **`bucketeer://` derin bağlantıları**, **Spotlight dizinleme**
+>   (isteğe bağlı) ve dört yerleşik **Kestirmeler / Siri eylemi**:
+>   bucket'ları listele, önceden imzalanmış URL oluştur, dosya yükle,
+>   eşitleme işi çalıştır
+> - **Hesaplar arası kopyalama / taşıma**: yapılandırılmış iki hesap
+>   arasında; uç noktalar eşleşirse sunucu tarafında, değilse yerel
+>   gidiş-dönüşle; doğru yol otomatik seçilir
+> - **Touch ID / parola koruması**: kayıtlı gizli bilgileri göstermek
+>   için
+> - **Uygulama 20 dilde yerelleştirildi**: İngilizce (ABD ve
+>   İngiltere), Çekçe, Danca, Felemenkçe, Fince, Fransızca, Almanca,
+>   Yunanca, Macarca, İtalyanca, Japonca, Korece, Norveççe, Lehçe,
+>   Portekizce (Brezilya ve Portekiz), Rusça, İspanyolca, İsveççe.
+>   Türkçe arayüz henüz yok.
+>
+> ### Fiyatlandırma
+>
+> Bucketeer'ı **14 gün ücretsiz, tüm özellikler açık olarak dene**.
+> Denemeden sonra temel tarayıcı ücretsiz kalır; Pro özellikleri
+> (sürücü olarak bağlama, eşitleme motoru, hesaplar arası kopyalama,
+> menü çubuğu modu) Aile Paylaşımı'nı da kapsayan **14,99 € tutarında
+> tek seferlik bir satın almayla** açılır. Abonelik yok,
+> otomatik yenileme yok, v1.x için ileride ücretli yükseltme yok.
+>
+> ### Herkese açık geliştirme
+>
+> Bucketeer'ın kaynak kodu GitHub'da incelenebilir
+> (github.com/digitalfreedom-co-za/bucketeer). Tek resmi derleme
+> yalnızca Mac App Store'da dağıtılır. Lisansı, EULA'yı ve Gizlilik
+> Politikası'nı uygulamadaki Hakkında penceresinde oku.
+
+Notes for review:
+
+- The UI-language bullet ("Uygulama 20 dilde yerelleştirildi") lists
+  the 20 app UI locales, matching the English "Localised in 20
+  locales" bullet, and says that there is no Turkish UI yet. Only the
+  store listing is Turkish.
+- The price mirrors the English `€14.99`. The Turkish storefront shows
+  the local price of the Tier 15 IAP.
+- What's New and the "Support period" block are not drafted in
+  Turkish. The support period block stays on hold as described above.
 
 ---
 
@@ -271,9 +493,14 @@ one) so the data looks plausible.
 - [ ] App Store Connect: create app record with bundle id
       `za.co.digitalfreedom.Bucketeer`
 - [ ] Upload both Bucketeer Pro IAPs (see tables above)
-- [ ] Add 20 InfoPlist.strings translations (already in repo)
-- [ ] Add localised App Store descriptions (drafts above are en/de;
-      the other 18 store locales follow the same convention)
+- [ ] Add 20 InfoPlist.strings translations (already in repo; app UI
+      locales only, Turkish is a store metadata locale without UI)
+- [ ] Add localised App Store metadata for all 21 store locales from
+      "Store locales (21)" above, including the new tr localization.
+      en-US, en-GB and de-DE name, subtitle and keywords are adopted;
+      tr is drafted here; of the other 19 locales after en-US and
+      de-DE, the 17 besides en-GB and tr still need a native pass and
+      their descriptions brought into this file (ticket #22)
 - [ ] Upload one screenshot set per locale
 - [ ] Fill in the support period end month and year from the verified
       release date (see "Support period (draft)" above and
@@ -291,28 +518,31 @@ one) so the data looks plausible.
 
 ---
 
-## ASO draft recommendations (not live)
+## ASO decision (adopted, not live)
 
-Research from ticket #2, captured 2026-11-09. Nothing in this section
-has been written to App Store Connect. Evidence, metric sources and
-open questions: [`ASO_KEYWORD_RESEARCH.md`](ASO_KEYWORD_RESEARCH.md).
+Research from ticket #2, captured 2026-11-09. Evidence, metric
+sources and open questions:
+[`ASO_KEYWORD_RESEARCH.md`](ASO_KEYWORD_RESEARCH.md).
 
-App Store Connect already holds draft name, subtitle, keywords,
-promotional text and description for all 20 store locales (version
-1.0, `PREPARE_FOR_SUBMISSION`, not public). Those drafts differ from
-the Subtitle and Keywords sections above; ASC is the copy that would
-ship.
+Marcello adopted the name, subtitle and keywords proposal on
+2026-11-22 11:04 Europe/Rome (decision log #14), added Turkish (tr)
+as a 21st store locale, and made this file the single source for all
+store descriptions. The adopted texts are the Name, Subtitle and
+Keywords sections at the top and the per-locale table in "Store
+locales (21)".
 
-Proposed en-US drafts, pending approval:
+| Locale | Name | Subtitle | Keywords |
+|---|---|---|---|
+| en-US, en-GB | `Bucketeer: S3 & Azure Storage` (29 of 30) | `Browse, sync & mount buckets` (28 of 30) | `aws,cloud,object,blob,r2,b2,backblaze,wasabi,minio,upload,transfer,client,drive,encryption,backup` (97 of 100 bytes) |
+| de-DE | `Bucketeer: S3 & Azure Speicher` (30 of 30) | `Sync & Mount für Buckets` (24 of 30) | `aws,cloud,sync,blob,object,r2,b2,backblaze,wasabi,upload,laufwerk,datei,backup,verschlüsselung` (95 of 100 bytes) |
 
-| Field | Draft | Length |
-|---|---|---|
-| Name | `Bucketeer: S3 & Azure Storage` | 29 of 30 |
-| Subtitle | `Browse, sync & mount buckets` | 28 of 30 |
-| Keywords (approved direction) | `aws,cloud,object,blob,r2,b2,backblaze,wasabi,minio,upload,transfer,client,drive,encryption,backup` | 97 of 100 bytes |
+Earlier decision, Marcello 2026-11-09 Europe/Rome: include everything
+in the keyword field (provider names and generic terms, including
+`backup`); drop `s3` and `azure` where the name already carries them.
 
-Marcello 2026-11-09 Europe/Rome: include everything (provider names
-and generic terms, including `backup`). Still draft only; no App Store
-Connect write. Drop `s3` and `azure` from the keyword field where the
-name already carries them. German drafts and other locales: research
-document, same direction.
+Nothing has been written to App Store Connect. ASC still holds the
+older drafts for 20 store locales (version 1.0,
+`PREPARE_FOR_SUBMISSION`, not public) and no tr localization. The ASC
+write is ticket #22, from the texts in this file. The Turkish texts
+and the other 17 locales are draft or pending a native pass, see
+"Store locales (21)".
