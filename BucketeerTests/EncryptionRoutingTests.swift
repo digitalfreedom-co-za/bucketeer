@@ -139,8 +139,8 @@ final class EncryptionRoutingTests: XCTestCase {
         let cached = folder.appendingPathComponent(try XCTUnwrap(item.cachedFileName))
         XCTAssertEqual(try Data(contentsOf: cached), envelope, "Trash capture must bypass decryption")
 
-        let error = await coordinator.restore(item: item, account: account)
-        XCTAssertNil(error)
+        let outcome = await coordinator.restore(item: item, account: account)
+        XCTAssertEqual(outcome, .restored)
         XCTAssertEqual(RoutingAzureStub.uploaded(bucket: fixture.bucket), envelope,
                        "Restore must bypass encryption, preserving the original envelope byte for byte")
         XCTAssertEqual(RoutingAzureStub.uploadedMarker(bucket: fixture.bucket), true)

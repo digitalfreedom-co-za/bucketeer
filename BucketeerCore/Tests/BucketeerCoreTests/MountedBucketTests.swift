@@ -81,17 +81,19 @@ struct MountedBucketTests {
         #expect(await browser.data(bucket: "b", key: "draft.txt") == nil)
     }
 
-    @Test("A rename based on an outdated version leaves the newer server object where it is")
+    @Test("A rename based on an outdated version leaves the newer server object where it is and asks for a fetch")
     func renameOfChangedObjectIsRefused() async throws {
         let (browser, mounted) = try await setUp()
         defer { try? FileManager.default.removeItem(at: folder) }
         let base = try await browser.write(bucket: "b", key: "draft.txt", data: Data("v1".utf8), precondition: nil)
-        _ = try await browser.write(bucket: "b", key: "draft.txt", data: Data("v2".utf8), precondition: nil)
+        let current = try await browser.write(bucket: "b", key: "draft.txt", data: Data("v2".utf8), precondition: nil)
 
         let placement = try await mounted.rename("draft.txt", baseVersion: base, to: "final.txt")
 
         #expect(placement.isConflict)
+        #expect(placement.needsFetch)
         #expect(placement.object.key == "draft.txt")
+        #expect(placement.object.etag == current)
         #expect(await browser.storedKeys(in: "b") == ["draft.txt"])
     }
 

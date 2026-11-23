@@ -75326,137 +75326,6 @@
         }
       }
     },
-    "trash.error.restoreUnknown" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Obnovení nebylo dokončeno."
-          }
-        },
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gendannelsen blev ikke fuldført."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wiederherstellung nicht abgeschlossen."
-          }
-        },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Η επαναφορά δεν ολοκληρώθηκε."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Restore did not finish."
-          }
-        },
-        "en-GB" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Restore did not finish."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La restauración no terminó."
-          }
-        },
-        "fi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Palautus ei valmistunut."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La restauration ne s’est pas terminée."
-          }
-        },
-        "hu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A visszaállítás nem fejeződött be."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Il ripristino non è stato completato."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "復元が完了しませんでした。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "복원이 완료되지 않았습니다."
-          }
-        },
-        "nb" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gjenopprettingen ble ikke fullført."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Herstellen niet voltooid."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Przywracanie nie zostało ukończone."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A restauração não foi concluída."
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O restauro não foi concluído."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Восстановление не было завершено."
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Återställningen slutfördes inte."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Geri yükleme tamamlanmadı."
-          }
-        }
-      }
-    },
     "trash.footer.count" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -76719,6 +76588,137 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bu nesne geri yüklensin mi?"
+          }
+        }
+      }
+    },
+    "trash.restore.conflictCopy %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Původní název nyní používá novější objekt, proto byla kopie z mezipaměti obnovena vedle něj jako „%@“."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Et nyere objekt bruger nu det oprindelige navn, så den cachede kopi blev gendannet ved siden af som “%@”."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein neueres Objekt trägt jetzt den ursprünglichen Namen, daher wurde die zwischengespeicherte Kopie daneben als „%@“ wiederhergestellt."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ένα νεότερο αντικείμενο χρησιμοποιεί πλέον το αρχικό όνομα, οπότε το αντίγραφο από την προσωρινή μνήμη επαναφέρθηκε δίπλα του ως «%@»."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A newer object now uses the original name, so the cached copy was restored next to it as “%@”."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A newer object now uses the original name, so the cached copy was restored next to it as ‘%@’."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un objeto más reciente usa ahora el nombre original, así que la copia en caché se restauró a su lado como «%@»."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uudempi objekti käyttää nyt alkuperäistä nimeä, joten välimuistikopio palautettiin sen viereen nimellä ”%@”."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un objet plus récent porte désormais le nom d’origine ; la copie en cache a donc été restaurée à côté sous le nom « %@ »."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Az eredeti nevet már egy újabb objektum használja, ezért a gyorsítótárazott másolat mellé lett visszaállítva „%@” néven."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un oggetto più recente usa ora il nome originale, quindi la copia in cache è stata ripristinata accanto come «%@»."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "元の名前は新しいオブジェクトで使用されているため、キャッシュされたコピーを「%@」として隣に復元しました。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "원래 이름을 더 최신 객체가 사용하고 있어 캐시된 사본을 그 옆에 ‘%@’(으)로 복원했습니다."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Et nyere objekt bruker nå det opprinnelige navnet, så den bufrede kopien ble gjenopprettet ved siden av som «%@»."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een nieuwer object gebruikt nu de oorspronkelijke naam, dus de gecachte kopie is ernaast hersteld als ‘%@’."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pierwotną nazwę ma teraz nowszy obiekt, więc kopia z pamięci podręcznej została przywrócona obok jako „%@”."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um objeto mais recente agora usa o nome original, então a cópia em cache foi restaurada ao lado como “%@”."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um objeto mais recente usa agora o nome original, por isso a cópia em cache foi restaurada ao lado como “%@”."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Исходное имя теперь занято более новым объектом, поэтому кэшированная копия восстановлена рядом как «%@»."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ett nyare objekt använder nu det ursprungliga namnet, så den cachade kopian återställdes bredvid som ”%@”."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Özgün adı artık daha yeni bir nesne kullanıyor, bu yüzden önbellekteki kopya yanına \"%@\" olarak geri yüklendi."
           }
         }
       }
