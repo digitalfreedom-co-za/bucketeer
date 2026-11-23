@@ -159,7 +159,7 @@ final class FileProviderExtension: NSObject, @unchecked Sendable, NSFileProvider
                     container: container,
                     progress: progress
                 )
-                completionHandler(created, [], false, nil)
+                completionHandler(created.item, [], created.shouldFetchContent, nil)
             } catch is CancellationError {
                 completionHandler(nil, [], false, Self.cancelledError)
             } catch {
