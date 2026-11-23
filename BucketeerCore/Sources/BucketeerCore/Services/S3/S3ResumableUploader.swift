@@ -95,6 +95,25 @@ public struct S3ResumableUploader: Sendable {
         progress: @Sendable @escaping (Int64) async -> Void
     ) async throws {
         let s3 = try await factory.client(for: account)
+        // Size and fingerprint must describe the file the parts are read
+        // from, not the file as it was when the transfer was queued.
+        let handle: FileHandle
+        do {
+            handle = try FileHandle(forReadingFrom: localURL)
+        } catch {
+            throw BucketeerError.sandboxAccessDenied(localURL)
+        }
+        defer { try? handle.close() }
+        let opened = LocalFileState(descriptor: handle.fileDescriptor)
+        let fingerprint = MultipartUploadCheckpoint.fingerprint(for: localURL)
+            + (BucketeerEnvelope.isMarked(metadata) ? Self.envelopeFingerprintSuffix : "")
+        // Stat the path after the fingerprint so it provably describes
+        // the opened file.
+        guard let opened, opened.size == fileSize,
+              LocalFileState(path: localURL.path) == opened else {
+            throw Self.fileChangedError
+        }
+
         // 1. Find or create a checkpoint.
         var checkpoint = try await loadOrCreateCheckpoint(
             account: account,
@@ -102,6 +121,7 @@ public struct S3ResumableUploader: Sendable {
             key: key,
             localURL: localURL,
             fileSize: fileSize,
+            fingerprint: fingerprint,
             contentType: contentType,
             metadata: metadata,
             s3: s3
@@ -129,6 +149,7 @@ public struct S3ResumableUploader: Sendable {
                 key: key,
                 localURL: localURL,
                 fileSize: fileSize,
+                fingerprint: fingerprint,
                 contentType: contentType,
                 metadata: metadata,
                 s3: s3
@@ -152,23 +173,11 @@ public struct S3ResumableUploader: Sendable {
         // this is a public API — reject instead of crashing.
         let totalParts = Int((fileSize + Int64(checkpoint.partSize) - 1) / Int64(checkpoint.partSize))
         guard totalParts >= 1 else {
-            _ = try? await s3.abortMultipartUpload(.init(
-                bucket: bucket,
-                key: key,
-                uploadId: checkpoint.uploadId
-            ))
-            try? await checkpointStore.delete(id: checkpoint.id)
+            await discard(checkpoint, s3: s3)
             throw BucketeerError.unknown(
                 message: String(localized: "transfer.error.emptyMultipart", bundle: .module)
             )
         }
-        let handle: FileHandle
-        do {
-            handle = try FileHandle(forReadingFrom: localURL)
-        } catch {
-            throw BucketeerError.sandboxAccessDenied(localURL)
-        }
-        defer { try? handle.close() }
 
         let completedSoFar: Int64 = checkpoint.completedParts.reduce(0) { acc, _ in
             // We don't know each part's actual byte size exactly
@@ -189,10 +198,10 @@ public struct S3ResumableUploader: Sendable {
             try handle.seek(toOffset: UInt64(offset))
             let remaining = fileSize - offset
             let chunkSize = Int(min(Int64(checkpoint.partSize), remaining))
-            guard let chunk = try handle.read(upToCount: chunkSize) else {
-                throw BucketeerError.unknown(
-                    message: String(localized: "transfer.error.emptyRead \(offset)", bundle: .module)
-                )
+            // A short read means the file shrank since it was opened.
+            guard let chunk = try handle.read(upToCount: chunkSize), chunk.count == chunkSize else {
+                await discard(checkpoint, s3: s3)
+                throw Self.fileChangedError
             }
             let etag = try await uploadPart(
                 s3: s3,
@@ -211,7 +220,14 @@ public struct S3ResumableUploader: Sendable {
             await progress(transferred)
         }
 
-        // 4. Complete + drop the checkpoint.
+        // 4. Complete + drop the checkpoint. An edit in place moves size
+        // or mtime, a replacement moves the path to another inode; either
+        // way the parts no longer form the file.
+        guard LocalFileState(descriptor: handle.fileDescriptor) == opened,
+              LocalFileState(path: localURL.path) == opened else {
+            await discard(checkpoint, s3: s3)
+            throw Self.fileChangedError
+        }
         try await completeMultipart(
             s3: s3,
             bucket: bucket,
@@ -225,21 +241,35 @@ public struct S3ResumableUploader: Sendable {
 
     // MARK: - Private
 
+    private static var fileChangedError: BucketeerError {
+        .unknown(message: String(localized: "transfer.error.fileChanged", bundle: .module))
+    }
+
+    /// Best-effort: an upload that can never complete must not keep
+    /// billed parts on the server or a checkpoint that a retry resumes.
+    private func discard(_ checkpoint: MultipartUploadCheckpoint, s3: S3) async {
+        _ = try? await s3.abortMultipartUpload(.init(
+            bucket: checkpoint.bucket,
+            key: checkpoint.key,
+            uploadId: checkpoint.uploadId
+        ))
+        try? await checkpointStore.delete(id: checkpoint.id)
+    }
+
     private func loadOrCreateCheckpoint(
         account: S3Account,
         bucket: String,
         key: String,
         localURL: URL,
         fileSize: Int64,
+        fingerprint: String,
         contentType: String?,
         metadata: [String: String]? = nil,
         s3: S3
     ) async throws -> MultipartUploadCheckpoint {
         // Initiation fixes metadata and Content-Type for the upload's
-        // lifetime. Do not resume an older unmarked upload when restoring
-        // a marked cached envelope.
-        let fingerprint = MultipartUploadCheckpoint.fingerprint(for: localURL)
-            + (BucketeerEnvelope.isMarked(metadata) ? Self.envelopeFingerprintSuffix : "")
+        // lifetime, so the fingerprint carries the envelope marker: an
+        // older unmarked upload must not resume a marked cached envelope.
         if let existing = try await checkpointStore.find(
             accountID: account.id,
             bucket: bucket,
@@ -370,5 +400,35 @@ public struct S3ResumableUploader: Sendable {
             multipartUpload: completed,
             uploadId: uploadId
         ))
+    }
+}
+
+/// The stat fields a change to the local file moves. Unlike the
+/// checkpoint fingerprint, it can be read from an open descriptor.
+private struct LocalFileState: Equatable {
+    let device: Int64
+    let inode: UInt64
+    let size: Int64
+    let modifiedSeconds: Int
+    let modifiedNanoseconds: Int
+
+    init?(descriptor: Int32) {
+        var info = stat()
+        guard fstat(descriptor, &info) == 0 else { return nil }
+        self.init(info)
+    }
+
+    init?(path: String) {
+        var info = stat()
+        guard stat(path, &info) == 0 else { return nil }
+        self.init(info)
+    }
+
+    private init(_ info: stat) {
+        device = Int64(info.st_dev)
+        inode = UInt64(info.st_ino)
+        size = Int64(info.st_size)
+        modifiedSeconds = info.st_mtimespec.tv_sec
+        modifiedNanoseconds = info.st_mtimespec.tv_nsec
     }
 }

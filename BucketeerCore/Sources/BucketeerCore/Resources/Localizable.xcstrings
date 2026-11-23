@@ -2818,133 +2818,133 @@
         }
       }
     },
-    "transfer.error.emptyRead %lld" : {
+    "transfer.error.fileChanged" : {
       "extractionState" : "manual",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Na bajtové pozici %lld se nepodařilo přečíst data souboru."
+            "value" : "Soubor se změnil dříve, než nahrávání skončilo. Nahrajte ho znovu."
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ingen fildata kunne læses ved byteposition %lld."
+            "value" : "Filen blev ændret, før overførslen var færdig. Overfør den igen."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ab Byteposition %lld konnten keine Dateidaten gelesen werden."
+            "value" : "Die Datei wurde geändert, bevor der Upload abgeschlossen war. Lade sie erneut hoch."
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Δεν ήταν δυνατή η ανάγνωση δεδομένων στη θέση byte %lld."
+            "value" : "Το αρχείο άλλαξε πριν ολοκληρωθεί η αποστολή. Στείλτε το ξανά."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No file data could be read at byte offset %lld."
+            "value" : "The file changed before the upload finished. Upload it again."
           }
         },
         "en-GB" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No file data could be read at byte offset %lld."
+            "value" : "The file changed before the upload finished. Upload it again."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No se pudieron leer datos en la posición de byte %lld."
+            "value" : "El archivo cambió antes de que terminara la carga. Vuelve a cargarlo."
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tiedoston tietoja ei voitu lukea tavukohdasta %lld."
+            "value" : "Tiedosto muuttui ennen kuin lataus valmistui. Lataa se uudelleen."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aucune donnée n’a pu être lue à la position %lld octets."
+            "value" : "Le fichier a été modifié avant la fin de l’envoi. Envoyez-le à nouveau."
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nem sikerült fájladatokat olvasni a(z) %lld bájtpozíciónál."
+            "value" : "A fájl megváltozott, mielőtt a feltöltés befejeződött. Töltse fel újra."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Impossibile leggere i dati alla posizione di byte %lld."
+            "value" : "Il file è cambiato prima del termine del caricamento. Caricalo di nuovo."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "バイト位置%lldからファイルデータを読み取れませんでした。"
+            "value" : "アップロードの完了前にファイルが変更されました。もう一度アップロードしてください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "바이트 위치 %lld에서 파일 데이터를 읽을 수 없습니다."
+            "value" : "업로드가 끝나기 전에 파일이 변경되었습니다. 다시 업로드하세요."
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ingen fildata kunne leses ved byteposisjon %lld."
+            "value" : "Filen ble endret før opplastingen var ferdig. Last den opp på nytt."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Er konden geen bestandsgegevens worden gelezen op bytepositie %lld."
+            "value" : "Het bestand is gewijzigd voordat de upload klaar was. Upload het opnieuw."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nie można odczytać danych pliku od pozycji bajtowej %lld."
+            "value" : "Plik zmienił się przed zakończeniem wysyłania. Wyślij go ponownie."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Não foi possível ler dados do arquivo na posição de byte %lld."
+            "value" : "O arquivo mudou antes de o upload terminar. Faça o upload novamente."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Não foi possível ler dados do ficheiro na posição de byte %lld."
+            "value" : "O ficheiro foi alterado antes de o envio terminar. Envie-o novamente."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Не удалось прочитать данные файла с байтовой позиции %lld."
+            "value" : "Файл изменился до завершения загрузки. Загрузите его снова."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Inga fildata kunde läsas vid byteposition %lld."
+            "value" : "Filen ändrades innan uppladdningen var klar. Ladda upp den igen."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld bayt konumunda dosya verisi okunamadı."
+            "value" : "Dosya, yükleme bitmeden değişti. Yeniden yükleyin."
           }
         }
       }
