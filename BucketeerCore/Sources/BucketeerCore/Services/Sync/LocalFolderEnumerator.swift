@@ -45,7 +45,7 @@ public enum LocalFolderEnumerator {
         guard let walker = FileManager.default.enumerator(
             at: root,
             includingPropertiesForKeys: Array(keys),
-            options: [.skipsHiddenFiles, .producesRelativePathURLs],
+            options: [.producesRelativePathURLs],
             errorHandler: { _, _ in
                 walkFailed = true
                 return false
@@ -63,6 +63,10 @@ public enum LocalFolderEnumerator {
                 try Task.checkCancellation()
             }
             let values = try url.resourceValues(forKeys: keys)
+            if isHidden(url.relativePath) {
+                if values.isDirectory == true { walker.skipDescendants() }
+                continue
+            }
             if values.isDirectory == true { continue }
             guard values.isRegularFile == true else { continue }
             // `producesRelativePathURLs` gives us URLs whose
@@ -81,6 +85,13 @@ public enum LocalFolderEnumerator {
         }
         if walkFailed { throw unavailableError }
         return results
+    }
+
+    /// A path the walk leaves out: one of its components is a dot file
+    /// or dot folder. Decided by name alone, not by the Finder's hidden
+    /// flag, so `SyncPlanner` applies the same rule to remote keys.
+    public static func isHidden(_ relativeKey: String) -> Bool {
+        relativeKey.split(separator: "/").contains { $0.hasPrefix(".") }
     }
 
     private static var unavailableError: BucketeerError {

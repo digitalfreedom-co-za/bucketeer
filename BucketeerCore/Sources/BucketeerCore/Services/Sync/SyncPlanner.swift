@@ -101,8 +101,8 @@ public enum SyncPlanner {
     /// synced only while it still has its acknowledged fingerprint, and
     /// a file without one goes up again.
     ///
-    /// The folder walk skips hidden files, so a job with a local side
-    /// leaves hidden paths out on both sides: a remote `.htaccess` is
+    /// The folder walk skips dot paths, so a job with a local side
+    /// leaves them out on both sides: a remote `.htaccess` is
     /// neither a mirror orphan nor downloaded over a local file the walk
     /// cannot see.
     public static func makePlan(
@@ -118,8 +118,12 @@ public enum SyncPlanner {
         let sourcePrefix = prefix(for: job.source)
         let destinationPrefix = prefix(for: job.destination)
         let skipsHidden = isLocal(job.source) || isLocal(job.destination)
-        let source = skipsHidden ? source.filter { !isHidden(relativeKey($0.key, under: sourcePrefix)) } : source
-        let destination = skipsHidden ? destination.filter { !isHidden(relativeKey($0.key, under: destinationPrefix)) } : destination
+        let source = skipsHidden
+            ? source.filter { !LocalFolderEnumerator.isHidden(relativeKey($0.key, under: sourcePrefix)) }
+            : source
+        let destination = skipsHidden
+            ? destination.filter { !LocalFolderEnumerator.isHidden(relativeKey($0.key, under: destinationPrefix)) }
+            : destination
 
         let destIndex: [String: S3Object] = Dictionary(
             uniqueKeysWithValues: destination.map { ($0.key, $0) }
@@ -219,12 +223,6 @@ public enum SyncPlanner {
     private static func isLocal(_ endpoint: SyncEndpoint) -> Bool {
         if case .localFolder = endpoint { return true }
         return false
-    }
-
-    /// A path the folder walk does not list: one of its components is a
-    /// dot file or dot folder.
-    private static func isHidden(_ relative: String) -> Bool {
-        relative.split(separator: "/").contains { $0.hasPrefix(".") }
     }
 
     /// Names the destination would need as a file and as a folder at once.

@@ -301,7 +301,7 @@ struct SyncPlannerTests {
         #expect(plan.deletes.map(\.key) == ["orphan.txt"])
     }
 
-    @Test("A mirror from a local folder never deletes the hidden files the folder walk skips")
+    @Test("A mirror from a local folder deletes neither the dot files the walk skips nor Finder-hidden files")
     func localMirrorKeepsHiddenRemoteFiles() throws {
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("SyncPlannerHidden-\(UUID().uuidString)", isDirectory: true)
@@ -311,6 +311,12 @@ struct SyncPlannerTests {
         defer { try? FileManager.default.removeItem(at: root) }
         try Data("deny".utf8).write(to: root.appendingPathComponent(".htaccess"))
         try Data("x".utf8).write(to: root.appendingPathComponent(".well-known/x"))
+        // Hidden by flag, not by name: the walk must still list it.
+        var flagged = root.appendingPathComponent("report.txt")
+        try Data("r".utf8).write(to: flagged)
+        var hidden = URLResourceValues()
+        hidden.isHidden = true
+        try flagged.setResourceValues(hidden)
         let job = self.job(
             mode: .mirror,
             deletePropagation: true,
@@ -320,7 +326,7 @@ struct SyncPlannerTests {
         let plan = try SyncPlanner.makePlan(
             job: job,
             source: LocalFolderEnumerator.enumerate(at: root),
-            destination: [object(".htaccess", size: 4), object(".well-known/x", size: 1)]
+            destination: [object(".htaccess", size: 4), object(".well-known/x", size: 1), object("report.txt", size: 1)]
         )
         #expect(plan.deletes.isEmpty)
     }

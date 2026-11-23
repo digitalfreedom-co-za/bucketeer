@@ -14,13 +14,16 @@ before that is internal phase work on the `development` branch.
 ## [Unreleased] — `development` branch
 
 ### Safe mirror deletes (#80)
-- A sync job with a local folder leaves hidden paths (`.htaccess`,
+- A sync job with a local folder leaves dot paths (`.htaccess`,
   `.well-known/…`) out on both sides, as the folder walk does: a
   mirror no longer deletes them remotely or downloads them unseen.
+  Files hidden only by the Finder flag are now synced like any other,
+  so their remote copies are no longer mirror orphans either.
 - Mirror deletes on S3 and Azure remove an orphan only while it still
-  has the ETag it was listed with. An orphan changed in the meantime,
-  local or remote, is reported as kept in the run summary instead of
-  as a failure.
+  has the ETag it was listed with: sent as `If-Match` where the
+  provider enforces it, otherwise checked with a HEAD right before the
+  delete. An orphan changed in the meantime, local or remote, is
+  reported as kept in the run summary instead of as a failure.
 
 ### Turkish UI (#72)
 - The app UI is localised in Turkish (tr): every string catalog (app,
