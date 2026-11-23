@@ -318,8 +318,8 @@ struct ObjectListView: View {
             }
             .width(min: 80, ideal: 100)
             TableColumn("table.column.modified") { object in
-                if !object.isFolder {
-                    Text(object.lastModified, style: .date)
+                if !object.isFolder, let modified = object.knownLastModified {
+                    Text(modified, style: .date)
                         .foregroundStyle(.secondary)
                 }
             }

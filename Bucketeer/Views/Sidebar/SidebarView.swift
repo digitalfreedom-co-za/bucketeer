@@ -146,7 +146,7 @@ struct SidebarView: View {
                     await viewModel.testConnection(account: account, credentials: credentials)
                 },
                 onLoadCredentials: { id in
-                    await viewModel.loadCredentials(for: id)
+                    try await viewModel.loadCredentials(for: id)
                 }
             )
         }
@@ -167,7 +167,7 @@ struct SidebarView: View {
                     await viewModel.testConnection(account: updated, credentials: credentials)
                 },
                 onLoadCredentials: { id in
-                    await viewModel.loadCredentials(for: id)
+                    try await viewModel.loadCredentials(for: id)
                 }
             )
         }

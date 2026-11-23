@@ -94,9 +94,13 @@ struct ObjectDetailView: View {
                     .monospacedDigit()
                 }
                 LabeledContent("detail.field.modified") {
-                    Text(object.lastModified, style: .date)
-                    Text(object.lastModified, style: .time)
-                        .foregroundStyle(.secondary)
+                    if !object.isFolder, let modified = object.knownLastModified {
+                        Text(modified, style: .date)
+                        Text(modified, style: .time)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("—").foregroundStyle(.tertiary)
+                    }
                 }
                 if let type = object.contentType, !type.isEmpty {
                     LabeledContent("detail.field.contentType") {

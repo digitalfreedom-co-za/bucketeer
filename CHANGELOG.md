@@ -13,6 +13,32 @@ before that is internal phase work on the `development` branch.
 
 ## [Unreleased] — `development` branch
 
+### Safe mirror deletes (#80)
+- A sync job with a local folder leaves dot paths (`.htaccess`,
+  `.well-known/…`) out on both sides, as the folder walk does: a
+  mirror no longer deletes them remotely or downloads them unseen.
+  Files hidden only by the Finder flag are now synced like any other,
+  so their remote copies are no longer mirror orphans either.
+- Mirror deletes on S3 and Azure remove an orphan only while it still
+  has the ETag it was listed with: sent as `If-Match` where the
+  provider enforces it, otherwise checked with a HEAD right before the
+  delete. An orphan changed in the meantime, local or remote, is
+  reported as kept in the run summary instead of as a failure.
+
+### Trash restore keeps newer objects (#79)
+- Restoring from the trash only creates the object (`If-None-Match: *`,
+  or a HEAD right before on providers that ignore the condition). When
+  a newer object took the key since the delete, it stays untouched and
+  the cached copy is uploaded next to it as
+  `<name> (conflict <date> <tag>).<ext>`; the Trash window says so. The
+  trash entry is removed only after the upload succeeded.
+
+### Turkish UI (#72)
+- The app UI is localised in Turkish (tr): every string catalog (app,
+  BucketeerCore, App Shortcuts, hardware key), `tr.lproj`
+  InfoPlist strings and the in-app help. Terms follow the Turkish
+  store texts in `docs/APP_STORE_METADATA.md`. 21 UI locales in total.
+
 ### Encryption content type (#45)
 - Encrypted uploads, including trash restores of encrypted objects,
   are stored as `application/octet-stream` instead of the plaintext's

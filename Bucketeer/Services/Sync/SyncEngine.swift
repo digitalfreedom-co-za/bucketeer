@@ -542,6 +542,9 @@ actor SyncEngine {
         await acknowledge(plan: plan, transferred: successfulEntries, job: job)
 
         // Mirror deletes (only when explicitly enabled).
+        // An orphan that changed since it was listed is kept, which is
+        // not a failure.
+        var keptOrphans = 0
         if job.mode == .mirror && job.deletePropagation {
             for orphan in plan.deletes {
                 if Task.isCancelled { break }
@@ -549,7 +552,7 @@ actor SyncEngine {
                     if try await deleteOrphan(orphan, from: job.destination, context: context.destination) {
                         completed += 1
                     } else {
-                        failed += 1
+                        keptOrphans += 1
                     }
                 } catch {
                     failed += 1
@@ -600,6 +603,9 @@ actor SyncEngine {
         }
         if !keptSources.isEmpty {
             summary += " · " + String(localized: "sync.summary.keptSources \(keptSources.count)")
+        }
+        if keptOrphans > 0 {
+            summary += " · " + String(localized: "sync.summary.keptOrphans \(keptOrphans)")
         }
         // Persist *before* publishing the
         // terminal status. Observers (`SyncJobDetailWindow` via
@@ -1053,10 +1059,11 @@ actor SyncEngine {
         }
     }
 
-    /// Endpoint-aware delete used by mirror-delete. A local file goes
-    /// only while it is still the file that was listed: one saved since,
+    /// Endpoint-aware delete used by mirror-delete. The orphan goes only
+    /// while it is still the version that was listed: the ETag for
+    /// object stores, size and date for local files. One changed since,
     /// or a folder that took its name, stays and the call returns
-    /// `false`. Missing local files count as deleted.
+    /// `false`. Missing orphans count as deleted.
     private func deleteOrphan(
         _ orphan: S3Object,
         from endpoint: SyncEndpoint,
@@ -1067,8 +1074,9 @@ actor SyncEngine {
             guard let account = context.account else {
                 throw BucketeerError.unknown(message: String(localized: "sync.error.contextIncomplete"))
             }
-            try await browser.delete(account: account, bucket: bucket, keys: [orphan.key])
-            return true
+            return try await browser.deleteIfUnchanged(
+                account: account, bucket: bucket, key: orphan.key, etag: orphan.etag
+            )
         case .localFolder:
             guard let root = context.localRoot else {
                 throw BucketeerError.unknown(message: String(localized: "sync.error.localFolderUnavailableDuringDelete"))

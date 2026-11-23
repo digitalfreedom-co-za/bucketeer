@@ -123,6 +123,12 @@
             "state" : "translated",
             "value" : "En annan nyckel finns"
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Farklı bir anahtar var"
+          }
         }
       }
     },
@@ -247,6 +253,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Använd minst 12 tecken. Flera orelaterade ord ger en starkare lösenfras. Båda fälten måste stämma överens."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En az 12 karakter kullan. Birbiriyle ilgisiz birkaç sözcük daha güçlü bir parola ifadesi oluşturur. İki alan da aynı olmalı."
           }
         }
       }
@@ -373,6 +385,12 @@
             "state" : "translated",
             "value" : "Dekrypteringen misslyckades. Nyckeln matchar inte eller den krypterade filen har ändrats."
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Şifre çözme başarısız oldu. Anahtar eşleşmiyor ya da şifreli dosya değiştirilmiş."
+          }
         }
       }
     },
@@ -497,6 +515,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Den krypterade filen är ofullständig eller har ett ogiltigt format."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Şifreli dosya eksik ya da biçimi geçersiz."
           }
         }
       }
@@ -623,6 +647,12 @@
             "state" : "translated",
             "value" : "Bucket %@ har redan nyckeln ”%@”."
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ bucket'ında zaten \"%@\" anahtarı var."
+          }
         }
       }
     },
@@ -747,6 +777,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Krypteringsnyckeln måste innehålla 32 byte (hittade %lld)."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Şifreleme anahtarı 32 bayt içermeli (bulunan: %lld)."
           }
         }
       }
@@ -873,6 +909,12 @@
             "state" : "translated",
             "value" : "Den sparade krypteringsnyckeln saknas i Nyckelhanterare. Den kan ha tagits bort."
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kayıtlı şifreleme anahtarı Anahtar Zinciri'nde yok. Kaldırılmış olabilir."
+          }
         }
       }
     },
@@ -997,6 +1039,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Det här krypteringsformatet stöds inte. Uppdatera Bucketeer och försök igen."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu şifreleme biçimi desteklenmiyor. Bucketeer'ı güncelle ve yeniden dene."
           }
         }
       }
@@ -1123,6 +1171,12 @@
             "state" : "translated",
             "value" : "Objektet är krypterat, men ingen nyckel är konfigurerad för denna bucket."
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nesne şifreli, ancak bu bucket için yapılandırılmış bir anahtar yok."
+          }
         }
       }
     },
@@ -1247,6 +1301,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Synkroniseringssökvägen måste vara relativ: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eşitleme yolu göreli olmalı: %@"
           }
         }
       }
@@ -1373,6 +1433,12 @@
             "state" : "translated",
             "value" : "Synkroniseringssökvägen innehåller en tom komponent: %@"
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eşitleme yolu boş bir bileşen içeriyor: %@"
+          }
         }
       }
     },
@@ -1497,6 +1563,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Synkroniseringssökvägen är tom. Rotmappen kan inte ändras."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eşitleme yolu boş. Kök klasör değiştirilemez."
           }
         }
       }
@@ -1623,6 +1695,12 @@
             "state" : "translated",
             "value" : "En mapp med namnet ”%@” finns redan på målet. Den skrevs inte över."
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hedefte \"%@\" adlı bir klasör zaten var. Üzerine yazılmadı."
+          }
         }
       }
     },
@@ -1747,6 +1825,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Synkroniseringssökvägen ligger utanför den valda mappen: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eşitleme yolu seçilen klasörün dışında: %@"
           }
         }
       }
@@ -1873,6 +1957,12 @@
             "state" : "translated",
             "value" : "Synkroniseringssökvägen går genom en symbolisk länk: %@"
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eşitleme yolu sembolik bir bağlantıdan geçiyor: %@"
+          }
         }
       }
     },
@@ -1997,6 +2087,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Synkroniseringssökvägen innehåller en referens till en överordnad mapp: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eşitleme yolu bir üst klasör başvurusu içeriyor: %@"
           }
         }
       }
@@ -2123,6 +2219,12 @@
             "state" : "translated",
             "value" : "Kopieringen misslyckades (%@): %@"
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopyalama başarısız oldu (%@): %@"
+          }
         }
       }
     },
@@ -2247,6 +2349,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Oväntad kopieringsstatus: %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beklenmeyen kopyalama durumu: %@"
           }
         }
       }
@@ -2439,6 +2547,12 @@
             "state" : "translated",
             "value" : "Kopieringen slutfördes inte inom %lld sekunder."
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopyalama %lld saniye içinde tamamlanmadı."
+          }
         }
       }
     },
@@ -2563,6 +2677,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hämtningen slutfördes inte."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İndirme tamamlanmadı."
           }
         }
       }
@@ -2689,130 +2809,142 @@
             "state" : "translated",
             "value" : "Flerdelad uppladdning kräver en fil som inte är tom."
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Çok parçalı yükleme için boş olmayan bir dosya gerekir."
+          }
         }
       }
     },
-    "transfer.error.emptyRead %lld" : {
+    "transfer.error.fileChanged" : {
       "extractionState" : "manual",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Na bajtové pozici %lld se nepodařilo přečíst data souboru."
+            "value" : "Soubor se změnil dříve, než nahrávání skončilo. Nahrajte ho znovu."
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ingen fildata kunne læses ved byteposition %lld."
+            "value" : "Filen blev ændret, før overførslen var færdig. Overfør den igen."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ab Byteposition %lld konnten keine Dateidaten gelesen werden."
+            "value" : "Die Datei wurde geändert, bevor der Upload abgeschlossen war. Lade sie erneut hoch."
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Δεν ήταν δυνατή η ανάγνωση δεδομένων στη θέση byte %lld."
+            "value" : "Το αρχείο άλλαξε πριν ολοκληρωθεί η αποστολή. Στείλτε το ξανά."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No file data could be read at byte offset %lld."
+            "value" : "The file changed before the upload finished. Upload it again."
           }
         },
         "en-GB" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No file data could be read at byte offset %lld."
+            "value" : "The file changed before the upload finished. Upload it again."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No se pudieron leer datos en la posición de byte %lld."
+            "value" : "El archivo cambió antes de que terminara la carga. Vuelve a cargarlo."
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tiedoston tietoja ei voitu lukea tavukohdasta %lld."
+            "value" : "Tiedosto muuttui ennen kuin lataus valmistui. Lataa se uudelleen."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aucune donnée n’a pu être lue à la position %lld octets."
+            "value" : "Le fichier a été modifié avant la fin de l’envoi. Envoyez-le à nouveau."
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nem sikerült fájladatokat olvasni a(z) %lld bájtpozíciónál."
+            "value" : "A fájl megváltozott, mielőtt a feltöltés befejeződött. Töltse fel újra."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Impossibile leggere i dati alla posizione di byte %lld."
+            "value" : "Il file è cambiato prima del termine del caricamento. Caricalo di nuovo."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "バイト位置%lldからファイルデータを読み取れませんでした。"
+            "value" : "アップロードの完了前にファイルが変更されました。もう一度アップロードしてください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "바이트 위치 %lld에서 파일 데이터를 읽을 수 없습니다."
+            "value" : "업로드가 끝나기 전에 파일이 변경되었습니다. 다시 업로드하세요."
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ingen fildata kunne leses ved byteposisjon %lld."
+            "value" : "Filen ble endret før opplastingen var ferdig. Last den opp på nytt."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Er konden geen bestandsgegevens worden gelezen op bytepositie %lld."
+            "value" : "Het bestand is gewijzigd voordat de upload klaar was. Upload het opnieuw."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nie można odczytać danych pliku od pozycji bajtowej %lld."
+            "value" : "Plik zmienił się przed zakończeniem wysyłania. Wyślij go ponownie."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Não foi possível ler dados do arquivo na posição de byte %lld."
+            "value" : "O arquivo mudou antes de o upload terminar. Faça o upload novamente."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Não foi possível ler dados do ficheiro na posição de byte %lld."
+            "value" : "O ficheiro foi alterado antes de o envio terminar. Envie-o novamente."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Не удалось прочитать данные файла с байтовой позиции %lld."
+            "value" : "Файл изменился до завершения загрузки. Загрузите его снова."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Inga fildata kunde läsas vid byteposition %lld."
+            "value" : "Filen ändrades innan uppladdningen var klar. Ladda upp den igen."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dosya, yükleme bitmeden değişti. Yeniden yükleyin."
           }
         }
       }
@@ -2939,6 +3071,12 @@
             "state" : "translated",
             "value" : "Den aktuella blobben kan inte raderas som en ögonblicksbild."
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geçerli blob, anlık görüntü olarak silinemez."
+          }
         }
       }
     },
@@ -3063,6 +3201,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Leverantören returnerade ingen ETag för del %lld."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sağlayıcı %lld numaralı parça için ETag döndürmedi."
           }
         }
       }
@@ -3189,6 +3333,12 @@
             "state" : "translated",
             "value" : "Leverantören returnerade inget ID för flerdelad uppladdning."
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sağlayıcı çok parçalı yükleme kimliği döndürmedi."
+          }
         }
       }
     },
@@ -3313,6 +3463,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ returnerade ett ogiltigt HTTP-svar."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ geçersiz bir HTTP yanıtı döndürdü."
           }
         }
       }
@@ -3439,6 +3595,12 @@
             "state" : "translated",
             "value" : "Leverantören ignorerade det begärda byteintervallet. Hämtningen stoppades."
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sağlayıcı istenen bayt aralığını yok saydı. İndirme durduruldu."
+          }
         }
       }
     },
@@ -3563,6 +3725,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hämtningen returnerade %lld byte; %lld förväntades."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İndirme %lld bayt döndürdü; beklenen %lld."
           }
         }
       }
@@ -3689,6 +3857,12 @@
             "state" : "translated",
             "value" : "Det gick inte att skapa Azures delnings-URL."
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Azure paylaşım URL'si oluşturulamadı."
+          }
         }
       }
     },
@@ -3813,6 +3987,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Det gick inte att läsa listan som returnerades av %@."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ tarafından döndürülen liste okunamadı."
           }
         }
       }
@@ -3939,6 +4119,12 @@
             "state" : "translated",
             "value" : "Åtkomst nekad."
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erişim reddedildi."
+          }
         }
       }
     },
@@ -4063,6 +4249,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Servern returnerade HTTP %lld med ett okänt svarsinnehåll."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sunucu, tanınmayan bir yanıt gövdesiyle HTTP %lld döndürdü."
           }
         }
       }
@@ -4189,6 +4381,12 @@
             "state" : "translated",
             "value" : "Fel lösenfras, eller säkerhetskopian har ändrats."
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parola ifadesi yanlış ya da yedek dosyası değiştirilmiş."
+          }
         }
       }
     },
@@ -4313,6 +4511,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "En nyckel har ändrats sedan granskningen. Granska filen igen."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İncelemeden sonra bir anahtar değişti. Dosyayı yeniden incele."
           }
         }
       }
@@ -4439,6 +4643,12 @@
             "state" : "translated",
             "value" : "Uppladdningen stoppades: exportera en säkerhetskopia av nyckeln eller godkänn risken."
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yükleme durduruldu: bir anahtar yedeği dışa aktar ya da riski onayla."
+          }
         }
       }
     },
@@ -4564,6 +4774,12 @@
             "state" : "translated",
             "value" : "Autentisering av enhetens ägare godkändes inte."
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cihaz sahibi kimlik doğrulaması onaylanmadı."
+          }
         }
       }
     },
@@ -4688,6 +4904,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Använd filändelsen .bktkeys för säkerhetskopior av nycklar."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anahtar yedekleri için .bktkeys uzantısını kullan."
           }
         }
       }

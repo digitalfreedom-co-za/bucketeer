@@ -35,8 +35,9 @@ Recorded exclusions, nothing beyond them:
 | Every other storefront Apple serves | Offered according to the documents above | same |
 
 The live storefront list in App Store Connect has **not been verified**. The
-20 UI locales of the app and the website (including Russian) are no proof that
-the app is sold in a market where that language is spoken.
+21 UI locales of the app (including Russian and Turkish) and the languages of
+the website are no proof that the app is sold in a market where that language
+is spoken.
 
 ## Matrix
 

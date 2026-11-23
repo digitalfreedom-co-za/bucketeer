@@ -74,8 +74,9 @@ public struct BucketStatsCollector: Sendable {
                     // so the dashboard still shows useful partial stats.
                     let (sum, overflow) = totalBytes.addingReportingOverflow(object.size)
                     totalBytes = overflow ? .max : sum
-                    if lastModified == nil || object.lastModified > (lastModified ?? .distantPast) {
-                        lastModified = object.lastModified
+                    if let modified = object.knownLastModified,
+                       modified > (lastModified ?? .distantPast) {
+                        lastModified = modified
                     }
                     Self.insertLargest(
                         &largest,

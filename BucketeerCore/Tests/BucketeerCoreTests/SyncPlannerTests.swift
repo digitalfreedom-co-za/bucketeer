@@ -301,6 +301,36 @@ struct SyncPlannerTests {
         #expect(plan.deletes.map(\.key) == ["orphan.txt"])
     }
 
+    @Test("A mirror from a local folder deletes neither the dot files the walk skips nor Finder-hidden files")
+    func localMirrorKeepsHiddenRemoteFiles() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("SyncPlannerHidden-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(
+            at: root.appendingPathComponent(".well-known"), withIntermediateDirectories: true
+        )
+        defer { try? FileManager.default.removeItem(at: root) }
+        try Data("deny".utf8).write(to: root.appendingPathComponent(".htaccess"))
+        try Data("x".utf8).write(to: root.appendingPathComponent(".well-known/x"))
+        // Hidden by flag, not by name: the walk must still list it.
+        var flagged = root.appendingPathComponent("report.txt")
+        try Data("r".utf8).write(to: flagged)
+        var hidden = URLResourceValues()
+        hidden.isHidden = true
+        try flagged.setResourceValues(hidden)
+        let job = self.job(
+            mode: .mirror,
+            deletePropagation: true,
+            source: localEndpoint(at: root.path),
+            destination: endpoint(prefix: "", accountID: destAccountID)
+        )
+        let plan = try SyncPlanner.makePlan(
+            job: job,
+            source: LocalFolderEnumerator.enumerate(at: root),
+            destination: [object(".htaccess", size: 4), object(".well-known/x", size: 1), object("report.txt", size: 1)]
+        )
+        #expect(plan.deletes.isEmpty)
+    }
+
     // MARK: - Local edits that keep the size
 
     private func file(_ key: String, modified: TimeInterval) -> S3Object {

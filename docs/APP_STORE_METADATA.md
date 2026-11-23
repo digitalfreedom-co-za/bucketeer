@@ -87,10 +87,10 @@ locales: "Store locales (21)" below.
 >   accounts, server-side when endpoints match, local round-trip
 >   otherwise — automatically picks the right path
 > - **Touch ID / password gate** for revealing stored secrets
-> - **Localised in 20 locales** — English (US and UK), Czech, Danish,
+> - **Localised in 21 locales** — English (US and UK), Czech, Danish,
 >   Dutch, Finnish, French, German, Greek, Hungarian, Italian, Japanese,
 >   Korean, Norwegian, Polish, Portuguese (Brazil and Portugal), Russian,
->   Spanish, Swedish
+>   Spanish, Swedish, Turkish
 >
 > ### How pricing works
 >
@@ -195,10 +195,11 @@ the name already carries them.
 
 ## Store locales (21)
 
-Source texts per App Store locale as of 2026-11-22. Twenty locales
-match the app UI; Turkish (tr) was added on 2026-11-22 as a store
-metadata locale only (decision log #14). The app itself has no
-Turkish UI (no `tr.lproj`, no Turkish strings in the catalogs).
+Source texts per App Store locale as of 2026-11-22. All 21 locales
+match the app UI. Turkish (tr) was added on 2026-11-22 as a store
+locale (decision log #14); the app UI gained Turkish in #72
+(`tr.lproj`, Turkish strings in every string catalog, Turkish in-app
+help).
 Nothing in this table has been written to App Store Connect; the
 write is ticket #22. App Store Connect holds no tr localization yet.
 
@@ -299,9 +300,9 @@ Promotional text, 151 of 170 characters:
 > dosya aktar, bucket'ları bağla ve eşitle. Hepsi tek bir yerel macOS
 > uygulamasında.
 
-Description, 3904 of 4000 characters as plain text, counted with
+Description, 3887 of 4000 characters as plain text, counted with
 the line wraps and indentation as written. With the markdown emphasis
-kept, the same count is 4028 and over the limit, so paste the plain
+kept, the same count is 4011 and over the limit, so paste the plain
 text:
 
 > Bucketeer, nesne depolamayla çalışan herkes için bir macOS
@@ -363,11 +364,11 @@ text:
 >   gidiş-dönüşle; doğru yol otomatik seçilir
 > - **Touch ID / parola koruması**: kayıtlı gizli bilgileri göstermek
 >   için
-> - **Uygulama 20 dilde yerelleştirildi**: İngilizce (ABD ve
+> - **Uygulama 21 dilde yerelleştirildi**: İngilizce (ABD ve
 >   İngiltere), Çekçe, Danca, Felemenkçe, Fince, Fransızca, Almanca,
 >   Yunanca, Macarca, İtalyanca, Japonca, Korece, Norveççe, Lehçe,
->   Portekizce (Brezilya ve Portekiz), Rusça, İspanyolca, İsveççe.
->   Türkçe arayüz henüz yok.
+>   Portekizce (Brezilya ve Portekiz), Rusça, İspanyolca, İsveççe,
+>   Türkçe.
 >
 > ### Fiyatlandırma
 >
@@ -387,10 +388,9 @@ text:
 
 Notes for review:
 
-- The UI-language bullet ("Uygulama 20 dilde yerelleştirildi") lists
-  the 20 app UI locales, matching the English "Localised in 20
-  locales" bullet, and says that there is no Turkish UI yet. Only the
-  store listing is Turkish.
+- The UI-language bullet ("Uygulama 21 dilde yerelleştirildi") lists
+  the 21 app UI locales including Turkish, matching the English
+  "Localised in 21 locales" bullet. The app UI is Turkish since #72.
 - The price mirrors the English `€14.99`. The Turkish storefront shows
   the local price of the Tier 15 IAP.
 - What's New and the "Support period" block are not drafted in
@@ -493,8 +493,8 @@ one) so the data looks plausible.
 - [ ] App Store Connect: create app record with bundle id
       `za.co.digitalfreedom.Bucketeer`
 - [ ] Upload both Bucketeer Pro IAPs (see tables above)
-- [ ] Add 20 InfoPlist.strings translations (already in repo; app UI
-      locales only, Turkish is a store metadata locale without UI)
+- [ ] Add 21 InfoPlist.strings translations (already in repo, one per
+      app UI locale, including Turkish)
 - [ ] Add localised App Store metadata for all 21 store locales from
       "Store locales (21)" above, including the new tr localization.
       en-US, en-GB and de-DE name, subtitle and keywords are adopted;

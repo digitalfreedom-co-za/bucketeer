@@ -47,11 +47,18 @@ final class MountController {
     }
 
     /// Refresh the cached list from the system. Idempotent.
+    ///
+    /// Runs at every launch, so a failure shows the app's own localized
+    /// text: the system description is often English-only or a bare
+    /// error code (an unregistered extension reports `providerNotFound`).
     func refresh() async {
         do {
             mountedDomains = try await registry.identifiers()
         } catch {
-            lastError = .unknown(message: error.localizedDescription)
+            lastError = .unknown(message: String(
+                localized: "mount.error.refreshFailed",
+                defaultValue: "Bucketeer couldn't check which buckets are mounted in Finder. Quit and reopen Bucketeer to try again."
+            ))
         }
     }
 

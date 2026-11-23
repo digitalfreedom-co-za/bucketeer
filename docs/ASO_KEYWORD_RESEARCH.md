@@ -64,9 +64,10 @@ cs, da, de-DE, el, en-GB, en-US, es-ES, fi, fr-FR, hu, it, ja, ko,
 nl-NL, no, pl, pt-BR, pt-PT, ru, sv.
 
 Update 2026-11-22: the store locale list is now 21, the 20 above plus
-tr (Turkish), decision log #14. Turkish is a store metadata locale
-only; the app UI stays at the 20 locales above. ASC held no tr
-localization on 2026-11-09; it is added during the #22 write.
+tr (Turkish), decision log #14. Since #72 the app UI is also
+localised in Turkish, so all 21 store locales match an app UI locale.
+ASC held no tr localization on 2026-11-09; it is added during the #22
+write.
 
 The launch checklist in [`APP_STORE_METADATA.md`](APP_STORE_METADATA.md)
 listed "Add localised App Store descriptions" as open when this

@@ -91,6 +91,21 @@ final class MountControllerTests: XCTestCase {
         XCTAssertNotNil(controller.lastError)
     }
 
+    /// The refresh runs at launch; its alert must show the app's own
+    /// localized text, not the system's raw error description.
+    func testFailedLaunchRefreshShowsTheAppMessage() async {
+        let registry = FakeDomainRegistry()
+        registry.lookupFails = true
+        let controller = MountController(encryptionKeyStore: FakeKeyStore(), registry: registry)
+
+        await controller.refresh()
+
+        XCTAssertEqual(
+            controller.lastError?.errorDescription,
+            "Bucketeer couldn't check which buckets are mounted in Finder. Quit and reopen Bucketeer to try again."
+        )
+    }
+
     private func waitUntil(_ condition: () -> Bool) async throws {
         var attempts = 0
         while !condition() && attempts < 1_000 {
