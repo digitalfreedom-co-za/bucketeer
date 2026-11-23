@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import os
 import Security
 
 /// Keychain-backed implementation of `KeychainStoring`. One generic
@@ -40,17 +41,19 @@ public actor KeychainStore: KeychainStoring {
 
         switch updateStatus {
         case errSecSuccess:
-            return
+            Self.logStatus("credential.save update", accountID, updateStatus)
         case errSecItemNotFound:
             var addQuery = identityQuery
             addQuery[kSecValueData as String] = data
             addQuery[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlocked
             addQuery[kSecAttrSynchronizable as String] = false
             let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
+            Self.logStatus("credential.save add", accountID, addStatus)
             guard addStatus == errSecSuccess else {
                 throw BucketeerError.keychainFailure(status: addStatus)
             }
         default:
+            Self.logStatus("credential.save update", accountID, updateStatus)
             throw BucketeerError.keychainFailure(status: updateStatus)
         }
     }
@@ -63,20 +66,24 @@ public actor KeychainStore: KeychainStoring {
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
         guard status == errSecSuccess else {
+            Self.logStatus("credential.load", accountID, status)
             throw Self.loadError(for: status)
         }
         guard let data = result as? Data else {
+            Self.logStatus("credential.load noData", accountID, errSecItemNotFound)
             throw BucketeerError.keychainFailure(status: errSecItemNotFound)
         }
         do {
             return try JSONDecoder().decode(AccountCredentials.self, from: data)
         } catch {
+            Self.logStatus("credential.load undecodable", accountID, errSecDecode)
             throw BucketeerError.persistenceFailure(message: error.localizedDescription)
         }
     }
 
     public func delete(for accountID: UUID) async throws {
         let status = SecItemDelete(baseQuery(for: accountID) as CFDictionary)
+        Self.logStatus("credential.delete", accountID, status)
         guard status == errSecSuccess || status == errSecItemNotFound else {
             throw BucketeerError.keychainFailure(status: status)
         }
@@ -102,18 +109,28 @@ public actor KeychainStore: KeychainStoring {
     /// reads back as a different item; on any failure the legacy item
     /// stays in place and the next launch retries.
     public func migrateFromLegacyFileKeychain() async {
-        guard accessGroup != nil else { return }
+        guard accessGroup != nil else {
+            CredentialLog.logger.info("migration.skip noAccessGroup")
+            return
+        }
 
         var result: AnyObject?
         let status = SecItemCopyMatching(Self.legacyListQuery(service: service) as CFDictionary, &result)
+        CredentialLog.logger.info("migration.list status=\(status, privacy: .public)")
         guard status == errSecSuccess, let items = result as? [[String: Any]] else { return }
 
         for item in items {
             guard let accountString = item[kSecAttrAccount as String] as? String,
-                  let accountID = UUID(uuidString: accountString),
-                  let legacyRef = item[kSecValuePersistentRef as String] as? Data,
-                  let data = Self.legacyData(persistentRef: legacyRef)
-            else { continue }
+                  let accountID = UUID(uuidString: accountString)
+            else {
+                CredentialLog.logger.error("migration.item noAccountID")
+                continue
+            }
+            guard let legacyRef = item[kSecValuePersistentRef as String] as? Data else {
+                Self.logStatus("migration.item noPersistentRef", accountID, errSecItemNotFound)
+                continue
+            }
+            guard let data = Self.legacyData(persistentRef: legacyRef, accountID: accountID) else { continue }
             // SecItemAdd (not update) so an existing shared entry, which
             // may be newer, is never overwritten.
             var addQuery = baseQuery(for: accountID)
@@ -124,12 +141,20 @@ public actor KeychainStore: KeychainStoring {
                 addQuery[kSecAttrCreationDate as String] = creation
             }
             let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
-            guard addStatus == errSecSuccess || addStatus == errSecDuplicateItem,
-                  (try? await load(for: accountID)) != nil,
-                  let sharedRef = sharedPersistentRef(for: accountID),
-                  sharedRef != legacyRef
-            else { continue }
-            _ = SecItemDelete(Self.legacyDeleteQuery(persistentRef: legacyRef) as CFDictionary)
+            Self.logStatus("migration.copy", accountID, addStatus)
+            guard addStatus == errSecSuccess || addStatus == errSecDuplicateItem else { continue }
+            // `load` logs its own failure status.
+            guard (try? await load(for: accountID)) != nil else { continue }
+            Self.logStatus("migration.verify readBack", accountID, errSecSuccess)
+            guard let sharedRef = sharedPersistentRef(for: accountID) else { continue }
+            guard sharedRef != legacyRef else {
+                CredentialLog.logger.error(
+                    "migration.verify sameItem account=\(accountID.uuidString, privacy: .public), legacy item kept"
+                )
+                continue
+            }
+            let deleteStatus = SecItemDelete(Self.legacyDeleteQuery(persistentRef: legacyRef) as CFDictionary)
+            Self.logStatus("migration.deleteLegacy", accountID, deleteStatus)
         }
     }
 
@@ -157,7 +182,7 @@ public actor KeychainStore: KeychainStoring {
         ]
     }
 
-    private static func legacyData(persistentRef: Data) -> Data? {
+    private static func legacyData(persistentRef: Data, accountID: UUID) -> Data? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecUseDataProtectionKeychain as String: false,
@@ -165,8 +190,14 @@ public actor KeychainStore: KeychainStoring {
             kSecReturnData as String: true
         ]
         var result: AnyObject?
-        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess else { return nil }
-        return result as? Data
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        logStatus("migration.readLegacy", accountID, status)
+        guard status == errSecSuccess else { return nil }
+        guard let data = result as? Data else {
+            logStatus("migration.readLegacy noData", accountID, errSecItemNotFound)
+            return nil
+        }
+        return data
     }
 
     private func sharedPersistentRef(for accountID: UUID) -> Data? {
@@ -174,11 +205,25 @@ public actor KeychainStore: KeychainStoring {
         query[kSecReturnPersistentRef as String] = true
         query[kSecMatchLimit as String] = kSecMatchLimitOne
         var result: AnyObject?
-        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess else { return nil }
-        return result as? Data
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        Self.logStatus("migration.verify sharedRef", accountID, status)
+        guard status == errSecSuccess else { return nil }
+        guard let ref = result as? Data else {
+            Self.logStatus("migration.verify sharedRef noData", accountID, errSecItemNotFound)
+            return nil
+        }
+        return ref
     }
 
     // MARK: - Internals
+
+    private static func logStatus(_ event: String, _ accountID: UUID, _ status: OSStatus) {
+        let level: OSLogType = status == errSecSuccess ? .info : .error
+        CredentialLog.logger.log(
+            level: level,
+            "\(event, privacy: .public) account=\(accountID.uuidString, privacy: .public) status=\(status, privacy: .public)"
+        )
+    }
 
     /// A missing item is not a failed sign-in: the user has to enter
     /// the credentials again, the provider never saw a request.

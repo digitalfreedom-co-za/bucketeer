@@ -79,7 +79,9 @@ public actor EncryptionKeyStore: EncryptionKeyStoring {
             try modelContext.save()
         } catch {
             // Roll back the Keychain entry so we never leak orphan
-            // key bytes when the SwiftData write fails.
+            // key bytes when the SwiftData write fails, and the context
+            // so a later save cannot persist metadata without bytes.
+            modelContext.rollback()
             try? deleteKeychain(id: metadata.id)
             throw BucketeerError.persistenceFailure(message: error.localizedDescription)
         }

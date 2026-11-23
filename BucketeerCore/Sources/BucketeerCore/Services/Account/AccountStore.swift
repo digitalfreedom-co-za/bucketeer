@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import os
 import SwiftData
 
 /// SwiftData-backed implementation of `AccountStoring`. Lives inside
@@ -49,8 +50,15 @@ public actor AccountStore: AccountStoring {
             }
             try modelContext.save()
         } catch let error as BucketeerError {
+            modelContext.rollback()
             throw error
         } catch {
+            // A failed save keeps its changes pending in the context, and
+            // the next successful save would persist them.
+            modelContext.rollback()
+            CredentialLog.logger.error(
+                "account.save failed account=\(account.id.uuidString, privacy: .public) code=\((error as NSError).code, privacy: .public)"
+            )
             throw BucketeerError.persistenceFailure(message: error.localizedDescription)
         }
     }
@@ -65,6 +73,10 @@ public actor AccountStore: AccountStoring {
                 try modelContext.save()
             }
         } catch {
+            modelContext.rollback()
+            CredentialLog.logger.error(
+                "account.delete failed account=\(id.uuidString, privacy: .public) code=\((error as NSError).code, privacy: .public)"
+            )
             throw BucketeerError.persistenceFailure(message: error.localizedDescription)
         }
     }
@@ -79,6 +91,7 @@ public actor AccountStore: AccountStoring {
                 try modelContext.save()
             }
         } catch {
+            modelContext.rollback()
             throw BucketeerError.persistenceFailure(message: error.localizedDescription)
         }
     }

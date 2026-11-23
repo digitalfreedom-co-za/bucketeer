@@ -21,10 +21,11 @@ struct AddEditAccountSheet: View {
     /// Returns `nil` on a successful connection, an error otherwise.
     /// Optional: when omitted the Test Connection button is hidden.
     var onTest: (@MainActor (S3Account, AccountCredentials) async -> BucketeerError?)?
-    /// Returns the stored credentials for an account, or nil if the
-    /// Keychain lookup fails. Required for the "Reveal stored secret"
-    /// flow in edit mode.
-    var onLoadCredentials: (@MainActor (UUID) async -> AccountCredentials?)?
+    /// Returns the stored credentials for an account. Throws
+    /// `credentialsMissing` when none are stored and the real Keychain
+    /// error otherwise. Required for the "Reveal stored secret" flow in
+    /// edit mode.
+    var onLoadCredentials: (@MainActor (UUID) async throws -> AccountCredentials)?
 
     @Environment(\.dismiss) private var dismiss
 
@@ -373,11 +374,17 @@ struct AddEditAccountSheet: View {
             return
         }
 
-        guard let credentials = await onLoadCredentials(existing.id) else {
+        let credentials: AccountCredentials
+        do {
+            credentials = try await onLoadCredentials(existing.id)
+        } catch BucketeerError.credentialsMissing {
             revealError = String(
                 localized: "account.action.revealSecret.notFound",
                 defaultValue: "No stored credentials were found for this account."
             )
+            return
+        } catch {
+            revealError = error.localizedDescription
             return
         }
         accessKey = credentials.accessKey

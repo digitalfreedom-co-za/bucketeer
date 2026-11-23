@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import os
 import BucketeerCore
 
 @MainActor
@@ -69,10 +70,10 @@ final class AccountListViewModel {
     }
 
     /// Loads the stored credentials for an account from the Keychain.
-    /// Returns nil on failure. Used by the edit sheet to populate the
-    /// secret fields after the user authenticates via Touch ID.
-    func loadCredentials(for accountID: UUID) async -> AccountCredentials? {
-        try? await keychainStore.load(for: accountID)
+    /// Throws `credentialsMissing` only when no item is stored, so the
+    /// edit sheet can tell a missing entry from a Keychain failure.
+    func loadCredentials(for accountID: UUID) async throws -> AccountCredentials {
+        try await keychainStore.load(for: accountID)
     }
 
     /// Saves the account in Keychain first, then in the SwiftData store.
@@ -164,16 +165,27 @@ final class AccountListViewModel {
     /// - For a **create**: delete the orphaned entry so we don't leave
     ///   junk in the Keychain for an account that never made it into
     ///   the SwiftData store.
+    ///
+    /// The caches are flushed whether or not the restore succeeds: the
+    /// app or the extension may already have read the new credentials.
     private func rollbackCredentials(
         for accountID: UUID,
         previous: AccountCredentials?,
         isEdit: Bool
     ) async {
-        if isEdit, let previous {
-            try? await keychainStore.save(previous, for: accountID)
-        } else {
-            try? await keychainStore.delete(for: accountID)
+        let id = accountID.uuidString
+        do {
+            if isEdit, let previous {
+                CredentialLog.logger.info("credential.restore reason=accountSaveFailed account=\(id, privacy: .public)")
+                try await keychainStore.save(previous, for: accountID)
+            } else {
+                CredentialLog.logger.info("credential.delete reason=accountCreateFailed account=\(id, privacy: .public)")
+                try await keychainStore.delete(for: accountID)
+            }
+        } catch {
+            CredentialLog.logger.error("credential.rollback failed account=\(id, privacy: .public)")
         }
+        await invalidateAllCaches(for: accountID)
     }
 
     /// Removes the account record first so the UI never shows an entry
@@ -198,6 +210,9 @@ final class AccountListViewModel {
             return wrapped
         }
 
+        CredentialLog.logger.info(
+            "credential.delete reason=accountDeleted account=\(account.id.uuidString, privacy: .public)"
+        )
         do {
             try await keychainStore.delete(for: account.id)
         } catch let error as BucketeerError {

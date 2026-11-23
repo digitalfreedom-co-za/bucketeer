@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import os
 import SwiftData
 import BucketeerCore
 
@@ -36,6 +37,7 @@ final class ExtensionContainer: Sendable {
         guard let groupURL = FileManager.default.containerURL(
             forSecurityApplicationGroupIdentifier: AppEnvironment.appGroupIdentifier
         ) else {
+            CredentialLog.logger.error("store.location unavailable reason=noAppGroup")
             throw NSError(
                 domain: "BucketeerFileProvider",
                 code: 1,
@@ -47,6 +49,7 @@ final class ExtensionContainer: Sendable {
         // Same schema as the host (never a subset — that would migrate
         // away the host's sync jobs); saves are disabled here.
         self.modelContainer = try SharedStore.makeContainer(url: storeURL, allowsSave: false)
+        CredentialLog.logger.info("store.location appGroup")
         let keychain = KeychainStore(
             service: AppEnvironment.keychainService,
             accessGroup: AppEnvironment.keychainAccessGroup
