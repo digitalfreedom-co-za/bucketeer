@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import os
 import SwiftData
 import BucketeerCore
 
@@ -522,6 +523,7 @@ final class AppContainer {
     private static func resolveStoreURL() -> URL {
         let sandboxURL = sandboxStoreURL()
         guard let groupContainer = groupContainerURL() else {
+            CredentialLog.logger.error("store.location sandbox reason=noAppGroup")
             return sandboxURL
         }
         let groupURL = groupContainer.appending(path: AppEnvironment.swiftDataStoreFileName)
@@ -529,10 +531,15 @@ final class AppContainer {
            FileManager.default.fileExists(atPath: sandboxURL.path) {
             do {
                 try SQLiteStoreMigration.migrate(from: sandboxURL, to: groupURL)
+                CredentialLog.logger.info("store.migration sandboxToAppGroup succeeded")
             } catch {
+                CredentialLog.logger.error(
+                    "store.location sandbox reason=migrationFailed code=\((error as NSError).code, privacy: .public)"
+                )
                 return sandboxURL
             }
         }
+        CredentialLog.logger.info("store.location appGroup")
         return groupURL
     }
 
