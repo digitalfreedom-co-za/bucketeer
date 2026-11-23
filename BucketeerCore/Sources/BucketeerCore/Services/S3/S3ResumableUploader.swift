@@ -111,6 +111,17 @@ public struct S3ResumableUploader: Sendable {
         // the opened file.
         guard let opened, opened.size == fileSize,
               LocalFileState(path: localURL.path) == opened else {
+            // An earlier attempt's checkpoint describes the queued file,
+            // which is gone; a retry would only resume the wrong parts.
+            if let stale = try? await checkpointStore.find(
+                accountID: account.id,
+                bucket: bucket,
+                key: key,
+                localPath: localURL.path,
+                fileSize: fileSize
+            ) {
+                await discard(stale, s3: s3)
+            }
             throw Self.fileChangedError
         }
 

@@ -234,7 +234,8 @@ final class EncryptionRoutingTests: XCTestCase {
     }
 
     /// The queued size must not decide what gets completed: a file that
-    /// grew before its upload started has to fail, not be cut off.
+    /// grew before its upload started has to fail, not be cut off, and
+    /// an earlier attempt's upload for the queued file must be dropped.
     func testResumableUploadFailsWhenTheFileGrowsWhileQueued() async throws {
         let checkpoints = InMemoryCheckpointStore()
         let fixture = try await makeFixture(hasKey: false, account: s3Account, checkpointStore: checkpoints)
@@ -251,6 +252,11 @@ final class EncryptionRoutingTests: XCTestCase {
         XCTAssertTrue(FileManager.default.createFile(atPath: file.path, contents: nil))
         let handle = try FileHandle(forWritingTo: file)
         try handle.truncate(atOffset: UInt64(S3ResumableUploader.resumableThreshold))
+        await checkpoints.upsert(MultipartUploadCheckpoint(
+            accountID: s3Account.id, bucket: fixture.bucket, key: "object", localPath: file.path,
+            fileSize: Int64(S3ResumableUploader.resumableThreshold), partSize: S3ResumableUploader.partSize,
+            uploadId: "interrupted-upload", fileFingerprint: MultipartUploadCheckpoint.fingerprint(for: file)
+        ))
         let id = await fixture.manager.enqueueUpload(account: s3Account, bucket: fixture.bucket, key: "object",
                                                       localURL: file, contentType: nil)
         try handle.seekToEnd()
@@ -262,6 +268,8 @@ final class EncryptionRoutingTests: XCTestCase {
         guard case .failed = state else { return XCTFail("Expected a failed transfer, got \(state)") }
         XCTAssertFalse(fixture.s3.requests.contains { $0.method == .POST && $0.uploadID != nil },
                        "The multipart upload must never complete")
+        XCTAssertTrue(fixture.s3.requests.contains { $0.method == .DELETE && $0.uploadID == "interrupted-upload" },
+                      "The interrupted multipart upload must be aborted")
         let remaining = await checkpoints.count
         XCTAssertEqual(remaining, 0)
     }
