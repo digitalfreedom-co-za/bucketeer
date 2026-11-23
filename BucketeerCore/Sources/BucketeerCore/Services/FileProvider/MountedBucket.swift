@@ -42,6 +42,9 @@ public struct MountedBucket: Sendable {
         /// The server differed from what Finder expected: the change
         /// went to a conflict copy, or the item stayed as it was.
         public let isConflict: Bool
+        /// The object is not the version of the file Finder holds: the
+        /// system must download it again.
+        public let needsFetch: Bool
     }
 
     private let browser: any S3Browsing
@@ -84,11 +87,11 @@ public struct MountedBucket: Sendable {
     /// anything else keeps its place and the file becomes a conflict copy.
     public func create(_ key: String, contents: URL, mayAlreadyExist: Bool) async throws -> Placement {
         do {
-            _ = try await transport.upload(contents, to: key, precondition: .ifAbsent)
-            return Placement(object: try await head(key), isConflict: false)
+            let uploaded = try await transport.upload(contents, to: key, precondition: .ifAbsent)
+            return try await placement(of: key, uploaded: uploaded, isConflict: false)
         } catch BucketeerError.preconditionFailed {
             if mayAlreadyExist, let existing = try await currentHead(key), try Self.hasSameContent(contents, as: existing) {
-                return Placement(object: existing, isConflict: false)
+                return Placement(object: existing, isConflict: false, needsFetch: false)
             }
             return try await conflictCopy(of: key, contents: contents)
         }
@@ -103,7 +106,7 @@ public struct MountedBucket: Sendable {
     public func rename(_ key: String, baseVersion: String?, to newKey: String) async throws -> Placement {
         let source = try await head(key)
         guard ETag.matches(base: baseVersion, current: source.etag) else {
-            return Placement(object: source, isConflict: true)
+            return Placement(object: source, isConflict: true, needsFetch: true)
         }
         let target: String
         let isConflict: Bool
@@ -117,7 +120,12 @@ public struct MountedBucket: Sendable {
         }
         // A write that landed during the copy stays at the old key.
         let removed = try await browser.deleteIfUnchanged(account: account, bucket: bucket, key: key, etag: source.etag)
-        return Placement(object: try await head(target), isConflict: isConflict || !removed)
+        // The copy was made from the base version. A HEAD showing any
+        // other ETag (a later writer, or a provider that re-tags copies)
+        // cannot prove Finder's file is that version.
+        let object = try await head(target)
+        return Placement(object: object, isConflict: isConflict || !removed,
+                         needsFetch: !ETag.matches(base: source.etag, current: object.etag))
     }
 
     // MARK: - Delete
@@ -169,15 +177,23 @@ public struct MountedBucket: Sendable {
     // MARK: - Helpers
 
     private func conflictCopy(of key: String, contents: URL) async throws -> Placement {
-        let copy = try await ConflictCopyName.create(copyOf: key, date: Date()) { candidate -> Bool? in
+        let copy = try await ConflictCopyName.create(copyOf: key, date: Date()) { candidate -> String?? in
             do {
-                _ = try await transport.upload(contents, to: candidate, precondition: .ifAbsent)
-                return true
+                let etag = try await transport.upload(contents, to: candidate, precondition: .ifAbsent)
+                return .some(etag)
             } catch BucketeerError.preconditionFailed {
                 return nil
             }
         }
-        return Placement(object: try await head(copy.key), isConflict: true)
+        return try await placement(of: copy.key, uploaded: copy.written, isConflict: true)
+    }
+
+    /// Reports `key` after our upload answered with `uploaded`. A HEAD
+    /// showing another version means somebody wrote after us.
+    private func placement(of key: String, uploaded: String?, isConflict: Bool) async throws -> Placement {
+        let object = try await head(key)
+        return Placement(object: object, isConflict: isConflict,
+                         needsFetch: !ETag.matches(base: uploaded, current: object.etag))
     }
 
     /// `false` when the destination is taken; a changed source surfaces

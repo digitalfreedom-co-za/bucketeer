@@ -142,6 +142,13 @@ enum FileProviderItemResolver {
 
     // MARK: - Create
 
+    /// The item to report, and whether the system must download its
+    /// contents again because the file it holds is not that version.
+    struct ChangeResult {
+        let item: NSFileProviderItem
+        let shouldFetchContent: Bool
+    }
+
     /// Files are created only if the name is free. A taken name keeps
     /// its object: the new file goes up as a conflict copy (and Finder
     /// shows it under that name), unless `mayAlreadyExist` (re-import)
@@ -153,7 +160,7 @@ enum FileProviderItemResolver {
         in domain: NSFileProviderDomain,
         container: ExtensionContainer,
         progress: Progress
-    ) async throws -> NSFileProviderItem {
+    ) async throws -> ChangeResult {
         guard let mountInfo = try await container.resolve(domain.identifier.rawValue) else {
             throw mappedError(.providerDomainNotFound)
         }
@@ -182,10 +189,13 @@ enum FileProviderItemResolver {
                     await announceConflict(.conflictCopy, key: key, in: domain)
                 }
                 await remember(placement.object, in: domain)
-                return ResolvedItem(
-                    identifier: identifier(for: placement.object.key),
-                    parent: template.parentItemIdentifier,
-                    object: placement.object
+                return ChangeResult(
+                    item: ResolvedItem(
+                        identifier: identifier(for: placement.object.key),
+                        parent: template.parentItemIdentifier,
+                        object: placement.object
+                    ),
+                    shouldFetchContent: placement.needsFetch
                 )
             } catch {
                 throw fileProviderError(error, fallback: .cannotSynchronize)
@@ -205,11 +215,14 @@ enum FileProviderItemResolver {
             }
             // Synthesised — there is no head object for a folder marker
             // on S3 (and not always on Azure either).
-            return ResolvedItem(
-                identifier: identifier(for: key),
-                parent: template.parentItemIdentifier,
-                name: folderName(from: key),
-                isFolder: true
+            return ChangeResult(
+                item: ResolvedItem(
+                    identifier: identifier(for: key),
+                    parent: template.parentItemIdentifier,
+                    name: folderName(from: key),
+                    isFolder: true
+                ),
+                shouldFetchContent: false
             )
         }
         // A file without contents: report whatever the server holds.
@@ -226,21 +239,17 @@ enum FileProviderItemResolver {
             throw fileProviderError(error, fallback: .cannotSynchronize)
         }
         await remember(head, in: domain)
-        return ResolvedItem(
-            identifier: identifier(for: key),
-            parent: template.parentItemIdentifier,
-            object: head
+        return ChangeResult(
+            item: ResolvedItem(
+                identifier: identifier(for: key),
+                parent: template.parentItemIdentifier,
+                object: head
+            ),
+            shouldFetchContent: false
         )
     }
 
     // MARK: - Modify
-
-    struct ModifyResult {
-        let item: NSFileProviderItem
-        /// True when the server kept its own version and the system must
-        /// download it again (the local edit went into a conflict copy).
-        let shouldFetchContent: Bool
-    }
 
     static func modifyItem(
         item: NSFileProviderItem,
@@ -250,7 +259,7 @@ enum FileProviderItemResolver {
         in domain: NSFileProviderDomain,
         container: ExtensionContainer,
         progress: Progress
-    ) async throws -> ModifyResult {
+    ) async throws -> ChangeResult {
         guard let mountInfo = try await container.resolve(domain.identifier.rawValue) else {
             throw mappedError(.providerDomainNotFound)
         }
@@ -267,6 +276,9 @@ enum FileProviderItemResolver {
         let isMove = changedFields.contains(.filename) || changedFields.contains(.parentItemIdentifier)
         var currentKey = originalKey
         var written: Written?
+        // The server version the local file is; nil once it is unknown.
+        var localVersion = String(data: baseVersion.contentVersion, encoding: .utf8)
+        var mustFetch = false
         // Every network call below must surface as an
         // NSFileProviderError — createItem/deleteItem already wrap;
         // an unmapped BucketeerError here would land in a foreign
@@ -282,7 +294,9 @@ enum FileProviderItemResolver {
                     container: container,
                     progress: progress
                 )
-                if written == nil {
+                if let written {
+                    localVersion = written.etag
+                } else {
                     return try await keepServerVersion(
                         of: originalKey,
                         conflictCopyOf: isMove ? try moveTarget(of: item) : originalKey,
@@ -302,9 +316,12 @@ enum FileProviderItemResolver {
                 if newKey != originalKey {
                     let placement = try await mounted(mountInfo, container: container, progress: progress).rename(
                         originalKey,
-                        baseVersion: written?.etag ?? String(data: baseVersion.contentVersion, encoding: .utf8),
+                        baseVersion: localVersion,
                         to: newKey
                     )
+                    // The local file stays the version it was; only a
+                    // refused rename or an unproven copy forces a fetch.
+                    mustFetch = placement.needsFetch
                     if placement.isConflict {
                         let kind: ConflictNotice.Kind = placement.object.key == originalKey
                             ? .renameKeptServerVersion : .conflictCopy
@@ -313,18 +330,18 @@ enum FileProviderItemResolver {
                     currentKey = placement.object.key
                 }
             }
-            // The HEAD supplies the metadata only. If it already shows
-            // a version other than the one our write answered with,
-            // somebody wrote after us: the local contents are not that
-            // version, so the system has to fetch it.
+            // The HEAD supplies the metadata only. If it shows a version
+            // other than the one the local file is (written or Finder's
+            // base), the system has to fetch it.
             let head = try await container.browser.head(
                 account: mountInfo.account,
                 bucket: mountInfo.bucket,
                 key: currentKey
             )
-            let newerOnServer = written.map { !ETag.matches(base: $0.etag, current: head.etag) } ?? false
+            let newerOnServer = !currentKey.hasSuffix("/")
+                && (mustFetch || !ETag.matches(base: localVersion, current: head.etag))
             await remember(head, in: domain)
-            return ModifyResult(
+            return ChangeResult(
                 item: ResolvedItem(
                     identifier: identifier(for: currentKey),
                     parent: parentIdentifier(for: currentKey),
@@ -393,7 +410,7 @@ enum FileProviderItemResolver {
         mountInfo: (account: S3Account, bucket: String),
         container: ExtensionContainer,
         progress: Progress
-    ) async throws -> ModifyResult {
+    ) async throws -> ChangeResult {
         _ = try await ConflictCopyName.create(copyOf: targetKey, date: Date()) { copyKey -> Bool? in
             do {
                 try await uploadFile(
@@ -415,7 +432,7 @@ enum FileProviderItemResolver {
             throw mappedError(.noSuchItem)
         }
         await remember(head, in: domain)
-        return ModifyResult(
+        return ChangeResult(
             item: ResolvedItem(identifier: identifier(for: key), parent: parentIdentifier(for: key), object: head),
             shouldFetchContent: true
         )
