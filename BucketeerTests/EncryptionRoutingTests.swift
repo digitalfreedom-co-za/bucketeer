@@ -233,6 +233,47 @@ final class EncryptionRoutingTests: XCTestCase {
         XCTAssertEqual(remaining, 0)
     }
 
+    /// The queued size must not decide what gets completed: a file that
+    /// grew before its upload started has to fail, not be cut off, and
+    /// an earlier attempt's upload for the queued file must be dropped.
+    func testResumableUploadFailsWhenTheFileGrowsWhileQueued() async throws {
+        let checkpoints = InMemoryCheckpointStore()
+        let fixture = try await makeFixture(hasKey: false, account: s3Account, checkpointStore: checkpoints)
+        defer { fixture.session.invalidateAndCancel() }
+        // Held single PUTs keep every worker busy, so the large file stays queued.
+        fixture.s3.holdSinglePuts()
+        for index in 0..<4 {
+            let blocker = folder.appendingPathComponent("blocker-\(index)")
+            try plaintext.write(to: blocker)
+            await fixture.manager.enqueueUpload(account: s3Account, bucket: fixture.bucket, key: "blocker-\(index)",
+                                                localURL: blocker, contentType: nil)
+        }
+        let file = folder.appendingPathComponent("growing")
+        XCTAssertTrue(FileManager.default.createFile(atPath: file.path, contents: nil))
+        let handle = try FileHandle(forWritingTo: file)
+        try handle.truncate(atOffset: UInt64(S3ResumableUploader.resumableThreshold))
+        await checkpoints.upsert(MultipartUploadCheckpoint(
+            accountID: s3Account.id, bucket: fixture.bucket, key: "object", localPath: file.path,
+            fileSize: Int64(S3ResumableUploader.resumableThreshold), partSize: S3ResumableUploader.partSize,
+            uploadId: "interrupted-upload", fileFingerprint: MultipartUploadCheckpoint.fingerprint(for: file)
+        ))
+        let id = await fixture.manager.enqueueUpload(account: s3Account, bucket: fixture.bucket, key: "object",
+                                                      localURL: file, contentType: nil)
+        try handle.seekToEnd()
+        try handle.write(contentsOf: Data("appended".utf8))
+        try handle.close()
+        fixture.s3.releaseSinglePuts()
+
+        let state = await fixture.manager.awaitCompletion(id: id)
+        guard case .failed = state else { return XCTFail("Expected a failed transfer, got \(state)") }
+        XCTAssertFalse(fixture.s3.requests.contains { $0.method == .POST && $0.uploadID != nil },
+                       "The multipart upload must never complete")
+        XCTAssertTrue(fixture.s3.requests.contains { $0.method == .DELETE && $0.uploadID == "interrupted-upload" },
+                      "The interrupted multipart upload must be aborted")
+        let remaining = await checkpoints.count
+        XCTAssertEqual(remaining, 0)
+    }
+
     private var noKeyMessage: String {
         String(localized: "error.encryptedNoKey",
                defaultValue: "The object is encrypted, but no key is configured for this bucket.")
@@ -392,7 +433,20 @@ private final class RecordingS3HTTPClient: AWSHTTPClient, @unchecked Sendable {
 
     private let lock = NSLock()
     private var recorded: [Request] = []
+    private var holdingSinglePuts = false
+    private var heldPuts: [CheckedContinuation<Void, Never>] = []
     var requests: [Request] { lock.withLock { recorded } }
+
+    func holdSinglePuts() { lock.withLock { holdingSinglePuts = true } }
+
+    func releaseSinglePuts() {
+        let held = lock.withLock {
+            holdingSinglePuts = false
+            defer { heldPuts = [] }
+            return heldPuts
+        }
+        held.forEach { $0.resume() }
+    }
 
     func execute(request: AWSHTTPRequest, timeout: TimeAmount, logger: Logger) async throws -> AWSHTTPResponse {
         let items = URLComponents(url: request.url, resolvingAgainstBaseURL: false)?.queryItems ?? []
@@ -413,7 +467,16 @@ private final class RecordingS3HTTPClient: AWSHTTPClient, @unchecked Sendable {
             return xml("<ListPartsResult><IsTruncated>false</IsTruncated></ListPartsResult>")
         case (.DELETE, _, _):
             return AWSHTTPResponse(status: .noContent, headers: [:])
-        case (.PUT, _, _):
+        case (.PUT, _, let isPart):
+            if !isPart {
+                await withCheckedContinuation { continuation in
+                    let held = lock.withLock {
+                        if holdingSinglePuts { heldPuts.append(continuation) }
+                        return holdingSinglePuts
+                    }
+                    if !held { continuation.resume() }
+                }
+            }
             return AWSHTTPResponse(status: .ok, headers: ["ETag": "\"etag\""])
         default:
             return AWSHTTPResponse(status: .notFound, headers: [:])
