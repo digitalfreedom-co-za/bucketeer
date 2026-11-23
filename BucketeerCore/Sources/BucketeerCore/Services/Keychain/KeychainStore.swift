@@ -121,13 +121,16 @@ public actor KeychainStore: KeychainStoring {
 
         for item in items {
             guard let accountString = item[kSecAttrAccount as String] as? String,
-                  let accountID = UUID(uuidString: accountString),
-                  let legacyRef = item[kSecValuePersistentRef as String] as? Data,
-                  let data = Self.legacyData(persistentRef: legacyRef)
+                  let accountID = UUID(uuidString: accountString)
             else {
-                CredentialLog.logger.error("migration.item unreadable")
+                CredentialLog.logger.error("migration.item noAccountID")
                 continue
             }
+            guard let legacyRef = item[kSecValuePersistentRef as String] as? Data else {
+                Self.logStatus("migration.item noPersistentRef", accountID, errSecItemNotFound)
+                continue
+            }
+            guard let data = Self.legacyData(persistentRef: legacyRef, accountID: accountID) else { continue }
             // SecItemAdd (not update) so an existing shared entry, which
             // may be newer, is never overwritten.
             var addQuery = baseQuery(for: accountID)
@@ -139,13 +142,14 @@ public actor KeychainStore: KeychainStoring {
             }
             let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
             Self.logStatus("migration.copy", accountID, addStatus)
+            // `load` and `sharedPersistentRef` log their own status.
             guard addStatus == errSecSuccess || addStatus == errSecDuplicateItem,
                   (try? await load(for: accountID)) != nil,
-                  let sharedRef = sharedPersistentRef(for: accountID),
-                  sharedRef != legacyRef
-            else {
+                  let sharedRef = sharedPersistentRef(for: accountID)
+            else { continue }
+            guard sharedRef != legacyRef else {
                 CredentialLog.logger.error(
-                    "migration.verify failed account=\(accountID.uuidString, privacy: .public), legacy item kept"
+                    "migration.verify sameItem account=\(accountID.uuidString, privacy: .public), legacy item kept"
                 )
                 continue
             }
@@ -178,7 +182,7 @@ public actor KeychainStore: KeychainStoring {
         ]
     }
 
-    private static func legacyData(persistentRef: Data) -> Data? {
+    private static func legacyData(persistentRef: Data, accountID: UUID) -> Data? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecUseDataProtectionKeychain as String: false,
@@ -186,8 +190,16 @@ public actor KeychainStore: KeychainStoring {
             kSecReturnData as String: true
         ]
         var result: AnyObject?
-        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess else { return nil }
-        return result as? Data
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        guard status == errSecSuccess else {
+            logStatus("migration.readLegacy", accountID, status)
+            return nil
+        }
+        guard let data = result as? Data else {
+            logStatus("migration.readLegacy noData", accountID, errSecItemNotFound)
+            return nil
+        }
+        return data
     }
 
     private func sharedPersistentRef(for accountID: UUID) -> Data? {
@@ -195,8 +207,16 @@ public actor KeychainStore: KeychainStoring {
         query[kSecReturnPersistentRef as String] = true
         query[kSecMatchLimit as String] = kSecMatchLimitOne
         var result: AnyObject?
-        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess else { return nil }
-        return result as? Data
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        guard status == errSecSuccess else {
+            Self.logStatus("migration.verify sharedRef", accountID, status)
+            return nil
+        }
+        guard let ref = result as? Data else {
+            Self.logStatus("migration.verify sharedRef noData", accountID, errSecItemNotFound)
+            return nil
+        }
+        return ref
     }
 
     // MARK: - Internals
