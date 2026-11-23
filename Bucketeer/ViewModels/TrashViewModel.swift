@@ -26,6 +26,8 @@ final class TrashViewModel {
     var isLoading: Bool = false
     var error: BucketeerError?
     var actionError: String?
+    /// Set when a restore had to go next to a newer object.
+    var actionNotice: String?
 
     private let trashStore: any TrashStoring
     private let coordinator: TrashCoordinator
@@ -64,11 +66,18 @@ final class TrashViewModel {
             )
             return
         }
-        if let message = await coordinator.restore(item: item, account: account) {
-            actionError = message
-        } else {
+        actionNotice = nil
+        switch await coordinator.restore(item: item, account: account) {
+        case .restored:
             actionError = nil
             await reload()
+        case .restoredAsCopy(let key):
+            actionError = nil
+            let name = key.split(separator: "/").last.map(String.init) ?? key
+            actionNotice = String(localized: "trash.restore.conflictCopy \(name)")
+            await reload()
+        case .failed(let message):
+            actionError = message
         }
     }
 

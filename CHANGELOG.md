@@ -13,6 +13,14 @@ before that is internal phase work on the `development` branch.
 
 ## [Unreleased] — `development` branch
 
+### Trash restore keeps newer objects (#79)
+- Restoring from the trash only creates the object (`If-None-Match: *`,
+  or a HEAD right before on providers that ignore the condition). When
+  a newer object took the key since the delete, it stays untouched and
+  the cached copy is uploaded next to it as
+  `<name> (conflict <date> <tag>).<ext>`; the Trash window says so. The
+  trash entry is removed only after the upload succeeded.
+
 ### Turkish UI (#72)
 - The app UI is localised in Turkish (tr): every string catalog (app,
   BucketeerCore, App Shortcuts, hardware key), `tr.lproj`

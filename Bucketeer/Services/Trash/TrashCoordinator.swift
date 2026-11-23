@@ -8,6 +8,16 @@
 import Foundation
 import BucketeerCore
 
+/// How a trash restore ended.
+enum TrashRestoreOutcome: Equatable {
+    /// Back under its original key.
+    case restored
+    /// The original key held a newer object, which stays untouched; the
+    /// payload was uploaded next to it under `key`.
+    case restoredAsCopy(key: String)
+    case failed(message: String)
+}
+
 /// Bridges the soft-delete trash to the rest of the host services
 /// (browser, transfer manager, activity log) so the `TrashStore`
 /// actor stays focused on persistence. Phase 13.4.
@@ -19,7 +29,8 @@ import BucketeerCore
 ///    `TrashedItem`, and (if caching is enabled and the file fits)
 ///    kicks off a background download into the local trash cache.
 /// 2. **Restore** — re-uploads the cached payload via the existing
-///    `TransferManager` to the original bucket+key. On success the
+///    `TransferManager` to the original bucket+key, or as a conflict
+///    copy next to it when a newer object took the key. On success the
 ///    record is forgotten.
 /// 3. **Forget / Empty** — simple pass-throughs that delegate to the
 ///    store so the cached file is removed in lockstep.
@@ -151,22 +162,25 @@ final class TrashCoordinator {
         }
     }
 
-    /// Re-upload the cached payload to its original location. Returns
-    /// `nil` on success, an error message otherwise.
-    func restore(item: TrashedItem, account: S3Account) async -> String? {
+    /// Re-upload the cached payload to its original location. The upload
+    /// only creates the object: when a newer object took the key since
+    /// the delete, the payload goes up as a conflict copy next to it
+    /// instead of replacing it. The entry is forgotten only after an
+    /// upload succeeded.
+    func restore(item: TrashedItem, account: S3Account) async -> TrashRestoreOutcome {
         guard let cachedName = item.cachedFileName,
               item.cacheStatus == .cached else {
-            return String(
+            return .failed(message: String(
                 localized: "trash.error.notRestorable",
                 defaultValue: "This entry has no cached copy and cannot be restored."
-            )
+            ))
         }
         let fileURL = cacheRootURL.appendingPathComponent(cachedName)
         guard FileManager.default.fileExists(atPath: fileURL.path) else {
-            return String(
+            return .failed(message: String(
                 localized: "trash.error.cacheMissing",
                 defaultValue: "The cached file is gone from disk."
-            )
+            ))
         }
         // The capture keeps an encrypted object's envelope as-is; sealing
         // it again on upload would leave the restored object unreadable.
@@ -176,36 +190,60 @@ final class TrashCoordinator {
                 at: fileURL, marked: item.encryptionMarked, accountID: account.id, bucket: item.bucket
             )
         } catch EncryptionError.noKeyForBucket {
-            return String(localized: "error.encryptedNoKey",
-                          defaultValue: "The object is encrypted, but no key is configured for this bucket.")
+            return .failed(message: String(localized: "error.encryptedNoKey",
+                                           defaultValue: "The object is encrypted, but no key is configured for this bucket."))
         } catch {
-            return error.localizedDescription
+            return .failed(message: error.localizedDescription)
         }
-        let id = await transferManager.enqueueUpload(
-            account: account,
-            bucket: item.bucket,
-            key: item.key,
-            localURL: fileURL,
-            contentType: item.contentType,
-            bypassEncryption: encrypted
-        )
-        let state = await transferManager.awaitCompletion(id: id)
-        switch state {
-        case .completed:
-            try? await trashStore.forget(id: item.id)
-            return nil
-        case .failed(let message):
-            return message
-        case .cancelled:
-            return String(
+
+        let outcome: TrashRestoreOutcome
+        do {
+            if try await createIfAbsent(fileURL, item: item, key: item.key, account: account, encrypted: encrypted) {
+                outcome = .restored
+            } else {
+                let copy = try await ConflictCopyName.create(copyOf: item.key, date: Date()) { key -> Bool? in
+                    try await self.createIfAbsent(fileURL, item: item, key: key, account: account, encrypted: encrypted)
+                        ? true : nil
+                }
+                outcome = .restoredAsCopy(key: copy.key)
+            }
+        } catch BucketeerError.cancelled {
+            return .failed(message: String(
                 localized: "trash.error.restoreCancelled",
                 defaultValue: "Restore was cancelled."
-            )
-        default:
-            return String(
-                localized: "trash.error.restoreUnknown",
-                defaultValue: "Restore did not finish."
-            )
+            ))
+        } catch let error as BucketeerError {
+            return .failed(message: error.errorDescription ?? error.localizedDescription)
+        } catch {
+            return .failed(message: error.localizedDescription)
+        }
+        try? await trashStore.forget(id: item.id)
+        return outcome
+    }
+
+    /// Uploads the cached payload to `key` only if nothing is there yet
+    /// (a HEAD stands in where the provider ignores the condition).
+    /// Returns `false` when the key is taken.
+    private func createIfAbsent(
+        _ fileURL: URL,
+        item: TrashedItem,
+        key: String,
+        account: S3Account,
+        encrypted: Bool
+    ) async throws -> Bool {
+        switch await transferManager.uploadConditionally(
+            account: account,
+            bucket: item.bucket,
+            key: key,
+            localURL: fileURL,
+            contentType: item.contentType,
+            bypassEncryption: encrypted,
+            precondition: .ifAbsent
+        ) {
+        case .uploaded: return true
+        case .preconditionFailed: return false
+        case .failed(let message): throw BucketeerError.unknown(message: message)
+        case .cancelled: throw BucketeerError.cancelled
         }
     }
 
