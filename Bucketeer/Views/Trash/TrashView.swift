@@ -27,6 +27,12 @@ struct TrashView: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
             }
+            if let actionNotice = viewModel.actionNotice {
+                Label(actionNotice, systemImage: "doc.on.doc")
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+            }
             ErrorBanner(error: viewModel.error)
             if viewModel.items.isEmpty && !viewModel.isLoading {
                 emptyState

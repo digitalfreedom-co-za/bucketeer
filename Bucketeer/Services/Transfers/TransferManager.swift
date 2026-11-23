@@ -251,6 +251,7 @@ actor TransferManager: Transferring {
         key: String,
         localURL: URL,
         contentType: String?,
+        bypassEncryption: Bool = false,
         precondition: WritePrecondition
     ) async -> ConditionalUploadOutcome {
         let id = await enqueueUpload(
@@ -259,7 +260,7 @@ actor TransferManager: Transferring {
             key: key,
             localURL: localURL,
             contentType: contentType,
-            bypassEncryption: false,
+            bypassEncryption: bypassEncryption,
             precondition: precondition
         )
         let state = await awaitCompletion(id: id)
