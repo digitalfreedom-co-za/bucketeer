@@ -319,8 +319,9 @@ enum FileProviderItemResolver {
                         baseVersion: localVersion,
                         to: newKey
                     )
+                    // The local file stays the version it was; only a
+                    // refused rename or an unproven copy forces a fetch.
                     mustFetch = placement.needsFetch
-                    localVersion = placement.object.etag
                     if placement.isConflict {
                         let kind: ConflictNotice.Kind = placement.object.key == originalKey
                             ? .renameKeptServerVersion : .conflictCopy
@@ -330,8 +331,8 @@ enum FileProviderItemResolver {
                 }
             }
             // The HEAD supplies the metadata only. If it shows a version
-            // other than the one the local file is (written, copied or
-            // Finder's base), the system has to fetch it.
+            // other than the one the local file is (written or Finder's
+            // base), the system has to fetch it.
             let head = try await container.browser.head(
                 account: mountInfo.account,
                 bucket: mountInfo.bucket,

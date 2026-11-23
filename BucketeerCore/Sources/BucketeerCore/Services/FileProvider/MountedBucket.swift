@@ -120,8 +120,12 @@ public struct MountedBucket: Sendable {
         }
         // A write that landed during the copy stays at the old key.
         let removed = try await browser.deleteIfUnchanged(account: account, bucket: bucket, key: key, etag: source.etag)
-        // The copy was made from the base version, so Finder's file is it.
-        return Placement(object: try await head(target), isConflict: isConflict || !removed, needsFetch: false)
+        // The copy was made from the base version. A HEAD showing any
+        // other ETag (a later writer, or a provider that re-tags copies)
+        // cannot prove Finder's file is that version.
+        let object = try await head(target)
+        return Placement(object: object, isConflict: isConflict || !removed,
+                         needsFetch: !ETag.matches(base: source.etag, current: object.etag))
     }
 
     // MARK: - Delete
