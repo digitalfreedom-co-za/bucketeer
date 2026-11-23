@@ -142,11 +142,11 @@ public actor KeychainStore: KeychainStoring {
             }
             let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
             Self.logStatus("migration.copy", accountID, addStatus)
-            // `load` and `sharedPersistentRef` log their own status.
-            guard addStatus == errSecSuccess || addStatus == errSecDuplicateItem,
-                  (try? await load(for: accountID)) != nil,
-                  let sharedRef = sharedPersistentRef(for: accountID)
-            else { continue }
+            guard addStatus == errSecSuccess || addStatus == errSecDuplicateItem else { continue }
+            // `load` logs its own failure status.
+            guard (try? await load(for: accountID)) != nil else { continue }
+            Self.logStatus("migration.verify readBack", accountID, errSecSuccess)
+            guard let sharedRef = sharedPersistentRef(for: accountID) else { continue }
             guard sharedRef != legacyRef else {
                 CredentialLog.logger.error(
                     "migration.verify sameItem account=\(accountID.uuidString, privacy: .public), legacy item kept"
@@ -191,10 +191,8 @@ public actor KeychainStore: KeychainStoring {
         ]
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
-        guard status == errSecSuccess else {
-            logStatus("migration.readLegacy", accountID, status)
-            return nil
-        }
+        logStatus("migration.readLegacy", accountID, status)
+        guard status == errSecSuccess else { return nil }
         guard let data = result as? Data else {
             logStatus("migration.readLegacy noData", accountID, errSecItemNotFound)
             return nil
@@ -208,10 +206,8 @@ public actor KeychainStore: KeychainStoring {
         query[kSecMatchLimit as String] = kSecMatchLimitOne
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
-        guard status == errSecSuccess else {
-            Self.logStatus("migration.verify sharedRef", accountID, status)
-            return nil
-        }
+        Self.logStatus("migration.verify sharedRef", accountID, status)
+        guard status == errSecSuccess else { return nil }
         guard let ref = result as? Data else {
             Self.logStatus("migration.verify sharedRef noData", accountID, errSecItemNotFound)
             return nil
