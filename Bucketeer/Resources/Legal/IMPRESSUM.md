@@ -1,11 +1,11 @@
-<!-- doc-id: BUCKETEER_IMPRESSUM | lang: en | area: app | version: 1.1.0 | valid-from: 2026-11-25 | supersedes: 1.0.1; section 6 names the seller by Apple's role | baseline: legal website/IMPRESSUM.en.md, Bucketeer product adaptation; aligned to legal 7644558 (PRIVACY_POLICY 2.5.0 / EULA 1.4.0 / IMPRESSUM 1.5.1) | owner: Marcel R. G. Berger -->
+<!-- doc-id: BUCKETEER_IMPRESSUM | lang: en | area: app | version: 1.1.0 | valid-from: 2026-12-10 | supersedes: 1.0.1; section 6 names the seller by Apple's role | baseline: legal website/IMPRESSUM.en.md, Bucketeer product adaptation; aligned to legal 7644558 (PRIVACY_POLICY 2.5.0 / EULA 1.4.0 / IMPRESSUM 1.5.1) | owner: Marcel R. G. Berger -->
 # Impressum / Legal Notice
 
 *Information pursuant to § 5 DDG (Digitale-Dienste-Gesetz) and the
 applicable international disclosure requirements.*
 
 **Application** — Bucketeer for macOS
-**Last updated** — 25 November 2026
+**Last updated** — 10 December 2026
 
 ---
 

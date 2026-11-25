@@ -1,4 +1,4 @@
-<!-- doc-id: BUCKETEER_EULA | lang: en | area: app | version: 1.1.0 | valid-from: 2026-11-25 | supersedes: 1.0.1; section 4 names the seller by Apple's role (Publisher in the agent regions, Apple Services Pte. Ltd. or Apple Distribution International Ltd. elsewhere), section 16.5 points to it | baseline: legal apps/documents/EULA.en.md, Bucketeer product adaptation; aligned to legal 7644558 (PRIVACY_POLICY 2.5.0 / EULA 1.4.0 / IMPRESSUM 1.5.1) | owner: Marcel R. G. Berger -->
+<!-- doc-id: BUCKETEER_EULA | lang: en | area: app | version: 1.1.0 | valid-from: 2026-12-10 | supersedes: 1.0.1; section 4 names the seller by Apple's role (Publisher in the agent regions, Apple Services Pte. Ltd. or Apple Distribution International Ltd. elsewhere), section 16.5 points to it | baseline: legal apps/documents/EULA.en.md, Bucketeer product adaptation; aligned to legal 7644558 (PRIVACY_POLICY 2.5.0 / EULA 1.4.0 / IMPRESSUM 1.5.1) | owner: Marcel R. G. Berger -->
 # End User License Agreement
 
 *The terms under which you may install and use Bucketeer for macOS.*
@@ -8,7 +8,7 @@
 **Publisher** — DigitalFreedom, a brand of DigitalFreedom Global LLC,
 30 N Gould St, Ste N, Sheridan, WY 82801, United States
 **Contact** — hello@digitalfreedom.co.za · https://digitalfreedom.co.za
-**Effective date** — 25 November 2026
+**Effective date** — 10 December 2026
 
 ---
 
