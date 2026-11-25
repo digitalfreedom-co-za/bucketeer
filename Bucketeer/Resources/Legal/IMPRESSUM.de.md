@@ -1,11 +1,11 @@
-<!-- doc-id: BUCKETEER_IMPRESSUM | lang: de | area: app | version: 1.0.1 | valid-from: 2026-11-09 | translation-of: BUCKETEER_IMPRESSUM en 1.0.1 (IMPRESSUM.md) | review: not counsel-reviewed; AI legal review (Anwalt role) completed 2026-11-09, not a licensed counsel review | owner: Marcel R. G. Berger -->
+<!-- doc-id: BUCKETEER_IMPRESSUM | lang: de | area: app | version: 1.1.0 | valid-from: 2026-11-25 | translation-of: BUCKETEER_IMPRESSUM en 1.1.0 (IMPRESSUM.md) | baseline: legal 7644558 (PRIVACY_POLICY 2.5.0 / EULA 1.4.0 / IMPRESSUM 1.5.1), via the English text | review: not counsel-reviewed; AI legal review (Anwalt role) completed 2026-11-09, not a licensed counsel review | owner: Marcel R. G. Berger -->
 # Impressum
 
 *Angaben gemäß § 5 DDG (Digitale-Dienste-Gesetz) und den anwendbaren
 internationalen Offenlegungspflichten.*
 
 **Anwendung**: Bucketeer für macOS
-**Stand**: 9. November 2026
+**Stand**: 25. November 2026
 
 ---
 
@@ -96,10 +96,13 @@ journalistisch-redaktionelles Angebot im Sinne des § 18 Abs. 2 MStV.
 ## 6. Vertriebsweg
 
 Bucketeer wird ausschließlich über den Apple Mac App Store vertrieben.
-Apple wickelt den Kauf von Bucketeer Pro ab. In der EU/im EWR, im
-Vereinigten Königreich, in der Schweiz und in der Türkei verkauft Apple
-im eigenen Namen; in allen anderen Storefronts verkauft Apple als
-Vertreter des Anbieters.
+Apple wickelt den Kauf von Bucketeer Pro ab. In den Vereinigten
+Staaten, Kanada, Australien, Neuseeland, Japan, Lateinamerika, der
+Karibik und auf den Bermudas handelt Apple als Vertreter des Anbieters
+und verkauft in dessen Namen. In allen anderen Storefronts verkauft
+Apple im eigenen Namen, und zwar über die Apple Services Pte. Ltd. oder
+die Apple Distribution International Ltd.; welche wo gilt, nennt
+Abschnitt 4 des **Endbenutzer-Lizenzvertrags**.
 
 Der Quellcode ist auf https://github.com/digitalfreedom-co-za/bucketeer
 veröffentlicht, und zwar unter der Source-Available License, die im

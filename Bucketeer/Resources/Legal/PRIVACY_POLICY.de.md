@@ -1,11 +1,11 @@
-<!-- doc-id: BUCKETEER_PRIVACY_POLICY | lang: de | area: app | version: 1.0.3 | valid-from: 2026-11-16 | translation-of: BUCKETEER_PRIVACY_POLICY en 1.0.3 (PRIVACY_POLICY.md) | review: not counsel-reviewed; AI legal review (Anwalt role) completed 2026-11-09, not a licensed counsel review | owner: Marcel R. G. Berger -->
+<!-- doc-id: BUCKETEER_PRIVACY_POLICY | lang: de | area: app | version: 1.1.0 | valid-from: 2026-11-25 | translation-of: BUCKETEER_PRIVACY_POLICY en 1.1.0 (PRIVACY_POLICY.md) | baseline: legal 7644558 (PRIVACY_POLICY 2.5.0 / EULA 1.4.0 / IMPRESSUM 1.5.1), via the English text | review: not counsel-reviewed; AI legal review (Anwalt role) completed 2026-11-09, not a licensed counsel review | owner: Marcel R. G. Berger -->
 # Datenschutzerklärung
 
 *Wie Bucketeer für macOS mit deinen Daten umgeht.*
 
 **Anwendung**: Bucketeer für macOS, einschließlich seiner Finder-Erweiterung
 ("Bucketeer File Provider")
-**Gültig ab**: 16. November 2026
+**Gültig ab**: 25. November 2026
 
 **Verantwortlicher**: DigitalFreedom Global LLC (handelnd als DigitalFreedom),
 30 N Gould St, Ste N, Sheridan, WY 82801, United States
@@ -193,9 +193,15 @@ deiner Nutzung der App keinen Vertrag mit ihnen.
 
 **Apple.** Apple vertreibt die App und verarbeitet den Kauf von
 Bucketeer Pro als eigenständiger Verantwortlicher nach seiner eigenen
-Datenschutzrichtlinie (https://www.apple.com/legal/privacy/). In der
-EU/im EWR, im Vereinigten Königreich, in der Schweiz und in der Türkei
-verkauft Apple im eigenen Namen, anderswo als Vertreter des Anbieters.
+Datenschutzrichtlinie (https://www.apple.com/legal/privacy/). In den
+Vereinigten Staaten, Kanada, Australien, Neuseeland, Japan,
+Lateinamerika, der Karibik und auf den Bermudas handelt Apple als
+Vertreter des Anbieters und verkauft in dessen Namen. Anderswo verkauft
+Apple im eigenen Namen: die Apple Services Pte. Ltd., Singapur, in
+Südkorea und den weiteren Ländern und Regionen, die Abschnitt 4 des
+**Endbenutzer-Lizenzvertrags** nennt, die Apple Distribution International
+Ltd., Irland, in allen anderen, einschließlich der EU/des EWR, des
+Vereinigten Königreichs, der Schweiz und der Türkei.
 Der Anbieter erhält Verkaufs- und Auszahlungsberichte aus App Store
 Connect, nicht deine Zahlungsdaten.
 

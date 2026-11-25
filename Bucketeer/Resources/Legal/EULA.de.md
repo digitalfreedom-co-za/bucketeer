@@ -1,4 +1,4 @@
-<!-- doc-id: BUCKETEER_EULA | lang: de | area: app | version: 1.0.1 | valid-from: 2026-11-16 | translation-of: BUCKETEER_EULA en 1.0.1 (EULA.md) | review: not counsel-reviewed; AI legal review (Anwalt role) completed 2026-11-09, not a licensed counsel review | owner: Marcel R. G. Berger -->
+<!-- doc-id: BUCKETEER_EULA | lang: de | area: app | version: 1.1.0 | valid-from: 2026-11-25 | translation-of: BUCKETEER_EULA en 1.1.0 (EULA.md) | baseline: legal 7644558 (PRIVACY_POLICY 2.5.0 / EULA 1.4.0 / IMPRESSUM 1.5.1), via the English text | review: not counsel-reviewed; AI legal review (Anwalt role) completed 2026-11-09, not a licensed counsel review | owner: Marcel R. G. Berger -->
 # Endbenutzer-Lizenzvertrag
 
 *Die Bedingungen, zu denen du Bucketeer für macOS installieren und nutzen darfst.*
@@ -8,7 +8,7 @@
 **Herausgeber**: DigitalFreedom, eine Marke der DigitalFreedom Global LLC,
 30 N Gould St, Ste N, Sheridan, WY 82801, United States
 **Kontakt**: hello@digitalfreedom.co.za · https://digitalfreedom.co.za
-**Gültig ab**: 16. November 2026
+**Gültig ab**: 25. November 2026
 
 ---
 
@@ -93,12 +93,28 @@ keine Verlängerung
 Landeswährung angezeigt
 **Familienfreigabe**: aktiviert
 
-Der Kauf wird von Apple abgewickelt. In der EU/im EWR, im Vereinigten
-Königreich, in der Schweiz und in der Türkei verkauft Apple im eigenen
-Namen; in allen anderen Storefronts verkauft Apple als Vertreter des
-Herausgebers. Erstattungen werden bei Apple unter
-https://reportaproblem.apple.com beantragt. Gesetzliche Rechte gegenüber
-dem Verkäufer bleiben unberührt.
+Der Kauf wird von Apple abgewickelt. Wer ihn dir verkauft, hängt von
+deiner Storefront ab:
+
+- **Vereinigte Staaten, Kanada, Australien, Neuseeland, Japan,
+  Lateinamerika, Karibik und Bermuda**: Apple handelt als Vertreter des
+  Herausgebers und verkauft in dessen Namen. Dein Kaufvertrag besteht
+  mit der DigitalFreedom Global LLC.
+- **Südkorea, Bhutan, Brunei, Kambodscha, Fidschi, Laos, Macau,
+  Malediven, Mikronesien, Mongolei, Myanmar, Nauru, Nepal, Palau,
+  Papua-Neuguinea, Salomonen, Sri Lanka, Tonga und Vanuatu**: Apple
+  verkauft im eigenen Namen. Dein Kaufvertrag besteht mit der Apple
+  Services Pte. Ltd.
+- **Alle anderen Storefronts**, einschließlich der EU/des EWR, des
+  Vereinigten Königreichs, der Schweiz und der Türkei: Apple verkauft im
+  eigenen Namen. Dein Kaufvertrag besteht mit der Apple Distribution
+  International Ltd.
+
+Apple kann diese Regionen ändern. Die Apple Media Services Terms and
+Conditions (https://www.apple.com/legal/internet-services/itunes/)
+nennen das Apple-Unternehmen für dein Land. Erstattungen werden bei
+Apple unter https://reportaproblem.apple.com beantragt. Gesetzliche
+Rechte gegenüber dem Verkäufer bleiben unberührt.
 
 Der Herausgeber kann den Preis für künftige Käufer ändern. Eine
 Preisänderung berührt einen bereits getätigten Kauf nicht.
@@ -287,8 +303,8 @@ verdrängen.
 Der vorstehende, gesetzlich vorgeschriebene Hinweis wird im englischen
 Wortlaut wiedergegeben. Er schränkt jeden Gewährleistungsausschluss und
 jede Haftungsbeschränkung in diesem Vertrag ein und geht ihnen vor. Apple
-handelt in diesen Gebieten als Vertreter des Herausgebers, daher schuldet
-der Herausgeber die Garantien.
+handelt in diesen Gebieten als Vertreter des Herausgebers (Abschnitt 4),
+daher schuldet der Herausgeber die Garantien als Anbieter.
 
 ### 16.6 Andere Rechtsordnungen
 

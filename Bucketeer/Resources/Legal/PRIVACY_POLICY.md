@@ -1,11 +1,11 @@
-<!-- doc-id: BUCKETEER_PRIVACY_POLICY | lang: en | area: app | version: 1.0.3 | valid-from: 2026-11-16 | baseline: legal shared/PRIVACY_POLICY.en.md, Bucketeer product adaptation; baseline version at derivation not recorded (legal b938e59 carries PRIVACY_POLICY 2.3.1) | owner: Marcel R. G. Berger -->
+<!-- doc-id: BUCKETEER_PRIVACY_POLICY | lang: en | area: app | version: 1.1.0 | valid-from: 2026-11-25 | supersedes: 1.0.3; section 9 names Apple Services Pte. Ltd. beside Apple Distribution International Ltd. and states where Apple sells in its own name and where it acts as agent | baseline: legal shared/PRIVACY_POLICY.en.md, Bucketeer product adaptation; aligned to legal 7644558 (PRIVACY_POLICY 2.5.0 / EULA 1.4.0 / IMPRESSUM 1.5.1) | owner: Marcel R. G. Berger -->
 # Privacy Policy
 
 *How Bucketeer for macOS handles your data.*
 
 **Application** — Bucketeer for macOS, including its Finder extension
 ("Bucketeer File Provider")
-**Effective date** — 16 November 2026
+**Effective date** — 25 November 2026
 
 **Controller** — DigitalFreedom Global LLC (trading as DigitalFreedom),
 30 N Gould St, Ste N, Sheridan, WY 82801, United States
@@ -182,9 +182,14 @@ the App.
 
 **Apple.** Apple distributes the App and processes the purchase of
 Bucketeer Pro as an independent controller under its own privacy
-policy (https://www.apple.com/legal/privacy/). In the EU/EEA, the
-United Kingdom, Switzerland and Türkiye Apple sells in its own name,
-elsewhere as the provider's agent. The provider receives sales and
+policy (https://www.apple.com/legal/privacy/). In the United States,
+Canada, Australia, New Zealand, Japan, Latin America, the Caribbean and
+Bermuda Apple acts as the provider's agent and sells in the provider's
+name. Elsewhere Apple sells in its own name: Apple Services Pte. Ltd.,
+Singapore, in South Korea and the other countries and regions listed
+in section 4 of the **End User License Agreement**, Apple Distribution International Ltd.,
+Ireland, in all others, including the EU/EEA, the United Kingdom,
+Switzerland and Türkiye. The provider receives sales and
 payout reports from App Store Connect, not your payment details.
 
 The provider does not sell or share personal data.
