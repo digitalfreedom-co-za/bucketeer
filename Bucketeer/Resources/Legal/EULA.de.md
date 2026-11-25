@@ -1,4 +1,4 @@
-<!-- doc-id: BUCKETEER_EULA | lang: de | area: app | version: 1.0.1 | valid-from: 2026-11-16 | translation-of: BUCKETEER_EULA en 1.0.1 (EULA.md) | review: not counsel-reviewed; AI legal review (Anwalt role) completed 2026-11-09, not a licensed counsel review | owner: Marcel R. G. Berger -->
+<!-- doc-id: BUCKETEER_EULA | lang: de | area: app | version: 1.1.0 | valid-from: 2026-12-10 | translation-of: BUCKETEER_EULA en 1.1.0 (EULA.md) | baseline: legal 7644558 (PRIVACY_POLICY 2.5.0 / EULA 1.4.0 / IMPRESSUM 1.5.1), via the English text | review: not counsel-reviewed; AI legal review (Anwalt role) completed 2026-11-09, not a licensed counsel review | owner: Marcel R. G. Berger -->
 # Endbenutzer-Lizenzvertrag
 
 *Die Bedingungen, zu denen du Bucketeer für macOS installieren und nutzen darfst.*
@@ -8,7 +8,7 @@
 **Herausgeber**: DigitalFreedom, eine Marke der DigitalFreedom Global LLC,
 30 N Gould St, Ste N, Sheridan, WY 82801, United States
 **Kontakt**: hello@digitalfreedom.co.za · https://digitalfreedom.co.za
-**Gültig ab**: 16. November 2026
+**Gültig ab**: 10. Dezember 2026
 
 ---
 
@@ -93,12 +93,28 @@ keine Verlängerung
 Landeswährung angezeigt
 **Familienfreigabe**: aktiviert
 
-Der Kauf wird von Apple abgewickelt. In der EU/im EWR, im Vereinigten
-Königreich, in der Schweiz und in der Türkei verkauft Apple im eigenen
-Namen; in allen anderen Storefronts verkauft Apple als Vertreter des
-Herausgebers. Erstattungen werden bei Apple unter
-https://reportaproblem.apple.com beantragt. Gesetzliche Rechte gegenüber
-dem Verkäufer bleiben unberührt.
+Der Kauf wird von Apple abgewickelt. Wer ihn dir verkauft, hängt von
+deiner Storefront ab:
+
+- **Vereinigte Staaten, Kanada, Australien, Neuseeland, Japan,
+  Lateinamerika, Karibik und Bermuda**: Apple handelt als Vertreter des
+  Herausgebers und verkauft in dessen Namen. Dein Kaufvertrag besteht
+  mit der DigitalFreedom Global LLC.
+- **Südkorea, Bhutan, Brunei, Kambodscha, Fidschi, Laos, Macau,
+  Malediven, Mikronesien, Mongolei, Myanmar, Nauru, Nepal, Palau,
+  Papua-Neuguinea, Salomonen, Sri Lanka, Tonga und Vanuatu**: Apple
+  verkauft im eigenen Namen. Dein Kaufvertrag besteht mit der Apple
+  Services Pte. Ltd.
+- **Alle anderen Storefronts**, einschließlich der EU/des EWR, des
+  Vereinigten Königreichs, der Schweiz und der Türkei: Apple verkauft im
+  eigenen Namen. Dein Kaufvertrag besteht mit der Apple Distribution
+  International Ltd.
+
+Apple kann diese Regionen ändern. Die Apple Media Services Terms and
+Conditions (https://www.apple.com/legal/internet-services/itunes/)
+nennen das Apple-Unternehmen für dein Land. Erstattungen werden bei
+Apple unter https://reportaproblem.apple.com beantragt. Gesetzliche
+Rechte gegenüber dem Verkäufer bleiben unberührt.
 
 Der Herausgeber kann den Preis für künftige Käufer ändern. Eine
 Preisänderung berührt einen bereits getätigten Kauf nicht.
@@ -171,6 +187,67 @@ https://support.apps.digitalfreedom.co.za erreichbar. Für Verbraucher in
 der EU/im EWR gelten die Vertragsmäßigkeits- und Aktualisierungspflichten
 der Richtlinie (EU) 2019/770; sie werden durch diesen Vertrag nicht
 ausgeschlossen.
+
+### 9.1 Supportzeitraum
+
+Jede Version der App erhält mindestens fünf Jahre ab dem Tag, an dem
+diese Version in Verkehr gebracht wird, Sicherheits- und
+Vertragsmäßigkeitsupdates; für Verbraucher in Deutschland ist dies die
+Aktualisierungspflicht nach § 327f BGB. Das gilt für jede Version, die
+du erwirbst, unabhängig davon, ob du die kostenlose Version oder
+Bucketeer Pro nutzt. Das Ende des Supportzeitraums ist mit Monat und
+Jahr im Eintrag der App im Mac App Store und im Fenster Über Bucketeer
+der App angegeben, sodass es bekannt ist, bevor du die App lädst oder
+Bucketeer Pro kaufst.
+
+### 9.2 Umfang eines Updates
+
+Sicherheits- und Vertragsmäßigkeitsupdates sind Sicherheitskorrekturen,
+Korrekturen, die erforderlich sind, damit die App auf den von ihr
+unterstützten macOS-Versionen funktioniert, Korrekturen, die
+erforderlich sind, damit die beschriebene Funktionalität verfügbar
+bleibt, sowie Änderungen, die gesetzlich oder durch die Richtlinien des
+Mac App Store vorgeschrieben sind.
+
+Der Supportzeitraum ist keine Zusage neuer Funktionen, von Änderungen
+der beschriebenen Funktionalität, der Unterstützung von macOS-Versionen,
+die Apple selbst nicht mehr unterstützt, oder von Änderungen, die ein
+einzelner Nutzer wünscht. Er ist auch keine Zusage, dass die App oder
+Bucketeer Pro weiterhin zum Kauf angeboten wird.
+
+### 9.3 Rückzug der App
+
+Die App kann jederzeit aus dem Verkauf genommen werden. Der Herausgeber
+betreibt kein Benutzerkonto für die App (Abschnitt 8) und kann dir
+deshalb nicht direkt schreiben. Ein Rückzug wird mindestens 30 Tage im
+Voraus in der App und auf https://getbucketeer.app angekündigt, unter
+Angabe des Datums des Rückzugs und des Endes des Supportzeitraums, das
+für deine Version gilt.
+
+Der Rückzug verkürzt den Supportzeitraum nicht. Sicherheits- und
+Vertragsmäßigkeitsupdates werden für bereits erworbene Versionen
+fortgesetzt, bis der für die jeweilige Version angegebene
+Supportzeitraum endet. Eine App, die ohne eine solche Ankündigung
+zurückgezogen wird, wird weiterhin unterstützt.
+
+Die App arbeitet lokal auf deinem Mac. Der Rückzug entfernt den Eintrag
+im Mac App Store; er deaktiviert die App auf deinem Mac nicht und
+widerruft keinen Kauf von Bucketeer Pro, den du bereits getätigt hast.
+Bucketeer Pro ist ein einmaliger Kauf ohne wiederkehrende Laufzeit
+(Abschnitt 4), daher gibt es kein Abonnement, das mit einem Rückzug
+endet.
+
+### 9.4 Änderungen an der App
+
+Der Herausgeber ändert die beschriebene Funktionalität der App nur aus
+einem triftigen Grund: zur Anpassung an eine Änderung von Gesetzen,
+Rechtsprechung oder Richtlinien des Mac App Store, zum Schließen einer
+Sicherheitslücke, zur Erhaltung der Kompatibilität mit macOS oder einem
+Plattformdienst oder zum Ersatz eines Dienstes Dritter, den sein
+Anbieter einstellt. Eine solche Änderung wird mindestens 30 Tage im
+Voraus in der App angekündigt, sofern sie nicht aus Sicherheitsgründen
+sofort wirksam werden muss. Deine gesetzlichen Rechte, wenn eine
+Änderung dich erheblich benachteiligt, bleiben unberührt.
 
 ---
 
@@ -287,8 +364,8 @@ verdrängen.
 Der vorstehende, gesetzlich vorgeschriebene Hinweis wird im englischen
 Wortlaut wiedergegeben. Er schränkt jeden Gewährleistungsausschluss und
 jede Haftungsbeschränkung in diesem Vertrag ein und geht ihnen vor. Apple
-handelt in diesen Gebieten als Vertreter des Herausgebers, daher schuldet
-der Herausgeber die Garantien.
+handelt in diesen Gebieten als Vertreter des Herausgebers (Abschnitt 4),
+daher schuldet der Herausgeber die Garantien als Anbieter.
 
 ### 16.6 Andere Rechtsordnungen
 

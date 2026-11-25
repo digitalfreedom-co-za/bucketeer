@@ -65,10 +65,11 @@ Each English document starts with a header such as:
 
 The Bucketeer texts are product adaptations of the legal repo baselines
 (`shared/PRIVACY_POLICY.en.md`, `apps/documents/EULA.en.md`,
-`website/IMPRESSUM.en.md`). Which baseline version they were derived from was
-not recorded; the header names the version the legal repo carries at
-b938e59 for reference only. Version 1.0.0 is the first versioned state of the
-Bucketeer text. Each German file names the English doc-id and version it
+`website/IMPRESSUM.en.md`). Which baseline version the 1.0.x texts were derived
+from was not recorded. Since version 1.1.0 the header names the legal commit
+and document versions the text was aligned to, for example
+`aligned to legal 7644558 (PRIVACY_POLICY 2.5.0 / EULA 1.4.0 / IMPRESSUM 1.5.1)`.
+Version 1.0.0 is the first versioned state of the Bucketeer text. Each German file names the English doc-id and version it
 translates and is marked `review: not counsel-reviewed`. AI legal review
 (Anwalt role) completed 2026-11-09; not a licensed counsel review. The in-app renderer
 skips single-line HTML comments, so the headers are not shown to the reader.

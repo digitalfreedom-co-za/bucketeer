@@ -1,11 +1,11 @@
-<!-- doc-id: BUCKETEER_IMPRESSUM | lang: en | area: app | version: 1.0.1 | valid-from: 2026-11-09 | baseline: legal website/IMPRESSUM.en.md, Bucketeer product adaptation; baseline version at derivation not recorded (legal b938e59 carries IMPRESSUM 1.5.1) | owner: Marcel R. G. Berger -->
+<!-- doc-id: BUCKETEER_IMPRESSUM | lang: en | area: app | version: 1.1.0 | valid-from: 2026-12-10 | supersedes: 1.0.1; section 6 names the seller by Apple's role | baseline: legal website/IMPRESSUM.en.md, Bucketeer product adaptation; aligned to legal 7644558 (PRIVACY_POLICY 2.5.0 / EULA 1.4.0 / IMPRESSUM 1.5.1) | owner: Marcel R. G. Berger -->
 # Impressum / Legal Notice
 
 *Information pursuant to § 5 DDG (Digitale-Dienste-Gesetz) and the
 applicable international disclosure requirements.*
 
 **Application** — Bucketeer for macOS
-**Last updated** — 9 November 2026
+**Last updated** — 10 December 2026
 
 ---
 
@@ -93,9 +93,13 @@ editorial offering within the meaning of § 18(2) MStV.
 ## 6. Distribution channel
 
 Bucketeer is distributed exclusively through the Apple Mac App Store.
-Apple processes the purchase of Bucketeer Pro. In the EU/EEA, the
-United Kingdom, Switzerland and Türkiye Apple sells in its own name;
-in all other storefronts Apple sells as the provider's agent.
+Apple processes the purchase of Bucketeer Pro. In the United States,
+Canada, Australia, New Zealand, Japan, Latin America, the Caribbean and
+Bermuda Apple acts as the provider's agent and sells in the provider's
+name. In all other storefronts Apple sells in its own name, through
+Apple Services Pte. Ltd. or Apple Distribution International Ltd.;
+section 4 of the **End User License Agreement** lists which applies
+where.
 
 The source code is published at
 https://github.com/digitalfreedom-co-za/bucketeer under the
