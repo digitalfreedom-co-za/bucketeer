@@ -1,4 +1,4 @@
-<!-- doc-id: BUCKETEER_PRIVACY_POLICY | lang: en | area: app | version: 1.1.0 | valid-from: 2026-11-25 | supersedes: 1.0.3; section 9 names Apple Services Pte. Ltd. beside Apple Distribution International Ltd. and states where Apple sells in its own name and where it acts as agent | baseline: legal shared/PRIVACY_POLICY.en.md, Bucketeer product adaptation; aligned to legal 7644558 (PRIVACY_POLICY 2.5.0 / EULA 1.4.0 / IMPRESSUM 1.5.1) | owner: Marcel R. G. Berger -->
+<!-- doc-id: BUCKETEER_PRIVACY_POLICY | lang: en | area: app | version: 1.1.0 | valid-from: 2026-11-25 | supersedes: 1.0.3; section 9 names Apple Services Pte. Ltd. beside Apple Distribution International Ltd. and states where Apple sells in its own name and where it acts as agent, and Apple Inc. intra-group processing in the US; section 12 adds the Türkiye complaint route to the Board (Kurul) under Art. 14 KVKK | baseline: legal shared/PRIVACY_POLICY.en.md, Bucketeer product adaptation; aligned to legal 7644558 (PRIVACY_POLICY 2.5.0 / EULA 1.4.0 / IMPRESSUM 1.5.1) | owner: Marcel R. G. Berger -->
 # Privacy Policy
 
 *How Bucketeer for macOS handles your data.*
@@ -189,8 +189,10 @@ name. Elsewhere Apple sells in its own name: Apple Services Pte. Ltd.,
 Singapore, in South Korea and the other countries and regions listed
 in section 4 of the **End User License Agreement**, Apple Distribution International Ltd.,
 Ireland, in all others, including the EU/EEA, the United Kingdom,
-Switzerland and Türkiye. The provider receives sales and
-payout reports from App Store Connect, not your payment details.
+Switzerland and Türkiye. Apple also processes data within its group
+through Apple Inc. in the United States under Apple's internal
+safeguards / Standard Contractual Clauses (SCCs). The provider receives
+sales and payout reports from App Store Connect, not your payment details.
 
 The provider does not sell or share personal data.
 
@@ -242,6 +244,11 @@ provider has no establishment in the EU, so there is no lead
 supervisory authority. In the United Kingdom the authority is the
 Information Commissioner's Office, in Switzerland the Federal Data
 Protection and Information Commissioner.
+
+**Türkiye.** Requests are answered within 30 days. After applying to us
+first, you may complain to the Personal Data Protection Board (Kişisel
+Verileri Koruma Kurulu, Art. 14 KVKK), within 30 days of our response
+or 60 days of your application.
 
 **California.** The provider does not sell or share personal
 information and does not use it for targeted advertising. California

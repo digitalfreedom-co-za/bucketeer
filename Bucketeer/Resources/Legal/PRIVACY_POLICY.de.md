@@ -201,7 +201,9 @@ Apple im eigenen Namen: die Apple Services Pte. Ltd., Singapur, in
 Südkorea und den weiteren Ländern und Regionen, die Abschnitt 4 des
 **Endbenutzer-Lizenzvertrags** nennt, die Apple Distribution International
 Ltd., Irland, in allen anderen, einschließlich der EU/des EWR, des
-Vereinigten Königreichs, der Schweiz und der Türkei.
+Vereinigten Königreichs, der Schweiz und der Türkei. Apple verarbeitet
+Daten außerdem konzernintern durch Apple Inc. in den Vereinigten Staaten
+unter Apples internen Schutzmaßnahmen / Standardvertragsklauseln (SCCs).
 Der Anbieter erhält Verkaufs- und Auszahlungsberichte aus App Store
 Connect, nicht deine Zahlungsdaten.
 
@@ -257,6 +259,12 @@ Der Anbieter hat keine Niederlassung in der EU, daher gibt es keine
 federführende Aufsichtsbehörde. Im Vereinigten Königreich ist die
 Behörde das Information Commissioner's Office, in der Schweiz der
 Eidgenössische Datenschutz- und Öffentlichkeitsbeauftragte.
+
+**Türkei.** Anfragen werden innerhalb von 30 Tagen beantwortet. Nachdem
+du dich zunächst an uns gewandt hast, kannst du dich beim Rat für den
+Schutz personenbezogener Daten (Kişisel Verileri Koruma Kurulu, Art. 14
+KVKK) beschweren, und zwar innerhalb von 30 Tagen nach unserer Antwort
+oder 60 Tagen nach deinem Antrag.
 
 **Kalifornien.** Der Anbieter verkauft oder teilt keine personenbezogenen
 Informationen und nutzt sie nicht für zielgerichtete Werbung. Einwohner
